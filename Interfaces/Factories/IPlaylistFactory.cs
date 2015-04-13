@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+using Interfaces.Models;
+
+namespace Interfaces.Factories
+{
+    public interface IPlaylistFactory
+    {
+        IPlaylist CreatePlaylist();
+
+        Task<IPlaylist> GetPlaylistDbAsync(string id);
+
+        Task<IPlaylist> GetPlaylistNetAsync(string id);
+
+    }
+}
