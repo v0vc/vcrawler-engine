@@ -54,7 +54,7 @@
     <Compile Include="POCO\VideoItemPOCO.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="SQLiteDatabase.cs" />
+    <Compile Include="SqLiteDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

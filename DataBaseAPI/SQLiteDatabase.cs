@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DataBaseAPI.POCO;
+using Interfaces.API;
 using Interfaces.Models;
 using Interfaces.POCO;
 
 namespace DataBaseAPI
 {
-    public class SqLiteDatabase
+    public class SqLiteDatabase : ISqLiteDatabase
     {
         private const string Dbfile = "db.sqlite";
 
@@ -74,8 +75,6 @@ namespace DataBaseAPI
 
         public static readonly string ChannelSubTitle = "subtitle";
 
-        public static readonly string ChannelLastUpdated = "lastupdated";
-
         public static readonly string ChannelThumbnail = "thumbnail";
 
         public static readonly string ChannelSite = "site";
@@ -104,7 +103,7 @@ namespace DataBaseAPI
 
         public static readonly string PlaylistSubTitle = "subtitle";
 
-        public static readonly string PlaylistLink = "link";
+        public static readonly string PlaylistThumbnail = "thumbnail";
 
         public static readonly string PlaylistChannelId = "channelid";
 
@@ -182,7 +181,7 @@ namespace DataBaseAPI
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
         }
 
-        public async void CreateDb()
+        private async void CreateDb()
         {
             var sqliteschema = Path.Combine(_appstartdir, SqlSchemaFolder, SqlFile);
             var fnsch = new FileInfo(sqliteschema);
@@ -198,12 +197,8 @@ namespace DataBaseAPI
                 throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
         }
 
-        /// <summary>
-        /// Получить канал
-        /// </summary>
-        /// <param name="id">ID канала</param>
-        /// <returns></returns>
-        public async Task<ChannelPOCO> GetChannelAsync(string id)
+
+        public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, id);
             using (var command = GetCommand(zap))
@@ -227,13 +222,9 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        /// <summary>
-        /// Получить список всех каналов из бд
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<ChannelPOCO>> GetChannelsListAsync()
+        public async Task<List<IChannelPOCO>> GetChannelsListAsync()
         {
-            var res = new List<ChannelPOCO>();
+            var res = new List<IChannelPOCO>();
 
             var zap = string.Format("SELECT * FROM {0}", Tablechannels);
             using (var command = GetCommand(zap))
@@ -260,19 +251,13 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Записать канал без списка видео
-        /// </summary>
-        /// <param name="channel">Канал</param>
-        /// <returns></returns>
         public async Task InsertChannelAsync(IChannel channel)
         {
-            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}', '{4}', '{5}', '{6}') VALUES (@{1},@{2},@{3}, @{4}, @{5},@{6})",
+            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
                 Tablechannels,
                 ChannelId,
                 ChannelTitle,
                 ChannelSubTitle,
-                ChannelLastUpdated,
                 ChannelThumbnail,
                 ChannelSite
                 );
@@ -281,7 +266,7 @@ namespace DataBaseAPI
                 command.Parameters.AddWithValue("@" + ChannelId, channel.ID);
                 command.Parameters.AddWithValue("@" + ChannelTitle, channel.Title);
                 command.Parameters.AddWithValue("@" + ChannelSubTitle, channel.SubTitle);
-                command.Parameters.AddWithValue("@" + ChannelLastUpdated, channel.LastUpdated);
+                //command.Parameters.AddWithValue("@" + ChannelLastUpdated, channel.LastUpdated);
                 command.Parameters.Add("@" + ChannelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                 command.Parameters.AddWithValue("@" + ChannelThumbnail, channel.Thumbnail);
                 command.Parameters.AddWithValue("@" + ChannelSite, channel.Site);
@@ -290,11 +275,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Удалить канал
-        /// </summary>
-        /// <param name="parentID">ID канала</param>
-        /// <returns></returns>
         public async Task DeleteChannelAsync(string parentID)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, parentID);
@@ -304,12 +284,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Переименовать канал
-        /// </summary>
-        /// <param name="id">ID канала</param>
-        /// <param name="newName">Новое название</param>
-        /// <returns></returns>
         public async Task RenameChannelAsync(string id, string newName)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName,
@@ -320,11 +294,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Записать канал со списком видео
-        /// </summary>
-        /// <param name="channel">Канал</param>
-        /// <returns></returns>
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
             await InsertChannelAsync(channel);
@@ -334,12 +303,7 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Получить видео
-        /// </summary>
-        /// <param name="id">ID видео</param>
-        /// <returns></returns>
-        public async Task<VideoItemPOCO> GetVideoItemAsync(string id)
+        public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
             using (var command = GetCommand(zap))
@@ -362,15 +326,10 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        /// <summary>
-        /// Получить список всех видео канала
-        /// </summary>
-        /// <param name="parentID">ID канала</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string parentID)
+        public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
         {
-            var res = new List<VideoItemPOCO>();
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ParentID, parentID);
+            var res = new List<IVideoItemPOCO>();
+            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -394,11 +353,6 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Записать видео
-        /// </summary>
-        /// <param name="item">Видео</param>
-        /// <returns></returns>
         public async Task InsertItemAsync(IVideoItem item)
         {
             var zap =
@@ -432,11 +386,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Удалить видео
-        /// </summary>
-        /// <param name="id">ID видео</param>
-        /// <returns></returns>
         public async Task DeleteItemAsync(string id)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
@@ -446,11 +395,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Записать плэйлист
-        /// </summary>
-        /// <param name="playlist">Плэйлист</param>
-        /// <returns></returns>
         public async Task InsertPlaylistAsync(IPlaylist playlist)
         {
             var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
@@ -458,7 +402,7 @@ namespace DataBaseAPI
                 PlaylistID,
                 PlaylistTitle,
                 PlaylistSubTitle,
-                PlaylistLink,
+                PlaylistThumbnail,
                 PlaylistChannelId
                 );
             using (var command = GetCommand(zap))
@@ -466,18 +410,13 @@ namespace DataBaseAPI
                 command.Parameters.AddWithValue("@" + PlaylistID, playlist.ID);
                 command.Parameters.AddWithValue("@" + PlaylistTitle, playlist.Title);
                 command.Parameters.AddWithValue("@" + PlaylistSubTitle, playlist.SubTitle);
-                command.Parameters.AddWithValue("@" + PlaylistLink, playlist.Link);
+                command.Parameters.Add("@" + PlaylistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value = playlist.Thumbnail;
                 command.Parameters.AddWithValue("@" + PlaylistChannelId, playlist.ChannelId);
 
                 await ExecuteNonQueryAsync(command);
             }
         }
 
-        /// <summary>
-        /// Удалить плэйлист
-        /// </summary>
-        /// <param name="id">ID плэйлиста</param>
-        /// <returns></returns>
         public async Task DeletePlaylistAsync(string id)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
@@ -487,12 +426,7 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Получить плэйлист
-        /// </summary>
-        /// <param name="id">ID плэйлиста</param>
-        /// <returns></returns>
-        public async Task<PlaylistPOCO> GetPlaylistAsync(string id)
+        public async Task<IPlaylistPOCO> GetPlaylistAsync(string id)
         {
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
             using (var command = GetCommand(zap))
@@ -516,21 +450,16 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        /// <summary>
-        /// Обновить коллекцию видео, относящихся к плэйлисту
-        /// </summary>
-        /// <param name="playlistid">ID плэйлиста</param>
-        /// <param name="itemid">ID видео</param>
-        /// <param name="channelid">ID канала</param>
-        /// <returns></returns>
         public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
         {
-             var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+            //OR IGNORE
+            var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
                 Tableplaylistitems,
                 FPlaylistId,
                 FItemId,
                 FChannelId
                 );
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + FPlaylistId, playlistid);
@@ -540,23 +469,17 @@ namespace DataBaseAPI
                 await ExecuteNonQueryAsync(command);
             }
 
-            zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {5}='{6}'", Tableplaylistitems,
-                FPlaylistId, playlistid, FItemId, itemid, FChannelId, channelid);
-            using (var command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            //zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {5}='{6}'", Tableplaylistitems,
+            //    FPlaylistId, playlistid, FItemId, itemid, FChannelId, channelid);
+            //using (var command = GetCommand(zap))
+            //{
+            //    await ExecuteNonQueryAsync(command);
+            //}
         }
 
-        /// <summary>
-        /// Получить список видео, относящегося к плэйлисту канала
-        /// </summary>
-        /// <param name="id">ID плэйлиста</param>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
+        public async Task<List<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
         {
-            var res = new List<VideoItemPOCO>();
+            var res = new List<IVideoItemPOCO>();
             var lst = new List<string>();
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'", Tableplaylistitems, FPlaylistId, id, FChannelId, channelID);
             using (var command = GetCommand(zap))
@@ -588,14 +511,9 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Получить список всех плэйлистов канала
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<List<PlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
+        public async Task<List<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
-            var res = new List<PlaylistPOCO>();
+            var res = new List<IPlaylistPOCO>();
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistChannelId, channelID);
             using (var command = GetCommand(zap))
             {
@@ -620,11 +538,6 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Записать тэг
-        /// </summary>
-        /// <param name="tag">Тэг</param>
-        /// <returns></returns>
         public async Task InsertTagAsync(ITag tag)
         {
             var zap =
@@ -640,11 +553,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Получить тэг
-        /// </summary>
-        /// <param name="tag">ID тэга</param>
-        /// <returns></returns>
         public async Task DeleteTagAsync(string tag)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tabletags, TagTitle, tag);
@@ -654,12 +562,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Добавить тэг каналу
-        /// </summary>
-        /// <param name="channelid">ID канала</param>
-        /// <param name="tag">ID тэга</param>
-        /// <returns></returns>
         public async Task InsertChannelTagsAsync(string channelid, string tag)
         {
             var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
@@ -676,12 +578,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Удалить тэг у канала
-        /// </summary>
-        /// <param name="channelid">ID канала</param>
-        /// <param name="tag">ID тэга</param>
-        /// <returns></returns>
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'", Tablechanneltags, ChannelIdF, channelid, TagIdF, tag);
@@ -691,11 +587,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Получить список каналов по тэгу
-        /// </summary>
-        /// <param name="tag">ID тэга</param>
-        /// <returns></returns>
         public async Task<List<IChannelPOCO>> GetChannelsByTagAsync(string tag)
         {
             var res = new List<IChannelPOCO>();
@@ -726,11 +617,6 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Получить список тэгов канала
-        /// </summary>
-        /// <param name="id">ID канала</param>
-        /// <returns></returns>
         public async Task<List<ITagPOCO>> GetChannelTagsAsync(string id)
         {
             var res = new List<ITagPOCO>();
@@ -758,12 +644,35 @@ namespace DataBaseAPI
             return res;
         }
 
-        /// <summary>
-        /// Получить credentials сайта
-        /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <returns></returns>
-        public async Task<CredPOCO> GetCredAsync(string site)
+        public async Task<List<ICredPOCO>> GetCredListAsync()
+        {
+            var res = new List<ICredPOCO>();
+            var zap = string.Format("SELECT * FROM {0}", Tablecredentials);
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    {
+                        if (!reader.HasRows)
+                            return res;
+
+                        while (await reader.ReadAsync())
+                        {
+                            var cr = new CredPOCO(reader);
+                            res.Add(cr);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        public async Task<ICredPOCO> GetCredAsync(string site)
         {
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablecredentials, CredSite, site);
             using (var command = GetCommand(zap))
@@ -787,11 +696,6 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        /// <summary>
-        /// Записать credential
-        /// </summary>
-        /// <param name="cred">Credential</param>
-        /// <returns></returns>
         public async Task InsertCredAsync(ICred cred)
         {
             var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
@@ -816,11 +720,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Удалить credential
-        /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <returns></returns>
         public async Task DeleteCredAsync(string site)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablecredentials, CredSite, site);
@@ -830,12 +729,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Обновить логин к сайту
-        /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="newlogin">Новый логин</param>
-        /// <returns></returns>
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredLogin, newlogin, CredSite, site);
@@ -845,12 +738,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Обновить пароль от сайта
-        /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="newpassword">новый пароль</param>
-        /// <returns></returns>
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredPass, newpassword, CredSite, site);
@@ -860,12 +747,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Обновить поле требовать авторизацию или нет
-        /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="autorize">0 - не требовать, 1 - требовать</param>
-        /// <returns></returns>
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredAutorization, autorize, CredSite, site);
@@ -875,11 +756,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Записать настройку
-        /// </summary>
-        /// <param name="setting">Настройка</param>
-        /// <returns></returns>
         public async Task InsertSettingAsync(ISetting setting)
         {
             var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
@@ -896,11 +772,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Удалить настройку
-        /// </summary>
-        /// <param name="key">ID настройки</param>
-        /// <returns></returns>
         public async Task DeleteSettingAsync(string key)
         {
             var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
@@ -910,12 +781,6 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Обновить значение настройки
-        /// </summary>
-        /// <param name="key">ID настройки</param>
-        /// <param name="newvalue">Новое значение</param>
-        /// <returns></returns>
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablesettings, SetVal, newvalue, SetKey, key);
@@ -925,12 +790,7 @@ namespace DataBaseAPI
             }
         }
 
-        /// <summary>
-        /// Получить настройку
-        /// </summary>
-        /// <param name="key">ID настройки</param>
-        /// <returns></returns>
-        public async Task<SettingPOCO> GetSettingAsync(string key)
+        public async Task<ISettingPOCO> GetSettingAsync(string key)
         {
             var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
             using (var command = GetCommand(zap))
@@ -954,5 +814,118 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
+        public async Task<int> GetChannelItemsCountDbAsync(string channelID)
+        {
+            var zap = string.Format("SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", Tableitems, ParentID, channelID);
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    var res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                    if (res == null || res == DBNull.Value) 
+                        throw new Exception(zap);
+
+                    return Convert.ToInt32(res);
+                }
+            }
+        }
+
+        public async Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id)
+        {
+            var res = new List<string>();
+
+            var zap = string.Format("SELECT {0} FROM {1} WHERE {2}='{3}'", FItemId, Tableplaylistitems, FPlaylistId, id);
+
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    {
+                        if (!reader.HasRows)
+                            return res;
+
+                        while (await reader.ReadAsync())
+                        {
+                            var vid = reader[FItemId] as string;
+                            res.Add(vid);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        {
+            var res = new List<string>();
+
+            var zap = string.Format("SELECT {0} FROM {1}", ChannelId, Tablechannels);
+
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    {
+                        if (!reader.HasRows)
+                            return res;
+
+                        while (await reader.ReadAsync())
+                        {
+                            var ch = reader[ChannelId] as string;
+                            res.Add(ch);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID)
+        {
+            var res = new List<string>();
+
+            var zap = string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC", ItemId, Tableitems, ParentID, channelID, Timestamp);
+
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    {
+                        if (!reader.HasRows)
+                            return res;
+
+                        while (await reader.ReadAsync())
+                        {
+                            var vid = reader[ItemId] as string;
+                            res.Add(vid);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
     }
 }

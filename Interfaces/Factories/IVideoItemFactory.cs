@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Interfaces.Models;
 
 namespace Interfaces.Factories
@@ -12,6 +10,5 @@ namespace Interfaces.Factories
         Task<IVideoItem> GetVideoItemDbAsync(string id);
 
         Task<IVideoItem> GetVideoItemNetAsync(string id);
-        
     }
 }

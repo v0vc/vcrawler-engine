@@ -9,14 +9,14 @@ CREATE TABLE `credentials` (
 );
 
 --заполняем
-INSERT INTO "credentials" VALUES ('rutracker.org', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('youtube.com', ' ', ' ', '', '', '0');
+INSERT INTO "credentials" VALUES ('rutracker.org', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('tapochek.net', '', '', '', '', '0');
+INSERT INTO "credentials" VALUES ('vimeo.com', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('nnm-club.me', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('novafilm.tv', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('livejournal.com', '', '', '', '', '0');
 INSERT INTO "credentials" VALUES ('kinozal.tv', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('vimeo.com', '', '', '', '', '0');
 
 --таблица настроек
 CREATE TABLE `settings` (
@@ -36,7 +36,6 @@ CREATE TABLE `channels` (
 `id` varchar(30) PRIMARY KEY NOT NULL,
 `title` varchar(255) NOT NULL,
 `subtitle` varchar(255) NULL,
-`lastupdated` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 `thumbnail` BLOB  NULL,
 `site` varchar(30) NOT NULL,
 FOREIGN KEY(`site`) REFERENCES credentials(`site`) ON DELETE CASCADE
@@ -89,7 +88,7 @@ CREATE TABLE `playlists` (
 `channelid` varchar(30) NOT NULL,
 `title` varchar(150) NOT NULL,
 `subtitle` varchar(255),
-`link` varchar(150) NOT NULL,
+`thumbnail` BLOB  NULL,
 FOREIGN KEY(`channelid`) REFERENCES channels(`id`) ON DELETE CASCADE
 );
 
@@ -100,5 +99,6 @@ CREATE TABLE `playlistitems` (
 `channelid` varchar(30) NOT NULL,
 FOREIGN KEY(`playlistid`) REFERENCES playlists(`id`) ON DELETE CASCADE,
 FOREIGN KEY(`itemid`) REFERENCES items(`id`) ON DELETE CASCADE,
-FOREIGN KEY(`channelid`) REFERENCES channels(`id`) ON DELETE CASCADE
+FOREIGN KEY(`channelid`) REFERENCES channels(`id`) ON DELETE CASCADE,
+PRIMARY KEY (playlistid, itemid)
 );

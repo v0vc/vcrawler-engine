@@ -1,5 +1,4 @@
-﻿using System;
-using Interfaces.Models;
+﻿using Interfaces.Models;
 
 namespace Interfaces.Factories
 {

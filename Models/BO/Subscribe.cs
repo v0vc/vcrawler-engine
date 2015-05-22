@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Interfaces;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Models.Factories;
 
@@ -12,14 +8,34 @@ namespace Models.BO
 {
     public class Subscribe : ISubscribe
     {
-        public ISubscribe GetSubscribe()
+        private readonly SubscribeFactory _sf;
+
+        public Subscribe(ISubscribeFactory sf)
         {
-            return ServiceLocator.SubscribeFactory.GetSubscribe();
+            _sf = sf as SubscribeFactory;
         }
 
-        async Task<List<IChannel>> ISubscribe.GetChannelsListAsync()
+        public ISubscribe GetSubscribe()
         {
-            return await ((SubscribeFactory)ServiceLocator.SubscribeFactory).GetChannelsListAsync();
+            return _sf.GetSubscribe();
+            //return ServiceLocator.SubscribeFactory.GetSubscribe();
+        }
+
+        public async Task<List<IChannel>> GetChannelsListAsync()
+        {
+            return await _sf.GetChannelsListAsync();
+            //return await ((SubscribeFactory)ServiceLocator.SubscribeFactory).GetChannelsListAsync();
+        }
+
+        public async Task<List<ICred>> GetCredListAsync()
+        {
+            return await _sf.GetCredListAsync();
+            //return await ((SubscribeFactory)ServiceLocator.SubscribeFactory).GetCredListAsync();
+        }
+
+        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        {
+            return await _sf.GetChannelsIdsListDbAsync();
         }
     }
 }

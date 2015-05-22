@@ -1,25 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Common;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Interfaces.API;
+using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 using SitesAPI.POCO;
 
 namespace SitesAPI.Videos
 {
-    public class YouTubeSite
+    public class YouTubeSite :IYouTubeSite
     {
-        private int _startIndex = 1;
+        private const string Url = "https://www.googleapis.com/youtube/v3/";
 
-        private const int ItemsPerPage = 25;
+        private const string Print = "prettyPrint=false";
+
+        private const string Token = "nextPageToken";
+
+        private const string Privacy = "public";
+
+        private const int ItemsPerPage = 50;
+
+        private const string Key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
 
         private static async Task<string> DownloadStringAsync(Uri uri, int timeOut = 60000)
         {
             string res = null;
             var cancelledOrError = false;
+
             using (var client = new WebClient())
             {
                 client.Encoding = Encoding.UTF8;
@@ -41,179 +52,262 @@ namespace SitesAPI.Videos
                     await Task.Delay(100); // wait for respsonse
                 }
             }
-            return res;
-        }
-
-        /// <summary>
-        /// Получение всех видео канала
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID)
-        {
-            var res = new List<VideoItemPOCO>();
-            while (true)
-            {
-                var zap =
-                    string.Format(
-                        "https://gdata.youtube.com/feeds/api/users/{0}/uploads?alt=json&start-index={1}&max-results={2}",
-                        channelID, _startIndex, ItemsPerPage);
-                var str = await DownloadStringAsync(new Uri(zap));
-
-                var jsvideo = await Task.Run(() => JObject.Parse(str));
-
-                int total;
-                if (int.TryParse(jsvideo["feed"]["openSearch$totalResults"]["$t"].ToString(), out total))
-                {
-                    if (total != 0)
-                    {
-                        foreach (JToken pair in jsvideo["feed"]["entry"])
-                        {
-                            var v = new VideoItemPOCO();
-                            await v.FillFieldsFromGetting(pair);
-                            res.Add(v);
-                        }
-                    }
-
-                    if (total > res.Count)
-                    {
-                        _startIndex = _startIndex + ItemsPerPage;
-                        if (_startIndex < total)
-                            continue;
-                    }
-
-                    _startIndex = 1;
-                }
-                break;
-            }
+            if (res == null)
+                throw new Exception("Download Error: " + uri.Segments.Last());
 
             return res;
         }
 
-        /// <summary>
-        /// Получение списка популярных видео по стране
-        /// </summary>
-        /// <param name="regionID">Код региона</param>
-        /// <param name="maxResult">Желаемое количество записей</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
+        public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
         {
-            var itemsppage = maxResult < ItemsPerPage ? maxResult : ItemsPerPage;
+            var res = new List<IVideoItemPOCO>();
 
-            var res = new List<VideoItemPOCO>();
-            while (true)
+            int itemsppage = ItemsPerPage;
+
+            if (maxResult < ItemsPerPage & maxResult != 0)
+                itemsppage = maxResult;
+
+
+            var zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", Url, channelID,
+                Key, itemsppage, Print);
+
+            object pagetoken;
+
+            do
             {
-                var zap =
-                    string.Format(
-                        "https://gdata.youtube.com/feeds/api/standardfeeds/{0}/most_popular?time=today&v=2&alt=json&start-index={1}&max-results={2}",
-                        regionID, _startIndex, itemsppage);
-
                 var str = await DownloadStringAsync(new Uri(zap));
 
                 var jsvideo = await Task.Run(() => JObject.Parse(str));
 
-                foreach (JToken pair in jsvideo["feed"]["entry"])
+                pagetoken = jsvideo.SelectToken(Token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    var v = new VideoItemPOCO();
-                    await v.FillFieldsFromPopular(pair);
+                    var tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                        continue;
+
+                    var id = tid.Value<string>();
+                    if (res.Select(x => x.ID).Contains(id))
+                        continue;
+
+                    var v = new VideoItemPOCO(id);
+                    await v.FillFieldsFromGetting(pair);
                     res.Add(v);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
                 }
 
-                if (maxResult > res.Count)
+                var ids = sb.ToString().TrimEnd(',');
+
+                zap =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}",
+                        Url, ids, Key, Print);
+
+                var det = await DownloadStringAsync(new Uri(zap));
+
+                jsvideo = await Task.Run(() => JObject.Parse(det));
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    _startIndex = _startIndex + ItemsPerPage;
-
-                    if (_startIndex == maxResult)
-                    {
-                        itemsppage = 1;
+                    var id = pair.SelectToken("id");
+                    if (id == null)
                         continue;
-                    }
 
-                    if (_startIndex < maxResult)
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item != null)
                     {
-                        if (maxResult - _startIndex < ItemsPerPage)
-                        {
-                            itemsppage = maxResult - _startIndex + 1;
-                        }
-
-                        continue;
+                        item.FillFieldsFromDetails(pair);
                     }
                 }
 
-                _startIndex = 1;
-                break;
-            }
+                zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
+                    Url, channelID, Key, itemsppage, pagetoken, Print);
+            } while (pagetoken != null);
 
-            return res;
+            return res.Where(x => x.Status == Privacy).ToList();
         }
 
-        /// <summary>
-        /// Получение результата запроса
-        /// </summary>
-        /// <param name="key">Запрос</param>
-        /// <param name="maxResult">Желаемое количество записей</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> SearchItemsAsync(string key, int maxResult)
+        public async Task<List<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
-            var itemsppage = maxResult < ItemsPerPage ? maxResult : ItemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            var res = new List<VideoItemPOCO>();
-            while (true)
+            if (maxResult < ItemsPerPage & maxResult != 0)
+                itemsppage = maxResult;
+
+            var res = new List<IVideoItemPOCO>();
+
+            var zap =
+                string.Format(
+                    "{0}search?&chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", Url, regionID,
+                    Key, itemsppage, Print);
+
+            object pagetoken;
+
+            do
             {
-                var zap =
-                    string.Format(
-                        "https://gdata.youtube.com/feeds/api/videos?q={0}&v=2&alt=json&start-index={1}&max-results={2}",
-                        key, _startIndex, itemsppage);
-
                 var str = await DownloadStringAsync(new Uri(zap));
 
                 var jsvideo = await Task.Run(() => JObject.Parse(str));
 
-                foreach (JToken pair in jsvideo["feed"]["entry"])
+                pagetoken = jsvideo.SelectToken(Token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    var v = new VideoItemPOCO();
-                    await v.FillFieldsFromPopular(pair);
+                    var tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                        continue;
+
+                    var id = tid.Value<string>();
+
+                    if (res.Select(x => x.ID).Contains(id))
+                        continue;
+
+                    var v = new VideoItemPOCO(id);
+                    await v.FillFieldsFromGetting(pair);
                     res.Add(v);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
                 }
 
-                if (maxResult > res.Count)
+                var ids = sb.ToString().TrimEnd(',');
+
+                var det =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}",
+                        Url, ids, Key, Print);
+
+                det = await DownloadStringAsync(new Uri(det));
+                jsvideo = await Task.Run(() => JObject.Parse(det));
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    _startIndex = _startIndex + ItemsPerPage;
-
-                    if (_startIndex == maxResult)
-                    {
-                        itemsppage = 1;
+                    var id = pair.SelectToken("id");
+                    if (id == null)
                         continue;
-                    }
 
-                    if (_startIndex < maxResult)
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item != null)
                     {
-                        if (maxResult - _startIndex < ItemsPerPage)
-                        {
-                            itemsppage = maxResult - _startIndex + 1;
-                        }
-
-                        continue;
+                        item.FillFieldsFromDetails(pair);
                     }
                 }
 
-                _startIndex = 1;
-                break;
-            }
-            
+                zap =
+                    string.Format(
+                        "{0}search?&chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
+                        Url, regionID, Key, itemsppage, pagetoken, Print);
+            } while (pagetoken != null);
+
             return res;
         }
 
-        /// <summary>
-        /// Получение видео по ID
-        /// </summary>
-        /// <param name="videoid">ID видео</param>
-        /// <returns></returns>
-        public async Task<VideoItemPOCO> GetVideoItemNetAsync(string videoid)
+        public async Task<List<IVideoItemPOCO>> SearchItemsAsync(string keyword, int maxResult)
         {
-            var v = new VideoItemPOCO {ID = videoid};
+            int itemsppage = ItemsPerPage;
 
-            var zap = string.Format("https://gdata.youtube.com/feeds/api/videos/{0}?v=2&alt=json", videoid);
+            if (maxResult < ItemsPerPage & maxResult != 0)
+                itemsppage = maxResult;
+
+            var res = new List<IVideoItemPOCO>();
+
+            var zap = string.Format("{0}search?&q={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", Url, keyword, Key,
+                itemsppage, Print);
+
+            object pagetoken;
+
+            do
+            {
+                var str = await DownloadStringAsync(new Uri(zap));
+
+                var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+                pagetoken = jsvideo.SelectToken(Token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                        continue;
+
+                    var id = tid.Value<string>();
+
+                    if (res.Select(x => x.ID).Contains(id))
+                        continue;
+
+                    var v = new VideoItemPOCO(id);
+                    await v.FillFieldsFromGetting(pair);
+                    res.Add(v);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
+                }
+
+                var ids = sb.ToString().TrimEnd(',');
+
+                var det =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}",
+                        Url, ids, Key, Print);
+
+                det = await DownloadStringAsync(new Uri(det));
+
+                jsvideo = await Task.Run(() => JObject.Parse(det));
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var id = pair.SelectToken("id");
+                    if (id == null)
+                        continue;
+
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item != null)
+                    {
+                        item.FillFieldsFromDetails(pair);
+                    }
+                }
+
+                zap = string.Format(
+                    "{0}search?&q={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}", Url,
+                    keyword, Key, itemsppage, pagetoken, Print);
+
+            } while (pagetoken != null);
+
+            return res;
+        }
+
+        public async Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)
+        {
+            var v = new VideoItemPOCO(videoid);
+
+            var zap =
+                string.Format(
+                    "{0}videos?&id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount,commentCount))&{3}",
+                    Url, videoid, Key, Print);
 
             var str = await DownloadStringAsync(new Uri(zap));
 
@@ -224,14 +318,12 @@ namespace SitesAPI.Videos
             return v;
         }
 
-        /// <summary>
-        /// Получение канала по ID
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<ChannelPOCO> GetChannelNetAsync(string channelID)
+        public async Task<IChannelPOCO> GetChannelNetAsync(string channelID)
         {
-            var zap = string.Format("https://gdata.youtube.com/feeds/api/users/{0}?v=2&alt=json", channelID);
+            var zap =
+                string.Format(
+                    "{0}channels?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,thumbnails(default(url))))&{3}",
+                    Url, channelID, Key, Print);
 
             var str = await DownloadStringAsync(new Uri(zap));
 
@@ -242,117 +334,328 @@ namespace SitesAPI.Videos
             return ch;
         }
 
-        /// <summary>
-        /// Получение списка плэйлистов канала
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns>Список плейлистов</returns>
-        public async Task<List<PlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID)
+        public async Task<List<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID)
         {
-            var res = new List<PlaylistPOCO>();
+            var res = new List<IPlaylistPOCO>();
 
-            while (true)
+            object pagetoken;
+
+            var zap =
+                string.Format(
+                    "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}",
+                    Url, Key, channelID, ItemsPerPage, Print);
+
+            do
             {
-                var zap =
-                    string.Format(
-                        "https://gdata.youtube.com/feeds/api/users/{0}/playlists?v=2&alt=json&start-index={1}&max-results={2}",
-                        channelID, _startIndex, ItemsPerPage);
                 var str = await DownloadStringAsync(new Uri(zap));
 
                 var jsvideo = await Task.Run(() => JObject.Parse(str));
 
-                int total;
-                if (int.TryParse(jsvideo["feed"]["openSearch$totalResults"]["$t"].ToString(), out total))
+                pagetoken = jsvideo.SelectToken(Token);
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    if (total != 0)
-                    {
-                        foreach (JToken pair in jsvideo["feed"]["entry"])
-                        {
-                            var p = new PlaylistPOCO();
-                            p.FillFieldsFromGetting(pair);
-                            res.Add(p);
-                        }
-                    }
+                    var p = new PlaylistPOCO {ChannelID = channelID};
 
-                    if (total > res.Count)
-                    {
-                        _startIndex = _startIndex + ItemsPerPage;
-                        if (_startIndex < total)
-                            continue;
-                    }
+                    await p.FillFieldsFromGetting(pair);
 
-                    _startIndex = 1;
+                    if (res.Select(x=>x.ID).Contains(p.ID))
+                        continue;
+
+                    res.Add(p);
                 }
-                break;
-            }
+
+            } while (pagetoken != null);
 
             return res;
         }
 
-        /// <summary>
-        /// Получение списка видео плэйлиста
-        /// </summary>
-        /// <param name="link">Ссылка</param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetPlaylistItemsNetAsync(string link)
+        public async Task<List<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
         {
-            var res = new List<VideoItemPOCO>();
-            while (true)
+            var res = new List<IVideoItemPOCO>();
+
+            object pagetoken;
+
+            var zap =
+                string.Format(
+                    "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}",
+                    Url, Key, plid, ItemsPerPage, Print);
+
+            do
             {
-                var zap =
-                    string.Format(
-                        "{0}&start-index={1}&max-results={2}",
-                        link, _startIndex, ItemsPerPage);
                 var str = await DownloadStringAsync(new Uri(zap));
 
                 var jsvideo = await Task.Run(() => JObject.Parse(str));
 
-                int total;
-                if (int.TryParse(jsvideo["feed"]["openSearch$totalResults"]["$t"].ToString(), out total))
+                pagetoken = jsvideo.SelectToken(Token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
                 {
-                    if (total != 0)
-                    {
-                        foreach (JToken pair in jsvideo["feed"]["entry"])
-                        {
-                            var v = new VideoItemPOCO();
-                            v.FillFieldsFromPlaylist(pair);
-                            res.Add(v);
-                        }
-                    }
+                    var tid = pair.SelectToken("snippet.resourceId.videoId");
+                    if (tid == null)
+                        continue;
 
-                    if (total > res.Count)
-                    {
-                        _startIndex = _startIndex + ItemsPerPage;
-                        if (_startIndex < total)
-                            continue;
-                    }
+                    var id = tid.Value<string>();
+                    if (res.Select(x=>x.ID).Contains(id))
+                        continue;
 
-                    _startIndex = 1;
+                    var pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                        continue;
+
+                    if (pr.Value<string>() != Privacy)
+                        continue;
+
+                    var v = new VideoItemPOCO(id);
+
+                    v.FillFieldsFromPlaylist(pair);
+                    res.Add(v);
+
+                    sb.Append(id).Append(',');
                 }
-                break;
-            }
+
+                var ids = sb.ToString().TrimEnd(',');
+
+                var det =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}",
+                        Url, ids, Key, Print);
+
+                det = await DownloadStringAsync(new Uri(det));
+
+                jsvideo = await Task.Run(() => JObject.Parse(det));
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var id = pair.SelectToken("id");
+                    if (id == null)
+                        continue;
+
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item != null)
+                    {
+                        item.FillFieldsFromDetails(pair);
+                    }
+                }
+
+                zap =
+                    string.Format(
+                        "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}",
+                        Url, Key, plid, pagetoken, ItemsPerPage, Print);
+
+            } while (pagetoken != null);
 
             return res;
         }
 
-        /// <summary>
-        /// Получение объекта "плэйлист"
-        /// </summary>
-        /// <param name="id">ID плейлиста</param>
-        /// <returns></returns>
-        public async Task<PlaylistPOCO> GetPlaylistNetAsync(string id)
+        public async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
         {
-            var pl = new PlaylistPOCO {ID = id};
+            var pl = new PlaylistPOCO
+            {
+                ID = id,
+            };
 
-            var zap = string.Format("https://gdata.youtube.com/feeds/api/playlists/{0}?v=2&alt=json", id);
+            var zap =
+                string.Format(
+                    "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}",
+                    Url, id, Key, Print);
 
             var str = await DownloadStringAsync(new Uri(zap));
 
             var jsvideo = await Task.Run(() => JObject.Parse(str));
 
-            pl.FillFieldsFromSingle(jsvideo);
+            await pl.FillFieldsFromSingle(jsvideo);
 
             return pl;
+        }
+
+        public async Task<int> GetChannelItemsCountNetAsync(string channelID)
+        {
+            //var zap =
+            //    string.Format(
+            //        "{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}",
+            //        Url, channelID, Key, Print);
+
+            var zap =
+                string.Format(
+                    "{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}",
+                    Url, channelID, Key, Print);
+
+            var str = await DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+            //var total = jsvideo.SelectToken("items[0].statistics.videoCount");
+
+            var total = jsvideo.SelectToken("pageInfo.totalResults");
+
+            if (total != null)
+            {
+                return total.Value<int>();
+            }
+
+            throw new Exception(zap);
+        }
+
+        public async Task<List<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
+        {
+            var res = new List<IVideoItemPOCO>();
+
+            int itemsppage = ItemsPerPage;
+
+            if (maxResult < ItemsPerPage & maxResult != 0)
+                itemsppage = maxResult;
+
+
+            var zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id)&{4}", Url, channelID,
+                Key, itemsppage, Print);
+
+            object pagetoken;
+
+            do
+            {
+                var str = await DownloadStringAsync(new Uri(zap));
+
+                var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+                pagetoken = jsvideo.SelectToken(Token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    //var tid = pair.SelectToken("id.videoId");
+                    //if (tid == null)
+                    //    continue;
+
+                    //var id = tid.Value<string>();
+                    //if (res.Contains(id))
+                    //    continue;
+
+                    //res.Add(id);
+
+                    var tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                        continue;
+
+                    var id = tid.Value<string>();
+                    if (res.Select(x => x.ID).Contains(id))
+                        continue;
+
+                    var v = new VideoItemPOCO(id);
+
+                    res.Add(v);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
+                }
+
+                var ids = sb.ToString().TrimEnd(',');
+
+                zap =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=status&fields=items(id,status(privacyStatus))&{3}",
+                        Url, ids, Key, Print);
+
+                var det = await DownloadStringAsync(new Uri(zap));
+
+                jsvideo = await Task.Run(() => JObject.Parse(det));
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var id = pair.SelectToken("id");
+                    if (id == null)
+                        continue;
+
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item != null)
+                    {
+                        var pr = pair.SelectToken("status.privacyStatus");
+                        if (pr == null)
+                            continue;
+
+                        item.Status = pr.Value<string>();
+                    }
+                }
+
+                zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id)&{5}",
+                    Url, channelID, Key, itemsppage, pagetoken, Print);
+            } while (pagetoken != null);
+
+            return res.Where(x => x.Status == Privacy).Select(x => x.ID).ToList();
+        }
+
+        public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string plid)
+        {
+            var res = new List<string>();
+
+            object pagetoken;
+
+            var zap =
+                string.Format(
+                    "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}",
+                    Url, Key, plid, ItemsPerPage, Print);
+
+            do
+            {
+                var str = await DownloadStringAsync(new Uri(zap));
+
+                var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+                pagetoken = jsvideo.SelectToken(Token);
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var tid = pair.SelectToken("snippet.resourceId.videoId");
+                    if (tid == null)
+                        continue;
+
+                    var id = tid.Value<string>();
+                    if (res.Contains(id))
+                        continue;
+
+                    var pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                        continue;
+
+                    if (pr.Value<string>() == Privacy)
+                        res.Add(id);
+                }
+
+               zap =
+                    string.Format(
+                        "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}",
+                        Url, Key, plid, pagetoken, ItemsPerPage, Print);
+
+            } while (pagetoken != null);
+
+            return res;
+        }
+
+        public async Task<string> GetChannelIdByUserNameNetAsync(string username)
+        {
+            var zap =
+               string.Format(
+                   "{0}channels?&forUsername={1}&key={2}&part=snippet&&fields=items(id)&prettyPrint=false&{3}",
+                   Url, username, Key, Print);
+
+            var str = await DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+            var id = jsvideo.SelectToken("items[0].id");
+
+            if (id != null)
+                return id.Value<string>();
+
+            throw new Exception("Can't get channel ID for username: " + username);
         }
     }
 }

@@ -1,64 +1,55 @@
-﻿using System;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
 namespace SitesAPI.POCO
 {
-    [DataContract]
     public class PlaylistPOCO : IPlaylistPOCO
     {
-        [DataMember]
         public string ID { get; set; }
 
-        [DataMember]
         public string Title { get; set; }
 
-        [DataMember]
         public string SubTitle { get; set; }
 
-        [DataMember]
-        public string Link { get; set; }
+        public byte[] Thumbnail { get; set; }
 
-        [DataMember]
         public string ChannelID { get; set; }
 
-        public void FillFieldsFromGetting(JToken pair)
+        public async Task FillFieldsFromGetting(JToken record)
         {
-            var tid = pair.SelectToken("yt$playlistId.$t");
+            var tid = record.SelectToken("id");
             ID = tid != null ? (tid.Value<string>() ?? string.Empty) : string.Empty;
-            if (ID == string.Empty)
-                return;
 
-            var ttitle = pair.SelectToken("title.$t");
+            var ttitle = record.SelectToken("snippet.title");
             Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
 
-            var sum = pair.SelectToken("summary.$t");
-            SubTitle = sum != null ? (sum.Value<string>() ?? string.Empty) : string.Empty;
+            var desc = record.SelectToken("snippet.description");
+            SubTitle = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 
-            var link = pair.SelectToken("content.src");
-            Link = link != null ? string.Format("{0}&alt=json", link.Value<string>()) : string.Empty;
-
-            var tpid = pair.SelectToken("author[0].uri.$t");
-            ChannelID = tpid != null ? tpid.Value<string>().Split('/').Last() ??string.Empty : string.Empty;
+            var link = record.SelectToken("snippet.thumbnails.default.url");
+            if (link != null)
+            {
+                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>());
+            }
         }
 
-        public void FillFieldsFromSingle(JObject jsvideo)
+        public async Task FillFieldsFromSingle(JObject record)
         {
-            var ttitle = jsvideo.SelectToken("feed.title.$t");
+            var ttitle = record.SelectToken("items[0].snippet.title");
             Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
 
-            var sum = jsvideo.SelectToken("feed.subtitle.$t");
+            var sum = record.SelectToken("items[0].snippet.description");
             SubTitle = sum != null ? (sum.Value<string>() ?? string.Empty) : string.Empty;
 
-            var link = jsvideo.SelectToken("feed.link[1].href");
-            Link = link != null ? string.Format("{0}&alt=json", link.Value<string>()) : string.Empty;
-
-            var tpid = jsvideo.SelectToken("feed.author[0].uri.$t");
-            ChannelID = tpid != null ? tpid.Value<string>().Split('/').Last() ?? string.Empty : string.Empty;
+            var tpid = record.SelectToken("items[0].snippet.channelId");
+            ChannelID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
+            
+            var link = record.SelectToken("items[0].snippet.thumbnails.default.url");
+            if (link != null)
+            {
+                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>());
+            }
         }
     }
 }

@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataBaseAPI.POCO;
-using Interfaces;
+﻿using System.Threading.Tasks;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.Factories;
@@ -13,6 +8,8 @@ namespace Models.BO
 {
     public class Cred :ICred
     {
+        private readonly CredFactory _credFactory;
+
         public string Site { get; set; }
         public string Login { get; set; }
         public string Pass { get; set; }
@@ -20,12 +17,14 @@ namespace Models.BO
         public string Passkey { get; set; }
         public short Autorization { get; set; }
 
-        public Cred()
+        public Cred(ICredFactory credFactory)
         {
-            
+            _credFactory = credFactory as CredFactory;
         }
-        public Cred(ICredPOCO poco)
+
+        public Cred(ICredPOCO poco, ICredFactory credFactory)
         {
+            _credFactory = credFactory as CredFactory;
             Site = poco.Site;
             Login = poco.Login;
             Pass = poco.Pass;
@@ -36,27 +35,32 @@ namespace Models.BO
 
         public async Task InsertCredAsync()
         {
-            await ((CredFactory) ServiceLocator.CredFactory).InsertCRedAsync(this);
+            await _credFactory.InsertCRedAsync(this);
+            //await ((CredFactory) ServiceLocator.CredFactory).InsertCRedAsync(this);
         }
 
         public async Task DeleteCredAsync()
         {
-            await ((CredFactory) ServiceLocator.CredFactory).DeleteCredAsync(Site);
+            await _credFactory.DeleteCredAsync(Site);
+            //await ((CredFactory) ServiceLocator.CredFactory).DeleteCredAsync(Site);
         }
 
         public async Task UpdateLoginAsync(string newlogin)
         {
-            await ((CredFactory) ServiceLocator.CredFactory).UpdateLoginAsync(Site, newlogin);
+            await _credFactory.UpdateLoginAsync(Site, newlogin);
+            //await ((CredFactory) ServiceLocator.CredFactory).UpdateLoginAsync(Site, newlogin);
         }
 
         public async Task UpdatePasswordAsync(string newpassword)
         {
-            await ((CredFactory)ServiceLocator.CredFactory).UpdatePasswordAsync(Site, newpassword);
+            await _credFactory.UpdatePasswordAsync(Site, newpassword);
+            //await ((CredFactory)ServiceLocator.CredFactory).UpdatePasswordAsync(Site, newpassword);
         }
 
         public async Task UpdateAutorizationAsync(short autorize)
         {
-            await ((CredFactory)ServiceLocator.CredFactory).UpdateAutorizationAsync(Site, autorize);
+            await _credFactory.UpdateAutorizationAsync(Site, autorize);
+            //await ((CredFactory)ServiceLocator.CredFactory).UpdateAutorizationAsync(Site, autorize);
         }
     }
 }

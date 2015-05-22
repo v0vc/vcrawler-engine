@@ -33,16 +33,21 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="API\ISqLiteDatabase.cs" />
+    <Compile Include="API\IYouTubeSite.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />
+    <Compile Include="Factories\ICommonFactory.cs" />
     <Compile Include="Factories\ICredFactory.cs" />
     <Compile Include="Factories\IPlaylistFactory.cs" />
     <Compile Include="Factories\ISettingFactory.cs" />
     <Compile Include="Factories\ISubscribeFactory.cs" />
+    <Compile Include="Factories\ITagFactory.cs" />
     <Compile Include="Factories\IVideoItemFactory.cs" />
     <Compile Include="Models\IChannel.cs" />
     <Compile Include="Models\ICred.cs" />

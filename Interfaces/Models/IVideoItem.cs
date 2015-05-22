@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace Interfaces.Models
 {
@@ -21,11 +20,24 @@ namespace Interfaces.Models
 
         string DurationString { get; set; }
 
+        string DateTimeAgo { get; set; }
+
         int Comments { get; set; }
 
         byte[] Thumbnail { get; set; }
 
         DateTime Timestamp { get; set; }
+
+        bool IsNewItem { get; set; }
+
+        bool IsShowRow { get; set; }
+
+        bool IsHasLocalFile { get; set; }
+
+        double DownloadPercentage { get; set; }
+
+        //Visibility ProgressBarVisibility { get; set; }
+
 
         IVideoItem CreateVideoItem();
 
@@ -39,6 +51,12 @@ namespace Interfaces.Models
 
         Task DeleteItemAsync();
 
-        Task UpdatePlaylistAsync(IPlaylist playlist);
+        void RunItem(string mpcpath);
+
+        void IsHasLocalFileFound(string dir);
+
+        string LocalFilePath { get; set; }
+
+        
     }
 }

@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -13,29 +12,23 @@ namespace Interfaces.Models
 
         string SubTitle { get; set; }
 
-        DateTime LastUpdated { get; set; }
-
         byte[] Thumbnail { get; set; }
 
         string Site { get; set; }
 
-        List<IVideoItem> ChannelItems { get; set; }
+        ObservableCollection<IVideoItem> ChannelItems { get; set; }
 
-        List<IPlaylist> ChannelPlaylists { get; set; }
+        ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
 
         List<ITag> Tags { get; set; }
 
-        Task<List<IVideoItem>> GetChannelItemsAsync();
+        int CountNew { get; set; }
 
-        Task InsertChannelAsync();
+        Task<List<IVideoItem>> GetChannelItemsDbAsync();
 
-        Task DeleteChannelAsync();
+        Task SyncChannelAsync(bool isSyncPls);
 
-        Task RenameChannelAsync(string newName);
-
-        Task InsertChannelItemsAsync();
-
-        Task<List<IVideoItem>> GetChannelItemsNetAsync();
+        Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult);
 
         Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult);
 
@@ -44,6 +37,24 @@ namespace Interfaces.Models
         Task<List<IPlaylist>> GetChannelPlaylistsNetAsync();
 
         Task<List<IPlaylist>> GetChannelPlaylistsAsync();
+
+        Task<int> GetChannelItemsCountDbAsync();
+
+        Task<int> GetChannelItemsCountNetAsync();
+
+        Task<List<string>> GetChannelItemsIdsListNetAsync(int maxresult);
+
+        Task<List<string>> GetChannelItemsIdsListDbAsync();
+
+        Task FillChannelItemsDbAsync();
+
+        Task InsertChannelAsync();
+
+        Task DeleteChannelAsync();
+
+        Task RenameChannelAsync(string newName);
+
+        Task InsertChannelItemsAsync();
 
         Task<List<ITag>> GetChannelTagsAsync();
 

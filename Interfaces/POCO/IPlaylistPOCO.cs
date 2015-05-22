@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Interfaces.POCO
+﻿namespace Interfaces.POCO
 {
     public interface IPlaylistPOCO
     {
@@ -12,7 +8,7 @@ namespace Interfaces.POCO
 
         string SubTitle { get; set; }
 
-        string Link { get; set; }
+        byte[] Thumbnail { get; set; }
 
         string ChannelID { get; set; }
     }

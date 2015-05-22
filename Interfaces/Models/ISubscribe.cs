@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -9,5 +8,9 @@ namespace Interfaces.Models
         ISubscribe GetSubscribe();
 
         Task<List<IChannel>> GetChannelsListAsync();
+
+        Task<List<ICred>> GetCredListAsync();
+
+        Task<List<string>> GetChannelsIdsListDbAsync();
     }
 }

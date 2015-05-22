@@ -1,0 +1,76 @@
+﻿<Window x:Class="Crawler.Views.AddChanelView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Add" Height="200" Width="350" ResizeMode="NoResize" WindowStyle="ToolWindow"
+        Loaded="AddChanelView_OnLoaded"
+        >
+    <Grid Background="AliceBlue">
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <DockPanel Margin="3">
+            <Border CornerRadius="3" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="16" Padding="5 0 8 0" HorizontalAlignment="Center" VerticalAlignment="Center">User:</TextBlock>
+                    <TextBox Name="TextBoxLink" FontSize="16"
+                             Text="{Binding Model.NewChannelName}" 
+                             Width="235" HorizontalAlignment="Center" 
+                             VerticalAlignment="Center" 
+                             Padding="0 2 0 2" 
+                             />
+                    <Image Source="../Images/user-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0">
+                        <Image.ToolTip>
+                            <TextBlock Text="Required"></TextBlock>
+                        </Image.ToolTip>
+                    </Image>
+                </StackPanel>
+            </Border>
+        </DockPanel>
+
+        <DockPanel Grid.Row="1" Margin="3">
+            <Border CornerRadius="3" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="16" Padding="5 0 8 0" HorizontalAlignment="Center" VerticalAlignment="Center">Title:</TextBlock>
+                    <TextBox FontSize="16" Text="{Binding Model.NewChannelTitle}" Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0 2 0 2" Margin="2,0,0,0"/>
+                    <Image Source="../Images/label-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0">
+                        <Image.ToolTip>
+                            <TextBlock Text="Optional"></TextBlock>
+                        </Image.ToolTip>
+                    </Image>
+                </StackPanel>
+            </Border>
+        </DockPanel>
+
+        <DockPanel Grid.Row="2" Margin="3">
+            <Border CornerRadius="3" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock FontSize="16" Padding="5 0 8 0" HorizontalAlignment="Center" VerticalAlignment="Center">Site:</TextBlock>
+                    <ComboBox Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="15"
+                              ItemsSource="{Binding Model.SupportedCreds}"
+                              DisplayMemberPath="Site"
+                              SelectedItem="{Binding Model.SelectedCred}"
+                              HorizontalContentAlignment="Left"
+                              />
+                    <Image Source="../Images/site-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                </StackPanel>
+            </Border>
+        </DockPanel>
+
+        <Button Grid.Row="3" Click="ButtonBase_OnClick" 
+                Name="ButtonOk"
+                Style="{StaticResource RoundButtonTemplate}" 
+                HorizontalAlignment="Right" 
+                Width="100" Margin="5,3,3,5" 
+                Command="{Binding SaveNewItemCommand}">
+            <StackPanel Orientation="Horizontal">
+                <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">OK</Label>
+                <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+            </StackPanel>
+        </Button>
+        
+    </Grid>
+</Window>

@@ -9,20 +9,31 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    class SettingFactory :ISettingFactory
+    public class SettingFactory :ISettingFactory
     {
+        private readonly ICommonFactory _c;
+
+        //private readonly ISqLiteDatabase _db;
+        public SettingFactory(ICommonFactory c)
+        {
+            _c = c;
+            //_db = c.CreateSqLiteDatabase();
+        }
+
+
         public ISetting CreateSetting()
         {
-            return new Setting();
+            return new Setting(this);
         }
 
         public async Task<ISetting> GetSettingDbAsync(string key)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetSettingAsync(key);
-                return new Setting(fbres);
+                return new Setting(fbres, _c.CreateSettingFactory());
             }
             catch (Exception ex)
             {
@@ -32,7 +43,8 @@ namespace Models.Factories
 
         public async Task InsertSettingAsync(Setting setting)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertSettingAsync(setting);
@@ -45,7 +57,8 @@ namespace Models.Factories
 
         public async Task DeleteSettingAsync(string key)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteSettingAsync(key);
@@ -58,7 +71,8 @@ namespace Models.Factories
 
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdateSettingAsync(key, newvalue);

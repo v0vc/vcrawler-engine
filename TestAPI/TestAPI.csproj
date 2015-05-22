@@ -35,8 +35,17 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Moq">
-      <HintPath>..\packages\Moq.4.2.1502.0911\lib\net40\Moq.dll</HintPath>
+    <Reference Include="Castle.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <HintPath>..\packages\Castle.Core.3.2.0\lib\net45\Castle.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Extensions.Factory, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.Extensions.Factory.3.2.1.0\lib\net45-full\Ninject.Extensions.Factory.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
@@ -58,21 +67,13 @@
     <Compile Include="YouTubeSiteTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DataBaseAPI\DataBaseAPI.csproj">
-      <Project>{28e208d4-dcb1-4e8d-a7ba-8990c6c841d3}</Project>
-      <Name>DataBaseAPI</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Interfaces\Interfaces.csproj">
       <Project>{d7fc9cfb-9494-4079-bb7f-5aff0b2160ea}</Project>
       <Name>Interfaces</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Models.csproj">
-      <Project>{2DA3980E-45CD-4567-9981-25161ECB889B}</Project>
-      <Name>Models</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\SitesAPI\SitesAPI.csproj">
-      <Project>{77D90F39-3D28-43A8-BA0F-EE5611ABB977}</Project>
-      <Name>SitesAPI</Name>
+    <ProjectReference Include="..\IoC\IoC.csproj">
+      <Project>{6a0b7942-8c56-448f-a8e7-615a06aae3af}</Project>
+      <Name>IoC</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,8 @@
+﻿<Window x:Class="Crawler.Views.EditDescriptionView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Description" Height="200" Width="600" ResizeMode="CanResize" WindowStyle="ToolWindow">
+    <Grid>
+        <TextBox Text="{Binding Description}" />
+    </Grid>
+</Window>

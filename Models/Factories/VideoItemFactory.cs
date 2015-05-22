@@ -9,20 +9,34 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    class VideoItemFactory : IVideoItemFactory
+    public class VideoItemFactory : IVideoItemFactory
     {
+        private readonly ICommonFactory _c;
+
+        //private readonly ISqLiteDatabase _db;
+
+        //private readonly IYouTubeSite _youTubeSite;
+
+        public VideoItemFactory(ICommonFactory c)
+        {
+            _c = c;
+            //_db = c.CreateSqLiteDatabase();
+            //_youTubeSite = c.CreateYouTubeSite();
+        }
+
         public IVideoItem CreateVideoItem()
         {
-            return new VideoItem();
+            return new VideoItem(this);
         }
 
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetVideoItemAsync(id);
-                return new VideoItem(fbres);
+                return new VideoItem(fbres, this);
             }
             catch (Exception ex)
             {
@@ -32,11 +46,12 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemNetAsync(string id)
         {
-            var fb = ServiceLocator.YouTubeSite;
+            var fb = _c.CreateYouTubeSite();
+            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var fbres = await fb.GetVideoItemNetAsync(id);
-                return new VideoItem(fbres);
+                return new VideoItem(fbres, this);
             }
             catch (Exception ex)
             {
@@ -46,11 +61,12 @@ namespace Models.Factories
 
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetChannelAsync(channelID);
-                return new Channel(fbres);
+                return new Channel(fbres, _c.CreateChannelFactory());
             }
             catch (Exception ex)
             {
@@ -60,7 +76,8 @@ namespace Models.Factories
 
         public async Task InsertItemAsync(IVideoItem item)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertItemAsync(item);
@@ -73,7 +90,8 @@ namespace Models.Factories
 
         public async Task DeleteItemAsync(string id)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -84,17 +102,6 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
-        {
-            var fb = ServiceLocator.SqLiteDatabase;
-            try
-            {
-                await fb.UpdatePlaylistAsync(plid, itemid, channelid);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+
     }
 }

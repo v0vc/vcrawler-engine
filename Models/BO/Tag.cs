@@ -1,36 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
+using Models.Factories;
 
 namespace Models.BO
 {
     public class Tag :ITag
     {
+        private readonly TagFactory _tf;
         public string Title { get; set; }
         public List<IChannel> Channels { get; set; }
 
-        public Tag(ITagPOCO tag)
+        public Tag(ITagFactory tf)
         {
+            _tf = tf as TagFactory;
+        }
+        public Tag(ITagPOCO tag, ITagFactory tf)
+        {
+            _tf = tf as TagFactory;
             Title = tag.Title;
         }
 
-        public Task DeleteTagAsync()
+        public async Task DeleteTagAsync()
         {
-            return ServiceLocator.TagFactory.DeleteTagAsync(Title);
+            await _tf.DeleteTagAsync(Title);
+            //return ServiceLocator.TagFactory.DeleteTagAsync(Title);
         }
 
-        public Task InsertTagAsync()
+        public async Task InsertTagAsync()
         {
-            return ServiceLocator.TagFactory.InsertTagAsync(this);
+            await _tf.InsertTagAsync(this);
+            //return ServiceLocator.TagFactory.InsertTagAsync(this);
         }
 
-        public Task<List<IChannel>> GetChannelsByTagAsync()
+        public async Task<List<IChannel>> GetChannelsByTagAsync()
         {
-            return ServiceLocator.TagFactory.GetChannelsByTagAsync(Title);
+            return await _tf.GetChannelsByTagAsync(Title);
+            //return ServiceLocator.TagFactory.GetChannelsByTagAsync(Title);
         }
     }
 }

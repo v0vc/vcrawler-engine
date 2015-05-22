@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataBaseAPI;
+﻿using DataBaseAPI;
+using Interfaces.API;
+using Interfaces.Factories;
 using Models.Factories;
+using Ninject.Extensions.Factory;
 using Ninject.Modules;
 using SitesAPI.Videos;
 
@@ -14,15 +12,17 @@ namespace Models.IoC
     {
         public override void Load()
         {
-            Bind<SubscribeFactory>().ToSelf().InSingletonScope();
-            Bind<ChannelFactory>().ToSelf().InSingletonScope();
-            Bind<VideoItemFactory>().ToSelf().InSingletonScope();
-            Bind<PlaylistFactory>().ToSelf().InSingletonScope();
-            Bind<SqLiteDatabase>().ToSelf().InSingletonScope();
-            Bind<YouTubeSite>().ToSelf().InSingletonScope();
-            Bind<TagFactory>().ToSelf().InSingletonScope();
-            Bind<CredFactory>().ToSelf().InSingletonScope();
-            Bind<SettingFactory>().ToSelf().InSingletonScope();
+            Bind<ISubscribeFactory>().To<SubscribeFactory>().InSingletonScope();
+            Bind<IChannelFactory>().To<ChannelFactory>().InSingletonScope();
+            Bind<IVideoItemFactory>().To<VideoItemFactory>().InSingletonScope();
+            Bind<IPlaylistFactory>().To<PlaylistFactory>().InSingletonScope();
+            Bind<ISqLiteDatabase>().To<SqLiteDatabase>().InSingletonScope();
+            Bind<IYouTubeSite>().To<YouTubeSiteApiV2>().InSingletonScope();
+            Bind<ITagFactory>().To<TagFactory>().InSingletonScope();
+            Bind<ICredFactory>().To<CredFactory>().InSingletonScope();
+            Bind<ISettingFactory>().To<SettingFactory>().InSingletonScope();
+
+            Bind<ICommonFactory>().ToFactory();
         }
     }
 }

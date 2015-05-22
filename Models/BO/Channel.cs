@@ -1,111 +1,182 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Interfaces;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
+using Models.Extensions;
 using Models.Factories;
 
 namespace Models.BO
 {
-    public class Channel :IChannel
+    public class Channel :IChannel, INotifyPropertyChanged
     {
+        private readonly ChannelFactory _cf;
+
+        private int _countNew;
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
+
         public string ID { get; set; }
         public string Title { get; set; }
         public string SubTitle { get; set; }
-        public DateTime LastUpdated { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Site { get; set; }
-        public List<IVideoItem> ChannelItems { get; set; }
-        public List<IPlaylist> ChannelPlaylists { get; set; }
+        public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public List<ITag> Tags { get; set; }
-
-        public Channel()
+        public int CountNew
         {
-            ChannelItems = new List<IVideoItem>();
-            ChannelPlaylists = new List<IPlaylist>();
+            get { return _countNew; }
+            set
+            {
+                _countNew = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public Channel(IChannelFactory cf)
+        {
+            _cf = cf as ChannelFactory;
+            ChannelItems = new ObservableCollection<IVideoItem>();
+            ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
         }
 
-        public Channel(IChannelPOCO channel)
+        public Channel(IChannelPOCO channel, IChannelFactory cf)
         {
+            _cf = cf as ChannelFactory;
             ID = channel.ID;
             Title = channel.Title;
-            SubTitle = channel.SubTitle;
-            LastUpdated = channel.LastUpdated;
+            SubTitle = channel.SubTitle.WordWrap();
+            //LastUpdated = channel.LastUpdated;
             Thumbnail = channel.Thumbnail;
-            ChannelItems = new List<IVideoItem>();
-            ChannelPlaylists = new List<IPlaylist>();
+            Site = channel.Site;
+            ChannelItems = new ObservableCollection<IVideoItem>();
+            ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsAsync()
+        public async Task<List<IVideoItem>> GetChannelItemsDbAsync()
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsAsync(ID);
+            return await _cf.GetChannelItemsDbAsync(ID);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
+        }
+
+        public async Task SyncChannelAsync(bool isSyncPls)
+        {
+            await _cf.SyncChannelAsync(this, isSyncPls);
+        }
+
+        public async Task<int> GetChannelItemsCountDbAsync()
+        {
+            return await _cf.GetChannelItemsCountDbAsync(ID);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsCountDbAsync(ID);
+        }
+
+        public async Task<int> GetChannelItemsCountNetAsync()
+        {
+            return await _cf.GetChannelItemsCountNetAsync(ID);
+            //return await ((ChannelFactory)ServiceLocator.ChannelFactory).GetChannelItemsCountNetAsync(ID);
+        }
+
+        public async Task<List<string>> GetChannelItemsIdsListNetAsync(int maxresult)
+        {
+            return await _cf.GetChannelItemsIdsListNetAsync(ID, maxresult);
+        }
+
+        public async Task<List<string>> GetChannelItemsIdsListDbAsync()
+        {
+            return await _cf.GetChannelItemsIdsListDbAsync(ID);
+        }
+
+        public async Task FillChannelItemsDbAsync()
+        {
+            await _cf.FillChannelItemsFromDbAsync(this);
         }
 
         public async Task InsertChannelAsync()
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelAsync(this);
+            await _cf.InsertChannelAsync(this);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelAsync(this);
         }
 
         public async Task DeleteChannelAsync()
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelAsync(ID);
+            await _cf.DeleteChannelAsync(ID);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelAsync(ID);
         }
 
         public async Task RenameChannelAsync(string newName)
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).RenameChannelAsync(ID, newName);
+            await _cf.RenameChannelAsync(ID, newName);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).RenameChannelAsync(ID, newName);
         }
 
         public async Task InsertChannelItemsAsync()
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelItemsAsync(this);
+            await _cf.InsertChannelItemsAsync(this);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelItemsAsync(this);
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsNetAsync()
+        public async Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult) //0 - все видео
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsNetAsync(ID);
+            return await _cf.GetChannelItemsNetAsync(ID, maxresult);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsNetAsync(ID, maxresult);
         }
 
         public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetPopularItemsNetAsync(regionID, maxresult);
+            return await _cf.GetPopularItemsNetAsync(regionID, maxresult);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetPopularItemsNetAsync(regionID, maxresult);
         }
 
         public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, int maxresult)
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).SearchItemsNetAsync(key, maxresult);
+            return await _cf.SearchItemsNetAsync(key, maxresult);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).SearchItemsNetAsync(key, maxresult);
         }
 
         public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync()
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelPlaylistsNetAsync(ID);
+            return await _cf.GetChannelPlaylistsNetAsync(ID);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelPlaylistsNetAsync(ID);
         }
 
         public async Task<List<IPlaylist>> GetChannelPlaylistsAsync()
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelPlaylistsAsync(ID);
+            return await _cf.GetChannelPlaylistsAsync(ID);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelPlaylistsAsync(ID);
         }
 
         public async Task<List<ITag>> GetChannelTagsAsync()
         {
-            return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelTagsAsync(ID);
+            return await _cf.GetChannelTagsAsync(ID);
+            //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelTagsAsync(ID);
         }
-
 
         public async Task InsertChannelTagAsync(string tag)
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelTagAsync(ID, tag);
+            await _cf.InsertChannelTagAsync(ID, tag);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).InsertChannelTagAsync(ID, tag);
         }
 
         public async Task DeleteChannelTagAsync(string tag)
         {
-            await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelTagAsync(ID, tag);
+            await _cf.DeleteChannelTagAsync(ID, tag);
+            //await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelTagAsync(ID, tag);
         }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -13,7 +11,7 @@ namespace Interfaces.Models
 
         string SubTitle { get; set; }
 
-        string Link { get; set; }
+        byte[] Thumbnail { get; set; }
 
         string ChannelId { get; set;}
 
@@ -25,6 +23,12 @@ namespace Interfaces.Models
 
         Task<List<IVideoItem>> GetPlaylistItemsNetAsync();
 
+        Task<List<string>> GetPlaylistItemsIdsListNetAsync();
+
+        Task<List<string>> GetPlaylistItemsIdsListDbAsync();
+
         Task<List<IVideoItem>> GetPlaylistItemsDbAsync();
+
+        Task UpdatePlaylistAsync(string videoId);
     }
 }

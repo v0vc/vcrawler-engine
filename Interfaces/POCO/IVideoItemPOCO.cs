@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Interfaces.POCO
 {
@@ -23,5 +21,7 @@ namespace Interfaces.POCO
         byte[] Thumbnail { get; set; }
 
         DateTime Timestamp { get; set; }
+
+        string Status { get; set; }
     }
 }

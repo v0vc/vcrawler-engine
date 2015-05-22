@@ -3,29 +3,70 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Interfaces;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Models.BO;
 
 namespace Models.Factories
 {
-    class SubscribeFactory : ISubscribeFactory
+    public class SubscribeFactory : ISubscribeFactory
     {
+        private readonly ICommonFactory _c;
+
+        //private readonly ISqLiteDatabase _db;
+
+        public SubscribeFactory(ICommonFactory c)
+        {
+            _c = c;
+            //_db = c.CreateSqLiteDatabase();
+        }
+
         public ISubscribe GetSubscribe()
         {
-            return new Subscribe();
+            return new Subscribe(this);
         }
 
         public async Task<List<IChannel>> GetChannelsListAsync()
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase(); ;
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IChannel>();
                 var fbres = await fb.GetChannelsListAsync();
-                lst.AddRange(fbres.Select(p => new Channel(p)));
+                lst.AddRange(fbres.Select(p => new Channel(p, _c.CreateChannelFactory())));
                 return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<ICred>> GetCredListAsync()
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                var lst = new List<ICred>();
+                var fbres = await fb.GetCredListAsync();
+                lst.AddRange(fbres.Select(p => new Cred(p, _c.CreateCredFactory())));
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                return await fb.GetChannelsIdsListDbAsync();
             }
             catch (Exception ex)
             {

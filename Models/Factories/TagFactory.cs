@@ -3,16 +3,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Models.BO;
 
 namespace Models.Factories
 {
-    public class TagFactory
+    public class TagFactory : ITagFactory
     {
+        private readonly ICommonFactory _c;
+
+        //private readonly ISqLiteDatabase _db;
+        public TagFactory(ICommonFactory c)
+        {
+            _c = c;
+            //_db = c.CreateSqLiteDatabase();
+        }
+
+        public ITag CreateTag()
+        {
+            return new Tag(_c.CreateTagFactory());
+        }
+
         public async Task DeleteTagAsync(string tag)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteTagAsync(tag);
@@ -25,7 +41,8 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase(); ;
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertTagAsync(tag);
@@ -38,12 +55,13 @@ namespace Models.Factories
 
         public async Task<List<IChannel>> GetChannelsByTagAsync(string tag)
         {
-            var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase(); ;
+            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IChannel>();
                 var fbres = await fb.GetChannelsByTagAsync(tag);
-                lst.AddRange(fbres.Select(item => new Channel(item)));
+                lst.AddRange(fbres.Select(item => new Channel(item, _c.CreateChannelFactory())));
                 return lst;
             }
             catch (Exception ex)

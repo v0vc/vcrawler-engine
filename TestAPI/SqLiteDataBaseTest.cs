@@ -1,277 +1,322 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using DataBaseAPI;
+using Interfaces.API;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
+using Ninject;
 
 namespace TestAPI
 {
     [TestClass]
     public class SqLiteDataBaseTest
     {
+        private const string TestPhoto =
+            "https://yt3.ggpht.com/-qMfsaQGvdSQ/AAAAAAAAAAI/AAAAAAAAAAA/NLFnUAWeiaM/s88-c-k-no/photo.jpg";
+
+        private readonly ICommonFactory _factory;
+
+        private readonly ISqLiteDatabase _db;
+
+        private readonly IVideoItemFactory _vf;
+
+        private readonly IChannelFactory _cf;
+
+        private readonly ICredFactory _crf;
+
+        private readonly IPlaylistFactory _pf;
+
+        private readonly ITagFactory _tf;
+
+        private readonly ISettingFactory _sf;
+
+        public SqLiteDataBaseTest()
+        {
+            _factory = IoC.Container.Kernel.Get<ICommonFactory>();
+            _vf = _factory.CreateVideoItemFactory();
+            _db = _factory.CreateSqLiteDatabase();
+            _cf = _factory.CreateChannelFactory();
+            _crf = _factory.CreateCredFactory();
+            _pf = _factory.CreatePlaylistFactory();
+            _tf = _factory.CreateTagFactory();
+            _sf = _factory.CreateSettingFactory();
+        }
+
         [TestMethod]
         public void TestCrudItems()
         {
-            var db = new Mock<SqLiteDatabase>();
+            //var db = new Mock<SqLiteDatabase>();
 
-            var vi = new Mock<IVideoItem>();
-            vi.SetupAllProperties();
-            FillTestVideoItem(vi.Object);
+            var vi = _vf.CreateVideoItem();
+            //var vi = new Mock<IVideoItem>();
+            //vi.SetupAllProperties();
+            FillTestVideoItem(vi);
 
-            var vi2 = new Mock<IVideoItem>();
-            vi2.SetupAllProperties();
-            FillTestVideoItem(vi2.Object);
-            vi2.Object.ID = "vi2";
+            var vi2 = _vf.CreateVideoItem();
+            FillTestVideoItem(vi2);
+            vi2.ID = "vi2";
 
-            var cred = new Mock<ICred>();
-            cred.SetupAllProperties();
-            FillTestCred(cred.Object);
+            //var cred = new Mock<ICred>();
+            var cred = _crf.CreateCred();
+            //cred.SetupAllProperties();
+            FillTestCred(cred);
 
-            var ch = new Mock<IChannel>();
-            ch.SetupAllProperties();
-            FillTestChannel(ch.Object, vi.Object, vi2.Object, cred.Object);
+            var ch = _cf.CreateChannel();
+            //var ch = new Mock<IChannel>();
+            //ch.SetupAllProperties();
+            FillTestChannel(ch, vi, vi2, cred);
 
             Task t;
-
+            
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            //t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertCredAsync
-            t = db.Object.InsertCredAsync(cred.Object);
+            //t = db.Object.InsertCredAsync(cred.Object);
+            t = _db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            //t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelAsync
-            t = db.Object.InsertChannelAsync(ch.Object);
+            //t = db.Object.InsertChannelAsync(ch.Object);
+            t = _db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             //RenameChannelAsync
-            t = db.Object.RenameChannelAsync(ch.Object.ID, "newname");
+            //t = db.Object.RenameChannelAsync(ch.Object.ID, "newname");
+            t = _db.RenameChannelAsync(ch.ID, "newname");
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelAsync
-            t = db.Object.GetChannelAsync(ch.Object.ID);
+            //t = db.Object.GetChannelAsync(ch.Object.ID);
+            t = _db.GetChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelsListAsync
-            t = db.Object.GetChannelsListAsync();
+            //t = db.Object.GetChannelsListAsync();
+            t = _db.GetChannelsListAsync();
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelItemsAsync
-            t = db.Object.GetChannelItemsAsync(ch.Object.ID);
+            //t = db.Object.GetChannelItemsAsync(ch.Object.ID);
+            t = _db.GetChannelItemsAsync(ch.ID);
+            Assert.IsTrue(!t.IsFaulted);
+
+            //GetChannelItemsCountDbAsync
+            t = _db.GetChannelItemsCountDbAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            //t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelItemsAsync
-            t = db.Object.InsertChannelItemsAsync(ch.Object);
+            //t = db.Object.InsertChannelItemsAsync(ch.Object);
+            t = _db.InsertChannelItemsAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            //t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //ITEMS
 
             //InsertChannelAsync
-            t = db.Object.InsertChannelAsync(ch.Object);
+            //t = db.Object.InsertChannelAsync(ch.Object);
+            t = _db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertItemAsync
-            t = db.Object.InsertItemAsync(vi.Object);
+            //t = db.Object.InsertItemAsync(vi.Object);
+            t = _db.InsertItemAsync(vi);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetVideoItemAsync
-            t = db.Object.GetVideoItemAsync(vi.Object.ID);
+            //t = db.Object.GetVideoItemAsync(vi.Object.ID);
+            t = _db.GetVideoItemAsync(vi.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteItemAsync
-            t = db.Object.DeleteItemAsync(vi.Object.ID);
+            //t = db.Object.DeleteItemAsync(vi.Object.ID);
+            t = _db.DeleteItemAsync(vi.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            //t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            //t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
-
         }
 
         [TestMethod]
         public void TestCrudPlaylists()
         {
-            var db = new Mock<SqLiteDatabase>();
+            //var db = new Mock<SqLiteDatabase>();
 
-            var vi = new Mock<IVideoItem>();
-            vi.SetupAllProperties();
-            FillTestVideoItem(vi.Object);
+            var vi = _vf.CreateVideoItem();
+            FillTestVideoItem(vi);
 
-            var vi2 = new Mock<IVideoItem>();
-            vi2.SetupAllProperties();
-            FillTestVideoItem(vi2.Object);
-            vi2.Object.ID = "vi2";
+            var vi2 = _vf.CreateVideoItem();
+            FillTestVideoItem(vi2);
+            vi2.ID = "vi2";
 
-            var cred = new Mock<ICred>();
-            cred.SetupAllProperties();
-            FillTestCred(cred.Object);
+            var cred = _crf.CreateCred();
+            FillTestCred(cred);
 
-            var ch = new Mock<IChannel>();
-            ch.SetupAllProperties();
-            FillTestChannel(ch.Object, vi.Object, vi2.Object, cred.Object);
+            var ch = _cf.CreateChannel();
+            FillTestChannel(ch, vi, vi2, cred);
 
-            var pl = new Mock<IPlaylist>();
-            pl.SetupAllProperties();
-            FillTestPl(pl.Object, ch.Object);
+            var pl = _pf.CreatePlaylist();
+            FillTestPl(pl, ch);
 
             Task t;
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertCredAsync
-            t = db.Object.InsertCredAsync(cred.Object);
+            t = _db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelItemsAsync
-            t = db.Object.InsertChannelItemsAsync(ch.Object);
+            t = _db.InsertChannelItemsAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeletePlaylistAsync
-            t = db.Object.DeletePlaylistAsync(pl.Object.ID);
+            t = _db.DeletePlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertPlaylistAsync
-            t = db.Object.InsertPlaylistAsync(pl.Object);
+            t = _db.InsertPlaylistAsync(pl);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetPlaylistAsync
-            t = db.Object.GetPlaylistAsync(pl.Object.ID);
+            t = _db.GetPlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelPlaylistAsync
-            t = db.Object.GetChannelPlaylistAsync(ch.Object.ID);
+            t = _db.GetChannelPlaylistAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //UpdatePlaylistAsync
-            t = db.Object.UpdatePlaylistAsync(pl.Object.ID, vi.Object.ID, ch.Object.ID);
+            t = _db.UpdatePlaylistAsync(pl.ID, vi.ID, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetPlaylistItemsAsync
-            t = db.Object.GetPlaylistItemsAsync(pl.Object.ID, ch.Object.ID);
+            t = _db.GetPlaylistItemsAsync(pl.ID, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeletePlaylistAsync
-            t = db.Object.DeletePlaylistAsync(pl.Object.ID);
+            t = _db.DeletePlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
         }
 
         [TestMethod]
         public void TestCrudTags()
         {
-            var db = new Mock<SqLiteDatabase>();
+            //var db = new Mock<SqLiteDatabase>();
 
-            var tag = new Mock<ITag>();
-            tag.SetupAllProperties();
-            FillTestTag(tag.Object);
+            var tag = _tf.CreateTag();
+            FillTestTag(tag);
 
             Task t;
 
             //DeleteTagAsync
-            t = db.Object.DeleteTagAsync(tag.Object.Title);
+            t = _db.DeleteTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertTagAsync
-            t = db.Object.InsertTagAsync(tag.Object);
+            t = _db.InsertTagAsync(tag);
             Assert.IsTrue(!t.IsFaulted);
 
-            var vi = new Mock<IVideoItem>();
-            vi.SetupAllProperties();
-            FillTestVideoItem(vi.Object);
+            var vi = _vf.CreateVideoItem();
+            FillTestVideoItem(vi);
 
-            var vi2 = new Mock<IVideoItem>();
-            vi2.SetupAllProperties();
-            FillTestVideoItem(vi2.Object);
-            vi2.Object.ID = "vi2";
+            var vi2 = _vf.CreateVideoItem();
+            FillTestVideoItem(vi2);
+            vi2.ID = "vi2";
 
-            var cred = new Mock<ICred>();
-            cred.SetupAllProperties();
-            FillTestCred(cred.Object);
+            var cred = _crf.CreateCred();
+            FillTestCred(cred);
 
-            var ch = new Mock<IChannel>();
-            ch.SetupAllProperties();
-            FillTestChannel(ch.Object, vi.Object, vi2.Object, cred.Object);
+            var ch = _cf.CreateChannel();
+            FillTestChannel(ch, vi, vi2, cred);
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertCredAsync
-            t = db.Object.InsertCredAsync(cred.Object);
+            t = _db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelAsync
-            t = db.Object.InsertChannelAsync(ch.Object);
+            t = _db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelTagsAsync
-            t = db.Object.InsertChannelTagsAsync(ch.Object.ID, tag.Object.Title);
+            t = _db.InsertChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertChannelTagsAsync
-            t = db.Object.InsertChannelTagsAsync(ch.Object.ID, tag.Object.Title);
+            t = _db.InsertChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelTagsAsync
-            t = db.Object.GetChannelTagsAsync(ch.Object.ID);
+            t = _db.GetChannelTagsAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetChannelsByTagAsync
-            t = db.Object.GetChannelsByTagAsync(tag.Object.Title);
+            t = _db.GetChannelsByTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelTagsAsync
-            t = db.Object.DeleteChannelTagsAsync(ch.Object.ID, tag.Object.Title);
+            t = _db.DeleteChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteChannelAsync
-            t = db.Object.DeleteChannelAsync(ch.Object.ID);
+            t = _db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteTagAsync
-            t = db.Object.DeleteTagAsync(tag.Object.Title);
+            t = _db.DeleteTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = _db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
         }
@@ -279,72 +324,78 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudCredentials()
         {
-            var db = new Mock<SqLiteDatabase>();
+            //var db = new Mock<SqLiteDatabase>();
 
-            var cred = new Mock<ICred>();
-            cred.SetupAllProperties();
-            FillTestCred(cred.Object);
+            var db = _factory.CreateSqLiteDatabase();
+
+            var cred = _crf.CreateCred();
+            FillTestCred(cred);
 
             Task t;
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertCredAsync
-            t = db.Object.InsertCredAsync(cred.Object);
+            t = db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             //GetCredAsync
-            t = db.Object.GetCredAsync(cred.Object.Site);
+            t = db.GetCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             //UpdateLoginAsync
-            t = db.Object.UpdateLoginAsync(cred.Object.Site, "newlogin");
+            t = db.UpdateLoginAsync(cred.Site, "newlogin");
             Assert.IsTrue(!t.IsFaulted);
 
             //UpdatePasswordAsync
-            t = db.Object.UpdatePasswordAsync(cred.Object.Site, "newpassword");
+            t = db.UpdatePasswordAsync(cred.Site, "newpassword");
             Assert.IsTrue(!t.IsFaulted);
 
             //UpdateAutorizationAsync
-            t = db.Object.UpdateAutorizationAsync(cred.Object.Site, 1);
+            t = db.UpdateAutorizationAsync(cred.Site, 1);
+            Assert.IsTrue(!t.IsFaulted);
+
+            //GetCredListAsync
+            t = db.GetCredListAsync();
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteCredAsync
-            t = db.Object.DeleteCredAsync(cred.Object.Site);
+            t = db.DeleteCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
         }
 
         [TestMethod]
         public void TestCrudSettings()
         {
-            var db = new Mock<SqLiteDatabase>();
+            //var db = new Mock<SqLiteDatabase>();
 
-            var setting = new Mock<ISetting>();
-            setting.SetupAllProperties();
-            FillTestSetting(setting.Object);
+            var db = _factory.CreateSqLiteDatabase();
+
+            var setting = _sf.CreateSetting();
+            FillTestSetting(setting);
 
             Task t;
 
             //DeleteSettingAsync
-            t = db.Object.DeleteSettingAsync(setting.Object.Key);
+            t = db.DeleteSettingAsync(setting.Key);
             Assert.IsTrue(!t.IsFaulted);
 
             //InsertSettingAsync
-            t = db.Object.InsertSettingAsync(setting.Object);
+            t = db.InsertSettingAsync(setting);
             Assert.IsTrue(!t.IsFaulted);
 
             //UpdateSettingAsync
-            t = db.Object.UpdateSettingAsync(setting.Object.Key, "newvalue");
+            t = db.UpdateSettingAsync(setting.Key, "newvalue");
             Assert.IsTrue(!t.IsFaulted);
 
             //GetSettingAsync
-            t = db.Object.GetSettingAsync(setting.Object.Key);
+            t = db.GetSettingAsync(setting.Key);
             Assert.IsTrue(!t.IsFaulted);
 
             //DeleteSettingAsync
-            t = db.Object.DeleteSettingAsync(setting.Object.Key);
+            t = db.DeleteSettingAsync(setting.Key);
             Assert.IsTrue(!t.IsFaulted);
         }
 
@@ -363,7 +414,7 @@ namespace TestAPI
             pl.ID = "testID";
             pl.Title = "Плейлист №1";
             pl.SubTitle = "test subtitle";
-            pl.Link = "https://link.com";
+            pl.Thumbnail = GetStreamFromUrl(TestPhoto);
             pl.ChannelId = ch.ID;
         }
 
@@ -382,12 +433,12 @@ namespace TestAPI
 
         private static void FillTestChannel(IChannel ch, IVideoItem v1, IVideoItem v2, ICred cred)
         {
-            ch.ChannelItems = new List<IVideoItem>();
+            ch.ChannelItems = new ObservableCollection<IVideoItem>();
             ch.ID = "testch";
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
-            ch.LastUpdated = DateTime.MinValue;
-            ch.Thumbnail = GetStreamFromUrl("https://yt3.ggpht.com/-qMfsaQGvdSQ/AAAAAAAAAAI/AAAAAAAAAAA/NLFnUAWeiaM/s88-c-k-no/photo.jpg");
+            //ch.LastUpdated = DateTime.MinValue;
+            ch.Thumbnail = GetStreamFromUrl(TestPhoto);
             ch.Site = cred.Site;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
