@@ -87,7 +87,7 @@
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=Mask}" />
                                         </StackPanel.OpacityMask>
-                                        <Image Source="{Binding Thumbnail}"
+                                        <Image Source="{Binding Thumbnail, IsAsync=True}"
                                             RenderOptions.BitmapScalingMode="Fant"
                                             ToolTipService.ShowDuration="120000"
                                             Stretch="Fill"
@@ -235,7 +235,7 @@
                                                HorizontalAlignment="Center">
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Image Source="{Binding Thumbnail}" />
+                                                    <Image Source="{Binding Thumbnail, IsAsync=True}" />
                                                     <TextBlock Margin="10,0,0,0" Text="{Binding Description}" />
                                                 </StackPanel>
                                             </Image.ToolTip>
@@ -376,7 +376,7 @@
                                                 <StackPanel.OpacityMask>
                                                     <VisualBrush Visual="{Binding ElementName=Mask}" />
                                                 </StackPanel.OpacityMask>
-                                                <Image Source="{Binding Thumbnail}"
+                                                <Image Source="{Binding Thumbnail, IsAsync=True}"
                                             RenderOptions.BitmapScalingMode="Fant"
                                             ToolTipService.ShowDuration="120000"
                                             Stretch="Fill"
@@ -387,7 +387,7 @@
                                             HorizontalAlignment="Center">
                                                     <Image.ToolTip>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <Image Source="{Binding Thumbnail}" />
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True}" />
                                                             <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" />
                                                         </StackPanel>
                                                     </Image.ToolTip>

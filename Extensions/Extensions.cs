@@ -56,7 +56,6 @@ namespace Extensions
                 {
                     File.Move(oldFile.FullName, newFile.FullName);
                     return true;
-                    break;
                 }
                 catch
                 {

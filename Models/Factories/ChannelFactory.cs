@@ -296,6 +296,8 @@ namespace Models.Factories
                             var item = await vf.GetVideoItemNetAsync(id);
                             item.IsNewItem = true;
                             item.IsShowRow = true;
+                            item.ItemState = "LocalNo";
+                            item.IsHasLocalFile = false;
                             //channel.ChannelItems.Add(item);
                             channel.ChannelItems.Insert(0, item);
                             channel.CountNew += 1;

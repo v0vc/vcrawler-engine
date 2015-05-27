@@ -24,11 +24,11 @@ namespace Crawler.ViewModels
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
-            AddNewItemCommand = new RelayCommand(x => AddNewItem());
-            SaveNewItemCommand = new RelayCommand(x => Model.SaveNewItem());
-            SyncDataCommand = new RelayCommand(x => Model.SyncData());
             OpenDirCommand = new RelayCommand(OpenDir);
-            SaveCommand = new RelayCommand(x => Model.SaveSettings());
+            AddNewItemCommand = new RelayCommand(x => AddNewItem());
+            SaveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem());
+            SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
+            SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
         }
 
         private void OpenDir(object obj)
