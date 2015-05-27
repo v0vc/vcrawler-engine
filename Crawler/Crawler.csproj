@@ -33,10 +33,6 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>
-    </ApplicationIcon>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -44,6 +40,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -149,37 +146,32 @@
       <Project>{2DA3980E-45CD-4567-9981-25161ECB889B}</Project>
       <Name>Models</Name>
     </ProjectReference>
+    <ProjectReference Include="..\SitesAPI\SitesAPI.csproj">
+      <Project>{77D90F39-3D28-43A8-BA0F-EE5611ABB977}</Project>
+      <Name>SitesAPI</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\add-48.png" />
+    <Resource Include="Images\label-32.png" />
+    <Resource Include="Images\ok-32.png" />
+    <Resource Include="Images\site-32.png" />
+    <Resource Include="Images\user-32.png" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\sync-48.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Images\site-32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\label-32.png" />
-    <Resource Include="Images\user-32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\ok-32.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\save_16.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\tick_20.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Images\ok-48.png" />
-  </ItemGroup>
-  <ItemGroup>
     <Resource Include="Images\tick_64.png" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Images\inbox-32.png" />
+  </ItemGroup>
+  <ItemGroup>
     <Resource Include="Images\add_64.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Images\refresh-24.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

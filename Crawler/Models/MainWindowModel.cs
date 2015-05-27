@@ -8,13 +8,11 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
-using Crawler.Common;
-using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Models.BO;
 using Ninject;
-//using YoutubeExtractor;
+using Container = IoC.Container;
 
 namespace Crawler.Models
 {
@@ -32,27 +30,23 @@ namespace Crawler.Models
 
         #endregion
 
-        public ICommonFactory BaseFactory { get; set; }
-
         private string _info;
-
         private Cred _selectedCred;
-
         private Channel _selectedChannel;
-
         private string _newChannelName;
-
         private VideoItem _selectedVideoItem;
-
         private string _result;
-
         private Playlist _selectedPlaylist;
-
         private string _dirPath;
-
         private string _mpcPath;
+        private string _youPath;
+        //private string _ffmegPath;
+        private double _prValue;
+        private string _youHeader;
 
         #region Fields
+
+        public ICommonFactory BaseFactory { get; set; }
 
         public ObservableCollection<Channel> Channels { get; set; }
 
@@ -150,34 +144,54 @@ namespace Crawler.Models
             }
         }
 
+        public string YouPath
+        {
+            get { return _youPath; }
+            set
+            {
+                _youPath = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        //public string FfmegPath
+        //{
+        //    get { return _ffmegPath; }
+        //    set
+        //    {
+        //        _ffmegPath = value; 
+        //        OnPropertyChanged();
+        //    }
+        //}
+
+        public double PrValue
+        {
+            get { return _prValue; }
+            set
+            {
+                _prValue = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public string YouHeader
+        {
+            get { return _youHeader; }
+            set
+            {
+                _youHeader = value; 
+                OnPropertyChanged();
+            }
+        }
+
         #endregion
 
         public MainWindowModel()
         {
-            BaseFactory = IoC.Container.Kernel.Get<ICommonFactory>();
+            BaseFactory = Container.Kernel.Get<ICommonFactory>();
             Channels = new ObservableCollection<Channel>();
             SupportedCreds = new List<Cred>();
-            //Channels.CollectionChanged += Channels_CollectionChanged;
         }
-
-        //void Channels_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        //{
-        //    if (e.Action == NotifyCollectionChangedAction.Remove)
-        //    {
-        //        foreach (var ch in e.OldItems.Cast<Channel>())
-        //        {
-        //            Info = "Deleted: " + ch.Title;
-        //        }
-        //    }
-
-        //    if (e.Action == NotifyCollectionChangedAction.Add)
-        //    {
-        //        foreach (var ch in e.NewItems.Cast<Channel>())
-        //        {
-        //            Info = "Added: " + ch.Title;
-        //        }
-        //    }
-        //}
 
         public async Task FillChannels()
         {
@@ -185,28 +199,28 @@ namespace Crawler.Models
 
             var s = sf.GetSubscribe();
 
-            var cf = BaseFactory.CreateChannelFactory();
+            //var cf = BaseFactory.CreateChannelFactory();
 
             try
             {
                 await LoadSettings();
 
-                var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
+                //var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
 
-                foreach (string id in lst)
-                {
-                    var ch = await cf.GetChannelDbAsync(id);
-
-                    Channels.Add(ch as Channel);
-                }
-
-                //var lst = await s.GetChannelsListAsync(); //все каналы за раз - подтормаживает
-                //foreach (var channel in lst)
+                //foreach (string id in lst)
                 //{
-                //    var ch = (Channel)channel;
-                //    //ch.CountNew = 1;
-                //    Channels.Add(ch);
+                //    var ch = await cf.GetChannelDbAsync(id);
+
+                //    Channels.Add(ch as Channel);
                 //}
+
+                var lst = await s.GetChannelsListAsync(); //все каналы за раз
+                foreach (var channel in lst)
+                {
+                    var ch = (Channel)channel;
+                    //ch.CountNew = 1;
+                    Channels.Add(ch);
+                }
 
                 if (Channels.Any())
                     SelectedChannel = Channels.First();
@@ -230,7 +244,7 @@ namespace Crawler.Models
 
         public async Task SaveNewItem()
         {
-            if (string.IsNullOrEmpty(NewChannelName))
+            if (String.IsNullOrEmpty(NewChannelName))
             {
                 MessageBox.Show("Fill user name");
                 return;
@@ -276,7 +290,7 @@ namespace Crawler.Models
                 if (channel == null)
                     throw new Exception("GetChannelNetAsync return null");
 
-                if (!string.IsNullOrEmpty(NewChannelTitle))
+                if (!String.IsNullOrEmpty(NewChannelTitle))
                     channel.Title = NewChannelTitle;
 
                 Channels.Add(channel);
@@ -288,6 +302,8 @@ namespace Crawler.Models
                 foreach (IVideoItem item in lst)
                 {
                     item.IsShowRow = true;
+                    item.ItemState = "LocalNo";
+                    item.IsHasLocalFile = false;
                     channel.ChannelItems.Add(item);
                 }
 
@@ -326,16 +342,8 @@ namespace Crawler.Models
 
                 foreach (Channel channel in Channels)
                 {
-                    await channel.SyncChannelAsync(true);
+                    await channel.SyncChannelAsync(false);
                 }
-
-                //foreach (Channel channel in Channels.Where(channel => channel.CountNew > 0))
-                //{
-                //    foreach (IVideoItem item in channel.ChannelItems.Where(item => item.IsNewItem))
-                //    {
-                //        await item.InsertItemAsync();
-                //    }
-                //}
 
                 Result = "Finished";
             }
@@ -343,25 +351,31 @@ namespace Crawler.Models
             {
                 Result = "Error";
                 MessageBox.Show(ex.Message);
-                //Info = Regex.Replace(ex.Message, @"\t|\n|\r", "-");
             }
         }
 
-        public async void SaveSettings()
+        public async Task SaveSettings()
         {
             var sf = BaseFactory.CreateSettingFactory();
 
             try
             {
                 var savedir = await sf.GetSettingDbAsync("pathToDownload");
-
                 if (savedir.Value != DirPath)
                     await savedir.UpdateSettingAsync(DirPath);
 
-                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
 
+                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
                 if (mpcdir.Value != MpcPath)
                     await mpcdir.UpdateSettingAsync(MpcPath);
+
+                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                if (youpath.Value != YouPath)
+                    await youpath.UpdateSettingAsync(YouPath);
+
+                //var fpath = await sf.GetSettingDbAsync("pathToFfmpeg");
+                //if (fpath.Value != FfmegPath)
+                //    await fpath.UpdateSettingAsync(FfmegPath);
 
                 Result = "Saved";
             }
@@ -378,12 +392,16 @@ namespace Crawler.Models
             try
             {
                 var savedir = await sf.GetSettingDbAsync("pathToDownload");
-
                 DirPath = savedir.Value;
 
                 var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
-
                 MpcPath = mpcdir.Value;
+
+                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                YouPath = youpath.Value;
+
+                //var fpath = await sf.GetSettingDbAsync("pathToFfmpeg");
+                //FfmegPath = fpath.Value;
 
             }
             catch (Exception ex)
@@ -391,74 +409,5 @@ namespace Crawler.Models
                 Info = ex.Message;
             }
         }
-
-        public async void DownloadItem()
-        {
-            if (string.IsNullOrEmpty(DirPath))
-            {
-                MessageBox.Show("Please, set download dir");
-                return;
-            }
-
-            if (SelectedVideoItem.IsHasLocalFile == false)
-            {
-                //SelectedVideoItem.ProgressBarVisibility = Visibility.Visible;
-
-                //var link = string.Format("https://www.youtube.com/watch?v={0}", SelectedVideoItem.ID);
-
-                //var videoInfos = DownloadUrlResolver.GetDownloadUrls(link).OrderByDescending(z => z.Resolution);
-
-                //var video = videoInfos.First(info => info.VideoType == VideoType.Mp4 && info.AudioBitrate != 0);
-
-                //if (video.RequiresDecryption)
-                //{
-                //    DownloadUrlResolver.DecryptDownloadUrl(video);
-                //}
-
-                //var cltitle = video.Title.MakeValidFileName();
-
-                //var dir = new DirectoryInfo(Path.Combine(DirPath, SelectedChannel.ID));
-
-                //if (!dir.Exists)
-                //    dir.Create();
-
-                //var vd = new VideoDownloader(video, Path.Combine(dir.FullName, cltitle + video.VideoExtension));
-
-                //vd.DownloadProgressChanged += (sender, args) => videoDownloader_DownloadProgressChanged(args);
-
-                //vd.DownloadFinished += delegate { videoDownloader_DownloadFinished(vd); };
-
-                //await Task.Run(() => vd.Execute());
-            }
-            else
-            {
-                if (!string.IsNullOrEmpty(SelectedVideoItem.LocalFilePath))
-                {
-                    if (!string.IsNullOrEmpty(MpcPath))
-                    {
-                        var param = string.Format("\"{0}\" /play", SelectedVideoItem.LocalFilePath);
-                        Process.Start(MpcPath, param);
-                    }
-                }
-            }
-        }
-
-        //private void videoDownloader_DownloadFinished(VideoDownloader vd)
-        //{
-        //    if (vd == null) return;
-
-        //    Info = string.Format("\"{0}\" completed!", vd.Video.Title);
-
-        //    SelectedVideoItem.LocalFilePath = vd.SavePath;
-
-        //    SelectedVideoItem.IsHasLocalFile = true;
-
-        //    //SelectedVideoItem.ProgressBarVisibility = Visibility.Hidden;
-        //}
-
-        //private void videoDownloader_DownloadProgressChanged(ProgressEventArgs args)
-        //{
-        //    SelectedVideoItem.DownloadPercentage = args.ProgressPercentage;
-        //}
     }
 }

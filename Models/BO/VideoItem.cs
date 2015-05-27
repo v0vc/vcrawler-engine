@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -16,7 +19,7 @@ namespace Models.BO
 {
     public class VideoItem : INotifyPropertyChanged,IVideoItem
     {
-        #region 
+        #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -38,8 +41,12 @@ namespace Models.BO
 
         private double _downloadPercentage;
 
-        //private Visibility _progressBarVisibility;
         private bool _isHasLocalFile;
+
+        private string _itemState;
+
+        private readonly List<string> _destList = new List<string>();
+        private byte[] _largeThumb;
 
         public string ID { get; set; }
 
@@ -70,6 +77,16 @@ namespace Models.BO
 
         public byte[] Thumbnail { get; set; }
 
+        public byte[] LargeThumb
+        {
+            get { return _largeThumb; }
+            set
+            {
+                _largeThumb = value; 
+                OnPropertyChanged();
+            }
+        }
+
         public DateTime Timestamp
         {
             get { return _timestamp; }
@@ -79,6 +96,8 @@ namespace Models.BO
                 DateTimeAgo = TimeAgo(_timestamp);
             }
         }
+
+        public string LocalFilePath { get; set; }
 
         public bool IsNewItem { get; set; }
 
@@ -97,7 +116,17 @@ namespace Models.BO
             get { return _isHasLocalFile; }
             set
             {
-                _isHasLocalFile = value; 
+                _isHasLocalFile = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ItemState
+        {
+            get { return _itemState; }
+            set
+            {
+                _itemState = value; 
                 OnPropertyChanged();
             }
         }
@@ -111,16 +140,6 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
-
-        //public Visibility ProgressBarVisibility
-        //{
-        //    get { return _progressBarVisibility; }
-        //    set
-        //    {
-        //        _progressBarVisibility = value; 
-        //        OnPropertyChanged();
-        //    }
-        //}
 
         public VideoItem(IVideoItemFactory vf)
         {
@@ -180,7 +199,9 @@ namespace Models.BO
         public void RunItem(string mpcpath)
         {
             if (string.IsNullOrEmpty(mpcpath))
+            {
                 return;
+            }
 
             if (IsHasLocalFile)
             {
@@ -190,7 +211,7 @@ namespace Models.BO
             }
             else
             {
-                var param = string.Format("\"{0}\" /play", string.Format("https://www.youtube.com/watch?v={0}", ID));
+                var param = string.Format("\"{0}\" /play", MakeVideoLink());
                 Process.Start(mpcpath, param);
             }
         }
@@ -202,11 +223,163 @@ namespace Models.BO
             var pathvid = Path.Combine(dir, ParentID, string.Format("{0}.mp4", Title.MakeValidFileName()));
             var fnvid = new FileInfo(pathvid);
             IsHasLocalFile = fnvid.Exists;
-            if (IsHasLocalFile)
+            if (fnvid.Exists)
+            {
+                ItemState = "LocalYes";
                 LocalFilePath = fnvid.FullName;
+            }
+            else
+            {
+                ItemState = "LocalNo";
+            }
         }
 
-        public string LocalFilePath { get; set; }
+        public async Task DownloadItem(string youPath, string dirPath, bool isHd)
+        {
+            ItemState = "Downloading";
+            var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
+            if (!dir.Exists)
+                dir.Create();
+            string param;
+            if (isHd)
+            {
+                param = String.Format("-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title --restrict-filenames",
+                            dir, MakeVideoLink());
+            }
+            else
+            {
+                param = String.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title --restrict-filenames",
+                            dir, MakeVideoLink());
+            }
+
+            var startInfo = new ProcessStartInfo(youPath, param)
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            await Task.Run(() =>
+            {
+                var process = Process.Start(startInfo);
+                if (process == null) return;
+                process.OutputDataReceived += (sender, e) => SetLogAndPercentage(e.Data, youPath);
+                process.Start();
+                process.BeginOutputReadLine();
+                process.WaitForExit();
+                process.Close();    
+            });
+        }
+
+        private void SetLogAndPercentage(string data, string youPath)
+        {
+            if (data == null)
+            {
+                processDownload_Exited(youPath);
+                return;
+            }
+            
+            DownloadPercentage = GetPercentFromYoudlOutput(data);
+
+            var dest = GetDestinationFromYoudlOutput(data);
+            if (!string.IsNullOrEmpty(dest))
+                _destList.Add(dest);
+        }
+
+        private static double GetPercentFromYoudlOutput(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return 0;
+            var regex = new Regex(@"[0-9][0-9]{0,2}\.[0-9]%", RegexOptions.None);
+            var match = regex.Match(input);
+            if (!match.Success) return 0;
+            double res;
+            var str = match.Value.TrimEnd('%').Replace('.', ',');
+            return double.TryParse(str, out res) ? res : 0;
+        }
+
+        private static string GetDestinationFromYoudlOutput(string input)
+        {
+            var regex = new Regex(@"(\[download\] Destination: )(.+?)(\.(mp4|m4a|webm|flv|mp3))(.+)?");
+            var match = regex.Match(input);
+            if (match.Success)
+            {
+                return regex.Replace(input, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                //return regex.Replace(input, "$2$3"); //для обычных файлов
+            }
+            regex = new Regex(@"(\[download\])(.+?)(\.(mp4|m4a|webm|flv|mp3))(.+)?");
+            match = regex.Match(input);
+            if (match.Success)
+            {
+                return regex.Replace(input, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0]; //для файлов, у которых в названии есть точка + расширение
+                //return regex.Replace(input, "$2$3"); //для обычных файлов
+            }
+            return string.Empty;
+        }
+
+        private void processDownload_Exited(string youPath)
+        {
+            DownloadPercentage = 100;
+
+            if (!_destList.Any()) return;
+
+            if (_destList.Count == 1)
+            {
+                var fn = new FileInfo(_destList.First());
+
+                if (fn.DirectoryName == null) return;
+
+                var filename = global::Extensions.Extensions.GetVersion(youPath,
+                    String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
+
+                var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
+
+                if (global::Extensions.Extensions.RenameFile(fn, fnn))
+                {
+                    ItemState = "LocalYes";
+                    IsHasLocalFile = true;
+                    LocalFilePath = fnn.FullName;
+                }
+                else
+                    IsHasLocalFile = false;
+            }
+
+            if (_destList.Count == 2)
+            {
+                var vid = _destList.FirstOrDefault(x => x.EndsWith(".mp4") || x.EndsWith(".webm"));
+                if (vid != null)
+                {
+                    var vidsp = vid.Split('.');
+                    var vidname = vidsp.Take(vidsp.Length - 2);
+                    var sb = new StringBuilder();
+                    foreach (string s in vidname)
+                    {
+                        sb.Append(s).Append('.');
+                    }
+                    var name = sb + vidsp.Last();
+
+                    var fn = new FileInfo(name);
+                    if (fn.Exists && fn.DirectoryName != null)
+                    {
+                        var filename = global::Extensions.Extensions.GetVersion(youPath,
+                            String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
+                        var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
+
+                        if (global::Extensions.Extensions.RenameFile(fn, fnn))
+                        {
+                            ItemState = "LocalYes";
+                            IsHasLocalFile = true;
+                            LocalFilePath = fnn.FullName;
+                        }
+                        else
+                            IsHasLocalFile = false;
+                    }
+                }
+            }
+
+            _destList.Clear();
+        }
 
         internal string IntTostrTime(int duration)
         {
@@ -249,6 +422,9 @@ namespace Models.BO
             return string.Empty;
         }
 
-
+        internal string MakeVideoLink()
+        {
+            return string.Format("https://www.youtube.com/watch?v={0}", ID);
+        }
     }
 }

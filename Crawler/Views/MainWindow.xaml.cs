@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -102,23 +103,15 @@ namespace Crawler.Views
             var row = sender as DataGridRow;
             if (row == null)
                 return;
+
             var channel = row.Item as IChannel;
-            if (channel != null)
-            {
-                ViewModel.Model.Result = "Working..";
+            if (channel == null) return;
 
-                await channel.SyncChannelAsync(true);
+            ViewModel.Model.Result = "Working..";
 
-                //if (channel.CountNew > 0)
-                //{
-                //    foreach (IVideoItem item in channel.ChannelItems.Where(item => item.IsNewItem))
-                //    {
-                //        await item.InsertItemAsync();
-                //    }
-                //}
+            await channel.SyncChannelAsync(true);
 
-                ViewModel.Model.Result = "Finished";
-            }
+            ViewModel.Model.Result = "Finished";
         }
 
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -141,6 +134,8 @@ namespace Crawler.Views
                 foreach (IVideoItem item in ch.ChannelItems)
                 {
                     item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                    //item.ItemState = "LocalYes";
+                    //item.DownloadPercentage = 50;
                 }
 
                 var pls = await ch.GetChannelPlaylistsAsync();
@@ -152,14 +147,17 @@ namespace Crawler.Views
             }
         }
 
-        private void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        private async void MenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             var mitem = sender as MenuItem;
             if (mitem == null) return;
 
+            var item = ViewModel.Model.SelectedVideoItem;
+
             switch (mitem.CommandParameter.ToString())
             {
-               case "Edit":
+
+                case "Edit":
 
                     var edv = new EditDescriptionView
                     {
@@ -169,6 +167,52 @@ namespace Crawler.Views
                     };
 
                     edv.Show();
+
+                    break;
+
+                case "HD":
+
+                    if (item == null) return;
+
+                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    {
+                        MessageBox.Show("Please, select youtube-dl");
+                        return;
+                    }
+
+                    //if (string.IsNullOrEmpty(ViewModel.Model.FfmegPath))
+                    //{
+                    //    MessageBox.Show("Please, select ffmpeg");
+                    //    return;
+                    //}
+
+                    await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
+
+                    break;
+
+                case "Delete":
+
+                    if (item == null) return;
+
+                    if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                    {
+                        var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + item.Title + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
+                        if (result == MessageBoxResult.OK)
+                        {
+                            var fn = new FileInfo(item.LocalFilePath);
+                            try
+                            {
+                                fn.Delete();
+                                item.LocalFilePath = string.Empty;
+                                item.IsHasLocalFile = false;
+                                item.ItemState = "LocalNo";
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                    }
 
                     break;
             }
@@ -318,14 +362,27 @@ namespace Crawler.Views
             var item = row.Item as IVideoItem;
             if (item != null)
             {
-                item.RunItem(ViewModel.Model.MpcPath);
+                var mpath = ViewModel.Model.MpcPath;
+                if (string.IsNullOrEmpty(mpath))
+                    MessageBox.Show("Please, select MPC");
+                else
+                    item.RunItem(ViewModel.Model.MpcPath);
             }
         }
 
-        private void VideoItemSaveButton_onClick(object sender, RoutedEventArgs e)
+        private async void VideoItemSaveButton_onClick(object sender, RoutedEventArgs e)
         {
-            var bnt = sender as Button;
-            if (bnt == null) return;
+            var item = ViewModel.Model.SelectedVideoItem;
+            if (item == null) return;
+            if (item.IsHasLocalFile)
+                item.RunItem(ViewModel.Model.MpcPath);
+            else
+            {
+                if (!string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false);
+                else
+                    MessageBox.Show("Please, select youtube-dl");
+            }
         }
     }
 }

@@ -9,7 +9,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition Height="25"></RowDefinition>
         </Grid.RowDefinitions>
-
+        
         <Menu>
             <Menu.ItemsPanel>
                 <ItemsPanelTemplate>
@@ -25,12 +25,12 @@
             <MenuItem Header="Tools">
                 <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
             </MenuItem>
-
+            
             <MenuItem Header="Help" HorizontalAlignment="Right">
                 <MenuItem Header="About" />
             </MenuItem>
         </Menu>
-
+        
         <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition MinWidth="150" Width="350" />
@@ -40,7 +40,7 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <Border Name="Mask" Background="White" CornerRadius="30" />
-
+            
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
@@ -98,7 +98,7 @@
                                             HorizontalAlignment="Center">
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Image Source="{Binding Thumbnail}" />
+                                                    <Image Source="{Binding Thumbnail, IsAsync=True}" />
                                                     <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" />
                                                 </StackPanel>
                                             </Image.ToolTip>
@@ -149,7 +149,7 @@
 
                     <MenuItem Width="49" x:Name="AddItem" Margin="1,1,1,1" BorderThickness="0.1" BorderBrush="Black" Background="Lavender" Command="{Binding SyncDataCommand}">
                         <MenuItem.Icon>
-                            <Image Source="../Images/sync-48.png" StretchDirection="Both" Margin="-4,-13,-28,-13" />
+                            <Image Source="../Images/sync-48.png" StretchDirection="Both" />
                         </MenuItem.Icon>
                         <MenuItem.ToolTip>
                             <TextBlock Text="Sync"></TextBlock>
@@ -158,7 +158,7 @@
 
                     <MenuItem Width="50" x:Name="SyncItem" Margin="0,1,1,1" BorderThickness="0.1" BorderBrush="Black" Background="Lavender" Command="{Binding AddNewItemCommand}">
                         <MenuItem.Icon>
-                            <Image Source="../Images/add-48.png" StretchDirection="Both" Margin="-3,-15,-30,-14" />
+                            <Image Source="../Images/add-48.png" StretchDirection="Both" Margin="1,0,0,0"/>
                         </MenuItem.Icon>
                         <MenuItem.ToolTip>
                             <TextBlock Text="Add"></TextBlock>
@@ -174,6 +174,7 @@
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
                           HeadersVisibility="None"
+                          RowHeaderWidth="0"
                           GridLinesVisibility="Horizontal"
                           BorderThickness="1"
                           ItemsSource="{Binding Model.SelectedChannel.ChannelItems}"
@@ -184,6 +185,8 @@
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
                             <MenuItem Header="Edit" Click="MenuItem_OnClick" CommandParameter="Edit" />
+                            <MenuItem Header="Download HD" Click="MenuItem_OnClick" CommandParameter="HD" />
+                            <MenuItem Header="Delete" Click="MenuItem_OnClick" CommandParameter="Delete" />
                         </ContextMenu>
                     </DataGrid.Resources>
 
@@ -213,7 +216,7 @@
                     </DataGrid.CellStyle>
 
                     <DataGrid.Columns>
-
+                        
                         <DataGridTemplateColumn CanUserResize="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -221,7 +224,7 @@
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=Mask}" />
                                         </StackPanel.OpacityMask>
-                                        <Image Source="{Binding Thumbnail}" 
+                                        <Image Source="{Binding Thumbnail, IsAsync=True}" 
                                                ToolTipService.ShowDuration="120000"
                                                RenderOptions.BitmapScalingMode="Fant"
                                                Stretch="Fill"
@@ -252,37 +255,14 @@
                                         </Grid.RowDefinitions>
                                         <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
                                         <StackPanel Grid.Row="1" Orientation="Horizontal">
-
+                                            
                                             <TextBlock Text="{Binding DurationString}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
-
+                                            
                                             <TextBlock Text="{Binding DateTimeAgo}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12">
                                                 <TextBlock.ToolTip>
                                                     <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
                                                 </TextBlock.ToolTip>
                                             </TextBlock>
-
-                                            <!--<Button Name="Button" 
-                                                    BorderThickness="0" 
-                                                    Background="Transparent" 
-                                                    Command="{Binding DataContext.DownloadCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
-                                                    Margin="10,0,0,1"
-                                                    >
-                                                <Button.Template>
-                                                    <ControlTemplate>
-                                                        <Image Name="Image" Width="20" Height="20" Margin="0"></Image>
-                                                        <ControlTemplate.Triggers>
-                                                            <DataTrigger Binding="{Binding IsHasLocalFile}" Value="False">
-                                                                <Setter TargetName="Image" Property="Image.Source" Value="../Images/save.png"></Setter>
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding IsHasLocalFile}" Value="True">
-                                                                <Setter TargetName="Image" Property="Image.Source" Value="../Images/tick_20.png"></Setter>
-                                                            </DataTrigger>
-                                                        </ControlTemplate.Triggers>
-                                                    </ControlTemplate>
-                                                </Button.Template>
-                                            </Button>-->
-
-                                            <!--<ProgressBar Name="ProgressBar" Width="70" Margin="10,2" Visibility="{Binding ProgressBarVisibility}" Value="{Binding DownloadPercentage, Mode=OneWay}" />-->
 
                                         </StackPanel>
                                     </Grid>
@@ -293,24 +273,53 @@
                         <DataGridTemplateColumn CanUserResize="False" Width="50">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <!--<Button>
+                                    <Button Click="VideoItemSaveButton_onClick" Margin="0,0,2,0">
                                         <Button.Template>
                                             <ControlTemplate>
-                                                <Image Source="../Images/add_64.png"></Image>
-                                            </ControlTemplate>
-                                        </Button.Template>
-                                    </Button>-->
-                                    <Button Click="VideoItemSaveButton_onClick" Margin="0,1,2,2">
-                                        <Button.Template>
-                                            <ControlTemplate>
-                                                <Image Source="../Images/add_64.png"></Image>
+                                                <StackPanel Orientation="Vertical">
+                                                    <Image>
+                                                    <Image.Style>
+                                                        <Style TargetType="{x:Type Image}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ItemState}" Value="LocalNo">
+                                                                    <Setter Property="Source" Value="../Images/add_64.png"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ItemState}" Value="LocalYes">
+                                                                    <Setter Property="Source" Value="../Images/tick_64.png"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding ItemState}" Value="Downloading">
+                                                                    <Setter Property="Height" Value="32"/>
+                                                                    <Setter Property="Source" Value="../Images/inbox-32.png"></Setter>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
+                                                </Image>
+                                                    <ProgressBar Value="{Binding DownloadPercentage, Mode=OneWay}">
+                                                        <ProgressBar.Style>
+                                                            <Style TargetType="{x:Type ProgressBar}">
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding ItemState}" Value="LocalNo">
+                                                                        <Setter Property="Height" Value="0"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding ItemState}" Value="LocalYes">
+                                                                        <Setter Property="Height" Value="0"/>
+                                                                    </DataTrigger>
+                                                                    <DataTrigger Binding="{Binding ItemState}" Value="Downloading">
+                                                                        <Setter Property="Height" Value="16"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </ProgressBar.Style>
+                                                    </ProgressBar>
+                                                </StackPanel>
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
-
+                        
                     </DataGrid.Columns>
 
                 </DataGrid>
@@ -449,7 +458,7 @@
                 <ProgressBar Value="0" Width="90" Height="16" />
             </StatusBarItem>
         </StatusBar>
-
+        
     </Grid>
 
 </Window>

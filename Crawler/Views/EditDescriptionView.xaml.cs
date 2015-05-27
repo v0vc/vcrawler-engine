@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +13,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using Models.BO;
+using SitesAPI;
 
 namespace Crawler.Views
 {
@@ -32,6 +36,17 @@ namespace Crawler.Views
                 KeyDown -= AddChanelView_KeyDown;
                 Close();
             }
+        }
+
+        private async void EditDescriptionView_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            var context = (DataContext as VideoItem);
+            if (context == null) return;
+
+            var id = context.ID;
+            var link = string.Format("http://img.youtube.com/vi/{0}/0.jpg", id);
+
+            context.LargeThumb = await SiteHelper.GetStreamFromUrl(link);
         }
     }
 }

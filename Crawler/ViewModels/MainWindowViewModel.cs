@@ -21,8 +21,6 @@ namespace Crawler.ViewModels
 
         public RelayCommand SaveCommand { get; set; }
 
-        public RelayCommand DownloadCommand { get; set; }
-
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
@@ -31,7 +29,6 @@ namespace Crawler.ViewModels
             SyncDataCommand = new RelayCommand(x => Model.SyncData());
             OpenDirCommand = new RelayCommand(OpenDir);
             SaveCommand = new RelayCommand(x => Model.SaveSettings());
-            DownloadCommand = new RelayCommand(x => Model.DownloadItem());
         }
 
         private void OpenDir(object obj)
@@ -39,7 +36,7 @@ namespace Crawler.ViewModels
             switch (obj.ToString())
             {
                 case "DirPath":
-                     var dlg = new FolderBrowserDialog();
+                    var dlg = new FolderBrowserDialog();
                     var res = dlg.ShowDialog();
                     if (res == DialogResult.OK)
                     {
@@ -48,13 +45,31 @@ namespace Crawler.ViewModels
                     break;
 
                 case "MpcPath":
-                     var dlgf = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
-                    var resf = dlgf.ShowDialog();
-                    if (resf == DialogResult.OK)
+                    var dlgm = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
+                    var resm = dlgm.ShowDialog();
+                    if (resm == DialogResult.OK)
                     {
-                        Model.MpcPath = dlgf.FileName;
+                        Model.MpcPath = dlgm.FileName;
                     }
                     break;
+
+                case "YouPath":
+                    var dlgy = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
+                    var resy = dlgy.ShowDialog();
+                    if (resy == DialogResult.OK)
+                    {
+                        Model.YouPath = dlgy.FileName;
+                    }
+                    break;
+
+                //case "FfmegPath":
+                //    var dlgf = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
+                //    var resf = dlgf.ShowDialog();
+                //    if (resf == DialogResult.OK)
+                //    {
+                //        Model.FfmegPath = dlgf.FileName;
+                //    }
+                //    break;
             }
         }
 

@@ -4,10 +4,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows;
 using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -70,14 +68,7 @@ namespace Models.Factories
             {
                 var lst = new List<IVideoItem>();
                 var fbres = await fb.GetChannelItemsAsync(channelID);
-                foreach (IVideoItemPOCO poco in fbres)
-                {
-                    var vi = new VideoItem(poco, _c.CreateVideoItemFactory());
-                    vi.IsHasLocalFile = false;
-                    //vi.ProgressBarVisibility = Visibility.Hidden;
-                    lst.Add(vi);
-                }
-                //lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
                 return lst;
             }
             catch (Exception ex)
