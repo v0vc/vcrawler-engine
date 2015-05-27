@@ -199,13 +199,13 @@ namespace Crawler.Models
 
             var s = sf.GetSubscribe();
 
-            //var cf = BaseFactory.CreateChannelFactory();
-
             try
             {
                 await LoadSettings();
 
                 //var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
+
+                //var cf = BaseFactory.CreateChannelFactory();
 
                 //foreach (string id in lst)
                 //{
@@ -342,7 +342,7 @@ namespace Crawler.Models
 
                 foreach (Channel channel in Channels)
                 {
-                    await channel.SyncChannelAsync(false);
+                    await channel.SyncChannelAsync(DirPath, false);
                 }
 
                 Result = "Finished";

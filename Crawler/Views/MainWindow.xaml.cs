@@ -109,7 +109,7 @@ namespace Crawler.Views
 
             ViewModel.Model.Result = "Working..";
 
-            await channel.SyncChannelAsync(true);
+            await channel.SyncChannelAsync(ViewModel.Model.DirPath, true);
 
             ViewModel.Model.Result = "Finished";
         }
@@ -129,14 +129,14 @@ namespace Crawler.Views
 
             if (!ch.ChannelItems.Any() || ch.ChannelItems.Any(x => x.IsNewItem)) //заполняем только если либо ничего нет, либо одни новые
             {
-                await ch.FillChannelItemsDbAsync();
+                await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
 
-                foreach (IVideoItem item in ch.ChannelItems)
-                {
-                    item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                    //item.ItemState = "LocalYes";
-                    //item.DownloadPercentage = 50;
-                }
+                //foreach (IVideoItem item in ch.ChannelItems)
+                //{
+                //    item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                //    //item.ItemState = "LocalYes";
+                //    //item.DownloadPercentage = 50;
+                //}
 
                 var pls = await ch.GetChannelPlaylistsAsync();
 

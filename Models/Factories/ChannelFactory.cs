@@ -263,7 +263,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task SyncChannelAsync(IChannel channel, bool isSyncPls)
+        public async Task SyncChannelAsync(IChannel channel, string dir, bool isSyncPls)
         {
             //получаем количество записей в базе
             var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
@@ -285,7 +285,7 @@ namespace Models.Factories
                     var vf = _c.CreateVideoItemFactory();
 
                     if (!channel.ChannelItems.Any())
-                        await channel.FillChannelItemsDbAsync();
+                        await channel.FillChannelItemsDbAsync(dir);
 
                     lsid.Reverse();
 
@@ -439,7 +439,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task FillChannelItemsFromDbAsync(IChannel channel)
+        public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir)
         {
             var fb = _c.CreateSqLiteDatabase();
             var vf = _c.CreateVideoItemFactory();
@@ -453,6 +453,7 @@ namespace Models.Factories
                     {
                         var vid = await vf.GetVideoItemDbAsync(id);
                         vid.IsShowRow = true;
+                        vid.IsHasLocalFileFound(dir);
                         channel.ChannelItems.Add(vid);
                     }
                 }

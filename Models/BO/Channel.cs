@@ -75,9 +75,9 @@ namespace Models.BO
             //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
         }
 
-        public async Task SyncChannelAsync(bool isSyncPls)
+        public async Task SyncChannelAsync(string dir, bool isSyncPls)
         {
-            await _cf.SyncChannelAsync(this, isSyncPls);
+            await _cf.SyncChannelAsync(this, dir, isSyncPls);
         }
 
         public async Task<int> GetChannelItemsCountDbAsync()
@@ -102,9 +102,9 @@ namespace Models.BO
             return await _cf.GetChannelItemsIdsListDbAsync(ID);
         }
 
-        public async Task FillChannelItemsDbAsync()
+        public async Task FillChannelItemsDbAsync(string dir)
         {
-            await _cf.FillChannelItemsFromDbAsync(this);
+            await _cf.FillChannelItemsFromDbAsync(this, dir);
         }
 
         public async Task InsertChannelAsync()

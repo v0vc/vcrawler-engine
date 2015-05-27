@@ -26,7 +26,7 @@ namespace Interfaces.Models
 
         Task<List<IVideoItem>> GetChannelItemsDbAsync();
 
-        Task SyncChannelAsync(bool isSyncPls);
+        Task SyncChannelAsync(string dir, bool isSyncPls);
 
         Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult);
 
@@ -46,7 +46,7 @@ namespace Interfaces.Models
 
         Task<List<string>> GetChannelItemsIdsListDbAsync();
 
-        Task FillChannelItemsDbAsync();
+        Task FillChannelItemsDbAsync(string dir);
 
         Task InsertChannelAsync();
 
