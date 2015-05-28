@@ -12,7 +12,7 @@ using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using Models.Extensions;
+//using Models.Extensions;
 using Models.Factories;
 
 namespace Models.BO
@@ -152,7 +152,7 @@ namespace Models.BO
             ID = item.ID;
             Title = item.Title;
             ParentID = item.ParentID;
-            Description = item.Description.WordWrap();
+            Description = item.Description.WordWrap(80);
             ViewCount = item.ViewCount;
             Duration = item.Duration;
             Comments = item.Comments;
@@ -330,12 +330,12 @@ namespace Models.BO
 
                 if (fn.DirectoryName == null) return;
 
-                var filename = global::Extensions.Extensions.GetVersion(youPath,
+                var filename = global::Extensions.CommonExtensions.GetVersion(youPath,
                     String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
 
                 var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
 
-                if (global::Extensions.Extensions.RenameFile(fn, fnn))
+                if (global::Extensions.CommonExtensions.RenameFile(fn, fnn))
                 {
                     ItemState = "LocalYes";
                     IsHasLocalFile = true;
@@ -362,11 +362,11 @@ namespace Models.BO
                     var fn = new FileInfo(name);
                     if (fn.Exists && fn.DirectoryName != null)
                     {
-                        var filename = global::Extensions.Extensions.GetVersion(youPath,
+                        var filename = global::Extensions.CommonExtensions.GetVersion(youPath,
                             String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
                         var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
 
-                        if (global::Extensions.Extensions.RenameFile(fn, fnn))
+                        if (global::Extensions.CommonExtensions.RenameFile(fn, fnn))
                         {
                             ItemState = "LocalYes";
                             IsHasLocalFile = true;

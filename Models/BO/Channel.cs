@@ -3,10 +3,11 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using Models.Extensions;
+//using Models.Extensions;
 using Models.Factories;
 
 namespace Models.BO
@@ -60,7 +61,7 @@ namespace Models.BO
             _cf = cf as ChannelFactory;
             ID = channel.ID;
             Title = channel.Title;
-            SubTitle = channel.SubTitle.WordWrap();
+            SubTitle = channel.SubTitle.WordWrap(80);
             //LastUpdated = channel.LastUpdated;
             Thumbnail = channel.Thumbnail;
             Site = channel.Site;

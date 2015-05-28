@@ -72,7 +72,7 @@ namespace Crawler.Views
 
         void client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", Extensions.Extensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+            ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
             ViewModel.Model.PrValue = 0;
         }
 
@@ -83,7 +83,7 @@ namespace Crawler.Views
             if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
                 ViewModel.Model.YouHeader = "Youtube-dl";
             else
-                ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", Extensions.Extensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+                ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
         }
     }
 }

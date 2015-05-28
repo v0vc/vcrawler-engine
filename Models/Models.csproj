@@ -47,7 +47,6 @@
     <Compile Include="BO\Subscribe.cs" />
     <Compile Include="BO\Tag.cs" />
     <Compile Include="BO\VideoItem.cs" />
-    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Factories\ChannelFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
