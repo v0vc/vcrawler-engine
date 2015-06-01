@@ -148,7 +148,7 @@ namespace SitesAPI.Videos
 
             var zap =
                 string.Format(
-                    "{0}search?&chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", Url, regionID,
+                    "{0}videos?chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", Url, regionID,
                     Key, itemsppage, Print);
 
             object pagetoken;
@@ -165,7 +165,7 @@ namespace SitesAPI.Videos
 
                 foreach (JToken pair in jsvideo["items"])
                 {
-                    var tid = pair.SelectToken("id.videoId");
+                    var tid = pair.SelectToken("id");
                     if (tid == null)
                         continue;
 
@@ -191,7 +191,7 @@ namespace SitesAPI.Videos
 
                 var det =
                     string.Format(
-                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}",
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}",
                         Url, ids, Key, Print);
 
                 det = await DownloadStringAsync(new Uri(det));
@@ -212,7 +212,7 @@ namespace SitesAPI.Videos
 
                 zap =
                     string.Format(
-                        "{0}search?&chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
+                        "{0}videos?chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
                         Url, regionID, Key, itemsppage, pagetoken, Print);
             } while (pagetoken != null);
 

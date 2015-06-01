@@ -50,7 +50,7 @@ namespace Interfaces.Models
 
         Task DeleteItemAsync();
 
-        void RunItem(string mpcpath);
+        Task RunItem(string mpcpath);
 
         Task DownloadItem(string youPath, string dirPath, bool isHd);
 

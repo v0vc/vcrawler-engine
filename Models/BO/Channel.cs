@@ -7,7 +7,6 @@ using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-//using Models.Extensions;
 using Models.Factories;
 
 namespace Models.BO
@@ -17,6 +16,7 @@ namespace Models.BO
         private readonly ChannelFactory _cf;
 
         private int _countNew;
+        private string _title;
 
         #region INotifyPropertyChanged
 
@@ -31,7 +31,17 @@ namespace Models.BO
         #endregion
 
         public string ID { get; set; }
-        public string Title { get; set; }
+
+        public string Title
+        {
+            get { return _title; }
+            set
+            {
+                _title = value; 
+                OnPropertyChanged();
+            }
+        }
+
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Site { get; set; }

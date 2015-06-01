@@ -196,23 +196,21 @@ namespace Models.BO
             //await ((VideoItemFactory) ServiceLocator.VideoItemFactory).DeleteItemAsync(ID);
         }
 
-        public void RunItem(string mpcpath)
+        public async Task RunItem(string mpcpath)
         {
             if (string.IsNullOrEmpty(mpcpath))
-            {
                 return;
-            }
 
             if (IsHasLocalFile)
             {
                 if (string.IsNullOrEmpty(LocalFilePath)) return;
                 var param = string.Format("\"{0}\" /play", LocalFilePath);
-                Process.Start(mpcpath, param);
+                await Task.Run(() => Process.Start(mpcpath, param));
             }
             else
             {
                 var param = string.Format("\"{0}\" /play", MakeVideoLink());
-                Process.Start(mpcpath, param);
+                await Task.Run(() => Process.Start(mpcpath, param));
             }
         }
 

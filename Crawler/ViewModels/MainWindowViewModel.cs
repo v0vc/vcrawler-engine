@@ -25,7 +25,7 @@ namespace Crawler.ViewModels
         {
             Model = model;
             OpenDirCommand = new RelayCommand(OpenDir);
-            AddNewItemCommand = new RelayCommand(x => AddNewItem());
+            AddNewItemCommand = new RelayCommand(x => AddNewItem(false));
             SaveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem());
             SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
             SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
@@ -73,8 +73,10 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void AddNewItem()
+        public void AddNewItem(bool isEditMode)
         {
+            Model.IsEditMode = isEditMode;
+
             var addview = new AddChanelView
             {
                 DataContext = this,

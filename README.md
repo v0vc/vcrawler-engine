@@ -1,6 +1,4 @@
-﻿Compiled https://dl.dropboxusercontent.com/u/42075250/crawler.zip
-
-Add channel like:
+﻿Add channel like:
 
   https://www.youtube.com/channel/UCvMNE_IRJhM-68jItNYiTSA, 
   
@@ -11,7 +9,7 @@ Add channel like:
   or zapatou
   
 
-Supported sites (13.04.15):
+Supported sites:
 -------------
 
 * [YouTube](https://www.youtube.com/)
@@ -25,4 +23,3 @@ Using
 --------
 * [Ninject] (http://www.ninject.org/)
 * [Json.NET] (http://www.newtonsoft.com/json)
-* [Moq] (https://github.com/Moq/moq4)

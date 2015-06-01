@@ -42,14 +42,29 @@ namespace Crawler.Views
 
         private void AddChanelView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            TextBoxLink.Focus();
-            var text = Clipboard.GetData(DataFormats.Text) as string;
-            if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+            var context = DataContext as MainWindowViewModel;
+            if (context == null)
                 return;
-            var viewModel = DataContext as MainWindowViewModel;
-            if (viewModel != null)
-                viewModel.Model.NewChannelName = text;
-            TextBoxLink.SelectAll();
+
+            if (context.Model.IsEditMode)
+            {
+                TextBoxLink.Text = context.Model.SelectedChannel.ID;
+                TextBoxLink.IsEnabled = false;
+
+                TextBoxName.Text = context.Model.SelectedChannel.Title;
+                TextBoxName.Focus();
+                TextBoxName.SelectAll();
+                ComboBoxSities.IsEnabled = false;
+            }
+            else
+            {
+                TextBoxLink.Focus();
+                var text = Clipboard.GetData(DataFormats.Text) as string;
+                if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+                    return;
+                context.Model.NewChannelLink = text;
+                TextBoxLink.SelectAll();    
+            }
         }
 
         private void ButtonBase_OnClick(object sender, RoutedEventArgs e)

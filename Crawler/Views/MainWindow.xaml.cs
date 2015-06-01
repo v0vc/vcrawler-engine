@@ -68,6 +68,8 @@ namespace Crawler.Views
 
                 case "Edit":
 
+                    ViewModel.AddNewItem(true);
+
                     break;
             }
         }
@@ -109,7 +111,24 @@ namespace Crawler.Views
 
             ViewModel.Model.Result = "Working..";
 
-            await channel.SyncChannelAsync(ViewModel.Model.DirPath, true);
+            if (channel.ID != "pop")
+            {
+                await ViewModel.Model.SyncChannel(channel);
+            }
+            else
+            {
+                if (channel.ChannelItems.Any())
+                    channel.ChannelItems.Clear();
+
+                var lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
+                foreach (IVideoItem item in lst)
+                {
+                    item.IsShowRow = true;
+                    item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                    channel.ChannelItems.Add(item);
+                    channel.CountNew = channel.ChannelItems.Count;
+                }
+            }
 
             ViewModel.Model.Result = "Finished";
         }
@@ -354,20 +373,21 @@ namespace Crawler.Views
             }
         }
 
-        private void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private async void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = sender as DataGridRow;
             if (row == null)
                 return;
+
             var item = row.Item as IVideoItem;
-            if (item != null)
-            {
-                var mpath = ViewModel.Model.MpcPath;
-                if (string.IsNullOrEmpty(mpath))
-                    MessageBox.Show("Please, select MPC");
-                else
-                    item.RunItem(ViewModel.Model.MpcPath);
-            }
+            if (item == null) 
+                return;
+
+            var mpath = ViewModel.Model.MpcPath;
+            if (string.IsNullOrEmpty(mpath))
+                MessageBox.Show("Please, select MPC");
+            else
+                await item.RunItem(ViewModel.Model.MpcPath);
         }
 
         private async void VideoItemSaveButton_onClick(object sender, RoutedEventArgs e)
@@ -375,7 +395,7 @@ namespace Crawler.Views
             var item = ViewModel.Model.SelectedVideoItem;
             if (item == null) return;
             if (item.IsHasLocalFile)
-                item.RunItem(ViewModel.Model.MpcPath);
+                await item.RunItem(ViewModel.Model.MpcPath);
             else
             {
                 if (!string.IsNullOrEmpty(ViewModel.Model.YouPath))

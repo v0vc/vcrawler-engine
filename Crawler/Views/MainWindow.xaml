@@ -44,6 +44,7 @@
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
                     <RowDefinition Height="48"></RowDefinition>
                 </Grid.RowDefinitions>
 
@@ -111,7 +112,7 @@
                         <DataGridTemplateColumn CanUserResize="True" Width="*">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                    <TextBlock Text="{Binding Title, Mode=OneWay}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
@@ -119,7 +120,7 @@
                         <DataGridTemplateColumn CanUserResize="False" Width="50">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding CountNew}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
+                                    <TextBlock Text="{Binding CountNew, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
                                         <TextBlock.Style>
                                             <Style TargetType="TextBlock">
                                                 <Setter Property= "Foreground" Value="MediumSeaGreen" />
@@ -139,32 +140,108 @@
                         </DataGridTemplateColumn>
                     </DataGrid.Columns>
                 </DataGrid>
+                
+                <DockPanel Grid.Row="1" Background="Lavender">
+                    <Expander ExpandDirection="Up" DockPanel.Dock="Left">
+                        <Expander.Content>
+                            <DataGrid CanUserAddRows="False"
+                                      CanUserDeleteRows="False"
+                                      AutoGenerateColumns="False"
+                                      HeadersVisibility="None"
+                                      GridLinesVisibility="Horizontal"
+                                      BorderThickness="1"
+                                      PreviewKeyDown="dataGrid_PreviewKeyDown"
+                                      x:Name="SearchGrid"
+                                      ItemsSource="{Binding Model.ServiceChannels}"
+                                      SelectedItem="{Binding Model.SelectedChannel}"
+                                      SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                            >
+                                <DataGrid.Resources>
+                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                </DataGrid.Resources>
+                                <DataGrid.CellStyle>
+                                    <Style TargetType="DataGridCell">
+                                        <Setter Property="BorderThickness" Value="0" />
+                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                    </Style>
+                                </DataGrid.CellStyle>
+                                <DataGrid.RowStyle>
+                                    <Style TargetType="{x:Type DataGridRow}">
+                                        <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                                    </Style>
+                                </DataGrid.RowStyle>
 
-                <Menu Grid.Row="1" Margin="0,1,0,0" BorderThickness="1" BorderBrush="Gray">
-                    <Menu.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <DockPanel HorizontalAlignment="Left" />
-                        </ItemsPanelTemplate>
-                    </Menu.ItemsPanel>
+                                <DataGrid.Columns>
 
-                    <MenuItem Width="49" x:Name="AddItem" Margin="1,1,1,1" BorderThickness="0.1" BorderBrush="Black" Background="Lavender" Command="{Binding SyncDataCommand}">
-                        <MenuItem.Icon>
-                            <Image Source="../Images/sync-48.png" StretchDirection="Both" />
-                        </MenuItem.Icon>
-                        <MenuItem.ToolTip>
-                            <TextBlock Text="Sync"></TextBlock>
-                        </MenuItem.ToolTip>
-                    </MenuItem>
+                                    <DataGridTemplateColumn CanUserResize="False">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="1">
+                                                    <StackPanel.OpacityMask>
+                                                        <VisualBrush Visual="{Binding ElementName=Mask}" />
+                                                    </StackPanel.OpacityMask>
+                                                    <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                           RenderOptions.BitmapScalingMode="Fant"
+                                                           ToolTipService.ShowDuration="120000"
+                                                           Stretch="Fill"
+                                                           Width="48"
+                                                           Height="48"
+                                                           VerticalAlignment="Top"
+                                                           Margin="0"
+                                                           HorizontalAlignment="Center"
+                                                    >
+                                                    </Image>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
 
-                    <MenuItem Width="50" x:Name="SyncItem" Margin="0,1,1,1" BorderThickness="0.1" BorderBrush="Black" Background="Lavender" Command="{Binding AddNewItemCommand}">
-                        <MenuItem.Icon>
-                            <Image Source="../Images/add-48.png" StretchDirection="Both" Margin="1,0,0,0"/>
-                        </MenuItem.Icon>
-                        <MenuItem.ToolTip>
-                            <TextBlock Text="Add"></TextBlock>
-                        </MenuItem.ToolTip>
-                    </MenuItem>
-                </Menu>
+                                    <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                    <DataGridTemplateColumn CanUserResize="False" Width="60">
+                                        <DataGridTemplateColumn.CellTemplate>
+                                            <DataTemplate>
+                                                <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
+                                                          ItemsSource="{Binding Path=ViewModel.Model.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                          SelectedItem="{Binding Path=ViewModel.Model.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                />
+                                            </DataTemplate>
+                                        </DataGridTemplateColumn.CellTemplate>
+                                    </DataGridTemplateColumn>
+
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                        </Expander.Content>
+                    </Expander>
+                </DockPanel>
+
+
+                <DockPanel Grid.Row="2" Margin="0,0,0,0" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
+                    <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                        <StackPanel Orientation="Horizontal">
+                            <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
+                                <Image Source="../Images/sync-48.png" StretchDirection="Both" />
+                                <Button.ToolTip>
+                                    <TextBlock Text="Sync"></TextBlock>
+                                </Button.ToolTip>
+                            </Button>
+                            <Button Width="50" Margin="0,2,2,2" Command="{Binding AddNewItemCommand}">
+                                <Image Source="../Images/add-48.png" StretchDirection="Both" />
+                                <Button.ToolTip>
+                                    <TextBlock Text="Add"></TextBlock>
+                                </Button.ToolTip>
+                            </Button>
+                        </StackPanel>
+                    </Border>
+                </DockPanel>
+
             </Grid>
 
             <GridSplitter Grid.Column="1" Grid.RowSpan="2" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray" />
@@ -328,7 +405,6 @@
             <GridSplitter Grid.Column="3" Grid.RowSpan="2" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray" />
 
             <Expander Grid.Column="4" 
-                      
                       ExpandDirection="Left" 
                       HorizontalAlignment="Right" 
                       Background="Lavender">
@@ -455,7 +531,7 @@
             <StatusBarItem Grid.Column="4" Content="{Binding Model.SelectedChannel.ChannelItems.Count}" HorizontalContentAlignment="Right" />
             <Separator Grid.Column="5" />
             <StatusBarItem Grid.Column="6">
-                <ProgressBar Value="0" Width="90" Height="16" />
+                <ProgressBar Width="90" Height="16" Value="{Binding Model.PrValue, Mode=OneWay}"/>
             </StatusBarItem>
         </StatusBar>
         

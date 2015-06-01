@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
@@ -33,22 +35,27 @@ namespace Crawler.Models
         private string _info;
         private Cred _selectedCred;
         private Channel _selectedChannel;
-        private string _newChannelName;
+        private string _newChannelLink;
         private VideoItem _selectedVideoItem;
         private string _result;
         private Playlist _selectedPlaylist;
         private string _dirPath;
         private string _mpcPath;
         private string _youPath;
-        //private string _ffmegPath;
         private double _prValue;
         private string _youHeader;
+        private string _selectedCountry;
+        private bool _isIdle;
 
         #region Fields
 
         public ICommonFactory BaseFactory { get; set; }
 
         public ObservableCollection<Channel> Channels { get; set; }
+
+        public ObservableCollection<Channel> ServiceChannels { get; set; }
+
+        public List<string> Countries { get; set; }
 
         public Channel SelectedChannel
         {
@@ -92,12 +99,12 @@ namespace Crawler.Models
             }
         }
 
-        public string NewChannelName
+        public string NewChannelLink
         {
-            get { return _newChannelName; }
+            get { return _newChannelLink; }
             set
             {
-                _newChannelName = value;
+                _newChannelLink = value;
                 OnPropertyChanged();
             }
         }
@@ -154,16 +161,6 @@ namespace Crawler.Models
             }
         }
 
-        //public string FfmegPath
-        //{
-        //    get { return _ffmegPath; }
-        //    set
-        //    {
-        //        _ffmegPath = value; 
-        //        OnPropertyChanged();
-        //    }
-        //}
-
         public double PrValue
         {
             get { return _prValue; }
@@ -184,13 +181,39 @@ namespace Crawler.Models
             }
         }
 
+        public string SelectedCountry
+        {
+            get { return _selectedCountry; }
+            set
+            {
+                _selectedCountry = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsEditMode { get; set; }
+
+        public bool IsIdle
+        {
+            get { return _isIdle; }
+            set
+            {
+                _isIdle = value; 
+                OnPropertyChanged();
+            }
+        }
+
         #endregion
 
         public MainWindowModel()
         {
             BaseFactory = Container.Kernel.Get<ICommonFactory>();
             Channels = new ObservableCollection<Channel>();
+            ServiceChannels = new ObservableCollection<Channel>();
             SupportedCreds = new List<Cred>();
+            Countries = new List<string> {"RU", "US", "CA", "FR", "DE", "IT", "JP"};
+            SelectedCountry = Countries.First();
+            IsIdle = true;
         }
 
         public async Task FillChannels()
@@ -234,6 +257,8 @@ namespace Crawler.Models
 
                 if (SupportedCreds.Any())
                     SelectedCred = SupportedCreds.First();
+
+                CreateServicesChannels();
             }
             catch (Exception ex)
             {
@@ -242,43 +267,201 @@ namespace Crawler.Models
             }
         }
 
+        private void CreateServicesChannels()
+        {
+            var cf = BaseFactory.CreateChannelFactory();
+            var chpop = cf.CreateChannel();
+            chpop.Title = "#Popular";
+            chpop.Site = "youtube.com";
+            var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
+            chpop.Thumbnail = SitesAPI.SiteHelper.ReadFully(img);
+            chpop.ID = "pop";
+            ServiceChannels.Add(chpop as Channel);
+        }
+
         public async Task SaveNewItem()
         {
-            if (String.IsNullOrEmpty(NewChannelName))
+            if (IsEditMode)
             {
-                MessageBox.Show("Fill user name");
-                return;
+                if (String.IsNullOrEmpty(NewChannelTitle))
+                {
+                    MessageBox.Show("Fill channel title");
+                    return;
+                }
+                await EditChannel();
             }
+            else
+            {
+                if (String.IsNullOrEmpty(NewChannelLink))
+                {
+                    MessageBox.Show("Fill channel link");
+                    return;
+                }
+                await AddNewChannel();
+            }
+        }
 
+        public async Task SyncData()
+        {
+            try
+            {
+                var watch = Stopwatch.StartNew();
+
+                PrValue = 0;
+
+                IsIdle = false;
+
+                Result = "Working..";
+
+                var i = 0;
+
+                foreach (Channel channel in Channels)
+                {
+                    i += 1;
+                    PrValue = Math.Round((double) (100*i)/Channels.Count);
+                    Info = "Syncing: " + channel.Title;
+                    await channel.SyncChannelAsync(DirPath, false);
+                }
+
+                PrValue = 0;
+
+                IsIdle = true;
+
+                Result = "Finished!";
+
+                watch.Stop();
+
+                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
+            }
+            catch (Exception ex)
+            {
+                IsIdle = true;
+                Result = "Error";
+                Info = ex.Message;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        public async Task SaveSettings()
+        {
+            var sf = BaseFactory.CreateSettingFactory();
+
+            try
+            {
+                var savedir = await sf.GetSettingDbAsync("pathToDownload");
+                if (savedir.Value != DirPath)
+                    await savedir.UpdateSettingAsync(DirPath);
+
+
+                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
+                if (mpcdir.Value != MpcPath)
+                    await mpcdir.UpdateSettingAsync(MpcPath);
+
+                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                if (youpath.Value != YouPath)
+                    await youpath.UpdateSettingAsync(YouPath);
+
+                Result = "Saved";
+            }
+            catch (Exception ex)
+            {
+                Info = ex.Message;
+            }
+        }
+
+        public async Task LoadSettings()
+        {
+            var sf = BaseFactory.CreateSettingFactory();
+
+            try
+            {
+                var savedir = await sf.GetSettingDbAsync("pathToDownload");
+                DirPath = savedir.Value;
+
+                if (string.IsNullOrEmpty(DirPath))
+                {
+                    var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    DirPath = path;
+                    await savedir.UpdateSettingAsync(path);
+                }
+
+                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
+                MpcPath = mpcdir.Value;
+
+                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                YouPath = youpath.Value;
+
+                if (string.IsNullOrEmpty(YouPath))
+                {
+                    var path = AppDomain.CurrentDomain.BaseDirectory;
+                    var res = Path.Combine(path, "youtube-dl.exe");
+                    var fn = new FileInfo(res);
+                    if (fn.Exists)
+                    {
+                        YouPath = fn.FullName;
+                        await youpath.UpdateSettingAsync(fn.FullName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Info = ex.Message;
+            }
+        }
+
+        public async Task SyncChannel(IChannel channel)
+        {
+            Info = "Syncing: " + channel.Title;
+            try
+            {
+                IsIdle = false;
+                var watch = Stopwatch.StartNew();
+                await channel.SyncChannelAsync(DirPath, true);
+                watch.Stop();
+                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
+                Result = "Finished!";
+                IsIdle = true;
+            }
+            catch (Exception ex)
+            {
+                IsIdle = true;
+                Result = "Error";
+                Info = ex.Message;
+                MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async Task AddNewChannel()
+        {
             Result = "Working..";
 
             var cf = BaseFactory.CreateChannelFactory();
 
-            var sp = NewChannelName.Split('/');
+            var sp = NewChannelLink.Split('/');
             if (sp.Length > 1)
             {
                 if (sp.Contains("user"))
                 {
-                    NewChannelName = await cf.GetChannelIdByUserNameNetAsync(sp.Last());
+                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(sp.Last());
                 }
 
                 if (sp.Contains("channel"))
-                    NewChannelName = sp.Last();
+                    NewChannelLink = sp.Last();
             }
             else
             {
                 try
                 {
-                    NewChannelName = await cf.GetChannelIdByUserNameNetAsync(NewChannelName);
+                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(NewChannelLink);
                 }
                 catch
                 {
-                    NewChannelName = NewChannelName; // :)
-                }    
+                    NewChannelLink = NewChannelLink; // :)
+                }
             }
-            
 
-            if (Channels.Select(x => x.ID).Contains(NewChannelName))
+
+            if (Channels.Select(x => x.ID).Contains(NewChannelLink))
             {
                 MessageBox.Show("Has already");
                 return;
@@ -286,7 +469,7 @@ namespace Crawler.Models
 
             try
             {
-                var channel = await cf.GetChannelNetAsync(NewChannelName) as Channel;
+                var channel = await cf.GetChannelNetAsync(NewChannelLink) as Channel;
                 if (channel == null)
                     throw new Exception("GetChannelNetAsync return null");
 
@@ -334,80 +517,10 @@ namespace Crawler.Models
             }
         }
 
-        public async Task SyncData()
+        private async Task EditChannel()
         {
-            try
-            {
-                Result = "Working..";
-
-                foreach (Channel channel in Channels)
-                {
-                    await channel.SyncChannelAsync(DirPath, false);
-                }
-
-                Result = "Finished";
-            }
-            catch (Exception ex)
-            {
-                Result = "Error";
-                MessageBox.Show(ex.Message);
-            }
-        }
-
-        public async Task SaveSettings()
-        {
-            var sf = BaseFactory.CreateSettingFactory();
-
-            try
-            {
-                var savedir = await sf.GetSettingDbAsync("pathToDownload");
-                if (savedir.Value != DirPath)
-                    await savedir.UpdateSettingAsync(DirPath);
-
-
-                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
-                if (mpcdir.Value != MpcPath)
-                    await mpcdir.UpdateSettingAsync(MpcPath);
-
-                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
-                if (youpath.Value != YouPath)
-                    await youpath.UpdateSettingAsync(YouPath);
-
-                //var fpath = await sf.GetSettingDbAsync("pathToFfmpeg");
-                //if (fpath.Value != FfmegPath)
-                //    await fpath.UpdateSettingAsync(FfmegPath);
-
-                Result = "Saved";
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-            }
-        }
-
-        public async Task LoadSettings()
-        {
-            var sf = BaseFactory.CreateSettingFactory();
-
-            try
-            {
-                var savedir = await sf.GetSettingDbAsync("pathToDownload");
-                DirPath = savedir.Value;
-
-                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
-                MpcPath = mpcdir.Value;
-
-                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
-                YouPath = youpath.Value;
-
-                //var fpath = await sf.GetSettingDbAsync("pathToFfmpeg");
-                //FfmegPath = fpath.Value;
-
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-            }
+            SelectedChannel.Title = NewChannelTitle;
+            await SelectedChannel.RenameChannelAsync(NewChannelTitle);
         }
     }
 }
