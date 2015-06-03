@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -10,10 +9,12 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
+using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Models.BO;
 using Ninject;
+using SitesAPI;
 using Container = IoC.Container;
 
 namespace Crawler.Models
@@ -203,6 +204,8 @@ namespace Crawler.Models
             }
         }
 
+        public string Version { get; set; }
+
         #endregion
 
         public MainWindowModel()
@@ -214,6 +217,7 @@ namespace Crawler.Models
             Countries = new List<string> {"RU", "US", "CA", "FR", "DE", "IT", "JP"};
             SelectedCountry = Countries.First();
             IsIdle = true;
+            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
         }
 
         public async Task FillChannels()
@@ -274,7 +278,7 @@ namespace Crawler.Models
             chpop.Title = "#Popular";
             chpop.Site = "youtube.com";
             var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
-            chpop.Thumbnail = SitesAPI.SiteHelper.ReadFully(img);
+            chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";
             ServiceChannels.Add(chpop as Channel);
         }
@@ -331,7 +335,7 @@ namespace Crawler.Models
 
                 watch.Stop();
 
-                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
+                Info = String.Format("Time: {0} sec", watch.Elapsed.Seconds);
             }
             catch (Exception ex)
             {
@@ -378,7 +382,7 @@ namespace Crawler.Models
                 var savedir = await sf.GetSettingDbAsync("pathToDownload");
                 DirPath = savedir.Value;
 
-                if (string.IsNullOrEmpty(DirPath))
+                if (String.IsNullOrEmpty(DirPath))
                 {
                     var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                     DirPath = path;
@@ -391,7 +395,7 @@ namespace Crawler.Models
                 var youpath = await sf.GetSettingDbAsync("pathToYoudl");
                 YouPath = youpath.Value;
 
-                if (string.IsNullOrEmpty(YouPath))
+                if (String.IsNullOrEmpty(YouPath))
                 {
                     var path = AppDomain.CurrentDomain.BaseDirectory;
                     var res = Path.Combine(path, "youtube-dl.exe");
@@ -418,7 +422,7 @@ namespace Crawler.Models
                 var watch = Stopwatch.StartNew();
                 await channel.SyncChannelAsync(DirPath, true);
                 watch.Stop();
-                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
+                Info = String.Format("Time: {0} sec", watch.Elapsed.Seconds);
                 Result = "Finished!";
                 IsIdle = true;
             }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -142,6 +144,13 @@ namespace Extensions
                 i--;
             // Return length of text before whitespace
             return i + 1;
+        }
+
+        public static string GetFileVersion(Assembly assembly)
+        {
+            //Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return "Crawler v" + fvi.FileVersion;
         }
     }
 }

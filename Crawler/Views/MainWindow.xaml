@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Crawler.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Crawler" Height="450" Width="1200"
+        Title="{Binding Model.Version, Mode=OneWay}" Height="450" Width="1200"
         Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.RowDefinitions>
@@ -27,7 +27,7 @@
             </MenuItem>
             
             <MenuItem Header="Help" HorizontalAlignment="Right">
-                <MenuItem Header="About" />
+                <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About"/>
             </MenuItem>
         </Menu>
         
@@ -142,9 +142,10 @@
                 </DataGrid>
                 
                 <DockPanel Grid.Row="1" Background="Lavender">
-                    <Expander ExpandDirection="Up" DockPanel.Dock="Left">
+                    <Expander ExpandDirection="Up" DockPanel.Dock="Left" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft">
                         <Expander.Content>
-                            <DataGrid CanUserAddRows="False"
+                            <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
+                                <DataGrid CanUserAddRows="False"
                                       CanUserDeleteRows="False"
                                       AutoGenerateColumns="False"
                                       HeadersVisibility="None"
@@ -217,13 +218,15 @@
 
                                 </DataGrid.Columns>
                             </DataGrid>
-
+                            </DockPanel>
                         </Expander.Content>
+                        <Expander.Header>
+                            <Label FontSize="10" Content="Search"/>
+                        </Expander.Header>
                     </Expander>
                 </DockPanel>
 
-
-                <DockPanel Grid.Row="2" Margin="0,0,0,0" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
+                <DockPanel Grid.Row="2" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <StackPanel Orientation="Horizontal">
                             <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
@@ -247,6 +250,11 @@
             <GridSplitter Grid.Column="1" Grid.RowSpan="2" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray" />
 
             <Grid Grid.Column="2">
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="Auto" MinHeight="24"></RowDefinition>
+                </Grid.RowDefinitions>
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
@@ -400,6 +408,18 @@
                     </DataGrid.Columns>
 
                 </DataGrid>
+                
+                <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
+
+                <DockPanel Grid.Row="2" Background="Lavender">
+                    <Expander ExpandDirection="Up" DockPanel.Dock="Left" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft">
+                        <ListView Height="Auto" MinHeight="50"></ListView>
+                        <Expander.Header>
+                            <Label FontSize="10" Content="Log"/>
+                        </Expander.Header>
+                    </Expander>
+                </DockPanel>
+                
             </Grid>
 
             <GridSplitter Grid.Column="3" Grid.RowSpan="2" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray" />
@@ -407,7 +427,8 @@
             <Expander Grid.Column="4" 
                       ExpandDirection="Left" 
                       HorizontalAlignment="Right" 
-                      Background="Lavender">
+                      Background="Lavender"
+                      BorderThickness="1" BorderBrush="Gray" Margin="0,0,2,0">
                 <Expander.Content>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -429,6 +450,7 @@
                                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                 <ContextMenu x:Key="DataRowContextMenu">
                                     <MenuItem Header="Copy" Click="Playlist_OnClick" CommandParameter="Link" />
+                                    <MenuItem Header="Download" Click="Playlist_OnClick" CommandParameter="Download" />
                                 </ContextMenu>
                             </DataGrid.Resources>
                             <DataGrid.CellStyle>

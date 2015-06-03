@@ -349,6 +349,12 @@ namespace Crawler.Views
                     }
 
                     break;
+
+                case "Download":
+
+
+
+                    break;
             }
         }
 
@@ -368,6 +374,12 @@ namespace Crawler.Views
                 case "Settings":
 
                     ViewModel.OpenSettings();
+
+                    break;
+
+                case "About":
+
+                    MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
 
                     break;
             }
