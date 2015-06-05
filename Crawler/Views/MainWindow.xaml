@@ -252,8 +252,8 @@
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition></RowDefinition>
+                    <!--<RowDefinition Height="Auto"></RowDefinition>-->
                     <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="Auto" MinHeight="24"></RowDefinition>
                 </Grid.RowDefinitions>
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -266,6 +266,7 @@
                           SelectedItem="{Binding Model.SelectedVideoItem}"
                           x:Name="VideoGrid"
                           >
+                    
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
@@ -301,7 +302,7 @@
                     </DataGrid.CellStyle>
 
                     <DataGrid.Columns>
-                        
+
                         <DataGridTemplateColumn CanUserResize="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
@@ -348,6 +349,8 @@
                                                     <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
                                                 </TextBlock.ToolTip>
                                             </TextBlock>
+
+                                            <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
 
                                         </StackPanel>
                                     </Grid>
@@ -409,16 +412,36 @@
 
                 </DataGrid>
                 
-                <GridSplitter Grid.Row="1" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
+                
 
-                <DockPanel Grid.Row="2" Background="Lavender">
-                    <Expander ExpandDirection="Up" DockPanel.Dock="Left" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft">
-                        <ListView Height="Auto" MinHeight="50"></ListView>
-                        <Expander.Header>
+                <Expander Grid.Row="1" ExpandDirection="Up" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft" Background="Lavender" Height="Auto">
+                    
+                    <Expander.Content>
+                        <Grid FlowDirection="LeftToRight">
+                            <Grid.RowDefinitions>
+                                <RowDefinition></RowDefinition>
+                                <RowDefinition></RowDefinition>
+                            </Grid.RowDefinitions>
+                            <GridSplitter ResizeBehavior="PreviousAndCurrent" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
+                            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+                                <TextBox Height="Auto" Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" VerticalAlignment="Stretch"/>
+                            </ScrollViewer>
+                        </Grid>
+                    </Expander.Content>
+                    
+                    <Expander.Header>
+                        <StackPanel>
                             <Label FontSize="10" Content="Log"/>
-                        </Expander.Header>
-                    </Expander>
-                </DockPanel>
+                        </StackPanel>
+                    </Expander.Header>
+                    
+                    <Expander.Style>
+                        <Style TargetType="Expander">
+                            <Setter  Property="Visibility" Value="Visible"/>
+                        </Style>
+                    </Expander.Style>
+                    
+                </Expander>
                 
             </Grid>
 

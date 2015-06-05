@@ -46,7 +46,10 @@ namespace Models.BO
         private string _itemState;
 
         private readonly List<string> _destList = new List<string>();
+
         private byte[] _largeThumb;
+
+        private string _logText;
 
         public string ID { get; set; }
 
@@ -140,6 +143,17 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
+        public string LogText
+        {
+            get { return _logText; }
+            set
+            {
+                _logText = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         public VideoItem(IVideoItemFactory vf)
         {
@@ -270,14 +284,16 @@ namespace Models.BO
             });
         }
 
-        private void SetLogAndPercentage(string data, string youPath)
+        private async void SetLogAndPercentage(string data, string youPath)
         {
             if (data == null)
             {
                 processDownload_Exited(youPath);
                 return;
             }
-            
+
+            await Log(data);
+
             DownloadPercentage = GetPercentFromYoudlOutput(data);
 
             var dest = GetDestinationFromYoudlOutput(data);
@@ -328,12 +344,12 @@ namespace Models.BO
 
                 if (fn.DirectoryName == null) return;
 
-                var filename = global::Extensions.CommonExtensions.GetVersion(youPath,
+                var filename = CommonExtensions.GetVersion(youPath,
                     String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
 
                 var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
 
-                if (global::Extensions.CommonExtensions.RenameFile(fn, fnn))
+                if (CommonExtensions.RenameFile(fn, fnn))
                 {
                     ItemState = "LocalYes";
                     IsHasLocalFile = true;
@@ -360,11 +376,11 @@ namespace Models.BO
                     var fn = new FileInfo(name);
                     if (fn.Exists && fn.DirectoryName != null)
                     {
-                        var filename = global::Extensions.CommonExtensions.GetVersion(youPath,
+                        var filename = CommonExtensions.GetVersion(youPath,
                             String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
                         var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
 
-                        if (global::Extensions.CommonExtensions.RenameFile(fn, fnn))
+                        if (CommonExtensions.RenameFile(fn, fnn))
                         {
                             ItemState = "LocalYes";
                             IsHasLocalFile = true;
@@ -423,6 +439,11 @@ namespace Models.BO
         internal string MakeVideoLink()
         {
             return string.Format("https://www.youtube.com/watch?v={0}", ID);
+        }
+
+        public async Task Log(string text)
+        {
+            await Task.Run(() => LogText += (text + Environment.NewLine));
         }
     }
 }

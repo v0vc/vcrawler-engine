@@ -242,10 +242,8 @@ namespace Crawler.Models
                 //}
 
                 var lst = await s.GetChannelsListAsync(); //все каналы за раз
-                foreach (var channel in lst)
+                foreach (var ch in lst.Cast<Channel>())
                 {
-                    var ch = (Channel)channel;
-                    //ch.CountNew = 1;
                     Channels.Add(ch);
                 }
 
@@ -526,5 +524,6 @@ namespace Crawler.Models
             SelectedChannel.Title = NewChannelTitle;
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
         }
+
     }
 }

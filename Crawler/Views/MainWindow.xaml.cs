@@ -32,8 +32,6 @@ namespace Crawler.Views
 
         private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            //await ViewModelLocator.MvViewModel.Model.FillChannels();
-
             await ViewModel.Model.FillChannels();
 
             if (ChannelsGrid.SelectedIndex >= 0) //focus
@@ -117,10 +115,13 @@ namespace Crawler.Views
             }
             else
             {
+                #region Popular
+
                 if (channel.ChannelItems.Any())
                     channel.ChannelItems.Clear();
 
                 var lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
+
                 foreach (IVideoItem item in lst)
                 {
                     item.IsShowRow = true;
@@ -128,6 +129,8 @@ namespace Crawler.Views
                     channel.ChannelItems.Add(item);
                     channel.CountNew = channel.ChannelItems.Count;
                 }
+
+                #endregion
             }
 
             ViewModel.Model.Result = "Finished";
@@ -149,13 +152,6 @@ namespace Crawler.Views
             if (!ch.ChannelItems.Any() || ch.ChannelItems.Any(x => x.IsNewItem)) //заполняем только если либо ничего нет, либо одни новые
             {
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
-
-                //foreach (IVideoItem item in ch.ChannelItems)
-                //{
-                //    item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                //    //item.ItemState = "LocalYes";
-                //    //item.DownloadPercentage = 50;
-                //}
 
                 var pls = await ch.GetChannelPlaylistsAsync();
 
@@ -199,12 +195,6 @@ namespace Crawler.Views
                         return;
                     }
 
-                    //if (string.IsNullOrEmpty(ViewModel.Model.FfmegPath))
-                    //{
-                    //    MessageBox.Show("Please, select ffmpeg");
-                    //    return;
-                    //}
-
                     await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
 
                     break;
@@ -222,6 +212,7 @@ namespace Crawler.Views
                             try
                             {
                                 fn.Delete();
+                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
                                 item.LocalFilePath = string.Empty;
                                 item.IsHasLocalFile = false;
                                 item.ItemState = "LocalNo";
