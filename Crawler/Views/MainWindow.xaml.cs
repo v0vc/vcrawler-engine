@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -67,6 +68,16 @@ namespace Crawler.Views
                 case "Edit":
 
                     ViewModel.AddNewItem(true);
+
+                    break;
+
+                case "Update":
+
+                    ViewModel.Model.Result = "Working..";
+
+                    await ViewModel.Model.SelectedChannel.SyncChannelPlaylistsAsync();
+
+                    ViewModel.Model.Result = "Finished";
 
                     break;
             }
@@ -406,6 +417,11 @@ namespace Crawler.Views
                 else
                     MessageBox.Show("Please, select youtube-dl");
             }
+        }
+
+        private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
+        {
+            e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
         }
     }
 }

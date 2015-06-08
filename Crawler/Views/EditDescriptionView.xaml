@@ -11,6 +11,8 @@
             <RowDefinition></RowDefinition>
         </Grid.RowDefinitions>
         <Image x:Name="ImageThumb" Stretch="None" Source="{Binding LargeThumb, IsAsync=True}"></Image>
-        <TextBox Grid.Row="1" Text="{Binding Description}" />
+        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <TextBox  Text="{Binding Description}" />
+        </ScrollViewer>
     </Grid>
 </Window>

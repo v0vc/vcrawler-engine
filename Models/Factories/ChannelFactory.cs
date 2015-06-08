@@ -294,13 +294,7 @@ namespace Models.Factories
                         if (!channel.ChannelItems.Select(x => x.ID).Contains(id))
                         {
                             var item = await vf.GetVideoItemNetAsync(id);
-                            item.IsNewItem = true;
-                            item.IsShowRow = true;
-                            item.ItemState = "LocalNo";
-                            item.IsHasLocalFile = false;
-                            //channel.ChannelItems.Add(item);
-                            channel.ChannelItems.Insert(0, item);
-                            channel.CountNew += 1;
+                            channel.AddNewItem(item);
                             await item.InsertItemAsync();
                         }
                     }
@@ -363,9 +357,9 @@ namespace Models.Factories
                                 {
                                     await pl.UpdatePlaylistAsync(id);
                                 }
-                                catch (Exception)
+                                catch (Exception ex)
                                 {
-                                    Debug.WriteLine(id);
+                                    Debug.WriteLine(id + ":" + ex.Message);
                                 }
                             }
                         }
@@ -463,6 +457,51 @@ namespace Models.Factories
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task SyncChannelPlaylistsAsync(Channel channel)
+        {
+            var pls = await channel.GetChannelPlaylistsNetAsync();
+            if (pls.Any())
+            {
+                foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                {
+                    await playlist.DeletePlaylistAsync();
+                }
+                channel.ChannelPlaylists.Clear();
+            }
+
+            var vf = _c.CreateVideoItemFactory();
+
+            foreach (IPlaylist playlist in pls)
+            {
+                await playlist.InsertPlaylistAsync();
+
+                var plv = await playlist.GetPlaylistItemsIdsListNetAsync();
+
+                foreach (string id in plv)
+                {
+                    if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+                    {
+                        try
+                        {
+                            await playlist.UpdatePlaylistAsync(id);
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine(id + ":" + ex.Message);
+                        }
+                    }
+                    else
+                    {
+                        var item = await vf.GetVideoItemNetAsync(id);
+                        channel.AddNewItem(item);
+                        await item.InsertItemAsync();
+                    }
+                }
+
+                channel.ChannelPlaylists.Add(playlist);
             }
         }
     }

@@ -91,6 +91,11 @@ namespace Models.BO
             await _cf.SyncChannelAsync(this, dir, isSyncPls);
         }
 
+        public async Task SyncChannelPlaylistsAsync()
+        {
+            await _cf.SyncChannelPlaylistsAsync(this);
+        }
+
         public async Task<int> GetChannelItemsCountDbAsync()
         {
             return await _cf.GetChannelItemsCountDbAsync(ID);
@@ -188,6 +193,16 @@ namespace Models.BO
         {
             await _cf.DeleteChannelTagAsync(ID, tag);
             //await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelTagAsync(ID, tag);
+        }
+
+        public void AddNewItem(IVideoItem item)
+        {
+            item.IsNewItem = true;
+            item.IsShowRow = true;
+            item.ItemState = "LocalNo";
+            item.IsHasLocalFile = false;
+            ChannelItems.Insert(0, item);
+            CountNew += 1;
         }
     }
 }

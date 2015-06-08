@@ -20,7 +20,9 @@ namespace SitesAPI.Videos
 
         private const string Token = "nextPageToken";
 
-        private const string Privacy = "public";
+        private const string PrivacyPub = "public";
+
+        private const string PrivacyUnList = "unlisted";
 
         private const int ItemsPerPage = 50;
 
@@ -134,7 +136,7 @@ namespace SitesAPI.Videos
                     Url, channelID, Key, itemsppage, pagetoken, Print);
             } while (pagetoken != null);
 
-            return res.Where(x => x.Status == Privacy).ToList();
+            return res.Where(x => x.Status == PrivacyPub).ToList();
         }
 
         public async Task<List<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
@@ -405,7 +407,8 @@ namespace SitesAPI.Videos
                     if (pr == null)
                         continue;
 
-                    if (pr.Value<string>() != Privacy)
+                    var prstatus = pr.Value<string>();
+                    if (prstatus != PrivacyPub && prstatus != PrivacyUnList)
                         continue;
 
                     var v = new VideoItemPOCO(id);
@@ -491,12 +494,9 @@ namespace SitesAPI.Videos
 
             var total = jsvideo.SelectToken("pageInfo.totalResults");
 
-            if (total != null)
-            {
-                return total.Value<int>();
-            }
-
-            throw new Exception(zap);
+            if (total == null)
+                throw new Exception(zap);
+            return total.Value<int>();
         }
 
         public async Task<List<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
@@ -589,7 +589,7 @@ namespace SitesAPI.Videos
                     Url, channelID, Key, itemsppage, pagetoken, Print);
             } while (pagetoken != null);
 
-            return res.Where(x => x.Status == Privacy).Select(x => x.ID).ToList();
+            return res.Where(x => x.Status == PrivacyPub).Select(x => x.ID).ToList();
         }
 
         public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string plid)
@@ -625,7 +625,9 @@ namespace SitesAPI.Videos
                     if (pr == null)
                         continue;
 
-                    if (pr.Value<string>() == Privacy)
+                    var prstatus = pr.Value<string>();
+                    if (prstatus == PrivacyPub || prstatus == PrivacyUnList)
+                    //if (pr.Value<string>() == PrivacyPub)
                         res.Add(id);
                 }
 

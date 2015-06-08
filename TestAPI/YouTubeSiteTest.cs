@@ -77,7 +77,7 @@ namespace TestAPI
 
             //var you = new Mock<YouTubeSiteApiV2>();
 
-            var lst = await you.GetPlaylistItemsNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            var lst = await you.GetPlaylistItemsNetAsync("PLiCpP_44QZByvNe1h9hGLlOXIXRwnz5l3");
 
             Assert.IsTrue(lst.Any());
         }

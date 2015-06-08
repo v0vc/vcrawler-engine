@@ -61,15 +61,6 @@ namespace Crawler.ViewModels
                         Model.YouPath = dlgy.FileName;
                     }
                     break;
-
-                //case "FfmegPath":
-                //    var dlgf = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
-                //    var resf = dlgf.ShowDialog();
-                //    if (resf == DialogResult.OK)
-                //    {
-                //        Model.FfmegPath = dlgf.FileName;
-                //    }
-                //    break;
             }
         }
 

@@ -28,6 +28,8 @@ namespace Interfaces.Models
 
         Task SyncChannelAsync(string dir, bool isSyncPls);
 
+        Task SyncChannelPlaylistsAsync();
+
         Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult);
 
         Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult);
@@ -61,5 +63,7 @@ namespace Interfaces.Models
         Task InsertChannelTagAsync(string tag);
 
         Task DeleteChannelTagAsync(string tag);
+
+        void AddNewItem(IVideoItem item);
     }
 }

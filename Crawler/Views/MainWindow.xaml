@@ -5,9 +5,9 @@
         Loaded="MainWindow_OnLoaded">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="25"></RowDefinition>
-            <RowDefinition></RowDefinition>
-            <RowDefinition Height="25"></RowDefinition>
+            <RowDefinition Height="25" />
+            <RowDefinition />
+            <RowDefinition Height="25" />
         </Grid.RowDefinitions>
         
         <Menu>
@@ -43,9 +43,9 @@
             
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <RowDefinition Height="Auto"></RowDefinition>
-                    <RowDefinition Height="48"></RowDefinition>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="48" />
                 </Grid.RowDefinitions>
 
                 <DataGrid CanUserAddRows="False"
@@ -65,6 +65,7 @@
                         <ContextMenu x:Key="DataRowContextMenu">
                             <MenuItem Header="Delete" Click="Channel_OnClick" CommandParameter="Delete" />
                             <MenuItem Header="Edit" Click="Channel_OnClick" CommandParameter="Edit" />
+                            <MenuItem Header="Update PL" Click="Channel_OnClick" CommandParameter="Update" />
                         </ContextMenu>
                     </DataGrid.Resources>
                     <DataGrid.CellStyle>
@@ -251,20 +252,21 @@
 
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
-                    <RowDefinition></RowDefinition>
-                    <!--<RowDefinition Height="Auto"></RowDefinition>-->
-                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" MinHeight="26" />
                 </Grid.RowDefinitions>
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
-                          HeadersVisibility="None"
+                          HeadersVisibility="Column"
                           RowHeaderWidth="0"
                           GridLinesVisibility="Horizontal"
                           BorderThickness="1"
                           ItemsSource="{Binding Model.SelectedChannel.ChannelItems}"
                           SelectedItem="{Binding Model.SelectedVideoItem}"
                           x:Name="VideoGrid"
+                          Sorting="VideoGrid_OnSorting"
                           >
                     
                     <DataGrid.Resources>
@@ -303,7 +305,12 @@
 
                     <DataGrid.Columns>
 
-                        <DataGridTemplateColumn CanUserResize="False">
+                        <DataGridTemplateColumn CanUserResize="False" SortMemberPath="ViewCount">
+                            <DataGridTemplateColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="ToolTip" Value="Most Viewed" />
+                                </Style>
+                            </DataGridTemplateColumn.HeaderStyle>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Margin="1">
@@ -331,7 +338,12 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn CanUserResize="True" Width="*">
+                        <DataGridTemplateColumn CanUserResize="True" Width="*" Header="Title" SortMemberPath="Title">
+                            <DataGridTemplateColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                </Style>
+                            </DataGridTemplateColumn.HeaderStyle>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Grid>
@@ -358,7 +370,12 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn CanUserResize="False" Width="50">
+                        <DataGridTemplateColumn CanUserResize="False" Width="50" SortMemberPath="IsHasLocalFile">
+                            <DataGridTemplateColumn.HeaderStyle>
+                                <Style TargetType="DataGridColumnHeader">
+                                    <Setter Property="ToolTip" Value="Local File" />
+                                </Style>
+                            </DataGridTemplateColumn.HeaderStyle>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Click="VideoItemSaveButton_onClick" Margin="0,0,2,0">
@@ -411,20 +428,15 @@
                     </DataGrid.Columns>
 
                 </DataGrid>
-                
-                
 
-                <Expander Grid.Row="1" ExpandDirection="Up" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft" Background="Lavender" Height="Auto">
+                <GridSplitter Grid.Row="1" ResizeBehavior="BasedOnAlignment" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
+
+                <Expander Grid.Row="2" ExpandDirection="Up" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft" Background="Lavender">
                     
                     <Expander.Content>
                         <Grid FlowDirection="LeftToRight">
-                            <Grid.RowDefinitions>
-                                <RowDefinition></RowDefinition>
-                                <RowDefinition></RowDefinition>
-                            </Grid.RowDefinitions>
-                            <GridSplitter ResizeBehavior="PreviousAndCurrent" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
-                            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
-                                <TextBox Height="Auto" Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" VerticalAlignment="Stretch"/>
+                            <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+                                <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                             </ScrollViewer>
                         </Grid>
                     </Expander.Content>
