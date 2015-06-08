@@ -29,6 +29,14 @@
             <MenuItem Header="Help" HorizontalAlignment="Right">
                 <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About"/>
             </MenuItem>
+            
+            <!--<DockPanel LastChildFill="False" HorizontalAlignment="Right">
+                <TextBox Text="Item 1" DockPanel.Dock="Left" HorizontalAlignment="Stretch" />
+                <MenuItem Header="Help" DockPanel.Dock="Right">
+                    <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About" />
+                </MenuItem>
+            </DockPanel>-->
+            
         </Menu>
         
         <Grid Grid.Row="1">
@@ -325,7 +333,8 @@
                                                Height="48"
                                                VerticalAlignment="Top"
                                                Margin="0"
-                                               HorizontalAlignment="Center">
+                                               HorizontalAlignment="Center"
+                                               MouseLeftButtonUp="VideoImage_OnMouseLeftButtonUp">
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding Thumbnail, IsAsync=True}" />
@@ -435,8 +444,37 @@
                     
                     <Expander.Content>
                         <Grid FlowDirection="LeftToRight">
-                            <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
-                                <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="50"></ColumnDefinition>
+                                <ColumnDefinition></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Width="50" BorderThickness="1" BorderBrush="Gray" Text="{Binding Path = Model.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="22" VerticalAlignment="Bottom">
+                                    <TextBox.Resources>
+                                        <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
+                                            <VisualBrush.Visual>
+                                                <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
+                                            </VisualBrush.Visual>
+                                            <VisualBrush.Transform>
+                                                <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
+                                            </VisualBrush.Transform>
+                                        </VisualBrush>
+                                    </TextBox.Resources>
+                                    <TextBox.Style>
+                                        <Style TargetType="TextBox">
+                                            <Style.Triggers>
+                                                <Trigger Property="Text" Value="{x:Null}">
+                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                </Trigger>
+                                                <Trigger Property="Text" Value="">
+                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBox.Style>
+                                </TextBox>
+
+                            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
+                                <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderThickness="1" BorderBrush="Gray"/>
                             </ScrollViewer>
                         </Grid>
                     </Expander.Content>

@@ -171,6 +171,8 @@ namespace Crawler.Views
                     ch.ChannelPlaylists.Add(pl);
                 }
             }
+            //ViewModel.Model.Filter = string.Empty;
+            ViewModel.Model.Filterlist.Clear();
         }
 
         private async void MenuItem_OnClick(object sender, RoutedEventArgs e)
@@ -273,6 +275,7 @@ namespace Crawler.Views
                     pl.PlaylistItems.Add(item);
             }
 
+            ViewModel.Model.Filterlist.Clear();
             //VideoGrid.UpdateLayout();
         }
 
@@ -422,6 +425,18 @@ namespace Crawler.Views
         private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
         {
             e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
+        }
+
+        private void VideoImage_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var edv = new EditDescriptionView
+            {
+                DataContext = ViewModel.Model.SelectedVideoItem,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            edv.Show();
         }
     }
 }

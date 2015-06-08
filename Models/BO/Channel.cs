@@ -72,7 +72,6 @@ namespace Models.BO
             ID = channel.ID;
             Title = channel.Title;
             SubTitle = channel.SubTitle.WordWrap(80);
-            //LastUpdated = channel.LastUpdated;
             Thumbnail = channel.Thumbnail;
             Site = channel.Site;
             ChannelItems = new ObservableCollection<IVideoItem>();

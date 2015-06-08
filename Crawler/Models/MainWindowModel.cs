@@ -47,6 +47,8 @@ namespace Crawler.Models
         private string _youHeader;
         private string _selectedCountry;
         private bool _isIdle;
+        private string _filter;
+        public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
 
         #region Fields
 
@@ -205,6 +207,16 @@ namespace Crawler.Models
         }
 
         public string Version { get; set; }
+
+        public string Filter
+        {
+            get { return _filter; }
+            set
+            {
+                _filter = value; 
+                FilterVideos();
+            }
+        }
 
         #endregion
 
@@ -438,6 +450,7 @@ namespace Crawler.Models
             Result = "Working..";
 
             var cf = BaseFactory.CreateChannelFactory();
+            var vf = BaseFactory.CreateVideoItemFactory();
 
             var sp = NewChannelLink.Split('/');
             if (sp.Length > 1)
@@ -508,6 +521,12 @@ namespace Crawler.Models
                     {
                         if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                             await pl.UpdatePlaylistAsync(id);
+                        else
+                        {
+                            var vid = await vf.GetVideoItemNetAsync(id);
+                            channel.AddNewItem(vid);
+                            await vid.InsertItemAsync();
+                        }
                     }
                 }
 
@@ -523,6 +542,52 @@ namespace Crawler.Models
         {
             SelectedChannel.Title = NewChannelTitle;
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
+        }
+
+        private void FilterVideos()
+        {
+            if (string.IsNullOrEmpty(Filter))
+            {
+                if (!Filterlist.Any())
+                    return;
+
+                foreach (IVideoItem item in SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = false;
+                }
+
+                foreach (var item in Filterlist)
+                {
+                    var vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+                    if (vid != null)
+                        vid.IsShowRow = true;
+                }
+
+                Filterlist.Clear();
+            }
+            else
+            {
+                if (!Filterlist.Any())
+                {
+                    foreach (var item in SelectedChannel.ChannelItems.Where(item => item.IsShowRow))
+                    {
+                        Filterlist.Add(item);
+                    }
+                }
+                foreach (IVideoItem item in SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = false;
+                }
+                foreach (var item in Filterlist)
+                {
+                    if (item.Title.ToLower().Contains(Filter.ToLower()))
+                    {
+                        var vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+                        if (vid != null)
+                            vid.IsShowRow = true;
+                    }
+                }
+            }
         }
 
     }
