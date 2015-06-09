@@ -150,8 +150,9 @@
                     </DataGrid.Columns>
                 </DataGrid>
                 
-                <DockPanel Grid.Row="1" Background="Lavender">
-                    <Expander ExpandDirection="Up" DockPanel.Dock="Left" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft">
+                <DockPanel Grid.Row="1" Background="Lavender" Margin="1,1,0,1">
+                    <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                        <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft">
                         <Expander.Content>
                             <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
                                 <DataGrid CanUserAddRows="False"
@@ -233,6 +234,7 @@
                             <Label FontSize="10" Content="Search"/>
                         </Expander.Header>
                     </Expander>
+                    </Border>
                 </DockPanel>
 
                 <DockPanel Grid.Row="2" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
@@ -440,58 +442,59 @@
 
                 <GridSplitter Grid.Row="1" ResizeBehavior="BasedOnAlignment" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
 
-                <Expander Grid.Row="2" ExpandDirection="Up" BorderThickness="1" BorderBrush="Gray" FlowDirection="RightToLeft" Background="Lavender">
+                <Border Grid.Row="2" CornerRadius="4" BorderBrush="Gray" BorderThickness="1" Background="Lavender" DockPanel.Dock="Top">
                     
-                    <Expander.Content>
-                        <Grid FlowDirection="LeftToRight">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="50"></ColumnDefinition>
-                                <ColumnDefinition></ColumnDefinition>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Width="50" BorderThickness="1" BorderBrush="Gray" Text="{Binding Path = Model.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="22" VerticalAlignment="Bottom">
-                                    <TextBox.Resources>
-                                        <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
-                                            <VisualBrush.Visual>
-                                                <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
-                                            </VisualBrush.Visual>
-                                            <VisualBrush.Transform>
-                                                <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
-                                            </VisualBrush.Transform>
-                                        </VisualBrush>
-                                    </TextBox.Resources>
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="{x:Null}">
-                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
-                                                </Trigger>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
+                    <Expander  ExpandDirection="Up" FlowDirection="RightToLeft" Background="Lavender">
+                    
+                        <Expander.Content>
+                            <Grid FlowDirection="LeftToRight">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="50" />
+                                </Grid.ColumnDefinitions>
 
-                            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible">
-                                <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" BorderThickness="1" BorderBrush="Gray"/>
-                            </ScrollViewer>
-                        </Grid>
-                    </Expander.Content>
+                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" MinHeight="48" >
+                                    <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                </ScrollViewer>
+
+                                <TextBox Grid.Column="1" Width="Auto" Text="{Binding Path = Model.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Height="24" VerticalAlignment="Bottom" Margin="1">
+                                        <TextBox.Resources>
+                                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
+                                                <VisualBrush.Visual>
+                                                    <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
+                                                </VisualBrush.Visual>
+                                                <VisualBrush.Transform>
+                                                    <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
+                                                </VisualBrush.Transform>
+                                            </VisualBrush>
+                                        </TextBox.Resources>
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Triggers>
+                                                    <Trigger Property="Text" Value="{x:Null}">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+
+                           
+                            </Grid>
+                        </Expander.Content>
                     
-                    <Expander.Header>
+                        <Expander.Header>
                         <StackPanel>
                             <Label FontSize="10" Content="Log"/>
                         </StackPanel>
                     </Expander.Header>
                     
-                    <Expander.Style>
-                        <Style TargetType="Expander">
-                            <Setter  Property="Visibility" Value="Visible"/>
-                        </Style>
-                    </Expander.Style>
+                    </Expander>
                     
-                </Expander>
+                </Border>
                 
             </Grid>
 

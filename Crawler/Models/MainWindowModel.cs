@@ -546,6 +546,9 @@ namespace Crawler.Models
 
         private void FilterVideos()
         {
+            if (SelectedChannel == null)
+                return;
+
             if (string.IsNullOrEmpty(Filter))
             {
                 if (!Filterlist.Any())
