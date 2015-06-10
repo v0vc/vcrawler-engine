@@ -496,8 +496,11 @@ namespace Models.Factories
                     else
                     {
                         var item = await vf.GetVideoItemNetAsync(id);
-                        channel.AddNewItem(item);
-                        await item.InsertItemAsync();
+                        if (item.ParentID == channel.ID)
+                        {
+                            channel.AddNewItem(item);
+                            await item.InsertItemAsync();
+                        }
                     }
                 }
 
