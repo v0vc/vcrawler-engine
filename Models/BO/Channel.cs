@@ -17,6 +17,7 @@ namespace Models.BO
 
         private int _countNew;
         private string _title;
+        private bool _isDownloading;
 
         #region INotifyPropertyChanged
 
@@ -54,6 +55,16 @@ namespace Models.BO
             set
             {
                 _countNew = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsDownloading
+        {
+            get { return _isDownloading; }
+            set
+            {
+                _isDownloading = value; 
                 OnPropertyChanged();
             }
         }

@@ -76,16 +76,23 @@
                             <MenuItem Header="Update PL" Click="Channel_OnClick" CommandParameter="Update" />
                         </ContextMenu>
                     </DataGrid.Resources>
+                    
                     <DataGrid.CellStyle>
                         <Style TargetType="DataGridCell">
                             <Setter Property="BorderThickness" Value="0" />
                             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                         </Style>
                     </DataGrid.CellStyle>
+                    
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                    <Setter Property="Background" Value="PaleGreen" />
+                                </DataTrigger>
+                            </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
 
@@ -137,9 +144,6 @@
                                                     <DataTrigger Binding="{Binding CountNew}" Value="0">
                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                     </DataTrigger>
-                                                    <Trigger Property ="IsMouseOver" Value="True">
-                                                        <Setter Property= "Foreground" Value="Green" />
-                                                    </Trigger>
                                                 </Style.Triggers>
                                             </Style>
                                         </TextBlock.Style>
@@ -264,7 +268,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" MinHeight="26" />
+                    <RowDefinition Height="Auto" MinHeight="26" MaxHeight="250"/>
                 </Grid.RowDefinitions>
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -447,7 +451,7 @@
                     <Expander  ExpandDirection="Up" FlowDirection="RightToLeft" Background="Lavender">
                     
                         <Expander.Content>
-                            <Grid FlowDirection="LeftToRight">
+                            <Grid FlowDirection="LeftToRight" MaxHeight="250">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="50" />

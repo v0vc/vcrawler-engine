@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +11,6 @@ using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-//using Models.Extensions;
 using Models.Factories;
 
 namespace Models.BO
@@ -31,6 +29,12 @@ namespace Models.BO
 
         #endregion
 
+        private string _tempname = string.Empty;
+
+        private string _youPath;
+
+        private readonly string[] _exts = { "mp4", "mkv" };
+
         private readonly VideoItemFactory _vf;
 
         private int _duration;
@@ -44,8 +48,6 @@ namespace Models.BO
         private bool _isHasLocalFile;
 
         private string _itemState;
-
-        private readonly List<string> _destList = new List<string>();
 
         private byte[] _largeThumb;
 
@@ -232,35 +234,41 @@ namespace Models.BO
         {
             if (string.IsNullOrEmpty(dir))
                 return;
-            var pathvid = Path.Combine(dir, ParentID, string.Format("{0}.mp4", Title.MakeValidFileName()));
-            var fnvid = new FileInfo(pathvid);
-            IsHasLocalFile = fnvid.Exists;
-            if (fnvid.Exists)
+
+            foreach (string ext in _exts)
             {
-                ItemState = "LocalYes";
-                LocalFilePath = fnvid.FullName;
-            }
-            else
-            {
+                var cleartitle = Title.MakeValidFileName();
+                var pathvid = Path.Combine(dir, ParentID, string.Format("{0}.{1}", cleartitle, ext));
+                var fnvid = new FileInfo(pathvid);
+                IsHasLocalFile = fnvid.Exists;
+                if (IsHasLocalFile)
+                {
+                    ItemState = "LocalYes";
+                    LocalFilePath = fnvid.FullName;
+                    break;
+                }
                 ItemState = "LocalNo";
             }
         }
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd)
         {
+            _youPath = youPath;
+
             ItemState = "Downloading";
             var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
             if (!dir.Exists)
                 dir.Create();
+
             string param;
             if (isHd)
             {
-                param = String.Format("-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title --restrict-filenames",
+                param = String.Format("-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
                             dir, MakeVideoLink());
             }
             else
             {
-                param = String.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title --restrict-filenames",
+                param = String.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
                             dir, MakeVideoLink());
             }
 
@@ -269,36 +277,69 @@ namespace Models.BO
                 WindowStyle = ProcessWindowStyle.Hidden,
                 UseShellExecute = false,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                ErrorDialog = false,
                 CreateNoWindow = true
             };
 
             await Task.Run(() =>
             {
-                var process = Process.Start(startInfo);
-                if (process == null) return;
-                process.OutputDataReceived += (sender, e) => SetLogAndPercentage(e.Data, youPath);
-                process.Start();
-                process.BeginOutputReadLine();
-                process.WaitForExit();
-                process.Close();    
+                var proc = new Process {StartInfo = startInfo, EnableRaisingEvents = true};
+
+                proc.OutputDataReceived += EncodeOnOutputDataReceived;
+                proc.ErrorDataReceived += EncodeOnErrorDataReceived;
+                proc.Exited += EncodeOnProcessExited;
+
+                proc.Start();
+                proc.StandardInput.Close();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
+                proc.WaitForExit();
             });
         }
 
-        private async void SetLogAndPercentage(string data, string youPath)
+        private async void EncodeOnProcessExited(object sender, EventArgs e)
         {
-            if (data == null)
+            await Log("FINISHED!");
+        }
+
+        private async void EncodeOnErrorDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            await Log(e.Data);
+        }
+
+        private async void EncodeOnOutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data == null)
             {
-                processDownload_Exited(youPath);
+                process_Exited();
                 return;
             }
 
-            await Log(data);
+            if (e.Data.StartsWith("[download] Destination"))
+            {
+                var regex = new Regex(@"(\[download\] Destination: )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                var match = regex.Match(e.Data);
+                if (match.Success)
+                {
+                    _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                }
+            }
 
-            DownloadPercentage = GetPercentFromYoudlOutput(data);
+            if (e.Data.StartsWith("[ffmpeg] Merging formats into"))
+            {
+                var regex = new Regex(@"(\[ffmpeg\] Merging formats into )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                var match = regex.Match(e.Data);
+                if (match.Success)
+                {
+                    _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                }
+            }
 
-            var dest = GetDestinationFromYoudlOutput(data);
-            if (!string.IsNullOrEmpty(dest))
-                _destList.Add(dest);
+            await Log(e.Data);
+
+            DownloadPercentage = GetPercentFromYoudlOutput(e.Data);
         }
 
         private static double GetPercentFromYoudlOutput(string input)
@@ -313,42 +354,36 @@ namespace Models.BO
             return double.TryParse(str, out res) ? res : 0;
         }
 
-        private static string GetDestinationFromYoudlOutput(string input)
-        {
-            var regex = new Regex(@"(\[download\] Destination: )(.+?)(\.(mp4|m4a|webm|flv|mp3))(.+)?");
-            var match = regex.Match(input);
-            if (match.Success)
-            {
-                return regex.Replace(input, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
-                //return regex.Replace(input, "$2$3"); //для обычных файлов
-            }
-            regex = new Regex(@"(\[download\])(.+?)(\.(mp4|m4a|webm|flv|mp3))(.+)?");
-            match = regex.Match(input);
-            if (match.Success)
-            {
-                return regex.Replace(input, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0]; //для файлов, у которых в названии есть точка + расширение
-                //return regex.Replace(input, "$2$3"); //для обычных файлов
-            }
-            return string.Empty;
-        }
-
-        private void processDownload_Exited(string youPath)
+        private void process_Exited()
         {
             DownloadPercentage = 100;
+            if (_tempname == string.Empty) return;
 
-            if (!_destList.Any()) return;
+            _tempname = _tempname.TrimStart('"').TrimEnd('"');
 
-            if (_destList.Count == 1)
+            var fn = new FileInfo(_tempname);
+
+            var cleartitle = Title.MakeValidFileName();
+
+            if (cleartitle == fn.Name) //в имени нет запретных знаков
             {
-                var fn = new FileInfo(_destList.First());
-
+                if (fn.Exists)
+                {
+                    ItemState = "LocalYes";
+                    IsHasLocalFile = true;
+                    LocalFilePath = fn.FullName;
+                }
+                else
+                {
+                    ItemState = "LocalNo";
+                    IsHasLocalFile = false;
+                }
+            }
+            else //есть всякие двоеточия - переименуем по алгоритму, отталкиваясь от Title
+            {
                 if (fn.DirectoryName == null) return;
-
-                var filename = CommonExtensions.GetVersion(youPath,
-                    String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
-
-                var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
-
+                //var filename = CommonExtensions.GetVersion(_youPath, String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
+                var fnn = new FileInfo(Path.Combine(fn.DirectoryName, cleartitle + Path.GetExtension(fn.Name)));
                 if (CommonExtensions.RenameFile(fn, fnn))
                 {
                     ItemState = "LocalYes";
@@ -356,43 +391,11 @@ namespace Models.BO
                     LocalFilePath = fnn.FullName;
                 }
                 else
-                    IsHasLocalFile = false;
-            }
-
-            if (_destList.Count == 2)
-            {
-                var vid = _destList.FirstOrDefault(x => x.EndsWith(".mp4") || x.EndsWith(".webm"));
-                if (vid != null)
                 {
-                    var vidsp = vid.Split('.');
-                    var vidname = vidsp.Take(vidsp.Length - 2);
-                    var sb = new StringBuilder();
-                    foreach (string s in vidname)
-                    {
-                        sb.Append(s).Append('.');
-                    }
-                    var name = sb + vidsp.Last();
-
-                    var fn = new FileInfo(name);
-                    if (fn.Exists && fn.DirectoryName != null)
-                    {
-                        var filename = CommonExtensions.GetVersion(youPath,
-                            String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
-                        var fnn = new FileInfo(Path.Combine(fn.DirectoryName, filename.MakeValidFileName()));
-
-                        if (CommonExtensions.RenameFile(fn, fnn))
-                        {
-                            ItemState = "LocalYes";
-                            IsHasLocalFile = true;
-                            LocalFilePath = fnn.FullName;
-                        }
-                        else
-                            IsHasLocalFile = false;
-                    }
-                }
+                    ItemState = "LocalNo";
+                    IsHasLocalFile = false;
+                }    
             }
-
-            _destList.Clear();
         }
 
         internal string IntTostrTime(int duration)

@@ -180,12 +180,12 @@ namespace Crawler.Views
             var mitem = sender as MenuItem;
             if (mitem == null) return;
 
-            var item = ViewModel.Model.SelectedVideoItem;
-
             switch (mitem.CommandParameter.ToString())
             {
 
                 case "Edit":
+
+                    #region Edit
 
                     var edv = new EditDescriptionView
                     {
@@ -196,11 +196,13 @@ namespace Crawler.Views
 
                     edv.Show();
 
+                    #endregion
+
                     break;
 
                 case "HD":
 
-                    if (item == null) return;
+                    #region HD
 
                     if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
                     {
@@ -208,19 +210,53 @@ namespace Crawler.Views
                         return;
                     }
 
-                    await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
+                    if (IsFfmegExist())
+                    {
+                        ViewModel.Model.SelectedChannel.IsDownloading = true;
+                        await
+                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath,
+                                ViewModel.Model.DirPath, true);
+                    }
+                    else
+                    {
+                        var ff = new FfmpegView
+                        {
+                            Owner = Application.Current.MainWindow,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+
+                        ff.ShowDialog();
+                    }
+
+                    #endregion
 
                     break;
 
                 case "Delete":
 
-                    if (item == null) return;
+                    #region Delete
 
-                    if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                    var sb = new StringBuilder();
+
+                    foreach (IVideoItem item in VideoGrid.SelectedItems)
                     {
-                        var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + item.Title + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
-                        if (result == MessageBoxResult.OK)
+                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
                         {
+                            sb.Append(item.Title).Append(Environment.NewLine);
+                        }
+                    }
+
+                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Information);
+
+                    if (result == MessageBoxResult.OK)
+                    {
+                        for (var i = VideoGrid.SelectedItems.Count; i > 0; i--)
+                        {
+                            var item = VideoGrid.SelectedItems[i - 1] as VideoItem;
+
+                            if (item == null) continue;
+
                             var fn = new FileInfo(item.LocalFilePath);
                             try
                             {
@@ -236,6 +272,8 @@ namespace Crawler.Views
                             }
                         }
                     }
+
+                    #endregion
 
                     break;
             }
@@ -416,7 +454,10 @@ namespace Crawler.Views
             else
             {
                 if (!string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                {
+                    ViewModel.Model.SelectedChannel.IsDownloading = true;
                     await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false);
+                }
                 else
                     MessageBox.Show("Please, select youtube-dl");
             }
@@ -437,6 +478,13 @@ namespace Crawler.Views
             };
 
             edv.Show();
+        }
+
+        private static bool IsFfmegExist()
+        {
+            const string ff = "ffmpeg.exe";
+            var values = Environment.GetEnvironmentVariable("PATH");
+            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
     }
 }

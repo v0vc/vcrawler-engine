@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
         <Image x:Name="ImageThumb" Stretch="None" Source="{Binding LargeThumb, IsAsync=True}"></Image>
         <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <TextBox  Text="{Binding Description}" />
+            <TextBox Text="{Binding Description}" />
         </ScrollViewer>
     </Grid>
 </Window>

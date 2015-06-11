@@ -25,6 +25,8 @@ namespace Interfaces.Models
 
         int CountNew { get; set; }
 
+        bool IsDownloading { get; set; }
+
         Task<List<IVideoItem>> GetChannelItemsDbAsync();
 
         Task SyncChannelAsync(string dir, bool isSyncPls);
