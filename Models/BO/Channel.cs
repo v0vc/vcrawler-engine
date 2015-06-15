@@ -82,7 +82,7 @@ namespace Models.BO
             _cf = cf as ChannelFactory;
             ID = channel.ID;
             Title = channel.Title;
-            SubTitle = channel.SubTitle.WordWrap(80);
+            SubTitle = channel.SubTitle;//.WordWrap(80);
             Thumbnail = channel.Thumbnail;
             Site = channel.Site;
             ChannelItems = new ObservableCollection<IVideoItem>();
@@ -205,14 +205,22 @@ namespace Models.BO
             //await ((ChannelFactory) ServiceLocator.ChannelFactory).DeleteChannelTagAsync(ID, tag);
         }
 
-        public void AddNewItem(IVideoItem item)
+        public void AddNewItem(IVideoItem item, bool isNew)
         {
-            item.IsNewItem = true;
+            item.IsNewItem = isNew;
             item.IsShowRow = true;
             item.ItemState = "LocalNo";
             item.IsHasLocalFile = false;
-            ChannelItems.Insert(0, item);
-            CountNew += 1;
+            
+            if (isNew)
+            {
+                ChannelItems.Insert(0, item);
+                CountNew += 1;
+            }
+            else
+            {
+                ChannelItems.Add(item);
+            }
         }
     }
 }

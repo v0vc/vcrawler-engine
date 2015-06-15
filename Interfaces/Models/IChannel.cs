@@ -67,6 +67,6 @@ namespace Interfaces.Models
 
         Task DeleteChannelTagAsync(string tag);
 
-        void AddNewItem(IVideoItem item);
+        void AddNewItem(IVideoItem item, bool isNew);
     }
 }

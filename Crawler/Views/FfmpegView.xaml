@@ -1,0 +1,9 @@
+﻿<Window x:Class="Crawler.Views.FfmpegView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ffmpeg not found in your system :(" Height="120" Width="500"
+        ResizeMode="CanResize" WindowStyle="ToolWindow">
+    <Grid>
+        <TextBox TextWrapping="Wrap" AcceptsReturn="True" Text="How to install ffmpeg:&#x0a;Download http://ffmpeg.zeranoe.com/builds/win32/static/ffmpeg-latest-win32-static.7z&#x0a;Unpack&#x0a;Run ff-prompt.bat&#x0a;Reboot"></TextBox>
+    </Grid>
+</Window>

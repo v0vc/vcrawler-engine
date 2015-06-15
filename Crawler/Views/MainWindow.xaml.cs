@@ -39,7 +39,8 @@ namespace Crawler.Views
             {
                 ChannelsGrid.UpdateLayout();
                 var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
-                row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                if (row != null)
+                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             }
         }
 
@@ -75,7 +76,14 @@ namespace Crawler.Views
 
                     ViewModel.Model.Result = "Working..";
 
-                    await ViewModel.Model.SelectedChannel.SyncChannelPlaylistsAsync();
+                    try
+                    {
+                        await ViewModel.Model.SelectedChannel.SyncChannelPlaylistsAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
 
                     ViewModel.Model.Result = "Finished";
 
@@ -135,10 +143,11 @@ namespace Crawler.Views
 
                 foreach (IVideoItem item in lst)
                 {
-                    item.IsShowRow = true;
+                    channel.AddNewItem(item, false);
+                    //item.IsShowRow = true;
                     item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                    channel.ChannelItems.Add(item);
-                    channel.CountNew = channel.ChannelItems.Count;
+                    //channel.ChannelItems.Add(item);
+                    //channel.CountNew = channel.ChannelItems.Count;
                 }
 
                 #endregion
@@ -182,6 +191,20 @@ namespace Crawler.Views
 
             switch (mitem.CommandParameter.ToString())
             {
+                case "Link":
+
+                    #region Link
+
+                    var vid = ViewModel.Model.SelectedVideoItem;
+                    if (vid != null)
+                    {
+                        var link = string.Format("https://www.youtube.com/watch?v={0}", vid.ID);
+                        Clipboard.SetText(link);
+                    }
+
+                    #endregion
+
+                    break;
 
                 case "Edit":
 
@@ -331,12 +354,6 @@ namespace Crawler.Views
 
             var pls = await pl.GetPlaylistItemsIdsListNetAsync();
 
-            if (pls.Count <= pl.PlaylistItems.Count)
-            {
-                ViewModel.Model.Result = "Finished";
-                return;
-            }
-
             var vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
 
             pl.PlaylistItems.Clear();
@@ -352,25 +369,10 @@ namespace Crawler.Views
                 {
                     var vi = await vf.GetVideoItemNetAsync(id);
 
-                    if (vi.Duration == 0)
-                        continue;
-
-                    //vi.IsNewItem = true;
-
-                    vi.IsShowRow = true;
-
-                    ViewModel.Model.SelectedChannel.ChannelItems.Add(vi);
+                    ViewModel.Model.SelectedChannel.AddNewItem(vi, false);
 
                     pl.PlaylistItems.Add(vi);
-
-                    //if (vi.ParentID == ViewModel.Model.SelectedChannel.ID && !ViewModel.Model.SelectedChannel.ChannelItems.Select(x=>x.ID).Contains(id))
-                    //    await vi.InsertItemAsync();
                 }
-            }
-
-            foreach (var item in ViewModel.Model.SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
             }
 
             ViewModel.Model.Result = "Finished";

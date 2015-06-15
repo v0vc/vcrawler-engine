@@ -48,9 +48,9 @@ namespace Crawler.Models
         private string _selectedCountry;
         private bool _isIdle;
         private string _filter;
-        public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
 
         #region Fields
+        public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
 
         public ICommonFactory BaseFactory { get; set; }
 
@@ -273,6 +273,8 @@ namespace Crawler.Models
                     SelectedCred = SupportedCreds.First();
 
                 CreateServicesChannels();
+
+                //SelectedChannel = ServiceChannels.First();
             }
             catch (Exception ex)
             {
@@ -448,6 +450,8 @@ namespace Crawler.Models
         private async Task AddNewChannel()
         {
             Result = "Working..";
+            const string youUser = "user";
+            const string youChannel = "channel";
 
             var cf = BaseFactory.CreateChannelFactory();
             var vf = BaseFactory.CreateVideoItemFactory();
@@ -455,13 +459,22 @@ namespace Crawler.Models
             var sp = NewChannelLink.Split('/');
             if (sp.Length > 1)
             {
-                if (sp.Contains("user"))
+                if (sp.Contains(youUser))
                 {
-                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(sp.Last());
+                    var indexuser = Array.IndexOf(sp, youUser);
+                    if (indexuser < 0)
+                        throw new Exception("Can't parse url");
+                    var user = sp[indexuser + 1];
+                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(user);
                 }
+                else if (sp.Contains(youChannel))
+                {
+                    var indexchannel = Array.IndexOf(sp, youChannel);
+                    if (indexchannel < 0)
+                        throw new Exception("Can't parse url");
 
-                if (sp.Contains("channel"))
-                    NewChannelLink = sp.Last();
+                    NewChannelLink = sp[indexchannel + 1];
+                }
             }
             else
             {
@@ -499,10 +512,7 @@ namespace Crawler.Models
 
                 foreach (IVideoItem item in lst)
                 {
-                    item.IsShowRow = true;
-                    item.ItemState = "LocalNo";
-                    item.IsHasLocalFile = false;
-                    channel.ChannelItems.Add(item);
+                    channel.AddNewItem(item, false);
                 }
 
                 await channel.InsertChannelItemsAsync();
@@ -524,7 +534,10 @@ namespace Crawler.Models
                         else
                         {
                             var vid = await vf.GetVideoItemNetAsync(id);
-                            channel.AddNewItem(vid);
+                            if (vid.ParentID != channel.ID) 
+                                continue;
+
+                            channel.AddNewItem(vid, false);
                             await vid.InsertItemAsync();
                         }
                     }

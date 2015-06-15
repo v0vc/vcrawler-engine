@@ -116,7 +116,7 @@
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                    <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" />
+                                                    <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" TextWrapping="Wrap"/>
                                                 </StackPanel>
                                             </Image.ToolTip>
                                         </Image>
@@ -286,6 +286,7 @@
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
+                            <MenuItem Header="Copy Link" Click="MenuItem_OnClick" CommandParameter="Link" />
                             <MenuItem Header="Edit" Click="MenuItem_OnClick" CommandParameter="Edit" />
                             <MenuItem Header="Download HD" Click="MenuItem_OnClick" CommandParameter="HD" />
                             <MenuItem Header="Delete" Click="MenuItem_OnClick" CommandParameter="Delete" />

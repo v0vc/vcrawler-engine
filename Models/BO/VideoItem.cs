@@ -168,7 +168,7 @@ namespace Models.BO
             ID = item.ID;
             Title = item.Title;
             ParentID = item.ParentID;
-            Description = item.Description.WordWrap(80);
+            Description = item.Description;//.WordWrap(80);
             ViewCount = item.ViewCount;
             Duration = item.Duration;
             Comments = item.Comments;

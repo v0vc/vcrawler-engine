@@ -294,7 +294,7 @@ namespace Models.Factories
                         if (!channel.ChannelItems.Select(x => x.ID).Contains(id))
                         {
                             var item = await vf.GetVideoItemNetAsync(id);
-                            channel.AddNewItem(item);
+                            channel.AddNewItem(item, true);
                             await item.InsertItemAsync();
                         }
                     }
@@ -448,9 +448,10 @@ namespace Models.Factories
                     foreach (string id in lst)
                     {
                         var vid = await vf.GetVideoItemDbAsync(id);
-                        vid.IsShowRow = true;
+                        //vid.IsShowRow = true;
+                        channel.AddNewItem(vid, false);
                         vid.IsHasLocalFileFound(dir);
-                        channel.ChannelItems.Add(vid);
+                        //channel.ChannelItems.Add(vid);
                     }
                 }
             }
@@ -484,23 +485,16 @@ namespace Models.Factories
                 {
                     if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                     {
-                        try
-                        {
-                            await playlist.UpdatePlaylistAsync(id);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(id + ":" + ex.Message);
-                        }
+                        await playlist.UpdatePlaylistAsync(id);
                     }
                     else
                     {
                         var item = await vf.GetVideoItemNetAsync(id);
-                        if (item.ParentID == channel.ID)
-                        {
-                            channel.AddNewItem(item);
-                            await item.InsertItemAsync();
-                        }
+                        if (item.ParentID != channel.ID) 
+                            continue;
+
+                        channel.AddNewItem(item, true);
+                        await item.InsertItemAsync();
                     }
                 }
 
