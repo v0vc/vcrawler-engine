@@ -24,6 +24,8 @@ namespace SitesAPI.Videos
 
         private const string PrivacyUnList = "unlisted";
 
+        private const string PrivacyDef = "other";
+
         private const int ItemsPerPage = 50;
 
         private const string Key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
@@ -126,17 +128,28 @@ namespace SitesAPI.Videos
                         continue;
 
                     var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
-                    if (item != null)
-                    {
-                        item.FillFieldsFromDetails(pair);
-                    }
+
+                    if (item == null) 
+                        continue;
+
+                    var pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                        item.Status = PrivacyDef;
+
+                    var prstatus = pr.Value<string>();
+                    if (prstatus == PrivacyPub || prstatus == PrivacyUnList)
+                        item.Status = prstatus;
+                    else
+                        item.Status = PrivacyDef;
+
+                    item.FillFieldsFromDetails(pair);
                 }
 
                 zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
                     Url, channelID, Key, itemsppage, pagetoken, Print);
             } while (pagetoken != null);
 
-            return res.Where(x => x.Status == PrivacyPub).ToList();
+            return res.Where(x => x.Status != PrivacyDef).ToList();
         }
 
         public async Task<List<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)

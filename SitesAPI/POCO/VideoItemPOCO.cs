@@ -25,6 +25,7 @@ namespace SitesAPI.POCO
         public byte[] Thumbnail { get; set; }
 
         public DateTime Timestamp { get; set; }
+
         public string Status { get; set; }
 
         public VideoItemPOCO(string id)
@@ -34,15 +35,6 @@ namespace SitesAPI.POCO
 
         public void FillFieldsFromDetails(JToken record)
         {
-            var pr = record.SelectToken("status.privacyStatus");
-            if (pr == null)
-                return;
-
-            Status = pr.Value<string>();
-
-            if (Status != "public")
-                return;
-
             var desc = record.SelectToken("snippet.description");
             Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 

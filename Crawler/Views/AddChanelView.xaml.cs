@@ -49,7 +49,8 @@ namespace Crawler.Views
             if (context.Model.IsEditMode)
             {
                 TextBoxLink.Text = context.Model.SelectedChannel.ID;
-                TextBoxLink.IsEnabled = false;
+                TextBoxLink.IsEnabled = true;
+                TextBoxLink.IsReadOnly = true;
 
                 TextBoxName.Text = context.Model.SelectedChannel.Title;
                 TextBoxName.Focus();

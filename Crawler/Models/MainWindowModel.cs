@@ -242,25 +242,25 @@ namespace Crawler.Models
             {
                 await LoadSettings();
 
-                //var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
+                var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
 
-                //var cf = BaseFactory.CreateChannelFactory();
+                var cf = BaseFactory.CreateChannelFactory();
 
-                //foreach (string id in lst)
-                //{
-                //    var ch = await cf.GetChannelDbAsync(id);
-
-                //    Channels.Add(ch as Channel);
-                //}
-
-                var lst = await s.GetChannelsListAsync(); //все каналы за раз
-                foreach (var ch in lst.Cast<Channel>())
+                foreach (string id in lst)
                 {
-                    Channels.Add(ch);
+                    var ch = await cf.GetChannelDbAsync(id);
+
+                    Channels.Add(ch as Channel);
                 }
 
-                if (Channels.Any())
-                    SelectedChannel = Channels.First();
+                //var lst = await s.GetChannelsListAsync(); //все каналы за раз
+                //foreach (var ch in lst.Cast<Channel>())
+                //{
+                //    Channels.Add(ch);
+                //}
+
+                //if (Channels.Any())
+                //    SelectedChannel = Channels.First();
 
                 var creds = await s.GetCredListAsync();
                 foreach (var cred in creds)
@@ -274,7 +274,7 @@ namespace Crawler.Models
 
                 CreateServicesChannels();
 
-                //SelectedChannel = ServiceChannels.First();
+                SelectedChannel = ServiceChannels.First();
             }
             catch (Exception ex)
             {
