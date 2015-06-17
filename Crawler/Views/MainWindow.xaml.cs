@@ -19,6 +19,7 @@ namespace Crawler.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        private GridLength _rememberWidth = GridLength.Auto;
         //[Inject]
         public MainWindowViewModel ViewModel
         {
@@ -31,10 +32,20 @@ namespace Crawler.Views
             InitializeComponent();
         }
 
-        private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            await ViewModel.Model.FillChannels();
+            using (var bgv = new BackgroundWorker())
+            {
+                bgv.DoWork += bgv_DoWork;
+                bgv.RunWorkerCompleted += bgv_RunWorkerCompleted;
+                bgv.RunWorkerAsync();
+            }
+            //await ViewModel.Model.FillChannels();
+        }
 
+        void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            ViewModel.Model.Result = "Loaded";
             if (ChannelsGrid.SelectedIndex >= 0) //focus
             {
                 ChannelsGrid.UpdateLayout();
@@ -42,6 +53,11 @@ namespace Crawler.Views
                 if (row != null)
                     row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             }
+        }
+
+        void bgv_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
         }
 
         private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -487,6 +503,25 @@ namespace Crawler.Views
             const string ff = "ffmpeg.exe";
             var values = Environment.GetEnvironmentVariable("PATH");
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
+        }
+
+        private void Grid_Collapsed(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as Grid;
+            if (grid != null)
+            {
+                _rememberWidth = grid.ColumnDefinitions[1].Width;
+                grid.ColumnDefinitions[1].Width = GridLength.Auto;
+            }
+        }
+
+        private void Grid_Expanded(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as Grid;
+            if (grid != null)
+            {
+                grid.ColumnDefinitions[1].Width = _rememberWidth;
+            }
         }
     }
 }

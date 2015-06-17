@@ -4,6 +4,7 @@
         Title="{Binding Model.Version, Mode=OneWay}" Height="450" Width="1200"
         Loaded="MainWindow_OnLoaded">
     <Grid>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="25" />
             <RowDefinition />
@@ -11,6 +12,7 @@
         </Grid.RowDefinitions>
         
         <Menu>
+            
             <Menu.ItemsPanel>
                 <ItemsPanelTemplate>
                     <DockPanel HorizontalAlignment="Stretch" />
@@ -30,13 +32,6 @@
                 <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About"/>
             </MenuItem>
             
-            <!--<DockPanel LastChildFill="False" HorizontalAlignment="Right">
-                <TextBox Text="Item 1" DockPanel.Dock="Left" HorizontalAlignment="Stretch" />
-                <MenuItem Header="Help" DockPanel.Dock="Right">
-                    <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About" />
-                </MenuItem>
-            </DockPanel>-->
-            
         </Menu>
         
         <Grid Grid.Row="1">
@@ -45,8 +40,8 @@
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
+            
             <Border Name="Mask" Background="White" CornerRadius="30" />
             
             <Grid Grid.Column="0">
@@ -151,93 +146,101 @@
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
+                        
                     </DataGrid.Columns>
+                    
                 </DataGrid>
                 
                 <DockPanel Grid.Row="1" Background="Lavender" Margin="1,1,0,1">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft">
-                        <Expander.Content>
-                            <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
-                                <DataGrid CanUserAddRows="False"
-                                      CanUserDeleteRows="False"
-                                      AutoGenerateColumns="False"
-                                      HeadersVisibility="None"
-                                      GridLinesVisibility="Horizontal"
-                                      BorderThickness="1"
-                                      PreviewKeyDown="dataGrid_PreviewKeyDown"
-                                      x:Name="SearchGrid"
-                                      ItemsSource="{Binding Model.ServiceChannels}"
-                                      SelectedItem="{Binding Model.SelectedChannel}"
-                                      SelectionChanged="ChannelsGrid_OnSelectionChanged"
-                            >
-                                <DataGrid.Resources>
-                                    <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                                </DataGrid.Resources>
-                                <DataGrid.CellStyle>
-                                    <Style TargetType="DataGridCell">
-                                        <Setter Property="BorderThickness" Value="0" />
-                                        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                    </Style>
-                                </DataGrid.CellStyle>
-                                <DataGrid.RowStyle>
-                                    <Style TargetType="{x:Type DataGridRow}">
-                                        <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
-                                    </Style>
-                                </DataGrid.RowStyle>
+                            
+                            <Expander.Content>
+                                <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
+                                    <DataGrid CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              AutoGenerateColumns="False"
+                                              HeadersVisibility="None"
+                                              GridLinesVisibility="Horizontal"
+                                              BorderThickness="1"
+                                              PreviewKeyDown="dataGrid_PreviewKeyDown"
+                                              x:Name="SearchGrid"
+                                              ItemsSource="{Binding Model.ServiceChannels}"
+                                              SelectedItem="{Binding Model.SelectedChannel}"
+                                              SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                                              >
+                                    <DataGrid.Resources>
+                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                    </DataGrid.Resources>
+                                    
+                                    <DataGrid.CellStyle>
+                                        <Style TargetType="DataGridCell">
+                                            <Setter Property="BorderThickness" Value="0" />
+                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                        </Style>
+                                    </DataGrid.CellStyle>
+                                    
+                                    <DataGrid.RowStyle>
+                                        <Style TargetType="{x:Type DataGridRow}">
+                                            <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                                        </Style>
+                                    </DataGrid.RowStyle>
 
-                                <DataGrid.Columns>
+                                    <DataGrid.Columns>
 
-                                    <DataGridTemplateColumn CanUserResize="False">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Margin="1">
-                                                    <StackPanel.OpacityMask>
-                                                        <VisualBrush Visual="{Binding ElementName=Mask}" />
-                                                    </StackPanel.OpacityMask>
-                                                    <Image Source="{Binding Thumbnail, IsAsync=True}"
-                                                           RenderOptions.BitmapScalingMode="Fant"
-                                                           ToolTipService.ShowDuration="120000"
-                                                           Stretch="Fill"
-                                                           Width="48"
-                                                           Height="48"
-                                                           VerticalAlignment="Top"
-                                                           Margin="0"
-                                                           HorizontalAlignment="Center"
-                                                    >
-                                                    </Image>
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn CanUserResize="False">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="1">
+                                                        <StackPanel.OpacityMask>
+                                                            <VisualBrush Visual="{Binding ElementName=Mask}" />
+                                                        </StackPanel.OpacityMask>
+                                                        <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                               RenderOptions.BitmapScalingMode="Fant"
+                                                               ToolTipService.ShowDuration="120000"
+                                                               Stretch="Fill"
+                                                               Width="48"
+                                                               Height="48"
+                                                               VerticalAlignment="Top"
+                                                               Margin="0"
+                                                               HorizontalAlignment="Center"
+                                                        >
+                                                        </Image>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn CanUserResize="True" Width="*">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
 
-                                    <DataGridTemplateColumn CanUserResize="False" Width="60">
-                                        <DataGridTemplateColumn.CellTemplate>
-                                            <DataTemplate>
-                                                <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
-                                                          ItemsSource="{Binding Path=ViewModel.Model.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                          SelectedItem="{Binding Path=ViewModel.Model.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                />
-                                            </DataTemplate>
-                                        </DataGridTemplateColumn.CellTemplate>
-                                    </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn CanUserResize="False" Width="60">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
+                                                              ItemsSource="{Binding Path=ViewModel.Model.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                              SelectedItem="{Binding Path=ViewModel.Model.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                    />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
 
-                                </DataGrid.Columns>
-                            </DataGrid>
-                            </DockPanel>
-                        </Expander.Content>
-                        <Expander.Header>
-                            <Label FontSize="10" Content="Search"/>
-                        </Expander.Header>
-                    </Expander>
+                                    </DataGrid.Columns>
+                                    
+                                </DataGrid>
+                                </DockPanel>
+                            </Expander.Content>
+                            
+                            <Expander.Header>
+                                <Label FontSize="10" Content="Search"/>
+                            </Expander.Header>
+                            
+                        </Expander>
                     </Border>
                 </DockPanel>
 
@@ -267,8 +270,8 @@
             <Grid Grid.Column="2">
                 <Grid.RowDefinitions>
                     <RowDefinition />
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" MinHeight="26" MaxHeight="250"/>
+                    <!--<RowDefinition Height="Auto" />-->
+                    <RowDefinition MinHeight="25" Height="Auto"/>
                 </Grid.RowDefinitions>
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -445,20 +448,17 @@
 
                 </DataGrid>
 
-                <GridSplitter Grid.Row="1" ResizeBehavior="BasedOnAlignment" ResizeDirection="Rows" Grid.ColumnSpan="2" Height="3" Width="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray"></GridSplitter>
-
-                <Border Grid.Row="2" CornerRadius="4" BorderBrush="Gray" BorderThickness="1" Background="Lavender" DockPanel.Dock="Top">
+                <Border Grid.Row="1" CornerRadius="4" BorderBrush="Gray" BorderThickness="1" Background="Lavender" DockPanel.Dock="Top" Margin="0,1,0,0">
                     
-                    <Expander  ExpandDirection="Up" FlowDirection="RightToLeft" Background="Lavender">
-                    
+                    <Expander  ExpandDirection="Up" FlowDirection="RightToLeft" Background="Lavender" BorderThickness="1">
                         <Expander.Content>
-                            <Grid FlowDirection="LeftToRight" MaxHeight="250">
+                            <Grid FlowDirection="LeftToRight">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
                                     <ColumnDefinition Width="50" />
                                 </Grid.ColumnDefinitions>
 
-                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" MinHeight="48" >
+                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" MinHeight="150" >
                                     <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 </ScrollViewer>
 
@@ -503,37 +503,41 @@
                             <Label FontSize="10" Content="Log"/>
                         </StackPanel>
                     </Expander.Header>
-                    
                     </Expander>
                     
                 </Border>
                 
             </Grid>
 
-            <GridSplitter Grid.Column="3" Grid.RowSpan="2" Width="3" VerticalAlignment="Stretch" HorizontalAlignment="Center" BorderThickness="0.2" BorderBrush="Gray" />
-
-            <Expander Grid.Column="4" 
+            <Expander Grid.Column="3" 
                       ExpandDirection="Left" 
                       HorizontalAlignment="Right" 
                       Background="Lavender"
-                      BorderThickness="1" BorderBrush="Gray" Margin="0,0,2,0">
+                      BorderThickness="1" 
+                      BorderBrush="Gray" 
+                      Margin="0,0,2,0"
+                      >
                 <Expander.Content>
-                    <Grid>
+                    <Grid Expander.Collapsed="Grid_Collapsed" Expander.Expanded="Grid_Expanded">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="350"/>
-                            <ColumnDefinition Width="3"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <DataGrid CanUserAddRows="False"
-                          CanUserDeleteRows="False"
-                          AutoGenerateColumns="False"
-                          ItemsSource="{Binding Model.SelectedChannel.ChannelPlaylists}"
-                          HeadersVisibility="None"
-                          GridLinesVisibility="Horizontal"
-                          BorderThickness="1"
-                          SelectedItem="{Binding Model.SelectedPlaylist}"
-                          x:Name="ChannelsPls"
-                          SelectionChanged="PlaylistsGrid_OnSelectionChanged"
-                          >
+                        
+                        <GridSplitter Width="3"/>
+                        
+                        <DataGrid Grid.Column="1" CanUserAddRows="False"
+                                  CanUserDeleteRows="False"
+                                  AutoGenerateColumns="False"
+                                  ItemsSource="{Binding Model.SelectedChannel.ChannelPlaylists}"
+                                  HeadersVisibility="None"
+                                  GridLinesVisibility="Horizontal"
+                                  BorderThickness="1"
+                                  SelectedItem="{Binding Model.SelectedPlaylist}"
+                                  x:Name="ChannelsPls"
+                                  SelectionChanged="PlaylistsGrid_OnSelectionChanged"
+                                  MinWidth="400"
+                                  >
                             <DataGrid.Resources>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                 <ContextMenu x:Key="DataRowContextMenu">
@@ -541,12 +545,14 @@
                                     <MenuItem Header="Download" Click="Playlist_OnClick" CommandParameter="Download" />
                                 </ContextMenu>
                             </DataGrid.Resources>
+                            
                             <DataGrid.CellStyle>
                                 <Style TargetType="DataGridCell">
                                     <Setter Property="BorderThickness" Value="0" />
                                     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                                 </Style>
                             </DataGrid.CellStyle>
+                            
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
                                     <EventSetter Event="MouseDoubleClick" Handler="Playlist_OnMouseDoubleClick" />
@@ -555,6 +561,7 @@
                             </DataGrid.RowStyle>
 
                             <DataGrid.Columns>
+                                
                                 <DataGridTemplateColumn CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
@@ -563,14 +570,14 @@
                                                     <VisualBrush Visual="{Binding ElementName=Mask}" />
                                                 </StackPanel.OpacityMask>
                                                 <Image Source="{Binding Thumbnail, IsAsync=True}"
-                                            RenderOptions.BitmapScalingMode="Fant"
-                                            ToolTipService.ShowDuration="120000"
-                                            Stretch="Fill"
-                                            Width="48"
-                                            Height="48"
-                                            VerticalAlignment="Top"
-                                            Margin="0"
-                                            HorizontalAlignment="Center">
+                                                        RenderOptions.BitmapScalingMode="Fant"
+                                                        ToolTipService.ShowDuration="120000"
+                                                        Stretch="Fill"
+                                                        Width="48"
+                                                        Height="48"
+                                                        VerticalAlignment="Top"
+                                                        Margin="0"
+                                                        HorizontalAlignment="Center">
                                                     <Image.ToolTip>
                                                         <StackPanel Orientation="Horizontal">
                                                             <Image Source="{Binding Thumbnail, IsAsync=True}" />
@@ -583,7 +590,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                <DataGridTemplateColumn>
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
@@ -592,8 +599,9 @@
                                 </DataGridTemplateColumn>
 
                             </DataGrid.Columns>
+                            
                         </DataGrid>
-                        <GridSplitter Grid.Column="1" Width="3" ResizeBehavior="PreviousAndCurrent" ResizeDirection="Columns"/>
+                        
                     </Grid>
                 </Expander.Content>
                 <Expander.Header>
@@ -612,6 +620,7 @@
                     </StackPanel>
                 </Expander.Header>
             </Expander>
+            
         </Grid>
 
         <StatusBar Grid.Row="2">
