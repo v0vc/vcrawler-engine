@@ -15,7 +15,7 @@
             
             <Menu.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
+                    <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
                 </ItemsPanelTemplate>
             </Menu.ItemsPanel>
 

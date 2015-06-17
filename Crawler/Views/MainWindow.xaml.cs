@@ -32,8 +32,9 @@ namespace Crawler.Views
             InitializeComponent();
         }
 
-        private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
+            ViewModel.Model.Result = "Loading..";
             using (var bgv = new BackgroundWorker())
             {
                 bgv.DoWork += bgv_DoWork;
@@ -46,13 +47,14 @@ namespace Crawler.Views
         void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ViewModel.Model.Result = "Ready";
-            //if (ChannelsGrid.SelectedIndex >= 0) //focus
-            //{
-            //    ChannelsGrid.UpdateLayout();
-            //    var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
-            //    if (row != null)
-            //        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-            //}
+
+            if (ChannelsGrid.SelectedIndex >= 0) //focus
+            {
+                ChannelsGrid.UpdateLayout();
+                var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
+                if (row != null)
+                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            }
         }
 
         void bgv_DoWork(object sender, DoWorkEventArgs e)
