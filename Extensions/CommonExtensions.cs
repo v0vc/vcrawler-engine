@@ -149,5 +149,17 @@ namespace Extensions
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             return "Crawler v" + fvi.FileVersion;
         }
+
+        public static bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+                return false;
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) || null == uri)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Extensions;
@@ -51,6 +52,7 @@ namespace Crawler.Models
 
         #region Fields
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
+        private string _link;
 
         public ICommonFactory BaseFactory { get; set; }
 
@@ -217,6 +219,18 @@ namespace Crawler.Models
                 FilterVideos();
             }
         }
+
+        public string Link
+        {
+            get { return _link; }
+            set
+            {
+                _link = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsHd { get; set; }
 
         #endregion
 
@@ -557,6 +571,57 @@ namespace Crawler.Models
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
         }
 
+        public async Task DownloadLink()
+        {
+            if (string.IsNullOrEmpty(Link))
+                return;
+
+            if (!CommonExtensions.IsValidUrl(Link))
+            {
+                MessageBox.Show("Can't parse URL");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(_youPath))
+            {
+                MessageBox.Show("Please, select youtube-dl");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(DirPath))
+            {
+                MessageBox.Show("Please, set download directory");
+                return;
+            }
+
+            var vf = BaseFactory.CreateVideoItemFactory();
+            var regex = new Regex(@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)");
+            var match = regex.Match(Link);
+            if (match.Success)
+            {
+                var id = match.Groups[1].Value;
+                var vi = await vf.GetVideoItemNetAsync(id);
+                vi.ParentID = null;
+
+                SelectedVideoItem = vi as VideoItem;
+                SelectedChannel = ServiceChannels.First();
+
+                ServiceChannels.First().AddNewItem(vi, true);
+                await vi.DownloadItem(_youPath, DirPath, IsHd);
+            }
+            else
+            {
+                var param = String.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", DirPath, Link);
+                await Task.Run(() =>
+                {
+                    var process = Process.Start(_youPath, param);
+                    //if (process != null) process.WaitForExit();
+                    if (process != null) process.Close();
+                });
+            }
+
+        }
+
         private void FilterVideos()
         {
             if (SelectedChannel == null)
@@ -605,6 +670,5 @@ namespace Crawler.Models
                 }
             }
         }
-
     }
 }

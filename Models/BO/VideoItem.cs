@@ -256,7 +256,7 @@ namespace Models.BO
             _youPath = youPath;
 
             ItemState = "Downloading";
-            var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
+            var dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
                 dir.Create();
 
@@ -337,6 +337,16 @@ namespace Models.BO
                 }
             }
 
+            if (e.Data.EndsWith("has already been downloaded"))
+            {
+                var regex = new Regex(@"(\[download\])(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                var match = regex.Match(e.Data);
+                if (match.Success)
+                {
+                    _tempname = regex.Replace(e.Data, "$2$3");// + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                }
+            }
+
             await Log(e.Data);
 
             DownloadPercentage = GetPercentFromYoudlOutput(e.Data);
@@ -357,7 +367,8 @@ namespace Models.BO
         private void process_Exited()
         {
             DownloadPercentage = 100;
-            if (_tempname == string.Empty) return;
+            if (_tempname == string.Empty)
+                return;
 
             _tempname = _tempname.TrimStart('"').TrimEnd('"');
 

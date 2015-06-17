@@ -21,6 +21,8 @@ namespace Crawler.ViewModels
 
         public RelayCommand SaveCommand { get; set; }
 
+        public RelayCommand DownloadLinkCommand { get; set; }
+
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
@@ -29,6 +31,7 @@ namespace Crawler.ViewModels
             SaveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem());
             SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
             SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
+            DownloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink());
         }
 
         private void OpenDir(object obj)
@@ -88,6 +91,17 @@ namespace Crawler.ViewModels
             };
 
             set.ShowDialog();
+        }
+
+        public void OpenAddLink()
+        {
+            var adl = new AddLinkView
+            {
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            adl.ShowDialog();
         }
     }
 }

@@ -15,7 +15,7 @@
             
             <Menu.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <DockPanel HorizontalAlignment="Stretch" />
+                    <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Bottom"/>
                 </ItemsPanelTemplate>
             </Menu.ItemsPanel>
 
@@ -27,7 +27,9 @@
             <MenuItem Header="Tools">
                 <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
             </MenuItem>
-            
+
+            <MenuItem Header="Add Link"  Click="MainMenuItem_OnClick" CommandParameter="Link"/>
+
             <MenuItem Header="Help" HorizontalAlignment="Right">
                 <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About"/>
             </MenuItem>
@@ -458,7 +460,7 @@
                                     <ColumnDefinition Width="50" />
                                 </Grid.ColumnDefinitions>
 
-                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" MinHeight="150" >
+                                <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" Height="150" >
                                     <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 </ScrollViewer>
 
