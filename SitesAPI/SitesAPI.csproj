@@ -53,11 +53,11 @@
     <Compile Include="POCO\VideoItemPOCO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SiteHelper.cs" />
+    <Compile Include="Trackers\TapochekSite.cs" />
     <Compile Include="Videos\YouTubeSite.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="News\" />
-    <Folder Include="Trackers\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Interfaces\Interfaces.csproj">

@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\ISqLiteDatabase.cs" />
+    <Compile Include="API\ITapochekSite.cs" />
     <Compile Include="API\IYouTubeSite.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />
     <Compile Include="Factories\ICommonFactory.cs" />

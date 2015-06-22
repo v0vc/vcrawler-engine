@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -221,6 +221,11 @@ namespace Models.BO
             {
                 ChannelItems.Add(item);
             }
+        }
+
+        public async Task<CookieCollection> GetChannelCookieNetAsync()
+        {
+            return await _cf.GetChannelCookieNetAsync(Site);
         }
     }
 }

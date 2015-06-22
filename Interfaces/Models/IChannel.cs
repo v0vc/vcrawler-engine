@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -68,5 +69,7 @@ namespace Interfaces.Models
         Task DeleteChannelTagAsync(string tag);
 
         void AddNewItem(IVideoItem item, bool isNew);
+
+        Task<CookieCollection> GetChannelCookieNetAsync();
     }
 }

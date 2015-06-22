@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
@@ -500,6 +501,28 @@ namespace Models.Factories
 
                 channel.ChannelPlaylists.Add(playlist);
             }
+        }
+
+        public async Task<CookieCollection> GetChannelCookieNetAsync(string site)
+        {
+            var cf = _c.CreateCredFactory();
+
+            var cred = await cf.GetCredDbAsync(site);
+
+            switch (site)
+            {
+                case "tapochek.net":
+
+                    var fb = _c.CreateTapochekSite();
+
+                    return await fb.GetUserCookieNetAsync(cred);
+
+                    break;
+
+                default:
+                    throw new Exception(site + " is not implemented yet");
+            }
+
         }
     }
 }

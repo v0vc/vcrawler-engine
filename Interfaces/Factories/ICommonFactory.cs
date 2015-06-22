@@ -21,5 +21,7 @@ namespace Interfaces.Factories
         ISqLiteDatabase CreateSqLiteDatabase();
 
         IYouTubeSite CreateYouTubeSite();
+
+        ITapochekSite CreateTapochekSite();
     }
 }

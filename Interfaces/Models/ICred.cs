@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -26,5 +27,7 @@ namespace Interfaces.Models
         Task UpdatePasswordAsync(string newpassword);
 
         Task UpdateAutorizationAsync(short autorize);
+
+        
     }
 }

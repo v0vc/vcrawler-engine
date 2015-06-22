@@ -4,6 +4,7 @@ using Interfaces.Factories;
 using Models.Factories;
 using Ninject;
 using Ninject.Extensions.Factory;
+using SitesAPI.Trackers;
 using SitesAPI.Videos;
 
 namespace IoC
@@ -71,6 +72,7 @@ namespace IoC
             kern.Bind<ITagFactory>().To<TagFactory>().InSingletonScope();
             kern.Bind<ICredFactory>().To<CredFactory>().InSingletonScope();
             kern.Bind<ISettingFactory>().To<SettingFactory>().InSingletonScope();
+            kern.Bind<ITapochekSite>().To<TapochekSite>().InSingletonScope();
 
             kern.Bind<ICommonFactory>().ToFactory();
 
