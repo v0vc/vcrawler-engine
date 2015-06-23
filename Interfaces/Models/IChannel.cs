@@ -71,5 +71,7 @@ namespace Interfaces.Models
         void AddNewItem(IVideoItem item, bool isNew);
 
         Task<CookieCollection> GetChannelCookieNetAsync();
+
+        Task StoreCookiesAsync(CookieCollection cookies);
     }
 }

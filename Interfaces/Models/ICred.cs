@@ -28,6 +28,8 @@ namespace Interfaces.Models
 
         Task UpdateAutorizationAsync(short autorize);
 
-        
+        Task UpdateCookieAsync(string newcookie);
+
+        Task UpdatePasskeyAsync(string newpasskey);
     }
 }

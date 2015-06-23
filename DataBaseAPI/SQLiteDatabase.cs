@@ -747,6 +747,24 @@ namespace DataBaseAPI
             }
         }
 
+        public async Task UpdateCookieAsync(string site, string newcookie)
+        {
+            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredCookie, newcookie, CredSite, site);
+            using (var command = GetCommand(zap))
+            {
+                await ExecuteNonQueryAsync(command);
+            }
+        }
+
+        public async Task UpdatePasskeyAsync(string site, string newpasskey)
+        {
+            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredPasskey, newpasskey, CredSite, site);
+            using (var command = GetCommand(zap))
+            {
+                await ExecuteNonQueryAsync(command);
+            }
+        }
+
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
             var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredAutorization, autorize, CredSite, site);
@@ -927,5 +945,7 @@ namespace DataBaseAPI
 
             return res;
         }
+
+
     }
 }

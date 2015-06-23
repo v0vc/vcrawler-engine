@@ -227,5 +227,10 @@ namespace Models.BO
         {
             return await _cf.GetChannelCookieNetAsync(Site);
         }
+
+        public async Task StoreCookiesAsync(CookieCollection cookies)
+        {
+            await _cf.StoreCookiesAsync(Site, cookies);
+        }
     }
 }

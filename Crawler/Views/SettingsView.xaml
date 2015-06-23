@@ -104,11 +104,16 @@
                 </Grid>
             </TabItem>
             <TabItem Header="Credentials">
-                <DataGrid ItemsSource="{Binding Model.SupportedCreds}" CanUserAddRows="False" AutoGenerateColumns="False" HeadersVisibility="Column" RowHeight="20">
+                <DataGrid ItemsSource="{Binding Model.SupportedCreds}" 
+                          CanUserAddRows="False" 
+                          AutoGenerateColumns="False" 
+                          HeadersVisibility="Column" 
+                          RowHeight="20"
+                          >
                     <DataGrid.Columns>
-                        <DataGridTextColumn Binding="{Binding Site}" Header="Site" Width="120" IsReadOnly="True"></DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Login}" Header="Login" Width="120"></DataGridTextColumn>
-                        <DataGridTextColumn Binding="{Binding Pass}" Header="Password" Width="*"></DataGridTextColumn>
+                        <DataGridTextColumn Binding="{Binding Site}" Header="Site" Width="120" IsReadOnly="True" />
+                        <DataGridTextColumn Binding="{Binding Login}" Header="Login" Width="100" />
+                        <DataGridTextColumn Binding="{Binding Pass}" Header="Password" Width="*" />
                     </DataGrid.Columns>
                 </DataGrid>
             </TabItem>

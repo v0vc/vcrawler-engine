@@ -524,5 +524,30 @@ namespace Models.Factories
             }
 
         }
+
+        public async Task StoreCookiesAsync(string site, CookieCollection cookies)
+        {
+            var cf = _c.CreateCredFactory();
+
+            var cred = await cf.GetCredDbAsync(site);
+
+            for (int i = 0; i < cookies.Count; i++)
+            {
+                switch (i)
+                {
+                    case 0:
+
+                        await cred.UpdateCookieAsync(cookies[i].Name + "=" + cookies[i].Value);
+
+                        break;
+
+                    case 1:
+
+                        await cred.UpdatePasskeyAsync(cookies[i].Name + "=" + cookies[i].Value);
+
+                        break;
+                }
+            }
+        }
     }
 }

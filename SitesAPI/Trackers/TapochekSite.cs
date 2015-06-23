@@ -12,8 +12,6 @@ namespace SitesAPI.Trackers
 {
     public class TapochekSite :ITapochekSite
     {
-        
-
         public async Task<CookieCollection> GetUserCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
@@ -23,7 +21,9 @@ namespace SitesAPI.Trackers
             var loginUrl = string.Format("{0}/login.php", hostUrl);
             var indexUrl = string.Format("{0}/index.php", hostUrl);
 
+            var cc = new CookieContainer();
             var req = (HttpWebRequest)WebRequest.Create(loginUrl);
+            req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
             req.Host = cred.Site;
             req.KeepAlive = true;

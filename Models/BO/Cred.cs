@@ -63,5 +63,15 @@ namespace Models.BO
             await _credFactory.UpdateAutorizationAsync(Site, autorize);
             //await ((CredFactory)ServiceLocator.CredFactory).UpdateAutorizationAsync(Site, autorize);
         }
+
+        public async Task UpdateCookieAsync(string newcookie)
+        {
+            await _credFactory.UpdateCookieAsync(Site, newcookie);
+        }
+
+        public async Task UpdatePasskeyAsync(string newpasskey)
+        {
+            await _credFactory.UpdatePasskeyAsync(Site, newpasskey);
+        }
     }
 }

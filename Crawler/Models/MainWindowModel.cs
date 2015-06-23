@@ -382,7 +382,6 @@ namespace Crawler.Models
                 if (savedir.Value != DirPath)
                     await savedir.UpdateSettingAsync(DirPath);
 
-
                 var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
                 if (mpcdir.Value != MpcPath)
                     await mpcdir.UpdateSettingAsync(MpcPath);
@@ -390,6 +389,12 @@ namespace Crawler.Models
                 var youpath = await sf.GetSettingDbAsync("pathToYoudl");
                 if (youpath.Value != YouPath)
                     await youpath.UpdateSettingAsync(YouPath);
+
+                foreach (Cred cred in SupportedCreds)
+                {
+                    await cred.UpdateLoginAsync(cred.Login);
+                    await cred.UpdatePasswordAsync(cred.Pass);
+                }
 
                 Result = "Saved";
             }

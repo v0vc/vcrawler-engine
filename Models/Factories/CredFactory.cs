@@ -111,5 +111,33 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
+
+        public async Task UpdateCookieAsync(string site, string newcookie)
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                await fb.UpdateCookieAsync(site, newcookie);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task UpdatePasskeyAsync(string site, string newpasskey)
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            //var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                await fb.UpdatePasskeyAsync(site, newpasskey);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }
