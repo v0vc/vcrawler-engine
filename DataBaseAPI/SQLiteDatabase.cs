@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -129,7 +130,7 @@ namespace DataBaseAPI
 
         public static readonly string CredCookie = "cookie";
 
-        public static readonly string CredPasskey = "passkey";
+        public static readonly string CredExpired = "expired";
 
         public static readonly string CredAutorization = "autorization";
 
@@ -704,7 +705,7 @@ namespace DataBaseAPI
                CredLogin,
                CredPass,
                CredCookie,
-               CredPasskey,
+               CredExpired,
                CredAutorization
                );
             using (var command = GetCommand(zap))
@@ -713,7 +714,7 @@ namespace DataBaseAPI
                 command.Parameters.AddWithValue("@" + CredLogin, cred.Login);
                 command.Parameters.AddWithValue("@" + CredPass, cred.Pass);
                 command.Parameters.AddWithValue("@" + CredCookie, cred.Cookie);
-                command.Parameters.AddWithValue("@" + CredPasskey, cred.Passkey);
+                command.Parameters.AddWithValue("@" + CredExpired, cred.Expired);
                 command.Parameters.AddWithValue("@" + CredAutorization, cred.Autorization);
 
                 await ExecuteNonQueryAsync(command);
@@ -756,11 +757,12 @@ namespace DataBaseAPI
             }
         }
 
-        public async Task UpdatePasskeyAsync(string site, string newpasskey)
+        public async Task UpdateExpiredAsync(string site, DateTime newexpired)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredPasskey, newpasskey, CredSite, site);
+            var zap = string.Format("UPDATE {0} SET {1}=@newexpired WHERE {2}='{3}'", Tablecredentials, CredExpired, CredSite, site);
             using (var command = GetCommand(zap))
             {
+                command.Parameters.AddWithValue("@newexpired", newexpired);
                 await ExecuteNonQueryAsync(command);
             }
         }
@@ -946,6 +948,9 @@ namespace DataBaseAPI
             return res;
         }
 
-
+        public Task<CookieCollection> GetChanelCookieDbAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

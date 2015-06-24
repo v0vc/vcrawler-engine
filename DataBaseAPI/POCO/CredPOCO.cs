@@ -10,7 +10,7 @@ namespace DataBaseAPI.POCO
         public string Login { get; set; }
         public string Pass { get; set; }
         public string Cookie { get; set; }
-        public string Passkey { get; set; }
+        public DateTime Expired { get; set; }
         public short Autorization { get; set; }
 
         public CredPOCO(IDataRecord reader)
@@ -19,7 +19,7 @@ namespace DataBaseAPI.POCO
             Login = reader[SqLiteDatabase.CredLogin] as string;
             Pass = reader[SqLiteDatabase.CredPass] as string;
             Cookie = reader[SqLiteDatabase.CredCookie] as string;
-            Passkey = reader[SqLiteDatabase.CredPasskey] as string;
+            Expired = (DateTime) reader[SqLiteDatabase.CredExpired];
             Autorization = Convert.ToInt16(reader[SqLiteDatabase.CredAutorization]);
         }
     }

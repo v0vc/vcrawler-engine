@@ -405,7 +405,7 @@ namespace TestAPI
             cred.Login = "testlogin";
             cred.Pass = "testpass";
             cred.Cookie = "cookie";
-            cred.Passkey = "testkey";
+            cred.Expired = DateTime.Now;
             cred.Autorization = 0;
         }
 

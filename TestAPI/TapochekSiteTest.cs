@@ -12,6 +12,8 @@ namespace TestAPI
     [TestClass]
     public class TapochekSiteTest
     {
+        private const string Credsite = "tapochek.net";
+
         private readonly ICommonFactory _fabric;
 
         public TapochekSiteTest()
@@ -23,10 +25,10 @@ namespace TestAPI
         public async Task GetChannelCookieNetAsync()
         {
             var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync("tapochek.net");
+            var cred = await cf.GetCredDbAsync(Credsite);
 
             var tp = _fabric.CreateTapochekSite();
-            var cookie = await tp.GetUserCookieNetAsync(cred);
+            var cookie = await tp.GetCookieNetAsync(cred);
             Assert.IsTrue(cookie.Count > 0);
         }
 
@@ -34,16 +36,17 @@ namespace TestAPI
         public async Task StoreCookiesAsync()
         {
             var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync("tapochek.net");
+            var cred = await cf.GetCredDbAsync(Credsite);
 
             var tp = _fabric.CreateTapochekSite();
-            var cookie = await tp.GetUserCookieNetAsync(cred);
+            var cookie = await tp.GetCookieNetAsync(cred);
 
             var chf = _fabric.CreateChannelFactory();
             var ch = chf.CreateChannel();
             ch.Site = cred.Site;
+            ch.ChannelCookies = cookie;
 
-            Task t = ch.StoreCookiesAsync(cookie);
+            Task t = ch.StoreCookiesAsync();
             Assert.IsTrue(!t.IsFaulted);
         }
     }

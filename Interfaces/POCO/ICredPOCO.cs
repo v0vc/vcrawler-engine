@@ -12,7 +12,7 @@ namespace Interfaces.POCO
 
         string Cookie { get; set; }
 
-        string Passkey { get; set; }
+        DateTime Expired { get; set; }
 
         Int16 Autorization { get; set; }
     }

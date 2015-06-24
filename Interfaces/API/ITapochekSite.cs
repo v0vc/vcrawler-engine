@@ -16,13 +16,7 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="cred"></param>
         /// <returns></returns>
-        Task<CookieCollection> GetUserCookieNetAsync(ICred cred);
-
-        /// <summary>
-        /// Получить куки пользователя из базы
-        /// </summary>
-        /// <returns></returns>
-        Task<CookieCollection> GetUserCookieDbAsync();
+        Task<CookieCollection> GetCookieNetAsync(ICred cred);
 
         /// <summary>
         /// Получение заданного количество релизов пользователя, 0 - все релизы

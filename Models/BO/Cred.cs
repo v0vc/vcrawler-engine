@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -15,7 +16,7 @@ namespace Models.BO
         public string Login { get; set; }
         public string Pass { get; set; }
         public string Cookie { get; set; }
-        public string Passkey { get; set; }
+        public DateTime Expired { get; set; }
         public short Autorization { get; set; }
 
         public Cred(ICredFactory credFactory)
@@ -30,7 +31,7 @@ namespace Models.BO
             Login = poco.Login;
             Pass = poco.Pass;
             Cookie = poco.Cookie;
-            Passkey = poco.Passkey;
+            Expired = poco.Expired;
             Autorization = poco.Autorization;
         }
 
@@ -69,9 +70,9 @@ namespace Models.BO
             await _credFactory.UpdateCookieAsync(Site, newcookie);
         }
 
-        public async Task UpdatePasskeyAsync(string newpasskey)
+        public async Task UpdateExpiredAsync(DateTime newexpired)
         {
-            await _credFactory.UpdatePasskeyAsync(Site, newpasskey);
+            await _credFactory.UpdateExpiredAsync(Site, newexpired);
         }
     }
 }

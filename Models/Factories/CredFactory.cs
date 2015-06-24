@@ -126,13 +126,13 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdatePasskeyAsync(string site, string newpasskey)
+        public async Task UpdateExpiredAsync(string site, DateTime newexpired)
         {
             var fb = _c.CreateSqLiteDatabase();
             //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
-                await fb.UpdatePasskeyAsync(site, newpasskey);
+                await fb.UpdateExpiredAsync(site, newexpired);
             }
             catch (Exception ex)
             {

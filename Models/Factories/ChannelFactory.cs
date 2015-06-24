@@ -503,24 +503,24 @@ namespace Models.Factories
             }
         }
 
-        public async Task<CookieCollection> GetChannelCookieNetAsync(string site)
+        public async Task FillChannelCookieNetAsync(Channel channel)
         {
             var cf = _c.CreateCredFactory();
 
-            var cred = await cf.GetCredDbAsync(site);
+            var cred = await cf.GetCredDbAsync(channel.Site);
 
-            switch (site)
+            switch (channel.Site)
             {
                 case "tapochek.net":
 
                     var fb = _c.CreateTapochekSite();
 
-                    return await fb.GetUserCookieNetAsync(cred);
+                    channel.ChannelCookies = await fb.GetCookieNetAsync(cred);
 
                     break;
 
                 default:
-                    throw new Exception(site + " is not implemented yet");
+                    throw new Exception(channel + " is not implemented yet");
             }
 
         }
@@ -531,23 +531,23 @@ namespace Models.Factories
 
             var cred = await cf.GetCredDbAsync(site);
 
-            for (int i = 0; i < cookies.Count; i++)
+            var sb = new StringBuilder();
+
+            var lstdates = new List<DateTime>(cookies.Count);
+
+            for (var i = 0; i < cookies.Count; i++)
             {
-                switch (i)
-                {
-                    case 0:
-
-                        await cred.UpdateCookieAsync(cookies[i].Name + "=" + cookies[i].Value);
-
-                        break;
-
-                    case 1:
-
-                        await cred.UpdatePasskeyAsync(cookies[i].Name + "=" + cookies[i].Value);
-
-                        break;
-                }
+                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append(";");
+                lstdates.Add(cookies[i].Expires);
             }
+
+            var expired = lstdates.Max();
+
+            var rescookie = sb.ToString().TrimEnd(';');
+
+            await cred.UpdateCookieAsync(rescookie);
+
+            await cred.UpdateExpiredAsync(expired);
         }
     }
 }

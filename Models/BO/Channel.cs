@@ -44,11 +44,17 @@ namespace Models.BO
         }
 
         public string SubTitle { get; set; }
+
         public byte[] Thumbnail { get; set; }
+
         public string Site { get; set; }
+
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
+
         public List<ITag> Tags { get; set; }
+
         public int CountNew
         {
             get { return _countNew; }
@@ -68,6 +74,8 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
+        public CookieCollection ChannelCookies { get; set; }
 
         public Channel(IChannelFactory cf)
         {
@@ -223,14 +231,14 @@ namespace Models.BO
             }
         }
 
-        public async Task<CookieCollection> GetChannelCookieNetAsync()
+        public async Task FillChannelCookieNetAsync()
         {
-            return await _cf.GetChannelCookieNetAsync(Site);
+            await _cf.FillChannelCookieNetAsync(this);
         }
 
-        public async Task StoreCookiesAsync(CookieCollection cookies)
+        public async Task StoreCookiesAsync()
         {
-            await _cf.StoreCookiesAsync(Site, cookies);
+            await _cf.StoreCookiesAsync(Site, ChannelCookies);
         }
     }
 }

@@ -4,7 +4,7 @@ CREATE TABLE `credentials` (
 `login` varchar(30) DEFAULT NULL,
 `pass` varchar(30) DEFAULT NULL,
 `cookie` varchar(255) DEFAULT NULL,
-`passkey` varchar(255) DEFAULT NULL,
+`expired` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 `autorization` INTEGER NOT NULL DEFAULT '0'
 );
 

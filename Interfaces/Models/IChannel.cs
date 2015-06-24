@@ -28,6 +28,8 @@ namespace Interfaces.Models
 
         bool IsDownloading { get; set; }
 
+        CookieCollection ChannelCookies { get; set; }
+
         Task<List<IVideoItem>> GetChannelItemsDbAsync();
 
         Task SyncChannelAsync(string dir, bool isSyncPls);
@@ -70,8 +72,8 @@ namespace Interfaces.Models
 
         void AddNewItem(IVideoItem item, bool isNew);
 
-        Task<CookieCollection> GetChannelCookieNetAsync();
+        Task FillChannelCookieNetAsync();
 
-        Task StoreCookiesAsync(CookieCollection cookies);
+        Task StoreCookiesAsync();
     }
 }

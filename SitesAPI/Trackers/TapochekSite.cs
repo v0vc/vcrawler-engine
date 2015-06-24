@@ -12,7 +12,7 @@ namespace SitesAPI.Trackers
 {
     public class TapochekSite :ITapochekSite
     {
-        public async Task<CookieCollection> GetUserCookieNetAsync(ICred cred)
+        public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
                 throw new Exception("Please, set login and password");
@@ -48,11 +48,6 @@ namespace SitesAPI.Trackers
             var resp = (HttpWebResponse)(await req.GetResponseAsync());
 
             return resp.Cookies;
-        }
-
-        public Task<CookieCollection> GetUserCookieDbAsync()
-        {
-            throw new NotImplementedException();
         }
 
         public Task<List<IVideoItemPOCO>> GetUserItemsAsync(string userID, int maxResult)

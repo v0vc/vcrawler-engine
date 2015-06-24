@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -221,9 +223,9 @@ namespace Interfaces.API
         /// Обновить пасскей
         /// </summary>
         /// <param name="site"></param>
-        /// <param name="newpasskey"></param>
+        /// <param name="newexpired"></param>
         /// <returns></returns>
-        Task UpdatePasskeyAsync(string site, string newpasskey);
+        Task UpdateExpiredAsync(string site, DateTime newexpired);
 
         /// <summary>
         /// Обновить поле требовать авторизацию или нет
@@ -288,5 +290,11 @@ namespace Interfaces.API
         /// <param name="channelID"></param>
         /// <returns></returns>
         Task<List<string>> GetChannelItemsIdListDbAsync(string channelID);
+
+        /// <summary>
+        /// Получить куки пользователя из базы
+        /// </summary>
+        /// <returns></returns>
+        Task<CookieCollection> GetChanelCookieDbAsync();
     }
 }

@@ -14,7 +14,7 @@ namespace Interfaces.Models
 
         string Cookie { get; set; }
 
-        string Passkey { get; set; }
+        DateTime Expired { get; set; }
 
         Int16 Autorization { get; set; }
 
@@ -30,6 +30,6 @@ namespace Interfaces.Models
 
         Task UpdateCookieAsync(string newcookie);
 
-        Task UpdatePasskeyAsync(string newpasskey);
+        Task UpdateExpiredAsync(DateTime newexpired);
     }
 }
