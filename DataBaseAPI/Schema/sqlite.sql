@@ -9,14 +9,14 @@ CREATE TABLE `credentials` (
 );
 
 --заполняем
-INSERT INTO "credentials" VALUES ('youtube.com', ' ', ' ', '', '', '0');
-INSERT INTO "credentials" VALUES ('rutracker.org', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('tapochek.net', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('vimeo.com', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('nnm-club.me', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('novafilm.tv', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('livejournal.com', '', '', '', '', '0');
-INSERT INTO "credentials" VALUES ('kinozal.tv', '', '', '', '', '0');
+INSERT INTO "credentials" VALUES ('youtube.com', ' ', ' ', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('rutracker.org', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('tapochek.net', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('vimeo.com', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('nnm-club.me', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('novafilm.tv', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('livejournal.com', '', '', '', '0001-01-01 00:00:00', '0');
+INSERT INTO "credentials" VALUES ('kinozal.tv', '', '', '', '0001-01-01 00:00:00', '0');
 
 --таблица настроек
 CREATE TABLE `settings` (

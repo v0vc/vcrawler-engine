@@ -134,21 +134,30 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsNetAsync(string channelID, int maxresult)
+        public async Task<List<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
         {
-            var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
-            try
+            var lst = new List<IVideoItem>();
+            switch (channel.Site)
             {
-                var lst = new List<IVideoItem>();
-                var fbres = await fb.GetChannelItemsAsync(channelID, maxresult);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
-                return lst;
+                case "youtube.com":
+
+                    var youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
+                    lst.AddRange(youres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+
+                    break;
+
+                case "tapochek.net":
+
+                    var tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
+                    lst.AddRange(tapres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+
+                    break;
+
+                default:
+                    throw new Exception(channel.Site + " is not implemented yet");
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            
+            return lst;
         }
 
         public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
@@ -522,7 +531,6 @@ namespace Models.Factories
                 default:
                     throw new Exception(channel + " is not implemented yet");
             }
-
         }
 
         public async Task StoreCookiesAsync(string site, CookieCollection cookies)
@@ -548,6 +556,27 @@ namespace Models.Factories
             await cred.UpdateCookieAsync(rescookie);
 
             await cred.UpdateExpiredAsync(expired);
+        }
+
+        public async Task FillChannelCookieDbAsync(Channel channel)
+        {
+            var cf = _c.CreateCredFactory();
+
+            var cred = await cf.GetCredDbAsync(channel.Site);
+
+            var lstcook = cred.Cookie.Split(';');
+
+            foreach (string cook in lstcook)
+            {
+                var sp = cook.Split('=');
+
+                if (sp.Length != 2)
+                    continue;
+
+                var cookie = new Cookie(sp[0], sp[1]) {Expires = cred.Expired, Domain = "." + cred.Site, Path = "/"};
+
+                channel.ChannelCookies.Add(cookie);
+            }
         }
     }
 }

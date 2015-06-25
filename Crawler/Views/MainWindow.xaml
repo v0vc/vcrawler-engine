@@ -171,7 +171,7 @@
                                               x:Name="SearchGrid"
                                               ItemsSource="{Binding Model.ServiceChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
-                                              SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                                              GotFocus="DataGrid_CellGotFocus"
                                               >
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
@@ -218,7 +218,7 @@
                                         <DataGridTemplateColumn CanUserResize="True" Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>

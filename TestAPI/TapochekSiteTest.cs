@@ -49,5 +49,19 @@ namespace TestAPI
             Task t = ch.StoreCookiesAsync();
             Assert.IsTrue(!t.IsFaulted);
         }
+
+        [TestMethod]
+        public async Task FillChannelCookieDbAsync()
+        {
+            var cf = _fabric.CreateCredFactory();
+            var cred = await cf.GetCredDbAsync(Credsite);
+
+            var chf = _fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel();
+            ch.Site = cred.Site;
+
+            Task t = ch.FillChannelCookieDbAsync();
+            Assert.IsTrue(!t.IsFaulted);
+        }
     }
 }

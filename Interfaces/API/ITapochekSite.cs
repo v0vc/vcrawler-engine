@@ -19,19 +19,12 @@ namespace Interfaces.API
         Task<CookieCollection> GetCookieNetAsync(ICred cred);
 
         /// <summary>
-        /// Получение заданного количество релизов пользователя, 0 - все релизы
+        /// Получение релизов пользователя, 0 - все релизы
         /// </summary>
-        /// <param name="userID"></param>
-        /// <param name="maxResult"></param>
+        /// <param name="channel"></param>
+        /// <param name="maxresult"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetUserItemsAsync(string userID, int maxResult);
-
-        /// <summary>
-        /// Получение количества релизов пользователя
-        /// </summary>
-        /// <param name="userID"></param>
-        /// <returns></returns>
-        Task<int> GetUserCountItemsAsync(string userID);
+        Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult);
 
         /// <summary>
         /// Получение видео по ID

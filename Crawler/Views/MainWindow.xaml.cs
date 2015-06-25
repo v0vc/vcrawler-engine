@@ -44,20 +44,21 @@ namespace Crawler.Views
             //await ViewModel.Model.FillChannels();
         }
 
-        void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             ViewModel.Model.Result = "Ready";
 
             if (ChannelsGrid.SelectedIndex >= 0) //focus
             {
                 ChannelsGrid.UpdateLayout();
-                var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
+                var row =
+                    (DataGridRow) ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
                 if (row != null)
                     row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             }
         }
 
-        void bgv_DoWork(object sender, DoWorkEventArgs e)
+        private void bgv_DoWork(object sender, DoWorkEventArgs e)
         {
             Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
         }
@@ -187,7 +188,8 @@ namespace Crawler.Views
                 item.IsShowRow = true;
             }
 
-            if (!ch.ChannelItems.Any() || ch.ChannelItems.Any(x => x.IsNewItem)) //заполняем только если либо ничего нет, либо одни новые
+            if (!ch.ChannelItems.Any() || ch.ChannelItems.Any(x => x.IsNewItem))
+                //заполняем только если либо ничего нет, либо одни новые
             {
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
 
@@ -216,8 +218,15 @@ namespace Crawler.Views
                     var vid = ViewModel.Model.SelectedVideoItem;
                     if (vid != null)
                     {
-                        var link = string.Format("https://www.youtube.com/watch?v={0}", vid.ID);
-                        Clipboard.SetText(link);
+                        try
+                        {
+                            var link = string.Format("https://www.youtube.com/watch?v={0}", vid.ID);
+                            Clipboard.SetText(link);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewModel.Model.Info = ex.Message;
+                        }
                     }
 
                     #endregion
@@ -407,8 +416,15 @@ namespace Crawler.Views
                     var pl = ViewModel.Model.SelectedPlaylist;
                     if (pl != null)
                     {
-                        var link = string.Format("https://www.youtube.com/playlist?list={0}", pl.ID);
-                        Clipboard.SetText(link);
+                        try
+                        {
+                            var link = string.Format("https://www.youtube.com/playlist?list={0}", pl.ID);
+                            Clipboard.SetText(link);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewModel.Model.Info = ex.Message;
+                        }
                     }
 
                     break;
@@ -461,7 +477,7 @@ namespace Crawler.Views
                 return;
 
             var item = row.Item as IVideoItem;
-            if (item == null) 
+            if (item == null)
                 return;
 
             var mpath = ViewModel.Model.MpcPath;
@@ -531,5 +547,19 @@ namespace Crawler.Views
                 grid.ColumnDefinitions[1].Width = _rememberWidth;
             }
         }
+
+        private void DataGrid_CellGotFocus(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as DataGrid;
+
+            if (grid == null) return;
+
+            var ch = grid.CurrentItem as Channel;
+
+            if (ch == null) return;
+
+            ViewModel.Model.SelectedChannel = ch;
+        }
     }
 }
+

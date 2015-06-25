@@ -50,15 +50,11 @@ namespace SitesAPI.Trackers
             return resp.Cookies;
         }
 
-        public Task<List<IVideoItemPOCO>> GetUserItemsAsync(string userID, int maxResult)
+        public Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             throw new NotImplementedException();
         }
 
-        public Task<int> GetUserCountItemsAsync(string userID)
-        {
-            throw new NotImplementedException();
-        }
 
         public Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {

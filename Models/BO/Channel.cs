@@ -77,12 +77,14 @@ namespace Models.BO
 
         public CookieCollection ChannelCookies { get; set; }
 
+
         public Channel(IChannelFactory cf)
         {
             _cf = cf as ChannelFactory;
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
+            ChannelCookies = new CookieCollection();
         }
 
         public Channel(IChannelPOCO channel, IChannelFactory cf)
@@ -96,7 +98,9 @@ namespace Models.BO
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
+            ChannelCookies = new CookieCollection();
         }
+
 
         public async Task<List<IVideoItem>> GetChannelItemsDbAsync()
         {
@@ -167,7 +171,7 @@ namespace Models.BO
 
         public async Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult) //0 - все видео
         {
-            return await _cf.GetChannelItemsNetAsync(ID, maxresult);
+            return await _cf.GetChannelItemsNetAsync(this, maxresult);
             //return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsNetAsync(ID, maxresult);
         }
 
@@ -239,6 +243,11 @@ namespace Models.BO
         public async Task StoreCookiesAsync()
         {
             await _cf.StoreCookiesAsync(Site, ChannelCookies);
+        }
+
+        public async Task FillChannelCookieDbAsync()
+        {
+            await _cf.FillChannelCookieDbAsync(this);
         }
     }
 }

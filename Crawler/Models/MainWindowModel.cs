@@ -49,10 +49,10 @@ namespace Crawler.Models
         private string _selectedCountry;
         private bool _isIdle;
         private string _filter;
-
-        #region Fields
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
         private string _link;
+
+        #region Fields
 
         public ICommonFactory BaseFactory { get; set; }
 
@@ -256,6 +256,33 @@ namespace Crawler.Models
             {
                 await LoadSettings();
 
+                #region по id c сортировочкой
+
+                var lst = await s.GetChannelsIdsListDbAsync();
+                    //получим сначала ID каналов и начнем по одному заполнять список
+
+                var cf = BaseFactory.CreateChannelFactory();
+
+                var lstc = new List<IChannel>();
+
+                foreach (string id in lst)
+                {
+                    var ch = await cf.GetChannelDbAsync(id);
+
+                    lstc.Add(ch);
+
+                }
+                var lsss = lstc.OrderBy(x => x.Title);
+
+                foreach (IChannel channel in lsss)
+                {
+                    Channels.Add(channel as Channel);
+                }
+
+                #endregion
+
+                #region по id
+
                 //var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
 
                 //var cf = BaseFactory.CreateChannelFactory();
@@ -267,11 +294,17 @@ namespace Crawler.Models
                 //    Channels.Add(ch as Channel);
                 //}
 
-                var lst = await s.GetChannelsListAsync(); //все каналы за раз
-                foreach (var ch in lst.Cast<Channel>())
-                {
-                    Channels.Add(ch);
-                }
+                #endregion
+
+                #region за раз
+
+                //var lst = await s.GetChannelsListAsync(); //все каналы за раз
+                //foreach (var ch in lst.Cast<Channel>())
+                //{
+                //    Channels.Add(ch);
+                //}
+
+                #endregion
 
                 if (Channels.Any())
                     SelectedChannel = Channels.First();
