@@ -44,5 +44,80 @@ namespace SitesAPI
                 return ms.ToArray();
             }
         }
+
+        public static async Task<string> DownloadStringAsync(Uri uri, int timeOut = 60000)
+        {
+            string res = null;
+            var cancelledOrError = false;
+
+            using (var client = new WebClient())
+            {
+                client.Encoding = Encoding.UTF8;
+                client.DownloadStringCompleted += (sender, e) =>
+                {
+                    if (e.Error != null || e.Cancelled)
+                    {
+                        cancelledOrError = true;
+                    }
+                    else
+                    {
+                        res = e.Result;
+                    }
+                };
+                client.DownloadStringAsync(uri);
+                var n = DateTime.Now;
+                while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
+                {
+                    await Task.Delay(100); // wait for respsonse
+                }
+            }
+            if (res == null)
+                throw new Exception("Download Error: " + uri.Segments.Last());
+
+            return res;
+        }
+
+        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie, int timeOut = 60000)
+        {
+            string res = null;
+            var cancelledOrError = false;
+
+            var cc = new CookieContainer();
+            cc.Add(cookie);
+            using (var client = new WebClientEx(cc))
+            {
+                client.Encoding = Encoding.UTF8;
+                client.DownloadStringCompleted += (sender, e) =>
+                {
+                    if (e.Error != null || e.Cancelled)
+                    {
+                        cancelledOrError = true;
+                    }
+                    else
+                    {
+                        res = e.Result;
+                    }
+                };
+                try
+                {
+                    client.DownloadStringAsync(uri);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+                
+                var n = DateTime.Now;
+                while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
+                {
+                    await Task.Delay(100); // wait for respsonse
+                }
+            }
+            if (res == null)
+                throw new Exception("Download Error: " + uri.Segments.Last());
+
+            return res;
+        }
+
     }
 }

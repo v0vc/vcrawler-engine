@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml;
+using HtmlAgilityPack;
 using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
@@ -31,6 +34,80 @@ namespace SitesAPI.POCO
         public VideoItemPOCO(string id)
         {
             ID = id;
+        }
+
+        public VideoItemPOCO(HtmlNode node, string site)
+        {
+            var dl = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
+            foreach (HtmlNode htmlNode in dl)
+            {
+                var videoLink = string.Format("http://{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+                var sp = videoLink.Split('=');
+                if (sp.Length == 2)
+                    ID = sp[1];
+                //Duration = GetTorrentSize(ScrubHtml(htmlNode.InnerText));
+
+                break;
+            }
+
+            var counts = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            foreach (HtmlNode htmlNode in counts)
+            {
+                Title = HttpUtility.HtmlDecode(htmlNode.InnerText);
+                break;
+            }
+
+            
+
+            var prov = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
+            foreach (HtmlNode htmlNode in prov)
+            {
+                var pdate = htmlNode.Descendants("p").ToList();
+                if (pdate.Count == 2)
+                {
+                    Timestamp = Convert.ToDateTime(pdate[1].InnerText);
+                    break;
+                }
+            }
+
+            var seemed = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
+            foreach (HtmlNode htmlNode in seemed)
+            {
+                ViewCount = Convert.ToInt32(htmlNode.InnerText);
+                break;
+            }
+
+            var med = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
+            foreach (HtmlNode htmlNode in med)
+            {
+                Comments = Convert.ToInt32(htmlNode.InnerText);
+                break;
+            }
+
+            var user = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
+            foreach (HtmlNode htmlNode in user)
+            {
+                var uid = htmlNode.Attributes["href"].Value;
+                var sp = uid.Split('=');
+                if (sp.Length == 2)
+                    ParentID = sp[1];
+                //VideoOwnerName = htmlNode.InnerText;
+                break;
+            }
+
+            var forum = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
+            foreach (HtmlNode htmlNode in forum)
+            {
+                Description = htmlNode.InnerText;
+                break;
+            }
+
+            //var topic = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            //foreach (HtmlNode htmlNode in topic)
+            //{
+            //    PlaylistID = string.Format("http://{0}/forum{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+            //    break;
+            //}
         }
 
         public void FillFieldsFromDetails(JToken record)
