@@ -79,45 +79,64 @@ namespace SitesAPI
 
         public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie, int timeOut = 60000)
         {
-            string res = null;
-            var cancelledOrError = false;
+            //string res = null;
+            //var cancelledOrError = false;
+
+            //var cc = new CookieContainer();
+            //cc.Add(cookie);
+            //using (var client = new WebClientEx(cc))
+            //{
+            //    client.Encoding = Encoding.Default;
+            //    client.DownloadStringCompleted += (sender, e) =>
+            //    {
+            //        if (e.Error != null || e.Cancelled)
+            //        {
+            //            cancelledOrError = true;
+            //        }
+            //        else
+            //        {
+            //            res = e.Result;
+            //        }
+            //    };
+            //    try
+            //    {
+            //        client.DownloadStringAsync(uri);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        throw new Exception(ex.Message);
+            //    }
+                
+            //    var n = DateTime.Now;
+            //    while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
+            //    {
+            //        await Task.Delay(100); // wait for respsonse
+            //    }
+            //}
+            //if (res == null)
+            //    throw new Exception("Download Error: " + uri.Segments.Last());
+
+            //return res;
 
             var cc = new CookieContainer();
             cc.Add(cookie);
-            using (var client = new WebClientEx(cc))
+            using (var wc = new WebClientEx(cc))
             {
-                client.Encoding = Encoding.UTF8;
-                client.DownloadStringCompleted += (sender, e) =>
-                {
-                    if (e.Error != null || e.Cancelled)
-                    {
-                        cancelledOrError = true;
-                    }
-                    else
-                    {
-                        res = e.Result;
-                    }
-                };
-                try
-                {
-                    client.DownloadStringAsync(uri);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
-                
-                var n = DateTime.Now;
-                while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
-                {
-                    await Task.Delay(100); // wait for respsonse
-                }
+                wc.Proxy = null;
+                var str = await wc.DownloadStringTaskAsync(uri).ConfigureAwait(false);
+                return str;
             }
-            if (res == null)
-                throw new Exception("Download Error: " + uri.Segments.Last());
-
-            return res;
         }
 
+        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
+        {
+            var cc = new CookieContainer();
+            cc.Add(cookie);
+
+            using (var wc = new WebClientEx(cc))
+            {
+                return wc.DownloadString(link);
+            }
+        }
     }
 }

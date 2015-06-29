@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
 using HtmlAgilityPack;
 using Interfaces.API;
 using Interfaces.Models;
@@ -21,6 +23,7 @@ namespace SitesAPI.Trackers
         private readonly string _searchUrl = string.Format("{0}/tracker.php?nm", HostUrl);
         private readonly string _topicUrl = string.Format("{0}/viewtopic.php?t", HostUrl);
         private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
+        private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
 
         public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
         {
@@ -37,7 +40,8 @@ namespace SitesAPI.Trackers
             var data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
             req.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";
+            //req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 CoolNovo/2.0.9.20";
             req.ContentType = "application/x-www-form-urlencoded";
             req.Headers.Add("Cache-Control", "max-age=0");
             req.Headers.Add("Origin", HostUrl);
@@ -62,7 +66,9 @@ namespace SitesAPI.Trackers
 
             var zap = string.Format("{0}={1}", _userUrl, channel.ID);
 
-            var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
+            //var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
+
+            var page = SiteHelper.DownloadStringWithCookie(zap, channel.ChannelCookies);
 
             var doc = new HtmlDocument();
 
@@ -83,11 +89,15 @@ namespace SitesAPI.Trackers
 
             if (maxresult == 0)
             {
+                Thread.Sleep(500);
+
                 var searchlinks = GetAllSearchLinks(doc);
 
                 foreach (string link in searchlinks)
                 {
-                    page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(link), channel.ChannelCookies);
+                    //page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(link), channel.ChannelCookies);
+
+                    page = SiteHelper.DownloadStringWithCookie(link, channel.ChannelCookies);
 
                     doc = new HtmlDocument();
 
@@ -106,6 +116,8 @@ namespace SitesAPI.Trackers
                             lst.Add(vi);
                     }
                 }
+
+                Thread.Sleep(500);
             }
 
             return lst;
@@ -116,7 +128,44 @@ namespace SitesAPI.Trackers
             throw new NotImplementedException();
         }
 
-        private IEnumerable<string> GetAllSearchLinks(HtmlDocument doc)
+        public async Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id)
+        {
+            var zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, id);
+
+            //var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), cookie);
+
+            var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
+
+            var doc = new HtmlDocument();
+
+            doc.LoadHtml(page);
+
+            var ch = new ChannelPOCO {ID = id, Site = Site};
+
+            var title = doc.DocumentNode.Descendants("p").Where(
+                d =>
+                    d.Attributes.Contains("class") &&
+                    d.Attributes["class"].Value.Equals("small mrg_4")).ToList();
+
+            if (title.Any())
+                ch.Title = (HttpUtility.HtmlDecode(title[0].InnerText)).Trim();
+
+            title = doc.DocumentNode.Descendants("p").Where(
+                d =>
+                    d.Attributes.Contains("class") &&
+                    d.Attributes["class"].Value.Equals("mrg_4")).ToList();
+
+            if (title.Any())
+            {
+                var img = title[0].FirstChild.Attributes["src"].Value;
+                var link = string.Format("{0}/{1}", HostUrl, img);
+                ch.Thumbnail = await SiteHelper.GetStreamFromUrl(link);
+            }
+
+            return ch;
+        }
+
+        private static IEnumerable<string> GetAllSearchLinks(HtmlDocument doc)
         {
             var hrefTags = new List<string>();
 

@@ -32,5 +32,13 @@ namespace Interfaces.API
         /// <param name="videoid">ID видео</param>
         /// <returns></returns>
         Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid);
+
+        /// <summary>
+        /// Получить канал по ID
+        /// </summary>
+        /// <param name="cookie"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id);
     }
 }

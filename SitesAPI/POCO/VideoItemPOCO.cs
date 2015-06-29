@@ -53,11 +53,9 @@ namespace SitesAPI.POCO
             var counts = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
             foreach (HtmlNode htmlNode in counts)
             {
-                Title = HttpUtility.HtmlDecode(htmlNode.InnerText);
+                Title = (HttpUtility.HtmlDecode(htmlNode.InnerText)).Trim();
                 break;
             }
-
-            
 
             var prov = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
             foreach (HtmlNode htmlNode in prov)

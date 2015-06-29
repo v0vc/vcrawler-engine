@@ -30,37 +30,7 @@ namespace SitesAPI.Videos
 
         private const string Key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
 
-        //private static async Task<string> DownloadStringAsync(Uri uri, int timeOut = 60000)
-        //{
-        //    string res = null;
-        //    var cancelledOrError = false;
-
-        //    using (var client = new WebClient())
-        //    {
-        //        client.Encoding = Encoding.UTF8;
-        //        client.DownloadStringCompleted += (sender, e) =>
-        //        {
-        //            if (e.Error != null || e.Cancelled)
-        //            {
-        //                cancelledOrError = true;
-        //            }
-        //            else
-        //            {
-        //                res = e.Result;
-        //            }
-        //        };
-        //        client.DownloadStringAsync(uri);
-        //        var n = DateTime.Now;
-        //        while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
-        //        {
-        //            await Task.Delay(100); // wait for respsonse
-        //        }
-        //    }
-        //    if (res == null)
-        //        throw new Exception("Download Error: " + uri.Segments.Last());
-
-        //    return res;
-        //}
+        private const string Site = "youtube.com";
 
         public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
         {
@@ -345,6 +315,8 @@ namespace SitesAPI.Videos
             var jsvideo = await Task.Run(() => JObject.Parse(str));
 
             var ch = await ChannelPOCO.CreatePoco(channelID, jsvideo);
+
+            ch.Site = Site;
 
             return ch;
         }

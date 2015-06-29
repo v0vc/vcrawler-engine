@@ -76,9 +76,36 @@ namespace TestAPI
             var ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ID = "27253";
-            await ch.FillChannelCookieDbAsync();
+
+            //if (cred.Expired <= DateTime.Now)
+            //{
+            //    await ch.FillChannelCookieNetAsync();
+            //    await ch.StoreCookiesAsync();
+            //}
+            //else
+            //{
+                await ch.FillChannelCookieDbAsync();
+            //}
 
             Task t = tp.GetChannelItemsAsync(ch, 0);
+            Assert.IsTrue(!t.IsFaulted);
+        }
+
+        [TestMethod]
+        public async Task GetChannelNetAsync()
+        {
+            var cf = _fabric.CreateCredFactory();
+            var cred = await cf.GetCredDbAsync(Credsite);
+
+            var tp = _fabric.CreateTapochekSite();
+
+            var chf = _fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel();
+            ch.Site = cred.Site;
+            ch.ID = "27253";
+            await ch.FillChannelCookieDbAsync();
+
+            Task t = tp.GetChannelNetAsync(ch.ChannelCookies, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
         }
     }

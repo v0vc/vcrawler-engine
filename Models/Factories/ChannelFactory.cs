@@ -545,13 +545,13 @@ namespace Models.Factories
 
             for (var i = 0; i < cookies.Count; i++)
             {
-                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append(";");
+                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
                 lstdates.Add(cookies[i].Expires);
             }
 
             var expired = lstdates.Max();
 
-            var rescookie = sb.ToString().TrimEnd(';');
+            var rescookie = sb.ToString().TrimEnd('|');
 
             await cred.UpdateCookieAsync(rescookie);
 
@@ -564,7 +564,7 @@ namespace Models.Factories
 
             var cred = await cf.GetCredDbAsync(channel.Site);
 
-            var lstcook = cred.Cookie.Split(';');
+            var lstcook = cred.Cookie.Split('|');
 
             foreach (string cook in lstcook)
             {
