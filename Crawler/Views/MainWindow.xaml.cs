@@ -20,6 +20,7 @@ namespace Crawler.Views
     public partial class MainWindow : Window
     {
         private GridLength _rememberWidth = GridLength.Auto;
+
         //[Inject]
         public MainWindowViewModel ViewModel
         {
@@ -437,13 +438,25 @@ namespace Crawler.Views
             }
         }
 
-        private void MainMenuItem_OnClick(object sender, RoutedEventArgs e)
+        private async void MainMenuItem_OnClick(object sender, RoutedEventArgs e)
         {
             var mitem = sender as MenuItem;
             if (mitem == null) return;
 
             switch (mitem.CommandParameter.ToString())
             {
+                case "Backup":
+
+                    await ViewModel.Backup();
+
+                    break;
+
+                case "Restore":
+
+                    ViewModel.Restore();
+
+                    break;
+
                 case "Exit":
 
                     Close();
@@ -453,6 +466,12 @@ namespace Crawler.Views
                 case "Settings":
 
                     ViewModel.OpenSettings();
+
+                    break;
+
+                case "Vacuum":
+
+                    await ViewModel.Vacuumdb();
 
                     break;
 

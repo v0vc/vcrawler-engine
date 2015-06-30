@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using Interfaces.Models;
@@ -9,6 +10,11 @@ namespace Interfaces.API
 {
     public interface ISqLiteDatabase
     {
+        /// <summary>
+        /// Файл базы
+        /// </summary>
+        FileInfo FileBase { get; set; }
+
         /// <summary>
         /// Получить канал по ID
         /// </summary>
@@ -296,5 +302,11 @@ namespace Interfaces.API
         /// </summary>
         /// <returns></returns>
         Task<CookieCollection> GetChanelCookieDbAsync();
+
+        /// <summary>
+        /// Скукожить базу
+        /// </summary>
+        /// <returns></returns>
+        Task VacuumAsync();
     }
 }

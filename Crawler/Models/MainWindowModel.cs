@@ -13,6 +13,7 @@ using System.Windows;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 using Ninject;
 using SitesAPI;
@@ -368,8 +369,6 @@ namespace Crawler.Models
         {
             try
             {
-                var watch = Stopwatch.StartNew();
-
                 PrValue = 0;
 
                 IsIdle = false;
@@ -378,13 +377,21 @@ namespace Crawler.Models
 
                 var i = 0;
 
+                var prog = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
+
+                prog.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
+
                 foreach (Channel channel in Channels)
                 {
+                    SelectedChannel = channel;
                     i += 1;
                     PrValue = Math.Round((double) (100*i)/Channels.Count);
+                    prog.SetProgressValue((int) PrValue, 100);
                     Info = "Syncing: " + channel.Title;
                     await channel.SyncChannelAsync(DirPath, false);
                 }
+
+                prog.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
 
                 PrValue = 0;
 
@@ -392,9 +399,7 @@ namespace Crawler.Models
 
                 Result = "Finished!";
 
-                watch.Stop();
-
-                Info = String.Format("Time: {0} sec", watch.Elapsed.Seconds);
+                Info = "Total: " + i;
             }
             catch (Exception ex)
             {
@@ -502,6 +507,7 @@ namespace Crawler.Models
         private async Task AddNewChannel()
         {
             Result = "Working..";
+            Info = string.Empty;
             const string youUser = "user";
             const string youChannel = "channel";
 
@@ -547,30 +553,41 @@ namespace Crawler.Models
                 return;
             }
 
+            await AddNewChannelAsync(NewChannelLink, NewChannelTitle);
+        }
+
+        public async Task AddNewChannelAsync(string channelid, string channeltitle)
+        {
+            var cf = BaseFactory.CreateChannelFactory();
+            var vf = BaseFactory.CreateVideoItemFactory();
+            var you = BaseFactory.CreateYouTubeSite();
+
+            var channel = await cf.GetChannelNetAsync(channelid) as Channel;
+            if (channel == null)
+                throw new Exception("GetChannelNetAsync return null");
+
+            if (!String.IsNullOrEmpty(channeltitle))
+                channel.Title = channeltitle;
+
+            await channel.DeleteChannelAsync();
+
+            Channels.Add(channel);
+
+            SelectedChannel = channel;
+
+            var lst = await channel.GetChannelItemsNetAsync(0);
+
+            foreach (IVideoItem item in lst)
+            {
+                channel.AddNewItem(item, false);
+            }
+
+            await channel.InsertChannelItemsAsync();
+
+            var pls = await channel.GetChannelPlaylistsNetAsync();
+
             try
             {
-                var channel = await cf.GetChannelNetAsync(NewChannelLink) as Channel;
-                if (channel == null)
-                    throw new Exception("GetChannelNetAsync return null");
-
-                if (!String.IsNullOrEmpty(NewChannelTitle))
-                    channel.Title = NewChannelTitle;
-
-                Channels.Add(channel);
-
-                SelectedChannel = channel;
-
-                var lst = await channel.GetChannelItemsNetAsync(0);
-
-                foreach (IVideoItem item in lst)
-                {
-                    channel.AddNewItem(item, false);
-                }
-
-                await channel.InsertChannelItemsAsync();
-
-                var pls = await channel.GetChannelPlaylistsNetAsync();
-
                 foreach (var pl in pls)
                 {
                     channel.ChannelPlaylists.Add(pl);
@@ -579,28 +596,68 @@ namespace Crawler.Models
 
                     var plv = await pl.GetPlaylistItemsIdsListNetAsync();
 
+                    var needcheck = new List<string>();
+
                     foreach (string id in plv)
                     {
                         if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                             await pl.UpdatePlaylistAsync(id);
                         else
                         {
-                            var vid = await vf.GetVideoItemNetAsync(id);
-                            if (vid.ParentID != channel.ID) 
-                                continue;
+                            needcheck.Add(id);
 
-                            channel.AddNewItem(vid, false);
-                            await vid.InsertItemAsync();
+                            //var vid = await vf.GetVideoItemLiteNetAsync(id);
+                            
+                            //if (vid.ParentID != channel.ID)
+                            //    continue;
+
+                            //vid = await vf.GetVideoItemNetAsync(id);
+                            //channel.AddNewItem(vid, false);
+                            //await vid.InsertItemAsync();
                         }
                     }
-                }
 
-                Result = "Finished";
+                    var nchanks = CommonExtensions.SplitList(needcheck);
+
+                    var trueids = new List<string>();
+
+                    foreach (List<string> nchank in nchanks)
+                    {
+                        var lvlite = await you.GetListVideoByIdsLiteAsync(nchank);
+
+                        foreach (IVideoItemPOCO poco in lvlite)
+                        {
+                            if (poco.ParentID != channel.ID)
+                                continue;
+
+                            trueids.Add(poco.ID);
+                        }
+                    }
+
+                    var truchanks = CommonExtensions.SplitList(trueids);
+
+                    foreach (List<string> truchank in truchanks)
+                    {
+                        var lvfull= await you.GetListVideoByIdsAsync(truchank);
+
+                        foreach (IVideoItemPOCO poco in lvfull)
+                        {
+                            var v = new VideoItem(poco, vf);
+
+                            channel.AddNewItem(v, false);
+
+                            await v.InsertItemAsync();
+                        }
+                    }
+
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
             }
+
+            Result = "Finished";
         }
 
         private async Task EditChannel()

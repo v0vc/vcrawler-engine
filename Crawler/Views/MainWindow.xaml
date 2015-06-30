@@ -22,12 +22,15 @@
             </Menu.ItemsPanel>
 
             <MenuItem Header="File">
-                <!--<Separator />-->
+                <MenuItem Header="Backup" Click="MainMenuItem_OnClick" CommandParameter="Backup"/>
+                <MenuItem Header="Restore" Click="MainMenuItem_OnClick" CommandParameter="Restore"/>
+                <Separator />
                 <MenuItem Header="Exit" Click="MainMenuItem_OnClick" CommandParameter="Exit"/>
             </MenuItem>
 
             <MenuItem Header="Tools">
                 <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
+                <MenuItem Header="Vacuum" Click="MainMenuItem_OnClick" CommandParameter="Vacuum"/>
             </MenuItem>
 
             <MenuItem Header="Add Link"  Click="MainMenuItem_OnClick" CommandParameter="Link"/>

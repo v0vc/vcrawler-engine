@@ -144,14 +144,16 @@ namespace DataBaseAPI
 
         #endregion
 
+        public FileInfo FileBase { get; set; }
+
         public SqLiteDatabase()
         {
             _appstartdir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             if (_appstartdir == null) return;
             var fdb = Path.Combine(_appstartdir, Dbfile);
-            var fndb = new FileInfo(fdb);
-            _dbConnection = String.Format("Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", fndb.FullName);
-            if (!fndb.Exists)
+            FileBase = new FileInfo(fdb);
+            _dbConnection = String.Format("Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", FileBase.FullName);
+            if (!FileBase.Exists)
             {
                 CreateDb();
                 //Task.Run(() => CreateDb());
@@ -197,7 +199,6 @@ namespace DataBaseAPI
             else
                 throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
         }
-
 
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
@@ -298,6 +299,7 @@ namespace DataBaseAPI
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
             await InsertChannelAsync(channel);
+
             foreach (IVideoItem item in channel.ChannelItems)
             {
                 await InsertItemAsync(item);
@@ -951,6 +953,14 @@ namespace DataBaseAPI
         public Task<CookieCollection> GetChanelCookieDbAsync()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task VacuumAsync()
+        {
+            using (var command = GetCommand("vacuum"))
+            {
+                await ExecuteNonQueryAsync(command);
+            }
         }
     }
 }

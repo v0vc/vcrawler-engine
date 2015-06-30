@@ -93,5 +93,26 @@ namespace Interfaces.API
         /// <param name="username">Имя пользоватедя</param>
         /// <returns></returns>
         Task<string> GetChannelIdByUserNameNetAsync(string username);
+
+        /// <summary>
+        /// Получить облегченный объект видео
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<IVideoItemPOCO> GetVideoItemLiteNetAsync(string id);
+
+        /// <summary>
+        /// Получить список облегченных видео по списку id
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<IVideoItemPOCO>> GetListVideoByIdsLiteAsync(List<string> ids);
+
+        /// <summary>
+        /// Получить список полных видео по списку id
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        Task<List<IVideoItemPOCO>> GetListVideoByIdsAsync(List<string> ids);
     }
 }

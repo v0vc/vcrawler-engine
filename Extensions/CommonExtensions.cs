@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -160,6 +161,18 @@ namespace Extensions
                 return false;
             }
             return true;
+        }
+
+        public static List<List<string>> SplitList(List<string> locations, int nSize = 50)
+        {
+            var list = new List<List<string>>();
+
+            for (int i = 0; i < locations.Count; i += nSize)
+            {
+                list.Add(locations.GetRange(i, Math.Min(nSize, locations.Count - i)));
+            }
+
+            return list;
         }
     }
 }

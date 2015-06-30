@@ -59,6 +59,21 @@ namespace Models.Factories
             }
         }
 
+        public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
+        {
+            var fb = _c.CreateYouTubeSite();
+            //var fb = ServiceLocator.YouTubeSiteApiV2;
+            try
+            {
+                var fbres = await fb.GetVideoItemLiteNetAsync(id);
+                return new VideoItem(fbres, this);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();

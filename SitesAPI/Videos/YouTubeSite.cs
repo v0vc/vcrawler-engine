@@ -644,5 +644,65 @@ namespace SitesAPI.Videos
 
             throw new Exception("Can't get channel ID for username: " + username);
         }
+
+        public async Task<IVideoItemPOCO> GetVideoItemLiteNetAsync(string id)
+        {
+            var v = new VideoItemPOCO(id);
+
+            var zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}", Url,
+                id, Key, Print);
+
+            var str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(str));
+
+            var par = jsvideo.SelectToken("items[0].snippet.channelId");
+            v.ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
+
+            return v;
+        }
+
+        public async Task<List<IVideoItemPOCO>> GetListVideoByIdsLiteAsync(List<string> ids)
+        {
+            var lst = new List<IVideoItemPOCO>();
+            var sb = new StringBuilder();
+
+            foreach (string id in ids)
+            {
+                sb.Append(id).Append(',');
+            }
+
+            var res = sb.ToString().TrimEnd(',');
+
+            var zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(id,snippet(channelId))&{3}", Url, res, Key, Print);
+
+            var det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(det));
+
+            foreach (JToken pair in jsvideo["items"])
+            {
+                var id = pair.SelectToken("id");
+                if (id == null)
+                        continue;
+
+                var v = new VideoItemPOCO(id.Value<string>());
+
+                var pid = pair.SelectToken("snippet.channelId");
+
+                if (pid != null)
+                    v.ParentID = pid.Value<string>();
+
+                if (!string.IsNullOrEmpty(v.ID) & !string.IsNullOrEmpty(v.ParentID))
+                    lst.Add(v);
+            }
+
+            return lst;
+        }
+
+        public Task<List<IVideoItemPOCO>> GetListVideoByIdsAsync(List<string> ids)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

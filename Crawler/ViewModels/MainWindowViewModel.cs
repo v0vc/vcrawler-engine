@@ -1,8 +1,14 @@
-﻿using System.Windows;
+﻿using System;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
+using Interfaces.POCO;
 using Application = System.Windows.Application;
 
 namespace Crawler.ViewModels
@@ -102,6 +108,111 @@ namespace Crawler.ViewModels
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
+        }
+
+        public async Task Backup()
+        {
+            var dlg = new SaveFileDialog
+            {
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = @"Text documents (.txt)|*.txt",
+                OverwritePrompt = true
+            };
+            var res = dlg.ShowDialog();
+            if (res == DialogResult.OK)
+            {
+                var fb = Model.BaseFactory.CreateSqLiteDatabase();
+                var lst = await fb.GetChannelsListAsync();
+                var sb = new StringBuilder();
+                foreach (IChannelPOCO poco in lst)
+                {
+                    sb.Append(poco.Title).Append("|").Append(poco.ID).Append("|").Append(poco.Site).Append(Environment.NewLine);
+                }
+                try
+                {
+                    File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
+                    Model.Info = string.Format("{0} channels has been stored", lst.Count);
+                    Model.Result = "Done!";
+                }
+                catch (Exception ex)
+                {
+                    Model.Info = ex.Message;
+                    Model.Result = "Error";
+                }
+            }
+        }
+
+        public async Task Restore()
+        {
+            var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
+            var res = opf.ShowDialog();
+            
+            if (res == DialogResult.OK)
+            {
+                string[] lst = {};
+
+                try
+                {
+                    lst = File.ReadAllLines(opf.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Model.Info = ex.Message;
+                    Model.Result = "Error";
+                }
+
+                var cf = Model.BaseFactory.CreateChannelFactory();
+                var vf = Model.BaseFactory.CreateVideoItemFactory();
+
+                Model.Result = "Working..";
+                var rest = 0;
+                foreach (string s in lst)
+                {
+                    var sp = s.Split('|');
+                    if (sp.Length == 3)
+                    {
+                        if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
+                            return;
+
+                        switch (sp[2])
+                        {
+                            case "youtube.com":
+
+                                Model.Info = "Restoring: " + sp[0];
+
+                                await Model.AddNewChannelAsync(sp[1], null);
+
+                                rest++;
+
+                                break;
+
+                            default:
+
+                                Model.Info = "Unsupported site: " + sp[2];
+
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        Model.Info = "Check: " + s;
+                    }
+                }
+
+                Model.Result = "Done!";
+
+                Model.Info = "Total restored: " + rest;
+            }
+        }
+
+        public async Task Vacuumdb()
+        {
+            var db = Model.BaseFactory.CreateSqLiteDatabase();
+            var sizebefore = db.FileBase.Length;
+            await db.VacuumAsync();
+            var sizeafter = new FileInfo(db.FileBase.FullName).Length;
+            Model.Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
         }
     }
 }
