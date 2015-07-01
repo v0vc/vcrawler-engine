@@ -10,7 +10,5 @@ namespace Interfaces.Factories
         Task<IVideoItem> GetVideoItemDbAsync(string id);
 
         Task<IVideoItem> GetVideoItemNetAsync(string id);
-
-        //Task<IVideoItem> GetVideoItemLiteNetAsync(string id);
     }
 }

@@ -117,6 +117,7 @@ namespace SitesAPI.Videos
 
                 zap = string.Format("{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
                     Url, channelID, Key, itemsppage, pagetoken, Print);
+
             } while (pagetoken != null);
 
             return res.Where(x => x.Status != PrivacyDef).ToList();
@@ -662,9 +663,10 @@ namespace SitesAPI.Videos
             return v;
         }
 
-        public async Task<List<IVideoItemPOCO>> GetListVideoByIdsLiteAsync(List<string> ids)
+        public async Task<List<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
+
             var sb = new StringBuilder();
 
             foreach (string id in ids)
@@ -700,9 +702,55 @@ namespace SitesAPI.Videos
             return lst;
         }
 
-        public Task<List<IVideoItemPOCO>> GetListVideoByIdsAsync(List<string> ids)
+        public async Task<List<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids)
         {
-            throw new NotImplementedException();
+            var lst = new List<IVideoItemPOCO>();
+
+            var sb = new StringBuilder();
+
+            foreach (string id in ids)
+            {
+                sb.Append(id).Append(',');
+            }
+
+            var res = sb.ToString().TrimEnd(',');
+
+            var zap =
+                    string.Format(
+                        "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}",
+                        Url, res, Key, Print);
+
+            var det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(det));
+
+            foreach (JToken pair in jsvideo["items"])
+            {
+                var id = pair.SelectToken("id");
+                if (id == null)
+                    continue;
+
+                var v = new VideoItemPOCO(id.Value<string>());
+
+                await v.FillFieldsFromGetting(pair);
+
+                v.FillFieldsFromDetails(pair);
+
+                var pr = pair.SelectToken("status.privacyStatus");
+                if (pr == null)
+                    v.Status = PrivacyDef;
+
+                var prstatus = pr.Value<string>();
+                if (prstatus == PrivacyPub || prstatus == PrivacyUnList)
+                    v.Status = prstatus;
+                else
+                    v.Status = PrivacyDef;
+
+                if (!lst.Select(x=>x.ID).Contains(v.ID))
+                    lst.Add(v);
+            }
+
+            return lst.Where(x => x.Status != PrivacyDef).ToList();
         }
     }
 }

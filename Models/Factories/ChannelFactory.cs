@@ -5,8 +5,10 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -294,18 +296,26 @@ namespace Models.Factories
                 {
                     var vf = _c.CreateVideoItemFactory();
 
+                    var you = _c.CreateYouTubeSite();
+
                     if (!channel.ChannelItems.Any())
                         await channel.FillChannelItemsDbAsync(dir);
 
                     lsid.Reverse();
 
-                    foreach (string id in lsid)
+                    var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); //id которых нет
+
+                    var tchanks = CommonExtensions.SplitList(trueids);  //бьем на чанки - минимизируем запросы
+
+                    foreach (List<string> list in tchanks)
                     {
-                        if (!channel.ChannelItems.Select(x => x.ID).Contains(id))
+                        var res = await you.GetVideosListByIdsAsync(list);  //получим скопом
+
+                        foreach (IVideoItemPOCO poco in res)
                         {
-                            var item = await vf.GetVideoItemNetAsync(id);
-                            channel.AddNewItem(item, true);
-                            await item.InsertItemAsync();
+                            var vi = new VideoItem(poco, vf);
+                            channel.AddNewItem(vi, true);
+                            await vi.InsertItemAsync();
                         }
                     }
                 }
@@ -363,14 +373,7 @@ namespace Models.Factories
                         {
                             if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                             {
-                                try
-                                {
-                                    await pl.UpdatePlaylistAsync(id);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Debug.WriteLine(id + ":" + ex.Message);
-                                }
+                                await pl.UpdatePlaylistAsync(id);
                             }
                         }
                     }

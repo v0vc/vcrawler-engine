@@ -512,7 +512,6 @@ namespace Crawler.Models
             const string youChannel = "channel";
 
             var cf = BaseFactory.CreateChannelFactory();
-            var vf = BaseFactory.CreateVideoItemFactory();
 
             var sp = NewChannelLink.Split('/');
             if (sp.Length > 1)
@@ -545,7 +544,6 @@ namespace Crawler.Models
                     NewChannelLink = NewChannelLink; // :)
                 }
             }
-
 
             if (Channels.Select(x => x.ID).Contains(NewChannelLink))
             {
@@ -586,75 +584,60 @@ namespace Crawler.Models
 
             var pls = await channel.GetChannelPlaylistsNetAsync();
 
-            try
+            foreach (var pl in pls)
             {
-                foreach (var pl in pls)
+                channel.ChannelPlaylists.Add(pl);
+
+                await pl.InsertPlaylistAsync();
+
+                var plv = await pl.GetPlaylistItemsIdsListNetAsync(); //получим список id плейлиста
+
+                var needcheck = new List<string>();
+
+                foreach (string id in plv)
                 {
-                    channel.ChannelPlaylists.Add(pl);
-
-                    await pl.InsertPlaylistAsync();
-
-                    var plv = await pl.GetPlaylistItemsIdsListNetAsync();
-
-                    var needcheck = new List<string>();
-
-                    foreach (string id in plv)
+                    if (channel.ChannelItems.Select(x => x.ID).Contains(id)) //видео есть на нашем канале
                     {
-                        if (channel.ChannelItems.Select(x => x.ID).Contains(id))
-                            await pl.UpdatePlaylistAsync(id);
-                        else
-                        {
-                            needcheck.Add(id);
-
-                            //var vid = await vf.GetVideoItemLiteNetAsync(id);
-                            
-                            //if (vid.ParentID != channel.ID)
-                            //    continue;
-
-                            //vid = await vf.GetVideoItemNetAsync(id);
-                            //channel.AddNewItem(vid, false);
-                            //await vid.InsertItemAsync();
-                        }
+                        await pl.UpdatePlaylistAsync(id); //проапдейтим связь
                     }
-
-                    var nchanks = CommonExtensions.SplitList(needcheck);
-
-                    var trueids = new List<string>();
-
-                    foreach (List<string> nchank in nchanks)
+                    else
                     {
-                        var lvlite = await you.GetListVideoByIdsLiteAsync(nchank);
-
-                        foreach (IVideoItemPOCO poco in lvlite)
-                        {
-                            if (poco.ParentID != channel.ID)
-                                continue;
-
-                            trueids.Add(poco.ID);
-                        }
+                        needcheck.Add(id); //видео нету - пока добавим в список для дальнейшей проверки
                     }
-
-                    var truchanks = CommonExtensions.SplitList(trueids);
-
-                    foreach (List<string> truchank in truchanks)
-                    {
-                        var lvfull= await you.GetListVideoByIdsAsync(truchank);
-
-                        foreach (IVideoItemPOCO poco in lvfull)
-                        {
-                            var v = new VideoItem(poco, vf);
-
-                            channel.AddNewItem(v, false);
-
-                            await v.InsertItemAsync();
-                        }
-                    }
-
                 }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
+
+                var nchanks = CommonExtensions.SplitList(needcheck); //рвзобьем на чанки по 50, чтоб поменьше дергать ютуб
+
+                var trueids = new List<string>();
+
+                foreach (List<string> nchank in nchanks)
+                {
+                    var lvlite = await you.GetVideosListByIdsLiteAsync(nchank); //получим лайтовые объекты, только id и parentid
+
+                    foreach (IVideoItemPOCO poco in lvlite)
+                    {
+                        if (poco.ParentID != channel.ID) //не наши - пофиг, не нужны
+                            continue;
+
+                        trueids.Add(poco.ID); //а вот эти с нашего канала - собираем
+                    }
+                }
+
+                var truchanks = CommonExtensions.SplitList(trueids); //опять же разобьем на чанки
+
+                foreach (List<string> truchank in truchanks)
+                {
+                    var lvfull = await you.GetVideosListByIdsAsync(truchank); //ну и начнем получать уже полные объекты
+
+                    foreach (IVideoItemPOCO poco in lvfull)
+                    {
+                        var v = new VideoItem(poco, vf);
+
+                        channel.AddNewItem(v, false);
+
+                        await v.InsertItemAsync();
+                    }
+                }
             }
 
             Result = "Finished";
@@ -710,7 +693,6 @@ namespace Crawler.Models
                 await Task.Run(() =>
                 {
                     var process = Process.Start(_youPath, param);
-                    //if (process != null) process.WaitForExit();
                     if (process != null) process.Close();
                 });
             }

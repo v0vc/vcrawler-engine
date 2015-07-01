@@ -106,13 +106,13 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetListVideoByIdsLiteAsync(List<string> ids);
+        Task<List<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids);
 
         /// <summary>
         /// Получить список полных видео по списку id
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetListVideoByIdsAsync(List<string> ids);
+        Task<List<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids);
     }
 }

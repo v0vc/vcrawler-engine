@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
@@ -110,7 +111,7 @@ namespace TestAPI
             var you = _fabric.CreateYouTubeSite();
             //var you = new Mock<YouTubeSiteApiV2>();
 
-            var res = await you.GetVideoItemNetAsync("lHgIpxQac3w");
+            var res = await you.GetVideoItemNetAsync("9bZkp7q19f0");//lHgIpxQac3w
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -155,6 +156,18 @@ namespace TestAPI
             var res = await you.GetChannelIdByUserNameNetAsync("mcmbmirussian");
 
             Assert.AreEqual(res, "UCH0miwnqCojki-ado_lLI5A");
+        }
+
+        [TestMethod]
+        public async Task GetListVideoByIdsAsync()
+        {
+            var you = _fabric.CreateYouTubeSite();
+
+            var lst = new List<string> { "-wA6Qj4oF2E" };
+
+            var res = await you.GetVideosListByIdsAsync(lst);
+
+            Assert.AreEqual(res.Count, 1);
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Interfaces.POCO
 
         string Description { get; set; }
 
-        int ViewCount { get; set; }
+        long ViewCount { get; set; }
 
         int Duration { get; set; }
 

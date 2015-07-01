@@ -61,7 +61,7 @@ namespace Models.BO
 
         public string Description { get; set; }
 
-        public int ViewCount { get; set; }
+        public long ViewCount { get; set; }
 
         public int Duration
         {
