@@ -25,7 +25,7 @@ namespace SitesAPI.Trackers
         private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
         private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
 
-        public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
+        public async Task<CookieContainer> GetCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
                 throw new Exception("Please, set login and password");
@@ -40,8 +40,7 @@ namespace SitesAPI.Trackers
             var data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
             req.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
-            //req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";
-            req.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/27.0.1453.110 Safari/537.36 CoolNovo/2.0.9.20";
+            req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";
             req.ContentType = "application/x-www-form-urlencoded";
             req.Headers.Add("Cache-Control", "max-age=0");
             req.Headers.Add("Origin", HostUrl);
@@ -57,7 +56,9 @@ namespace SitesAPI.Trackers
 
             var resp = (HttpWebResponse)(await req.GetResponseAsync());
 
-            return resp.Cookies;
+            cc.Add(resp.Cookies);
+
+            return cc;
         }
 
         public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
@@ -128,7 +129,7 @@ namespace SitesAPI.Trackers
             throw new NotImplementedException();
         }
 
-        public async Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id)
+        public async Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id)
         {
             var zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, id);
 

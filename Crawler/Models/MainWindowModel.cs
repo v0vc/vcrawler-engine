@@ -686,6 +686,7 @@ namespace Crawler.Models
 
                 ServiceChannels.First().AddNewItem(vi, true);
                 await vi.DownloadItem(_youPath, DirPath, IsHd);
+                vi.IsNewItem = true;
             }
             else
             {

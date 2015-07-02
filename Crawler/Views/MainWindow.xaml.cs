@@ -156,18 +156,23 @@ namespace Crawler.Views
             {
                 #region Popular
 
-                if (channel.ChannelItems.Any())
-                    channel.ChannelItems.Clear();
+                if (channel.ChannelItems.Any()) //чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+                {
+                    for (int i = channel.ChannelItems.Count; i > 0; i--)
+                    {
+                        if (!channel.ChannelItems[i - 1].IsNewItem)
+                        {
+                            channel.ChannelItems.RemoveAt(i - 1);
+                        }
+                    }
+                }
 
                 var lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
 
                 foreach (IVideoItem item in lst)
                 {
                     channel.AddNewItem(item, false);
-                    //item.IsShowRow = true;
                     item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                    //channel.ChannelItems.Add(item);
-                    //channel.CountNew = channel.ChannelItems.Count;
                 }
 
                 #endregion

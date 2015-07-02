@@ -145,6 +145,8 @@ namespace Crawler.ViewModels
 
         public async Task Restore()
         {
+            Model.Info = string.Empty;
+
             var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
             var res = opf.ShowDialog();
             
@@ -162,9 +164,6 @@ namespace Crawler.ViewModels
                     Model.Result = "Error";
                 }
 
-                var cf = Model.BaseFactory.CreateChannelFactory();
-                var vf = Model.BaseFactory.CreateVideoItemFactory();
-
                 Model.Result = "Working..";
                 var rest = 0;
                 foreach (string s in lst)
@@ -173,7 +172,7 @@ namespace Crawler.ViewModels
                     if (sp.Length == 3)
                     {
                         if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
-                            return;
+                            continue;
 
                         switch (sp[2])
                         {

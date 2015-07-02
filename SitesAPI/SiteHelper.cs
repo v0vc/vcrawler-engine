@@ -128,11 +128,8 @@ namespace SitesAPI
             }
         }
 
-        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
+        public static string DownloadStringWithCookie(string link, CookieContainer cc)
         {
-            var cc = new CookieContainer();
-            cc.Add(cookie);
-
             using (var wc = new WebClientEx(cc))
             {
                 return wc.DownloadString(link);

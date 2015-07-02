@@ -75,7 +75,7 @@ namespace Models.BO
             }
         }
 
-        public CookieCollection ChannelCookies { get; set; }
+        public CookieContainer ChannelCookies { get; set; }
 
 
         public Channel(IChannelFactory cf)
@@ -84,7 +84,7 @@ namespace Models.BO
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
-            ChannelCookies = new CookieCollection();
+            ChannelCookies = new CookieContainer();
         }
 
         public Channel(IChannelPOCO channel, IChannelFactory cf)
@@ -98,7 +98,7 @@ namespace Models.BO
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             Tags = new List<ITag>();
-            ChannelCookies = new CookieCollection();
+            ChannelCookies = new CookieContainer();
         }
 
 

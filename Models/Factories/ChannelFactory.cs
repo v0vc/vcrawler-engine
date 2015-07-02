@@ -352,8 +352,6 @@ namespace Models.Factories
                 {
                     foreach (var pl in pls)
                     {
-                        //if (pl.ID == "PLyIeuhp1AcC0EXyiaXRNZxdLV1dXyzuAG")
-
                         //получим количество видюх плейлиста в сети
                         var plv = await pl.GetPlaylistItemsIdsListNetAsync();
 
@@ -536,7 +534,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task StoreCookiesAsync(string site, CookieCollection cookies)
+        public async Task StoreCookiesAsync(string site, CookieContainer cookies)
         {
             var cf = _c.CreateCredFactory();
 
@@ -546,11 +544,11 @@ namespace Models.Factories
 
             var lstdates = new List<DateTime>(cookies.Count);
 
-            for (var i = 0; i < cookies.Count; i++)
-            {
-                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
-                lstdates.Add(cookies[i].Expires);
-            }
+            //for (var i = 0; i < cookies.Count; i++)
+            //{
+            //    sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
+            //    lstdates.Add(cookies[i].Expires);
+            //}
 
             var expired = lstdates.Max();
 
