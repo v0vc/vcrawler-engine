@@ -28,7 +28,7 @@ namespace Interfaces.Models
 
         bool IsDownloading { get; set; }
 
-        CookieContainer ChannelCookies { get; set; }
+        CookieCollection ChannelCookies { get; set; }
 
         Task<List<IVideoItem>> GetChannelItemsDbAsync();
 

@@ -25,14 +25,12 @@ namespace SitesAPI.Trackers
         private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
         private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
 
-        public async Task<CookieContainer> GetCookieNetAsync(ICred cred)
+        public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
                 throw new Exception("Please, set login and password");
 
-            var cc = new CookieContainer();
             var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
-            req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
             req.Host = cred.Site;
             req.KeepAlive = true;
@@ -56,9 +54,7 @@ namespace SitesAPI.Trackers
 
             var resp = (HttpWebResponse)(await req.GetResponseAsync());
 
-            cc.Add(resp.Cookies);
-
-            return cc;
+            return resp.Cookies;
         }
 
         public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
@@ -67,9 +63,7 @@ namespace SitesAPI.Trackers
 
             var zap = string.Format("{0}={1}", _userUrl, channel.ID);
 
-            //var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
-
-            var page = SiteHelper.DownloadStringWithCookie(zap, channel.ChannelCookies);
+            var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
 
             var doc = new HtmlDocument();
 
@@ -96,9 +90,7 @@ namespace SitesAPI.Trackers
 
                 foreach (string link in searchlinks)
                 {
-                    //page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(link), channel.ChannelCookies);
-
-                    page = SiteHelper.DownloadStringWithCookie(link, channel.ChannelCookies);
+                    page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(link), channel.ChannelCookies);
 
                     doc = new HtmlDocument();
 
@@ -129,13 +121,13 @@ namespace SitesAPI.Trackers
             throw new NotImplementedException();
         }
 
-        public async Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id)
+        public async Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id)
         {
             var zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, id);
 
-            //var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), cookie);
+            var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), cookie);
 
-            var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
+            //var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
 
             var doc = new HtmlDocument();
 

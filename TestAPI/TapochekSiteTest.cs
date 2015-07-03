@@ -87,8 +87,8 @@ namespace TestAPI
             //    await ch.FillChannelCookieDbAsync();
             //}
 
-            //await ch.FillChannelCookieDbAsync();
-            await ch.FillChannelCookieNetAsync();
+            await ch.FillChannelCookieDbAsync();
+            //await ch.FillChannelCookieNetAsync();
             //await ch.StoreCookiesAsync();
 
             Task t = tp.GetChannelItemsAsync(ch, 0);

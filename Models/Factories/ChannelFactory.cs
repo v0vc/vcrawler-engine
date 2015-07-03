@@ -534,7 +534,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task StoreCookiesAsync(string site, CookieContainer cookies)
+        public async Task StoreCookiesAsync(string site, CookieCollection cookies)
         {
             var cf = _c.CreateCredFactory();
 
@@ -544,13 +544,13 @@ namespace Models.Factories
 
             var lstdates = new List<DateTime>(cookies.Count);
 
-            //for (var i = 0; i < cookies.Count; i++)
-            //{
-            //    sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
-            //    lstdates.Add(cookies[i].Expires);
-            //}
+            for (var i = 0; i < cookies.Count; i++)
+            {
+                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
+                lstdates.Add(cookies[i].Expires);
+            }
 
-            var expired = lstdates.Max();
+            var expired = lstdates.Min();
 
             var rescookie = sb.ToString().TrimEnd('|');
 

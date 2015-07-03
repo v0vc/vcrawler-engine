@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -47,46 +46,19 @@ namespace SitesAPI
 
         public static async Task<string> DownloadStringAsync(Uri uri, int timeOut = 60000)
         {
-            string res = null;
-            var cancelledOrError = false;
-
             using (var client = new WebClient())
             {
-                client.Encoding = Encoding.UTF8;
-                client.DownloadStringCompleted += (sender, e) =>
-                {
-                    if (e.Error != null || e.Cancelled)
-                    {
-                        cancelledOrError = true;
-                    }
-                    else
-                    {
-                        res = e.Result;
-                    }
-                };
-                client.DownloadStringAsync(uri);
-                var n = DateTime.Now;
-                while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
-                {
-                    await Task.Delay(100); // wait for respsonse
-                }
+                client.Encoding=Encoding.UTF8;
+                client.Proxy = null;
+                return await client.DownloadStringTaskAsync(uri);
             }
-            if (res == null)
-                throw new Exception("Download Error: " + uri.Segments.Last());
 
-            return res;
-        }
-
-        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie, int timeOut = 60000)
-        {
             //string res = null;
             //var cancelledOrError = false;
 
-            //var cc = new CookieContainer();
-            //cc.Add(cookie);
-            //using (var client = new WebClientEx(cc))
+            //using (var client = new WebClient())
             //{
-            //    client.Encoding = Encoding.Default;
+            //    client.Encoding = Encoding.UTF8;
             //    client.DownloadStringCompleted += (sender, e) =>
             //    {
             //        if (e.Error != null || e.Cancelled)
@@ -98,15 +70,7 @@ namespace SitesAPI
             //            res = e.Result;
             //        }
             //    };
-            //    try
-            //    {
-            //        client.DownloadStringAsync(uri);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        throw new Exception(ex.Message);
-            //    }
-                
+            //    client.DownloadStringAsync(uri);
             //    var n = DateTime.Now;
             //    while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
             //    {
@@ -117,19 +81,24 @@ namespace SitesAPI
             //    throw new Exception("Download Error: " + uri.Segments.Last());
 
             //return res;
+        }
 
+        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie, int timeOut = 60000)
+        {
             var cc = new CookieContainer();
             cc.Add(cookie);
             using (var wc = new WebClientEx(cc))
             {
-                wc.Proxy = null;
-                var str = await wc.DownloadStringTaskAsync(uri).ConfigureAwait(false);
-                return str;
+                var task = wc.DownloadStringTaskAsync(uri);
+                task.Wait();
+                return await task;
             }
         }
 
-        public static string DownloadStringWithCookie(string link, CookieContainer cc)
+        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
         {
+            var cc = new CookieContainer();
+            cc.Add(cookie);
             using (var wc = new WebClientEx(cc))
             {
                 return wc.DownloadString(link);
