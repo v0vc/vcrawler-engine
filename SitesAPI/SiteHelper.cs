@@ -44,46 +44,23 @@ namespace SitesAPI
             }
         }
 
-        public static async Task<string> DownloadStringAsync(Uri uri, int timeOut = 60000)
+        public static async Task<string> DownloadStringAsync(Uri uri)
         {
             using (var client = new WebClient())
             {
-                client.Encoding=Encoding.UTF8;
-                client.Proxy = null;
-                return await client.DownloadStringTaskAsync(uri);
+                client.Encoding = Encoding.UTF8;
+                try
+                {
+                    return await client.DownloadStringTaskAsync(uri);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("Download Error: " + ex.Message);
+                }
             }
-
-            //string res = null;
-            //var cancelledOrError = false;
-
-            //using (var client = new WebClient())
-            //{
-            //    client.Encoding = Encoding.UTF8;
-            //    client.DownloadStringCompleted += (sender, e) =>
-            //    {
-            //        if (e.Error != null || e.Cancelled)
-            //        {
-            //            cancelledOrError = true;
-            //        }
-            //        else
-            //        {
-            //            res = e.Result;
-            //        }
-            //    };
-            //    client.DownloadStringAsync(uri);
-            //    var n = DateTime.Now;
-            //    while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
-            //    {
-            //        await Task.Delay(100); // wait for respsonse
-            //    }
-            //}
-            //if (res == null)
-            //    throw new Exception("Download Error: " + uri.Segments.Last());
-
-            //return res;
         }
 
-        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie, int timeOut = 60000)
+        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie)
         {
             var cc = new CookieContainer();
             cc.Add(cookie);
@@ -103,6 +80,39 @@ namespace SitesAPI
             {
                 return wc.DownloadString(link);
             }
+        }
+
+        public static async Task<string> DownloadStringAsyncOld(Uri uri, int timeOut = 60000)
+        {
+            string res = null;
+
+            var cancelledOrError = false;
+
+            using (var client = new WebClient())
+            {
+                client.Encoding = Encoding.UTF8;
+                client.DownloadStringCompleted += (sender, e) =>
+                {
+                    if (e.Error != null || e.Cancelled)
+                    {
+                        cancelledOrError = true;
+                    }
+                    else
+                    {
+                        res = e.Result;
+                    }
+                };
+                client.DownloadStringAsync(uri);
+                var n = DateTime.Now;
+                while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
+                {
+                    await Task.Delay(100); // wait for respsonse
+                }
+            }
+            if (res == null)
+                throw new Exception("Download Error: " + uri.Segments.Last());
+
+            return res;
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -8,7 +7,6 @@ using System.Threading.Tasks;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -17,15 +15,14 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        //private readonly ISqLiteDatabase _db;
-
-        //private readonly IYouTubeSite _youTubeSite;
-
+        // private readonly ISqLiteDatabase _db;
+        // private readonly IYouTubeSite _youTubeSite;
         public ChannelFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
-            //_youTubeSite = c.CreateYouTubeSite();
+
+            // _db = c.CreateSqLiteDatabase();
+            // _youTubeSite = c.CreateYouTubeSite();
         }
 
         public IChannel CreateChannel()
@@ -35,8 +32,8 @@ namespace Models.Factories
 
         public async Task<IChannel> GetChannelDbAsync(string channelID)
         {
+            // var fb = ServiceLocator.SqLiteDatabase;
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var poco = await fb.GetChannelAsync(channelID);
@@ -51,7 +48,6 @@ namespace Models.Factories
         public async Task<IChannel> GetChannelNetAsync(string channelID)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var poco = await fb.GetChannelNetAsync(channelID);
@@ -63,10 +59,22 @@ namespace Models.Factories
             }
         }
 
+        public async Task<string> GetChannelIdByUserNameNetAsync(string username)
+        {
+            var fb = _c.CreateYouTubeSite();
+            try
+            {
+                return await fb.GetChannelIdByUserNameNetAsync(username);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<List<IVideoItem>> GetChannelItemsDbAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IVideoItem>();
@@ -83,7 +91,6 @@ namespace Models.Factories
         public async Task InsertChannelAsync(IChannel channel)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertChannelAsync(channel);
@@ -97,7 +104,6 @@ namespace Models.Factories
         public async Task DeleteChannelAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteChannelAsync(channelID);
@@ -111,7 +117,6 @@ namespace Models.Factories
         public async Task RenameChannelAsync(string parentID, string newName)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.RenameChannelAsync(parentID, newName);
@@ -121,11 +126,10 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
-        
+
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertChannelItemsAsync(channel);
@@ -158,14 +162,13 @@ namespace Models.Factories
                 default:
                     throw new Exception(channel.Site + " is not implemented yet");
             }
-            
+
             return lst;
         }
 
         public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var lst = new List<IVideoItem>();
@@ -182,7 +185,6 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var lst = new List<IVideoItem>();
@@ -199,7 +201,6 @@ namespace Models.Factories
         public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var lst = new List<IPlaylist>();
@@ -216,7 +217,6 @@ namespace Models.Factories
         public async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IPlaylist>();
@@ -227,13 +227,12 @@ namespace Models.Factories
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
-            }            
+            }
         }
 
         public async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<ITag>();
@@ -250,7 +249,6 @@ namespace Models.Factories
         public async Task InsertChannelTagAsync(string channelid, string tag)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertChannelTagsAsync(channelid, tag);
@@ -264,7 +262,6 @@ namespace Models.Factories
         public async Task DeleteChannelTagAsync(string channelid, string tag)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteChannelTagsAsync(channelid, tag);
@@ -277,13 +274,12 @@ namespace Models.Factories
 
         public async Task SyncChannelAsync(IChannel channel, string dir, bool isSyncPls)
         {
-            //получаем количество записей в базе
+            // получаем количество записей в базе
             var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
 
-            //получаем количество записей на канале
-            //var lsid = await channel.GetChannelItemsIdsListNetAsync(0);
-            //var netCount = lsid.Count;
-
+            // получаем количество записей на канале
+            // var lsid = await channel.GetChannelItemsIdsListNetAsync(0);
+            // var netCount = lsid.Count;
             var netCount = await GetChannelItemsCountNetAsync(channel.ID);
 
             if (netCount > dbCount)
@@ -303,15 +299,15 @@ namespace Models.Factories
 
                     lsid.Reverse();
 
-                    var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); //id которых нет
+                    var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); // id которых нет
+                    
+                    var tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
 
-                    var tchanks = CommonExtensions.SplitList(trueids);  //бьем на чанки - минимизируем запросы
-
-                    foreach (List<string> list in tchanks)
+                    foreach (var list in tchanks)
                     {
-                        var res = await you.GetVideosListByIdsAsync(list);  //получим скопом
+                        var res = await you.GetVideosListByIdsAsync(list); // получим скопом
 
-                        foreach (IVideoItemPOCO poco in res)
+                        foreach (var poco in res)
                         {
                             var vi = new VideoItem(poco, vf);
                             channel.AddNewItem(vi, true);
@@ -323,11 +319,11 @@ namespace Models.Factories
 
             if (isSyncPls)
             {
-                var dbpls = await channel.GetChannelPlaylistsAsync(); //получаем все плэйлисты из базы
+                var dbpls = await channel.GetChannelPlaylistsAsync(); // получаем все плэйлисты из базы
 
-                var pls = await channel.GetChannelPlaylistsNetAsync(); //получаем все плэйлисты из сети
+                var pls = await channel.GetChannelPlaylistsNetAsync(); // получаем все плэйлисты из сети
 
-                //в сети изменилось количество плэйлистов - тупо все удалим и запишем заново
+                // в сети изменилось количество плэйлистов - тупо все удалим и запишем заново
                 if (dbpls.Count != pls.Count)
                 {
                     foreach (var pl in dbpls)
@@ -341,34 +337,40 @@ namespace Models.Factories
 
                         var plv = await pl.GetPlaylistItemsIdsListNetAsync();
 
-                        foreach (string id in plv)
+                        foreach (var id in plv)
                         {
                             if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+                            {
                                 await pl.UpdatePlaylistAsync(id);
+                            }
                         }
                     }
                 }
-                else //количество плэйлистов в базе и в сети одинаково - посмотрим на содержимое
+                else
                 {
+                    // количество плэйлистов в базе и в сети одинаково - посмотрим на содержимое
                     foreach (var pl in pls)
                     {
-                        //получим количество видюх плейлиста в сети
+                        // получим количество видюх плейлиста в сети
                         var plv = await pl.GetPlaylistItemsIdsListNetAsync();
 
-                        //получим количество видюх плэйлиста в базе
+                        // получим количество видюх плэйлиста в базе
                         var plvdb = await pl.GetPlaylistItemsIdsListDbAsync();
 
-                        //если равно - считаем что содержимое плейлиста не изменилось (не факт конечно, но да пох)
+                        // если равно - считаем что содержимое плейлиста не изменилось (не факт конечно, но да пох)
                         if (plv.Count == plvdb.Count)
+                        {
                             continue;
+                        }
 
-                        //изменилось содержимое плэйлиста - тупо удалим его (бд - каскад) и запишем с новыми данными
+                        // изменилось содержимое плэйлиста - тупо удалим его (бд - каскад) и запишем с новыми данными
                         await pl.DeletePlaylistAsync();
 
-                        await pl.InsertPlaylistAsync(); //запишем
+                        await pl.InsertPlaylistAsync(); // запишем
 
-                        foreach (string id in plv) //обновим
+                        foreach (var id in plv)
                         {
+                            // обновим
                             if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                             {
                                 await pl.UpdatePlaylistAsync(id);
@@ -382,7 +384,6 @@ namespace Models.Factories
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 return await fb.GetChannelItemsCountDbAsync(channelID);
@@ -396,7 +397,6 @@ namespace Models.Factories
         public async Task<int> GetChannelItemsCountNetAsync(string channelID)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 return await fb.GetChannelItemsCountNetAsync(channelID);
@@ -433,36 +433,20 @@ namespace Models.Factories
             }
         }
 
-        public async Task<string> GetChannelIdByUserNameNetAsync(string username)
-        {
-            var fb = _c.CreateYouTubeSite();
-            try
-            {
-                return await fb.GetChannelIdByUserNameNetAsync(username);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir)
         {
             var fb = _c.CreateSqLiteDatabase();
             var vf = _c.CreateVideoItemFactory();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = await fb.GetChannelItemsIdListDbAsync(channel.ID);
                 if (lst.Any())
                 {
-                    foreach (string id in lst)
+                    foreach (var id in lst)
                     {
                         var vid = await vf.GetVideoItemDbAsync(id);
-                        //vid.IsShowRow = true;
                         channel.AddNewItem(vid, false);
                         vid.IsHasLocalFileFound(dir);
-                        //channel.ChannelItems.Add(vid);
                     }
                 }
             }
@@ -477,7 +461,7 @@ namespace Models.Factories
             var pls = await channel.GetChannelPlaylistsNetAsync();
             if (pls.Any())
             {
-                foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                foreach (var playlist in channel.ChannelPlaylists)
                 {
                     await playlist.DeletePlaylistAsync();
                 }
@@ -486,13 +470,13 @@ namespace Models.Factories
 
             var vf = _c.CreateVideoItemFactory();
 
-            foreach (IPlaylist playlist in pls)
+            foreach (var playlist in pls)
             {
                 await playlist.InsertPlaylistAsync();
 
                 var plv = await playlist.GetPlaylistItemsIdsListNetAsync();
 
-                foreach (string id in plv)
+                foreach (var id in plv)
                 {
                     if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                     {
@@ -501,7 +485,7 @@ namespace Models.Factories
                     else
                     {
                         var item = await vf.GetVideoItemNetAsync(id);
-                        if (item.ParentID != channel.ID) 
+                        if (item.ParentID != channel.ID)
                             continue;
 
                         channel.AddNewItem(item, true);
@@ -567,12 +551,14 @@ namespace Models.Factories
 
             var lstcook = cred.Cookie.Split('|');
 
-            foreach (string cook in lstcook)
+            foreach (var cook in lstcook)
             {
                 var sp = cook.Split('=');
 
                 if (sp.Length != 2)
+                {
                     continue;
+                }
 
                 var cookie = new Cookie(sp[0], sp[1]) {Expires = cred.Expired, Domain = "." + cred.Site, Path = "/"};
 

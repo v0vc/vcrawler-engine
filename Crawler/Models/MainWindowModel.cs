@@ -13,45 +13,32 @@ using System.Windows;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO;
 using Ninject;
 using SitesAPI;
 using Container = IoC.Container;
-
 namespace Crawler.Models
 {
     public class MainWindowModel : INotifyPropertyChanged
     {
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
-
-        private string _info;
-        private Cred _selectedCred;
-        private Channel _selectedChannel;
-        private string _newChannelLink;
-        private VideoItem _selectedVideoItem;
-        private string _result;
-        private Playlist _selectedPlaylist;
-        private string _dirPath;
-        private string _mpcPath;
-        private string _youPath;
-        private double _prValue;
-        private string _youHeader;
-        private string _selectedCountry;
-        private bool _isIdle;
-        private string _filter;
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
+        private string _dirPath;
+        private string _filter;
+        private string _info;
+        private bool _isIdle;
         private string _link;
+        private string _mpcPath;
+        private string _newChannelLink;
+        private double _prValue;
+        private string _result;
+        private Channel _selectedChannel;
+        private string _selectedCountry;
+        private Cred _selectedCred;
+        private Playlist _selectedPlaylist;
+        private VideoItem _selectedVideoItem;
+        private string _youHeader;
+        private string _youPath;
 
         #region Fields
 
@@ -65,7 +52,10 @@ namespace Crawler.Models
 
         public Channel SelectedChannel
         {
-            get { return _selectedChannel; }
+            get
+            {
+                return _selectedChannel;
+            }
             set
             {
                 _selectedChannel = value;
@@ -75,7 +65,10 @@ namespace Crawler.Models
 
         public VideoItem SelectedVideoItem
         {
-            get { return _selectedVideoItem; }
+            get
+            {
+                return _selectedVideoItem;
+            }
             set
             {
                 _selectedVideoItem = value;
@@ -85,10 +78,13 @@ namespace Crawler.Models
 
         public Playlist SelectedPlaylist
         {
-            get { return _selectedPlaylist; }
+            get
+            {
+                return _selectedPlaylist;
+            }
             set
             {
-                _selectedPlaylist = value; 
+                _selectedPlaylist = value;
                 OnPropertyChanged();
             }
         }
@@ -97,7 +93,10 @@ namespace Crawler.Models
 
         public Cred SelectedCred
         {
-            get { return _selectedCred; }
+            get
+            {
+                return _selectedCred;
+            }
             set
             {
                 _selectedCred = value;
@@ -107,7 +106,10 @@ namespace Crawler.Models
 
         public string NewChannelLink
         {
-            get { return _newChannelLink; }
+            get
+            {
+                return _newChannelLink;
+            }
             set
             {
                 _newChannelLink = value;
@@ -119,7 +121,10 @@ namespace Crawler.Models
 
         public string Info
         {
-            get { return _info; }
+            get
+            {
+                return _info;
+            }
             set
             {
                 _info = value;
@@ -129,7 +134,10 @@ namespace Crawler.Models
 
         public string Result
         {
-            get { return _result; }
+            get
+            {
+                return _result;
+            }
             set
             {
                 _result = value;
@@ -139,60 +147,78 @@ namespace Crawler.Models
 
         public string DirPath
         {
-            get { return _dirPath; }
+            get
+            {
+                return _dirPath;
+            }
             set
             {
-                _dirPath = value; 
+                _dirPath = value;
                 OnPropertyChanged();
             }
         }
 
         public string MpcPath
         {
-            get { return _mpcPath; }
+            get
+            {
+                return _mpcPath;
+            }
             set
             {
-                _mpcPath = value; 
+                _mpcPath = value;
                 OnPropertyChanged();
             }
         }
 
         public string YouPath
         {
-            get { return _youPath; }
+            get
+            {
+                return _youPath;
+            }
             set
             {
-                _youPath = value; 
+                _youPath = value;
                 OnPropertyChanged();
             }
         }
 
         public double PrValue
         {
-            get { return _prValue; }
+            get
+            {
+                return _prValue;
+            }
             set
             {
-                _prValue = value; 
+                _prValue = value;
                 OnPropertyChanged();
             }
         }
 
         public string YouHeader
         {
-            get { return _youHeader; }
+            get
+            {
+                return _youHeader;
+            }
             set
             {
-                _youHeader = value; 
+                _youHeader = value;
                 OnPropertyChanged();
             }
         }
 
         public string SelectedCountry
         {
-            get { return _selectedCountry; }
+            get
+            {
+                return _selectedCountry;
+            }
             set
             {
-                _selectedCountry = value; 
+                _selectedCountry = value;
                 OnPropertyChanged();
             }
         }
@@ -201,10 +227,13 @@ namespace Crawler.Models
 
         public bool IsIdle
         {
-            get { return _isIdle; }
+            get
+            {
+                return _isIdle;
+            }
             set
             {
-                _isIdle = value; 
+                _isIdle = value;
                 OnPropertyChanged();
             }
         }
@@ -213,20 +242,26 @@ namespace Crawler.Models
 
         public string Filter
         {
-            get { return _filter; }
+            get
+            {
+                return _filter;
+            }
             set
             {
-                _filter = value; 
+                _filter = value;
                 FilterVideos();
             }
         }
 
         public string Link
         {
-            get { return _link; }
+            get
+            {
+                return _link;
+            }
             set
             {
-                _link = value; 
+                _link = value;
                 OnPropertyChanged();
             }
         }
@@ -241,7 +276,7 @@ namespace Crawler.Models
             Channels = new ObservableCollection<Channel>();
             ServiceChannels = new ObservableCollection<Channel>();
             SupportedCreds = new List<Cred>();
-            Countries = new List<string> {"RU", "US", "CA", "FR", "DE", "IT", "JP"};
+            Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
             IsIdle = true;
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
@@ -250,65 +285,57 @@ namespace Crawler.Models
         public async Task FillChannels()
         {
             var sf = BaseFactory.CreateSubscribeFactory();
-
             var s = sf.GetSubscribe();
 
             try
             {
                 await LoadSettings();
 
-                #region по id c сортировочкой
-
                 var lst = await s.GetChannelsIdsListDbAsync();
-                    //получим сначала ID каналов и начнем по одному заполнять список
 
+                // получим сначала ID каналов и начнем по одному заполнять список
                 var cf = BaseFactory.CreateChannelFactory();
 
                 var lstc = new List<IChannel>();
-
-                foreach (string id in lst)
+                foreach (var id in lst)
                 {
                     var ch = await cf.GetChannelDbAsync(id);
-
                     lstc.Add(ch);
-
                 }
-                var lsss = lstc.OrderBy(x => x.Title);
 
-                foreach (IChannel channel in lsss)
+                var lsss = lstc.OrderBy(x => x.Title);
+                foreach (var channel in lsss)
                 {
                     Channels.Add(channel as Channel);
                 }
 
-                #endregion
-
                 #region по id
 
-                //var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
+                // var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
 
-                //var cf = BaseFactory.CreateChannelFactory();
+                // var cf = BaseFactory.CreateChannelFactory();
 
-                //foreach (string id in lst)
-                //{
-                //    var ch = await cf.GetChannelDbAsync(id);
+                // foreach (string id in lst)
+                // {
+                // var ch = await cf.GetChannelDbAsync(id);
 
-                //    Channels.Add(ch as Channel);
-                //}
-
+                // Channels.Add(ch as Channel);
+                // }
                 #endregion
 
                 #region за раз
 
-                //var lst = await s.GetChannelsListAsync(); //все каналы за раз
-                //foreach (var ch in lst.Cast<Channel>())
-                //{
-                //    Channels.Add(ch);
-                //}
-
+                // var lst = await s.GetChannelsListAsync(); //все каналы за раз
+                // foreach (var ch in lst.Cast<Channel>())
+                // {
+                // Channels.Add(ch);
+                // }
                 #endregion
 
                 if (Channels.Any())
+                {
                     SelectedChannel = Channels.First();
+                }
 
                 var creds = await s.GetCredListAsync();
                 foreach (var cred in creds)
@@ -318,36 +345,25 @@ namespace Crawler.Models
                 }
 
                 if (SupportedCreds.Any())
+                {
                     SelectedCred = SupportedCreds.First();
+                }
 
                 CreateServicesChannels();
 
-                //SelectedChannel = ServiceChannels.First();
+                // SelectedChannel = ServiceChannels.First();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
-                //Info = Regex.Replace(ex.Message, @"\t|\n|\r", "-");
             }
-        }
-
-        private void CreateServicesChannels()
-        {
-            var cf = BaseFactory.CreateChannelFactory();
-            var chpop = cf.CreateChannel();
-            chpop.Title = "#Popular";
-            chpop.Site = "youtube.com";
-            var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
-            chpop.Thumbnail = SiteHelper.ReadFully(img);
-            chpop.ID = "pop";
-            ServiceChannels.Add(chpop as Channel);
         }
 
         public async Task SaveNewItem()
         {
             if (IsEditMode)
             {
-                if (String.IsNullOrEmpty(NewChannelTitle))
+                if (string.IsNullOrEmpty(NewChannelTitle))
                 {
                     MessageBox.Show("Fill channel title");
                     return;
@@ -356,7 +372,7 @@ namespace Crawler.Models
             }
             else
             {
-                if (String.IsNullOrEmpty(NewChannelLink))
+                if (string.IsNullOrEmpty(NewChannelLink))
                 {
                     MessageBox.Show("Fill channel link");
                     return;
@@ -370,35 +386,27 @@ namespace Crawler.Models
             try
             {
                 PrValue = 0;
-
                 IsIdle = false;
-
                 Result = "Working..";
-
                 var i = 0;
+                var prog = TaskbarManager.Instance;
+                prog.SetProgressState(TaskbarProgressBarState.Normal);
 
-                var prog = Microsoft.WindowsAPICodePack.Taskbar.TaskbarManager.Instance;
-
-                prog.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.Normal);
-
-                foreach (Channel channel in Channels)
+                foreach (var channel in Channels)
                 {
                     SelectedChannel = channel;
                     i += 1;
-                    PrValue = Math.Round((double) (100*i)/Channels.Count);
-                    prog.SetProgressValue((int) PrValue, 100);
+                    PrValue = Math.Round((double)(100 * i) / Channels.Count);
+                    prog.SetProgressValue((int)PrValue, 100);
                     Info = "Syncing: " + channel.Title;
                     await channel.SyncChannelAsync(DirPath, false);
                 }
 
-                prog.SetProgressState(Microsoft.WindowsAPICodePack.Taskbar.TaskbarProgressBarState.NoProgress);
+                prog.SetProgressState(TaskbarProgressBarState.NoProgress);
 
                 PrValue = 0;
-
                 IsIdle = true;
-
                 Result = "Finished!";
-
                 Info = "Total: " + i;
             }
             catch (Exception ex)
@@ -418,17 +426,23 @@ namespace Crawler.Models
             {
                 var savedir = await sf.GetSettingDbAsync("pathToDownload");
                 if (savedir.Value != DirPath)
+                {
                     await savedir.UpdateSettingAsync(DirPath);
+                }
 
                 var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
                 if (mpcdir.Value != MpcPath)
+                {
                     await mpcdir.UpdateSettingAsync(MpcPath);
+                }
 
                 var youpath = await sf.GetSettingDbAsync("pathToYoudl");
                 if (youpath.Value != YouPath)
+                {
                     await youpath.UpdateSettingAsync(YouPath);
+                }
 
-                foreach (Cred cred in SupportedCreds)
+                foreach (var cred in SupportedCreds)
                 {
                     await cred.UpdateLoginAsync(cred.Login);
                     await cred.UpdatePasswordAsync(cred.Pass);
@@ -451,7 +465,7 @@ namespace Crawler.Models
                 var savedir = await sf.GetSettingDbAsync("pathToDownload");
                 DirPath = savedir.Value;
 
-                if (String.IsNullOrEmpty(DirPath))
+                if (string.IsNullOrEmpty(DirPath))
                 {
                     var path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                     DirPath = path;
@@ -464,7 +478,7 @@ namespace Crawler.Models
                 var youpath = await sf.GetSettingDbAsync("pathToYoudl");
                 YouPath = youpath.Value;
 
-                if (String.IsNullOrEmpty(YouPath))
+                if (string.IsNullOrEmpty(YouPath))
                 {
                     var path = AppDomain.CurrentDomain.BaseDirectory;
                     var res = Path.Combine(path, "youtube-dl.exe");
@@ -491,7 +505,7 @@ namespace Crawler.Models
                 var watch = Stopwatch.StartNew();
                 await channel.SyncChannelAsync(DirPath, true);
                 watch.Stop();
-                Info = String.Format("Time: {0} sec", watch.Elapsed.Seconds);
+                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
                 Result = "Finished!";
                 IsIdle = true;
             }
@@ -504,56 +518,6 @@ namespace Crawler.Models
             }
         }
 
-        private async Task AddNewChannel()
-        {
-            Result = "Working..";
-            Info = string.Empty;
-            const string youUser = "user";
-            const string youChannel = "channel";
-
-            var cf = BaseFactory.CreateChannelFactory();
-
-            var sp = NewChannelLink.Split('/');
-            if (sp.Length > 1)
-            {
-                if (sp.Contains(youUser))
-                {
-                    var indexuser = Array.IndexOf(sp, youUser);
-                    if (indexuser < 0)
-                        throw new Exception("Can't parse url");
-                    var user = sp[indexuser + 1];
-                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(user);
-                }
-                else if (sp.Contains(youChannel))
-                {
-                    var indexchannel = Array.IndexOf(sp, youChannel);
-                    if (indexchannel < 0)
-                        throw new Exception("Can't parse url");
-
-                    NewChannelLink = sp[indexchannel + 1];
-                }
-            }
-            else
-            {
-                try
-                {
-                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(NewChannelLink);
-                }
-                catch
-                {
-                    NewChannelLink = NewChannelLink; // :)
-                }
-            }
-
-            if (Channels.Select(x => x.ID).Contains(NewChannelLink))
-            {
-                MessageBox.Show("Has already");
-                return;
-            }
-
-            await AddNewChannelAsync(NewChannelLink, NewChannelTitle);
-        }
-
         public async Task AddNewChannelAsync(string channelid, string channeltitle)
         {
             var cf = BaseFactory.CreateChannelFactory();
@@ -562,79 +526,72 @@ namespace Crawler.Models
 
             var channel = await cf.GetChannelNetAsync(channelid) as Channel;
             if (channel == null)
+            {
                 throw new Exception("GetChannelNetAsync return null");
+            }
 
-            if (!String.IsNullOrEmpty(channeltitle))
+            if (!string.IsNullOrEmpty(channeltitle))
+            {
                 channel.Title = channeltitle;
+            }
 
             await channel.DeleteChannelAsync();
-
             Channels.Add(channel);
-
             SelectedChannel = channel;
-
             var lst = await channel.GetChannelItemsNetAsync(0);
-
-            foreach (IVideoItem item in lst)
+            foreach (var item in lst)
             {
                 channel.AddNewItem(item, false);
             }
 
             await channel.InsertChannelItemsAsync();
-
             var pls = await channel.GetChannelPlaylistsNetAsync();
-
             foreach (var pl in pls)
             {
                 channel.ChannelPlaylists.Add(pl);
-
                 await pl.InsertPlaylistAsync();
-
-                var plv = await pl.GetPlaylistItemsIdsListNetAsync(); //получим список id плейлиста
-
+                var plv = await pl.GetPlaylistItemsIdsListNetAsync(); // получим список id плейлиста
                 var needcheck = new List<string>();
-
-                foreach (string id in plv)
+                foreach (var id in plv)
                 {
-                    if (channel.ChannelItems.Select(x => x.ID).Contains(id)) //видео есть на нашем канале
+                    if (channel.ChannelItems.Select(x => x.ID).Contains(id))
                     {
-                        await pl.UpdatePlaylistAsync(id); //проапдейтим связь
+                        await pl.UpdatePlaylistAsync(id); // видео есть на нашем канале - проапдейтим связь
                     }
                     else
                     {
-                        needcheck.Add(id); //видео нету - пока добавим в список для дальнейшей проверки
+                        needcheck.Add(id); // видео нету - пока добавим в список для дальнейшей проверки
                     }
                 }
 
-                var nchanks = CommonExtensions.SplitList(needcheck); //рвзобьем на чанки по 50, чтоб поменьше дергать ютуб
+                var nchanks = CommonExtensions.SplitList(needcheck);
 
+                // разобьем на чанки по 50, чтоб поменьше дергать ютуб
                 var trueids = new List<string>();
-
-                foreach (List<string> nchank in nchanks)
+                foreach (var nchank in nchanks)
                 {
-                    var lvlite = await you.GetVideosListByIdsLiteAsync(nchank); //получим лайтовые объекты, только id и parentid
-
-                    foreach (IVideoItemPOCO poco in lvlite)
+                    var lvlite = await you.GetVideosListByIdsLiteAsync(nchank); // получим лайтовые объекты, только id и parentid
+                    foreach (var poco in lvlite)
                     {
-                        if (poco.ParentID != channel.ID) //не наши - пофиг, не нужны
+                        // не наши - пофиг, не нужны
+                        if (poco.ParentID != channel.ID) 
+                        {
                             continue;
-
-                        trueids.Add(poco.ID); //а вот эти с нашего канала - собираем
+                        }
+                        trueids.Add(poco.ID); // а вот эти с нашего канала - собираем
                     }
                 }
 
-                var truchanks = CommonExtensions.SplitList(trueids); //опять же разобьем на чанки
+                var truchanks = CommonExtensions.SplitList(trueids); // опять же разобьем на чанки
 
-                foreach (List<string> truchank in truchanks)
+                foreach (var truchank in truchanks)
                 {
-                    var lvfull = await you.GetVideosListByIdsAsync(truchank); //ну и начнем получать уже полные объекты
+                    var lvfull = await you.GetVideosListByIdsAsync(truchank); // ну и начнем получать уже полные объекты
 
-                    foreach (IVideoItemPOCO poco in lvfull)
+                    foreach (var poco in lvfull)
                     {
                         var v = new VideoItem(poco, vf);
-
                         channel.AddNewItem(v, false);
-
                         await v.InsertItemAsync();
                     }
                 }
@@ -643,16 +600,12 @@ namespace Crawler.Models
             Result = "Finished";
         }
 
-        private async Task EditChannel()
-        {
-            SelectedChannel.Title = NewChannelTitle;
-            await SelectedChannel.RenameChannelAsync(NewChannelTitle);
-        }
-
         public async Task DownloadLink()
         {
             if (string.IsNullOrEmpty(Link))
+            {
                 return;
+            }
 
             if (!CommonExtensions.IsValidUrl(Link))
             {
@@ -690,27 +643,106 @@ namespace Crawler.Models
             }
             else
             {
-                var param = String.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", DirPath, Link);
+                var param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", DirPath, Link);
                 await Task.Run(() =>
                 {
                     var process = Process.Start(_youPath, param);
-                    if (process != null) process.Close();
+                    if (process != null)
+                    {
+                        process.Close();
+                    }
                 });
             }
+        }
 
+        private async Task AddNewChannel()
+        {
+            Result = "Working..";
+            Info = string.Empty;
+            const string youUser = "user";
+            const string youChannel = "channel";
+
+            var cf = BaseFactory.CreateChannelFactory();
+
+            var sp = NewChannelLink.Split('/');
+            if (sp.Length > 1)
+            {
+                if (sp.Contains(youUser))
+                {
+                    var indexuser = Array.IndexOf(sp, youUser);
+                    if (indexuser < 0)
+                    {
+                        throw new Exception("Can't parse url");
+                    }
+
+                    var user = sp[indexuser + 1];
+                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(user);
+                }
+                else if (sp.Contains(youChannel))
+                {
+                    var indexchannel = Array.IndexOf(sp, youChannel);
+                    if (indexchannel < 0)
+                    {
+                        throw new Exception("Can't parse url");
+                    }
+
+                    NewChannelLink = sp[indexchannel + 1];
+                }
+            }
+            else
+            {
+                try
+                {
+                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(NewChannelLink);
+                }
+                catch
+                {
+                    NewChannelLink = NewChannelLink; // :)
+                }
+            }
+
+            if (Channels.Select(x => x.ID).Contains(NewChannelLink))
+            {
+                MessageBox.Show("Has already");
+                return;
+            }
+
+            await AddNewChannelAsync(NewChannelLink, NewChannelTitle);
+        }
+
+        private async Task EditChannel()
+        {
+            SelectedChannel.Title = NewChannelTitle;
+            await SelectedChannel.RenameChannelAsync(NewChannelTitle);
+        }
+
+        private void CreateServicesChannels()
+        {
+            var cf = BaseFactory.CreateChannelFactory();
+            var chpop = cf.CreateChannel();
+            chpop.Title = "#Popular";
+            chpop.Site = "youtube.com";
+            var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
+            chpop.Thumbnail = SiteHelper.ReadFully(img);
+            chpop.ID = "pop";
+            ServiceChannels.Add(chpop as Channel);
         }
 
         private void FilterVideos()
         {
             if (SelectedChannel == null)
+            {
                 return;
+            }
 
             if (string.IsNullOrEmpty(Filter))
             {
                 if (!Filterlist.Any())
+                {
                     return;
+                }
 
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
+                foreach (var item in SelectedChannel.ChannelItems)
                 {
                     item.IsShowRow = false;
                 }
@@ -719,7 +751,9 @@ namespace Crawler.Models
                 {
                     var vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
                     if (vid != null)
+                    {
                         vid.IsShowRow = true;
+                    }
                 }
 
                 Filterlist.Clear();
@@ -733,20 +767,40 @@ namespace Crawler.Models
                         Filterlist.Add(item);
                     }
                 }
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
+
+                foreach (var item in SelectedChannel.ChannelItems)
                 {
                     item.IsShowRow = false;
                 }
+
                 foreach (var item in Filterlist)
                 {
                     if (item.Title.ToLower().Contains(Filter.ToLower()))
                     {
                         var vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
                         if (vid != null)
+                        {
                             vid.IsShowRow = true;
+                        }
                     }
                 }
             }
         }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        #endregion
     }
 }
+

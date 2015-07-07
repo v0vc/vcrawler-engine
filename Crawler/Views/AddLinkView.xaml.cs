@@ -1,23 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace Crawler.Views
 {
     /// <summary>
-    /// Interaction logic for AddLinkView.xaml
+    ///     Interaction logic for AddLinkView.xaml
     /// </summary>
     public partial class AddLinkView : Window
     {
@@ -36,11 +26,13 @@ namespace Crawler.Views
             }
             if (e.Key == Key.Enter)
             {
-                //нажмем кнопку программно
+                // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(ButtonGo);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 if (invokeProv != null)
+                {
                     invokeProv.Invoke();
+                }
             }
         }
 
@@ -53,7 +45,9 @@ namespace Crawler.Views
         {
             var text = Clipboard.GetData(DataFormats.Text) as string;
             if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+            {
                 return;
+            }
             TextBoxLink.Text = text;
             TextBoxLink.Focus();
             TextBoxLink.SelectAll();

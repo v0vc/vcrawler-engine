@@ -27,7 +27,6 @@ namespace Crawler
 
             #endregion
 
-
             #region with NInject
 
             //IKernel kernel = new StandardKernel();
@@ -53,11 +52,9 @@ namespace Crawler
 
             #endregion
 
-
             var mainWindow = new MainWindow();
             mainWindow.DataContext = new MainWindowViewModel(new MainWindowModel());
             mainWindow.Show();
-
         }
     }
 }

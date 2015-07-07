@@ -6,11 +6,9 @@ using Models.Factories;
 
 namespace Models.BO
 {
-    public class Setting :ISetting
+    public class Setting : ISetting
     {
         private readonly SettingFactory _sf;
-        public string Key { get; set; }
-        public string Value { get; set; }
 
         public Setting(ISettingFactory sf)
         {
@@ -24,22 +22,23 @@ namespace Models.BO
             Value = setting.Value;
         }
 
+        public string Key { get; set; }
+        public string Value { get; set; }
+
         public async Task InsertSettingAsync()
         {
+            // await ((SettingFactory) ServiceLocator.SettingFactory).InsertSettingAsync(this);
             await _sf.InsertSettingAsync(this);
-            //await ((SettingFactory) ServiceLocator.SettingFactory).InsertSettingAsync(this);
         }
 
         public async Task DeleteSettingAsync()
         {
             await _sf.DeleteSettingAsync(Key);
-            //await ((SettingFactory) ServiceLocator.SettingFactory).DeleteSettingAsync(Key);
         }
 
         public async Task UpdateSettingAsync(string newvalue)
         {
             await _sf.UpdateSettingAsync(Key, newvalue);
-            //await ((SettingFactory) ServiceLocator.SettingFactory).UpdateSettingAsync(Key, newvalue);
         }
     }
 }

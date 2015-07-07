@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -13,11 +12,9 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        //private readonly ISqLiteDatabase _db;
         public TagFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
         }
 
         public ITag CreateTag()
@@ -28,7 +25,8 @@ namespace Models.Factories
         public async Task DeleteTagAsync(string tag)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
+
+            // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteTagAsync(tag);
@@ -41,8 +39,7 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            var fb = _c.CreateSqLiteDatabase(); ;
-            //var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);
@@ -55,8 +52,7 @@ namespace Models.Factories
 
         public async Task<List<IChannel>> GetChannelsByTagAsync(string tag)
         {
-            var fb = _c.CreateSqLiteDatabase(); ;
-            //var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
             try
             {
                 var lst = new List<IChannel>();

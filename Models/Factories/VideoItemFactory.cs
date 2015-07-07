@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -13,15 +10,9 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        //private readonly ISqLiteDatabase _db;
-
-        //private readonly IYouTubeSite _youTubeSite;
-
         public VideoItemFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
-            //_youTubeSite = c.CreateYouTubeSite();
         }
 
         public IVideoItem CreateVideoItem()
@@ -32,7 +23,8 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
+
+            // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetVideoItemAsync(id);
@@ -47,7 +39,6 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var fbres = await fb.GetVideoItemNetAsync(id);
@@ -62,7 +53,6 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var fbres = await fb.GetVideoItemLiteNetAsync(id);
@@ -77,7 +67,6 @@ namespace Models.Factories
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetChannelAsync(channelID);
@@ -92,7 +81,6 @@ namespace Models.Factories
         public async Task InsertItemAsync(IVideoItem item)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertItemAsync(item);
@@ -106,7 +94,6 @@ namespace Models.Factories
         public async Task DeleteItemAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -116,7 +103,5 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
-
-
     }
 }

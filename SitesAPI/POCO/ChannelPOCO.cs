@@ -2,19 +2,14 @@
 using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
-
 namespace SitesAPI.POCO
 {
     public class ChannelPOCO : IChannelPOCO
     {
         public string ID { get; set; }
-
         public string Title { get; set; }
-
         public string SubTitle { get; set; }
-
         public byte[] Thumbnail { get; set; }
-
         public string Site { get; set; }
 
         public static async Task<ChannelPOCO> CreatePoco(string id, JObject record)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -13,12 +12,9 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        //private readonly ISqLiteDatabase _db;
-
         public SubscribeFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
         }
 
         public ISubscribe GetSubscribe()
@@ -28,8 +24,9 @@ namespace Models.Factories
 
         public async Task<List<IChannel>> GetChannelsListAsync()
         {
-            var fb = _c.CreateSqLiteDatabase(); ;
-            //var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+
+            // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IChannel>();
@@ -46,7 +43,6 @@ namespace Models.Factories
         public async Task<List<ICred>> GetCredListAsync()
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<ICred>();
@@ -63,7 +59,6 @@ namespace Models.Factories
         public async Task<List<string>> GetChannelsIdsListDbAsync()
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 return await fb.GetChannelsIdsListDbAsync();

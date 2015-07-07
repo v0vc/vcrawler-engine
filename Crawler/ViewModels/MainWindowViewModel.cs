@@ -8,27 +8,12 @@ using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
-using Interfaces.POCO;
 using Application = System.Windows.Application;
 
 namespace Crawler.ViewModels
 {
     public class MainWindowViewModel
     {
-        public MainWindowModel Model { get; set; }
-
-        public RelayCommand AddNewItemCommand { get; set; }
-
-        public RelayCommand SaveNewItemCommand { get; set; }
-
-        public RelayCommand SyncDataCommand { get; set; }
-
-        public RelayCommand OpenDirCommand { get; set; }
-
-        public RelayCommand SaveCommand { get; set; }
-
-        public RelayCommand DownloadLinkCommand { get; set; }
-
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
@@ -39,6 +24,14 @@ namespace Crawler.ViewModels
             SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
             DownloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink());
         }
+
+        public MainWindowModel Model { get; set; }
+        public RelayCommand AddNewItemCommand { get; set; }
+        public RelayCommand SaveNewItemCommand { get; set; }
+        public RelayCommand SyncDataCommand { get; set; }
+        public RelayCommand OpenDirCommand { get; set; }
+        public RelayCommand SaveCommand { get; set; }
+        public RelayCommand DownloadLinkCommand { get; set; }
 
         private void OpenDir(object obj)
         {
@@ -54,7 +47,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case "MpcPath":
-                    var dlgm = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
+                    var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
                     var resm = dlgm.ShowDialog();
                     if (resm == DialogResult.OK)
                     {
@@ -63,7 +56,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case "YouPath":
-                    var dlgy = new OpenFileDialog {Filter = @"EXE files (*.exe)|*.exe"};
+                    var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
                     var resy = dlgy.ShowDialog();
                     if (resy == DialogResult.OK)
                     {
@@ -79,8 +72,8 @@ namespace Crawler.ViewModels
 
             var addview = new AddChanelView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -91,8 +84,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -103,8 +96,8 @@ namespace Crawler.ViewModels
         {
             var adl = new AddLinkView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -114,9 +107,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(),
-                DefaultExt = ".txt",
-                Filter = @"Text documents (.txt)|*.txt",
+                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
+                DefaultExt = ".txt", 
+                Filter = @"Text documents (.txt)|*.txt", 
                 OverwritePrompt = true
             };
             var res = dlg.ShowDialog();
@@ -125,9 +118,14 @@ namespace Crawler.ViewModels
                 var fb = Model.BaseFactory.CreateSqLiteDatabase();
                 var lst = await fb.GetChannelsListAsync();
                 var sb = new StringBuilder();
-                foreach (IChannelPOCO poco in lst)
+                foreach (var poco in lst)
                 {
-                    sb.Append(poco.Title).Append("|").Append(poco.ID).Append("|").Append(poco.Site).Append(Environment.NewLine);
+                    sb.Append(poco.Title)
+                        .Append("|")
+                        .Append(poco.ID)
+                        .Append("|")
+                        .Append(poco.Site)
+                        .Append(Environment.NewLine);
                 }
                 try
                 {
@@ -149,10 +147,10 @@ namespace Crawler.ViewModels
 
             var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
             var res = opf.ShowDialog();
-            
+
             if (res == DialogResult.OK)
             {
-                string[] lst = {};
+                string[] lst = { };
 
                 try
                 {
@@ -166,13 +164,15 @@ namespace Crawler.ViewModels
 
                 Model.Result = "Working..";
                 var rest = 0;
-                foreach (string s in lst)
+                foreach (var s in lst)
                 {
                     var sp = s.Split('|');
                     if (sp.Length == 3)
                     {
                         if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
+                        {
                             continue;
+                        }
 
                         switch (sp[2])
                         {

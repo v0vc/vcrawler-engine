@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -13,15 +12,9 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        //private readonly ISqLiteDatabase _db;
-
-        //private readonly IYouTubeSite _youTubeSite;
-
         public PlaylistFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
-            //_youTubeSite = c.CreateYouTubeSite();
         }
 
         public IPlaylist CreatePlaylist()
@@ -32,7 +25,8 @@ namespace Models.Factories
         public async Task<IPlaylist> GetPlaylistDbAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
+
+            // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var fbres = await fb.GetPlaylistAsync(id);
@@ -47,7 +41,6 @@ namespace Models.Factories
         public async Task<IPlaylist> GetPlaylistNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var fbres = await fb.GetPlaylistNetAsync(id);
@@ -62,7 +55,6 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 var lst = new List<IVideoItem>();
@@ -79,7 +71,6 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 var lst = new List<IVideoItem>();
@@ -96,7 +87,6 @@ namespace Models.Factories
         public async Task DeletePlaylistAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeletePlaylistAsync(id);
@@ -110,7 +100,6 @@ namespace Models.Factories
         public async Task InsertPlaylistAsync(Playlist playlist)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.InsertPlaylistAsync(playlist);
@@ -124,7 +113,6 @@ namespace Models.Factories
         public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 return await fb.GetPlaylistItemsIdsListNetAsync(id);
@@ -138,7 +126,6 @@ namespace Models.Factories
         public async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdatePlaylistAsync(plid, itemid, channelid);
@@ -152,7 +139,6 @@ namespace Models.Factories
         public async Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.YouTubeSiteApiV2;
             try
             {
                 return await fb.GetPlaylistItemsIdsListDbAsync(id);

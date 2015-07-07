@@ -1,41 +1,30 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Crawler.Models;
+using Crawler.Properties;
 using Crawler.ViewModels;
 using Extensions;
 
 namespace Crawler.Views
 {
     /// <summary>
-    /// Interaction logic for SettingsView.xaml
+    ///     Interaction logic for SettingsView.xaml
     /// </summary>
     public partial class SettingsView : Window
     {
-        public MainWindowViewModel ViewModel
-        {
-            get { return DataContext as MainWindowViewModel; }
-            set { DataContext = value; }
-        }
-
         public SettingsView()
         {
             InitializeComponent();
             KeyDown += SettingsView_KeyDown;
+        }
 
+        public MainWindowViewModel ViewModel
+        {
+            get { return DataContext as MainWindowViewModel; }
+            set { DataContext = value; }
         }
 
         private void SettingsView_KeyDown(object sender, KeyEventArgs e)
@@ -50,8 +39,10 @@ namespace Crawler.Views
         private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+            {
                 return;
-            var link = (string)Properties.Settings.Default["pathToYoudl"];
+            }
+            var link = (string)Settings.Default["pathToYoudl"];
 
             ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
 
@@ -63,27 +54,30 @@ namespace Crawler.Views
             }
         }
 
-        void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             var bytesIn = double.Parse(e.BytesReceived.ToString(CultureInfo.InvariantCulture));
             var totalBytes = double.Parse(e.TotalBytesToReceive.ToString(CultureInfo.InvariantCulture));
-            ViewModel.Model.PrValue = bytesIn/totalBytes*100;
+            ViewModel.Model.PrValue = bytesIn / totalBytes * 100;
         }
 
-        void client_DownloadFileCompleted(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
-            ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+            ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
+                CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
             ViewModel.Model.PrValue = 0;
         }
-
-
 
         private void SettingsView_OnLoaded(object sender, RoutedEventArgs e)
         {
             if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+            {
                 ViewModel.Model.YouHeader = "Youtube-dl";
+            }
             else
+            {
                 ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+            }
         }
     }
 }

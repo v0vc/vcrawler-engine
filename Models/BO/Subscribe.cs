@@ -17,20 +17,18 @@ namespace Models.BO
 
         public ISubscribe GetSubscribe()
         {
+            // return ServiceLocator.SubscribeFactory.GetSubscribe();
             return _sf.GetSubscribe();
-            //return ServiceLocator.SubscribeFactory.GetSubscribe();
         }
 
         public async Task<List<IChannel>> GetChannelsListAsync()
         {
             return await _sf.GetChannelsListAsync();
-            //return await ((SubscribeFactory)ServiceLocator.SubscribeFactory).GetChannelsListAsync();
         }
 
         public async Task<List<ICred>> GetCredListAsync()
         {
             return await _sf.GetCredListAsync();
-            //return await ((SubscribeFactory)ServiceLocator.SubscribeFactory).GetCredListAsync();
         }
 
         public async Task<List<string>> GetChannelsIdsListDbAsync()

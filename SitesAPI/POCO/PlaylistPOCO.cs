@@ -7,13 +7,9 @@ namespace SitesAPI.POCO
     public class PlaylistPOCO : IPlaylistPOCO
     {
         public string ID { get; set; }
-
         public string Title { get; set; }
-
         public string SubTitle { get; set; }
-
         public byte[] Thumbnail { get; set; }
-
         public string ChannelID { get; set; }
 
         public async Task FillFieldsFromGetting(JToken record)
@@ -44,7 +40,7 @@ namespace SitesAPI.POCO
 
             var tpid = record.SelectToken("items[0].snippet.channelId");
             ChannelID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
-            
+
             var link = record.SelectToken("items[0].snippet.thumbnails.default.url");
             if (link != null)
             {

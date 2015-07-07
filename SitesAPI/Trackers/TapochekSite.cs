@@ -14,27 +14,31 @@ using SitesAPI.POCO;
 
 namespace SitesAPI.Trackers
 {
-    public class TapochekSite :ITapochekSite
+    public class TapochekSite : ITapochekSite
     {
         private const string Site = "tapochek.net";
         private static readonly string HostUrl = string.Format("http://{0}", Site);
+        private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
         private readonly string _loginUrl = string.Format("{0}/login.php", HostUrl);
-        private readonly string _userUrl = string.Format("{0}/tracker.php?rid", HostUrl);
+        private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
         private readonly string _searchUrl = string.Format("{0}/tracker.php?nm", HostUrl);
         private readonly string _topicUrl = string.Format("{0}/viewtopic.php?t", HostUrl);
-        private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
-        private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
+        private readonly string _userUrl = string.Format("{0}/tracker.php?rid", HostUrl);
 
         public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
+            {
                 throw new Exception("Please, set login and password");
+            }
 
-            var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
+            var req = (HttpWebRequest) WebRequest.Create(_loginUrl);
             req.Method = WebRequestMethods.Http.Post;
             req.Host = cred.Site;
             req.KeepAlive = true;
-            var postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4", Uri.EscapeDataString(cred.Login), Uri.EscapeDataString(cred.Pass));
+            var postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4", 
+                Uri.EscapeDataString(cred.Login), 
+                Uri.EscapeDataString(cred.Pass));
             var data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
             req.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
@@ -52,7 +56,7 @@ namespace SitesAPI.Trackers
                 await stream.WriteAsync(data, 0, data.Length);
             }
 
-            var resp = (HttpWebResponse)(await req.GetResponseAsync());
+            var resp = (HttpWebResponse) (await req.GetResponseAsync());
 
             return resp.Cookies;
         }
@@ -75,7 +79,7 @@ namespace SitesAPI.Trackers
                         d.Attributes.Contains("class") &&
                         d.Attributes["class"].Value.Equals("tCenter")).ToList();
 
-            foreach (HtmlNode node in links)
+            foreach (var node in links)
             {
                 var vi = new VideoItemPOCO(node, Site);
                 if (!string.IsNullOrEmpty(vi.ID))
@@ -88,7 +92,7 @@ namespace SitesAPI.Trackers
 
                 var searchlinks = GetAllSearchLinks(doc);
 
-                foreach (string link in searchlinks)
+                foreach (var link in searchlinks)
                 {
                     page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(link), channel.ChannelCookies);
 
@@ -102,7 +106,7 @@ namespace SitesAPI.Trackers
                                 d.Attributes.Contains("class") &&
                                 d.Attributes["class"].Value.Equals("tCenter")).ToList();
 
-                    foreach (HtmlNode node in links)
+                    foreach (var node in links)
                     {
                         var vi = new VideoItemPOCO(node, Site);
                         if (!string.IsNullOrEmpty(vi.ID))
@@ -127,8 +131,7 @@ namespace SitesAPI.Trackers
 
             var page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), cookie);
 
-            //var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
-
+            // var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
             var doc = new HtmlDocument();
 
             doc.LoadHtml(page);
@@ -141,7 +144,7 @@ namespace SitesAPI.Trackers
                     d.Attributes["class"].Value.Equals("small mrg_4")).ToList();
 
             if (title.Any())
-                ch.Title = (HttpUtility.HtmlDecode(title[0].InnerText)).Trim();
+                ch.Title = HttpUtility.HtmlDecode(title[0].InnerText).Trim();
 
             title = doc.DocumentNode.Descendants("p").Where(
                 d =>
@@ -162,14 +165,17 @@ namespace SitesAPI.Trackers
         {
             var hrefTags = new List<string>();
 
-            var block = doc.DocumentNode.Descendants("div").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("nav")).ToList();
+            var block =
+                doc.DocumentNode.Descendants("div")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("nav"))
+                    .ToList();
 
             if (block.Count == 2)
             {
                 var hr = block[1].Descendants("a");
-                foreach (HtmlNode link in hr)
+                foreach (var link in hr)
                 {
-                    HtmlAttribute att = link.Attributes["href"];
+                    var att = link.Attributes["href"];
                     if (att.Value != null && !hrefTags.Contains(att.Value) && att.Value.StartsWith("tracker"))
                         hrefTags.Add(att.Value);
                 }

@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SQLite;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,188 +18,30 @@ namespace DataBaseAPI
     public class SqLiteDatabase : ISqLiteDatabase
     {
         private const string Dbfile = "db.sqlite";
-
         private const string SqlSchemaFolder = "Schema";
-
         private const string SqlFile = "sqlite.sql";
-
-        private readonly string _dbConnection;
-
         private readonly string _appstartdir;
-
-        #region tables
-
-        private const string Tablechannels = "channels";
-
-        private const string Tablechanneltags = "channeltags";
-
-        private const string Tabletags = "tags";
-
-        private const string Tablecredentials = "credentials";
-
-        private const string Tableitems = "items";
-
-        private const string Tableplaylists = "playlists";
-
-        private const string Tableplaylistitems = "playlistitems";
-
-        private const string Tablesettings = "settings";
-
-        #endregion
-
-        #region items
-
-        public static readonly string ItemId = "id";
-
-        public static readonly string ParentID = "parentid";
-
-        public static readonly string Title = "title";
-
-        public static readonly string Description = "description";
-
-        public static readonly string ViewCount = "viewcount";
-
-        public static readonly string Duration = "duration";
-
-        public static readonly string Comments = "comments";
-
-        public static readonly string Thumbnail = "thumbnail";
-
-        public static readonly string Timestamp = "timestamp";
-
-        #endregion
-
-        #region channels
-
-        public static readonly string ChannelId = "id";
-
-        public static readonly string ChannelTitle = "title";
-
-        public static readonly string ChannelSubTitle = "subtitle";
-
-        public static readonly string ChannelThumbnail = "thumbnail";
-
-        public static readonly string ChannelSite = "site";
-
-        #endregion
-
-        #region tags
-
-        public static readonly string TagTitle = "title";
-
-        #endregion
-
-        #region channeltags
-
-        public static readonly string TagIdF = "tagid";
-
-        public static readonly string ChannelIdF = "channelid";
-
-        #endregion
-
-        #region playlists
-
-        public static readonly string PlaylistID = "id";
-
-        public static readonly string PlaylistTitle = "title";
-
-        public static readonly string PlaylistSubTitle = "subtitle";
-
-        public static readonly string PlaylistThumbnail = "thumbnail";
-
-        public static readonly string PlaylistChannelId = "channelid";
-
-        #endregion
-
-        #region playlistitems
-
-        public static readonly string FPlaylistId = "playlistid";
-
-        public static readonly string FItemId = "itemid";
-
-        public static readonly string FChannelId = "channelid";
-
-        #endregion
-
-        #region credentials
-
-        public static readonly string CredSite = "site";
-
-        public static readonly string CredLogin = "login";
-
-        public static readonly string CredPass = "pass";
-
-        public static readonly string CredCookie = "cookie";
-
-        public static readonly string CredExpired = "expired";
-
-        public static readonly string CredAutorization = "autorization";
-
-        #endregion
-
-        #region settings
-
-        public static readonly string SetKey = "key";
-
-        public static readonly string SetVal = "val";
-
-        #endregion
-
-        public FileInfo FileBase { get; set; }
+        private readonly string _dbConnection;
 
         public SqLiteDatabase()
         {
-            _appstartdir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            if (_appstartdir == null) return;
+            _appstartdir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            if (_appstartdir == null)
+            {
+                return;
+            }
             var fdb = Path.Combine(_appstartdir, Dbfile);
             FileBase = new FileInfo(fdb);
-            _dbConnection = String.Format("Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", FileBase.FullName);
+            _dbConnection = string.Format(
+                    "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", 
+                    FileBase.FullName);
             if (!FileBase.Exists)
             {
                 CreateDb();
-                //Task.Run(() => CreateDb());
-                //var t = new Task(CreateDb);
-                //t.RunSynchronously();
-                //t.Wait();
             }
         }
 
-        private async Task<int> ExecuteNonQueryAsync(SQLiteCommand command)
-        {
-            if (command == null) 
-                throw new ArgumentNullException("command");
-
-            using (var connection = new SQLiteConnection(_dbConnection))
-            {
-                await connection.OpenAsync();
-                command.Connection = connection;
-                return await command.ExecuteNonQueryAsync();
-            }
-        }
-
-        private static SQLiteCommand GetCommand(string sql)
-        {
-            if (String.IsNullOrEmpty(sql))
-                throw new ArgumentNullException("sql");
-
-            return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
-        }
-
-        private async void CreateDb()
-        {
-            var sqliteschema = Path.Combine(_appstartdir, SqlSchemaFolder, SqlFile);
-            var fnsch = new FileInfo(sqliteschema);
-            if (fnsch.Exists)
-            {
-                var sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
-                using (var command = GetCommand(sqltext))
-                {
-                    await ExecuteNonQueryAsync(command);
-                }
-            }
-            else
-                throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
-        }
+        public FileInfo FileBase { get; set; }
 
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
@@ -211,7 +54,9 @@ namespace DataBaseAPI
                 using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     if (!reader.HasRows)
+                    {
                         throw new KeyNotFoundException("No item: " + id);
+                    }
 
                     if (await reader.ReadAsync())
                     {
@@ -239,7 +84,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -255,20 +102,20 @@ namespace DataBaseAPI
 
         public async Task InsertChannelAsync(IChannel channel)
         {
-            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                Tablechannels,
-                ChannelId,
-                ChannelTitle,
-                ChannelSubTitle,
-                ChannelThumbnail,
-                ChannelSite
-                );
+            var zap =
+                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                    Tablechannels,
+                    ChannelId,
+                    ChannelTitle,
+                    ChannelSubTitle,
+                    ChannelThumbnail,
+                    ChannelSite);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + ChannelId, channel.ID);
                 command.Parameters.AddWithValue("@" + ChannelTitle, channel.Title);
                 command.Parameters.AddWithValue("@" + ChannelSubTitle, channel.SubTitle);
-                //command.Parameters.AddWithValue("@" + ChannelLastUpdated, channel.LastUpdated);
                 command.Parameters.Add("@" + ChannelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                 command.Parameters.AddWithValue("@" + ChannelThumbnail, channel.Thumbnail);
                 command.Parameters.AddWithValue("@" + ChannelSite, channel.Site);
@@ -288,8 +135,7 @@ namespace DataBaseAPI
 
         public async Task RenameChannelAsync(string id, string newName)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName,
-                    ChannelId, id);
+            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName, ChannelId, id);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -300,7 +146,7 @@ namespace DataBaseAPI
         {
             await InsertChannelAsync(channel);
 
-            foreach (IVideoItem item in channel.ChannelItems)
+            foreach (var item in channel.ChannelItems)
             {
                 await InsertItemAsync(item);
             }
@@ -317,7 +163,9 @@ namespace DataBaseAPI
                 using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     if (!reader.HasRows)
+                    {
                         throw new KeyNotFoundException("No item: " + id);
+                    }
 
                     if (await reader.ReadAsync())
                     {
@@ -343,7 +191,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -361,18 +211,18 @@ namespace DataBaseAPI
             var zap =
                 string.Format(
                     @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
-                                    VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
-                    Tableitems,
-                    ItemId,
-                    ParentID,
-                    Title,
-                    Description,
-                    ViewCount,
-                    Duration,
-                    Comments,
-                    Thumbnail,
-                    Timestamp
-                    );
+                                    VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})", 
+                    Tableitems, 
+                    ItemId, 
+                    ParentID, 
+                    Title, 
+                    Description, 
+                    ViewCount, 
+                    Duration, 
+                    Comments, 
+                    Thumbnail, 
+                    Timestamp);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + ItemId, item.ID);
@@ -400,14 +250,15 @@ namespace DataBaseAPI
 
         public async Task InsertPlaylistAsync(IPlaylist playlist)
         {
-            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                Tableplaylists,
-                PlaylistID,
-                PlaylistTitle,
-                PlaylistSubTitle,
-                PlaylistThumbnail,
-                PlaylistChannelId
-                );
+            var zap =
+                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                    Tableplaylists,
+                    PlaylistID,
+                    PlaylistTitle,
+                    PlaylistSubTitle,
+                    PlaylistThumbnail,
+                    PlaylistChannelId);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + PlaylistID, playlist.ID);
@@ -440,7 +291,9 @@ namespace DataBaseAPI
                 using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     if (!reader.HasRows)
+                    {
                         throw new KeyNotFoundException("No item: " + id);
+                    }
 
                     if (await reader.ReadAsync())
                     {
@@ -455,13 +308,12 @@ namespace DataBaseAPI
 
         public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
         {
-            //OR IGNORE
-            var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
-                Tableplaylistitems,
-                FPlaylistId,
-                FItemId,
-                FChannelId
-                );
+            // OR IGNORE
+            var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})", 
+                Tableplaylistitems, 
+                FPlaylistId, 
+                FItemId, 
+                FChannelId);
 
             using (var command = GetCommand(zap))
             {
@@ -472,12 +324,12 @@ namespace DataBaseAPI
                 await ExecuteNonQueryAsync(command);
             }
 
-            //zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {5}='{6}'", Tableplaylistitems,
-            //    FPlaylistId, playlistid, FItemId, itemid, FChannelId, channelid);
-            //using (var command = GetCommand(zap))
-            //{
-            //    await ExecuteNonQueryAsync(command);
-            //}
+            // zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {5}='{6}'", Tableplaylistitems,
+            // FPlaylistId, playlistid, FItemId, itemid, FChannelId, channelid);
+            // using (var command = GetCommand(zap))
+            // {
+            // await ExecuteNonQueryAsync(command);
+            // }
         }
 
         public async Task<List<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
@@ -495,7 +347,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -506,7 +360,7 @@ namespace DataBaseAPI
                 }
             }
 
-            foreach (string itemid in lst)
+            foreach (var itemid in lst)
             {
                 res.Add(await GetVideoItemAsync(itemid));
             }
@@ -528,7 +382,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -545,10 +401,10 @@ namespace DataBaseAPI
         {
             var zap =
                 string.Format(
-                    @"INSERT INTO '{0}' ('{1}') VALUES (@{1})",
-                    Tabletags,
-                    TagTitle
-                    );
+                    @"INSERT INTO '{0}' ('{1}') VALUES (@{1})", 
+                    Tabletags, 
+                    TagTitle);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + TagTitle, tag.Title);
@@ -567,11 +423,11 @@ namespace DataBaseAPI
 
         public async Task InsertChannelTagsAsync(string channelid, string tag)
         {
-            var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
-              Tablechanneltags,
-              ChannelIdF,
-              TagIdF
-              );
+            var zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})", 
+                Tablechanneltags, 
+                ChannelIdF, 
+                TagIdF);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + ChannelIdF, channelid);
@@ -606,7 +462,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -634,7 +492,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -661,7 +521,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -686,7 +548,9 @@ namespace DataBaseAPI
                 using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     if (!reader.HasRows)
+                    {
                         throw new KeyNotFoundException("No item: " + site);
+                    }
 
                     if (await reader.ReadAsync())
                     {
@@ -701,15 +565,17 @@ namespace DataBaseAPI
 
         public async Task InsertCredAsync(ICred cred)
         {
-            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
-               Tablecredentials,
-               CredSite,
-               CredLogin,
-               CredPass,
-               CredCookie,
-               CredExpired,
-               CredAutorization
-               );
+            var zap =
+                string.Format(
+                    @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})", 
+                    Tablecredentials, 
+                    CredSite, 
+                    CredLogin, 
+                    CredPass, 
+                    CredCookie, 
+                    CredExpired, 
+                    CredAutorization);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + CredSite, cred.Site);
@@ -780,11 +646,11 @@ namespace DataBaseAPI
 
         public async Task InsertSettingAsync(ISetting setting)
         {
-            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
-             Tablesettings,
-             SetKey,
-             SetVal
-             );
+            var zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})", 
+                Tablesettings, 
+                SetKey, 
+                SetVal);
+
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + SetKey, setting.Key);
@@ -823,7 +689,9 @@ namespace DataBaseAPI
                 using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                 {
                     if (!reader.HasRows)
+                    {
                         throw new KeyNotFoundException("No item: " + key);
+                    }
 
                     if (await reader.ReadAsync())
                     {
@@ -849,8 +717,10 @@ namespace DataBaseAPI
 
                     var res = await command.ExecuteScalarAsync(CancellationToken.None);
 
-                    if (res == null || res == DBNull.Value) 
+                    if (res == null || res == DBNull.Value)
+                    {
                         throw new Exception(zap);
+                    }
 
                     return Convert.ToInt32(res);
                 }
@@ -874,7 +744,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -905,7 +777,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -936,7 +810,9 @@ namespace DataBaseAPI
                     using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
                     {
                         if (!reader.HasRows)
+                        {
                             return res;
+                        }
 
                         while (await reader.ReadAsync())
                         {
@@ -950,11 +826,6 @@ namespace DataBaseAPI
             return res;
         }
 
-        public Task<CookieCollection> GetChanelCookieDbAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task VacuumAsync()
         {
             using (var command = GetCommand("vacuum"))
@@ -962,5 +833,166 @@ namespace DataBaseAPI
                 await ExecuteNonQueryAsync(command);
             }
         }
+
+        private async Task<int> ExecuteNonQueryAsync(SQLiteCommand command)
+        {
+            if (command == null)
+            {
+                throw new ArgumentNullException("command");
+            }
+
+            using (var connection = new SQLiteConnection(_dbConnection))
+            {
+                await connection.OpenAsync();
+                command.Connection = connection;
+                return await command.ExecuteNonQueryAsync();
+            }
+        }
+
+        private static SQLiteCommand GetCommand(string sql)
+        {
+            if (string.IsNullOrEmpty(sql))
+            {
+                throw new ArgumentNullException("sql");
+            }
+
+            return new SQLiteCommand {CommandText = sql, CommandType = CommandType.Text};
+        }
+
+        private async void CreateDb()
+        {
+            var sqliteschema = Path.Combine(_appstartdir, SqlSchemaFolder, SqlFile);
+            var fnsch = new FileInfo(sqliteschema);
+            if (fnsch.Exists)
+            {
+                var sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
+                using (var command = GetCommand(sqltext))
+                {
+                    await ExecuteNonQueryAsync(command);
+                }
+            }
+            else
+            {
+                throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
+            }
+        }
+
+        #region tables
+
+        private const string Tablechannels = "channels";
+
+        private const string Tablechanneltags = "channeltags";
+
+        private const string Tabletags = "tags";
+
+        private const string Tablecredentials = "credentials";
+
+        private const string Tableitems = "items";
+
+        private const string Tableplaylists = "playlists";
+
+        private const string Tableplaylistitems = "playlistitems";
+
+        private const string Tablesettings = "settings";
+
+        #endregion
+
+        #region items
+
+        public static readonly string ItemId = "id";
+
+        public static readonly string ParentID = "parentid";
+
+        public static readonly string Title = "title";
+
+        public static readonly string Description = "description";
+
+        public static readonly string ViewCount = "viewcount";
+
+        public static readonly string Duration = "duration";
+
+        public static readonly string Comments = "comments";
+
+        public static readonly string Thumbnail = "thumbnail";
+
+        public static readonly string Timestamp = "timestamp";
+
+        #endregion
+
+        #region channels
+
+        public static readonly string ChannelId = "id";
+
+        public static readonly string ChannelTitle = "title";
+
+        public static readonly string ChannelSubTitle = "subtitle";
+
+        public static readonly string ChannelThumbnail = "thumbnail";
+
+        public static readonly string ChannelSite = "site";
+
+        #endregion
+
+        #region channeltags
+
+        public static readonly string TagIdF = "tagid";
+
+        public static readonly string ChannelIdF = "channelid";
+
+        #endregion
+
+        #region playlists
+
+        public static readonly string PlaylistID = "id";
+
+        public static readonly string PlaylistTitle = "title";
+
+        public static readonly string PlaylistSubTitle = "subtitle";
+
+        public static readonly string PlaylistThumbnail = "thumbnail";
+
+        public static readonly string PlaylistChannelId = "channelid";
+
+        #endregion
+
+        #region playlistitems
+
+        public static readonly string FPlaylistId = "playlistid";
+
+        public static readonly string FItemId = "itemid";
+
+        public static readonly string FChannelId = "channelid";
+
+        #endregion
+
+        #region credentials
+
+        public static readonly string CredSite = "site";
+
+        public static readonly string CredLogin = "login";
+
+        public static readonly string CredPass = "pass";
+
+        public static readonly string CredCookie = "cookie";
+
+        public static readonly string CredExpired = "expired";
+
+        public static readonly string CredAutorization = "autorization";
+
+        #endregion
+
+        #region settings
+
+        public static readonly string SetKey = "key";
+
+        public static readonly string SetVal = "val";
+
+        #endregion
+
+        #region tags
+
+        public static readonly string TagTitle = "title";
+
+        #endregion
     }
 }

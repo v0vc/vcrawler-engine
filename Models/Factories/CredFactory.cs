@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -10,16 +6,13 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class CredFactory :ICredFactory
+    public class CredFactory : ICredFactory
     {
         private readonly ICommonFactory _c;
-
-        //private readonly ISqLiteDatabase _db;
 
         public CredFactory(ICommonFactory c)
         {
             _c = c;
-            //_db = c.CreateSqLiteDatabase();
         }
 
         public ICred CreateCred()
@@ -27,10 +20,24 @@ namespace Models.Factories
             return new Cred(this);
         }
 
-        public async Task InsertCRedAsync(ICred cred)
+        public async Task<ICred> GetCredDbAsync(string site)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
+            // var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                var fbres = await fb.GetCredAsync(site);
+                return new Cred(fbres, _c.CreateCredFactory());
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task InsertCredAsync(ICred cred)
+        {
+            var fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertCredAsync(cred);
@@ -44,7 +51,6 @@ namespace Models.Factories
         public async Task DeleteCredAsync(string site)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.DeleteCredAsync(site);
@@ -58,7 +64,6 @@ namespace Models.Factories
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdateLoginAsync(site, newlogin);
@@ -72,7 +77,6 @@ namespace Models.Factories
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdatePasswordAsync(site, newpassword);
@@ -86,7 +90,6 @@ namespace Models.Factories
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdateAutorizationAsync(site, autorize);
@@ -97,25 +100,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task<ICred> GetCredDbAsync(string site)
-        {
-            var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
-            try
-            {
-                var fbres = await fb.GetCredAsync(site);
-                return new Cred(fbres, _c.CreateCredFactory());
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task UpdateCookieAsync(string site, string newcookie)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdateCookieAsync(site, newcookie);
@@ -129,7 +116,6 @@ namespace Models.Factories
         public async Task UpdateExpiredAsync(string site, DateTime newexpired)
         {
             var fb = _c.CreateSqLiteDatabase();
-            //var fb = ServiceLocator.SqLiteDatabase;
             try
             {
                 await fb.UpdateExpiredAsync(site, newexpired);

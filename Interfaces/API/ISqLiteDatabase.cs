@@ -298,12 +298,6 @@ namespace Interfaces.API
         Task<List<string>> GetChannelItemsIdListDbAsync(string channelID);
 
         /// <summary>
-        /// Получить куки пользователя из базы
-        /// </summary>
-        /// <returns></returns>
-        Task<CookieCollection> GetChanelCookieDbAsync();
-
-        /// <summary>
         /// Скукожить базу
         /// </summary>
         /// <returns></returns>

@@ -5,15 +5,10 @@ namespace Interfaces.POCO
     public interface ICredPOCO
     {
         string Site { get; set; }
-
         string Login { get; set; }
-
         string Pass { get; set; }
-
         string Cookie { get; set; }
-
         DateTime Expired { get; set; }
-
-        Int16 Autorization { get; set; }
+        short Autorization { get; set; }
     }
 }

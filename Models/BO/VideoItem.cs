@@ -2,9 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
@@ -15,52 +13,56 @@ using Models.Factories;
 
 namespace Models.BO
 {
-    public class VideoItem : INotifyPropertyChanged,IVideoItem
+    public class VideoItem : INotifyPropertyChanged, IVideoItem
     {
-        #region INotifyPropertyChanged
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        #endregion
-
-        private string _tempname = string.Empty;
-
-        private string _youPath;
-
-        private readonly string[] _exts = { "mp4", "mkv" };
-
+        private readonly string[] _exts = {"mp4", "mkv"};
         private readonly VideoItemFactory _vf;
-
+        private double _downloadPercentage;
         private int _duration;
-
+        private bool _isHasLocalFile;
+        private bool _isShowRow;
+        private string _itemState;
+        private byte[] _largeThumb;
+        private string _logText;
+        private string _tempname = string.Empty;
         private DateTime _timestamp;
 
-        private bool _isShowRow;
+        public VideoItem(IVideoItemFactory vf)
+        {
+            _vf = vf as VideoItemFactory;
+        }
 
-        private double _downloadPercentage;
+        public VideoItem(IVideoItemPOCO item, IVideoItemFactory vf)
+        {
+            _vf = vf as VideoItemFactory;
+            ID = item.ID;
+            Title = item.Title;
+            ParentID = item.ParentID;
+            Description = item.Description; // .WordWrap(80);
+            ViewCount = item.ViewCount;
+            Duration = item.Duration;
+            Comments = item.Comments;
+            Thumbnail = item.Thumbnail;
+            Timestamp = item.Timestamp;
+        }
 
-        private bool _isHasLocalFile;
-
-        private string _itemState;
-
-        private byte[] _largeThumb;
-
-        private string _logText;
+        public string LogText
+        {
+            get
+            {
+                return _logText;
+            }
+            set
+            {
+                _logText = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string ID { get; set; }
-
         public string ParentID { get; set; }
-
         public string Title { get; set; }
-
         public string Description { get; set; }
-
         public long ViewCount { get; set; }
 
         public int Duration
@@ -70,16 +72,12 @@ namespace Models.BO
             {
                 _duration = value;
                 DurationString = IntTostrTime(_duration);
-                
             }
         }
 
         public string DurationString { get; set; }
-
         public string DateTimeAgo { get; set; }
-
         public int Comments { get; set; }
-
         public byte[] Thumbnail { get; set; }
 
         public byte[] LargeThumb
@@ -87,7 +85,7 @@ namespace Models.BO
             get { return _largeThumb; }
             set
             {
-                _largeThumb = value; 
+                _largeThumb = value;
                 OnPropertyChanged();
             }
         }
@@ -103,7 +101,6 @@ namespace Models.BO
         }
 
         public string LocalFilePath { get; set; }
-
         public bool IsNewItem { get; set; }
 
         public bool IsShowRow
@@ -131,7 +128,7 @@ namespace Models.BO
             get { return _itemState; }
             set
             {
-                _itemState = value; 
+                _itemState = value;
                 OnPropertyChanged();
             }
         }
@@ -146,80 +143,50 @@ namespace Models.BO
             }
         }
 
-        public string LogText
-        {
-            get { return _logText; }
-            set
-            {
-                _logText = value;
-                OnPropertyChanged();
-            }
-        }
-
-
-        public VideoItem(IVideoItemFactory vf)
-        {
-            _vf = vf as VideoItemFactory;
-        }
-
-        public VideoItem(IVideoItemPOCO item, IVideoItemFactory vf)
-        {
-            _vf = vf as VideoItemFactory;
-            ID = item.ID;
-            Title = item.Title;
-            ParentID = item.ParentID;
-            Description = item.Description;//.WordWrap(80);
-            ViewCount = item.ViewCount;
-            Duration = item.Duration;
-            Comments = item.Comments;
-            Thumbnail = item.Thumbnail;
-            Timestamp = item.Timestamp;
-        }
-
         public IVideoItem CreateVideoItem()
         {
+            // return ServiceLocator.VideoItemFactory.CreateVideoItem();
             return _vf.CreateVideoItem();
-            //return ServiceLocator.VideoItemFactory.CreateVideoItem();
         }
 
         public async Task<IVideoItem> GetVideoItemDbAsync()
         {
             return await _vf.GetVideoItemDbAsync(ID);
-            //return await ServiceLocator.VideoItemFactory.GetVideoItemDbAsync(ID);
         }
 
         public async Task<IVideoItem> GetVideoItemNetAsync()
         {
             return await _vf.GetVideoItemNetAsync(ID);
-            //return await ServiceLocator.VideoItemFactory.GetVideoItemNetAsync(ID);
         }
 
         public async Task<IChannel> GetParentChannelAsync()
         {
             return await _vf.GetParentChannelAsync(ParentID);
-            //return await ((VideoItemFactory) ServiceLocator.VideoItemFactory).GetParentChannelAsync(ParentID);
         }
 
         public async Task InsertItemAsync()
         {
             await _vf.InsertItemAsync(this);
-            //await ((VideoItemFactory) ServiceLocator.VideoItemFactory).InsertItemAsync(this);
         }
 
         public async Task DeleteItemAsync()
         {
             await _vf.DeleteItemAsync(ID);
-            //await ((VideoItemFactory) ServiceLocator.VideoItemFactory).DeleteItemAsync(ID);
         }
 
         public async Task RunItem(string mpcpath)
         {
             if (string.IsNullOrEmpty(mpcpath))
-                return;
+            {
+                throw new Exception("Path to MPC not set");
+            }
 
             if (IsHasLocalFile)
             {
-                if (string.IsNullOrEmpty(LocalFilePath)) return;
+                if (string.IsNullOrEmpty(LocalFilePath))
+                {
+                    throw new Exception("Local File Path not set");
+                }
                 var param = string.Format("\"{0}\" /play", LocalFilePath);
                 await Task.Run(() => Process.Start(mpcpath, param));
             }
@@ -233,9 +200,11 @@ namespace Models.BO
         public void IsHasLocalFileFound(string dir)
         {
             if (string.IsNullOrEmpty(dir))
+            {
                 return;
+            }
 
-            foreach (string ext in _exts)
+            foreach (var ext in _exts)
             {
                 var cleartitle = Title.MakeValidFileName();
                 var pathvid = Path.Combine(dir, ParentID, string.Format("{0}.{1}", cleartitle, ext));
@@ -253,8 +222,6 @@ namespace Models.BO
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd)
         {
-            _youPath = youPath;
-
             ItemState = "Downloading";
             var dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
@@ -263,23 +230,25 @@ namespace Models.BO
             string param;
             if (isHd)
             {
-                param = String.Format("-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
-                            dir, MakeVideoLink());
+                param =
+                    string.Format(
+                        "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", 
+                        dir, MakeVideoLink());
             }
             else
             {
-                param = String.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
-                            dir, MakeVideoLink());
+                param = string.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", 
+                    dir, MakeVideoLink());
             }
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden, 
+                UseShellExecute = false, 
+                RedirectStandardOutput = true, 
+                RedirectStandardError = true, 
+                RedirectStandardInput = true, 
+                ErrorDialog = false, 
                 CreateNoWindow = true
             };
 
@@ -323,7 +292,8 @@ namespace Models.BO
                 var match = regex.Match(e.Data);
                 if (match.Success)
                 {
-                    _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    _tempname = regex.Replace(e.Data, "$2$3") +
+                                match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
                 }
             }
 
@@ -333,7 +303,8 @@ namespace Models.BO
                 var match = regex.Match(e.Data);
                 if (match.Success)
                 {
-                    _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    _tempname = regex.Replace(e.Data, "$2$3") +
+                                match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
                 }
             }
 
@@ -343,7 +314,7 @@ namespace Models.BO
                 var match = regex.Match(e.Data);
                 if (match.Success)
                 {
-                    _tempname = regex.Replace(e.Data, "$2$3");// + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    _tempname = regex.Replace(e.Data, "$2$3");
                 }
             }
 
@@ -355,7 +326,9 @@ namespace Models.BO
         private static double GetPercentFromYoudlOutput(string input)
         {
             if (string.IsNullOrEmpty(input))
+            {
                 return 0;
+            }
             var regex = new Regex(@"[0-9][0-9]{0,2}\.[0-9]%", RegexOptions.None);
             var match = regex.Match(input);
             if (!match.Success) return 0;
@@ -376,8 +349,10 @@ namespace Models.BO
 
             var cleartitle = Title.MakeValidFileName();
 
-            if (cleartitle == fn.Name) //в имени нет запретных знаков
+
+            if (cleartitle == fn.Name) 
             {
+                // в имени нет запретных знаков
                 if (fn.Exists)
                 {
                     ItemState = "LocalYes";
@@ -390,10 +365,14 @@ namespace Models.BO
                     IsHasLocalFile = false;
                 }
             }
-            else //есть всякие двоеточия - переименуем по алгоритму, отталкиваясь от Title
+            else
             {
-                if (fn.DirectoryName == null) return;
-                //var filename = CommonExtensions.GetVersion(_youPath, String.Format("--get-filename -o \"%(title)s.%(ext)s\" {0}", MakeVideoLink()));
+                // есть всякие двоеточия - переименуем по алгоритму, отталкиваясь от Title
+                if (fn.DirectoryName == null)
+                {
+                    return;
+                }
+
                 var fnn = new FileInfo(Path.Combine(fn.DirectoryName, cleartitle + Path.GetExtension(fn.Name)));
                 if (CommonExtensions.RenameFile(fn, fnn))
                 {
@@ -405,48 +384,59 @@ namespace Models.BO
                 {
                     ItemState = "LocalNo";
                     IsHasLocalFile = false;
-                }    
+                }
             }
         }
 
         internal string IntTostrTime(int duration)
         {
-            TimeSpan t = TimeSpan.FromSeconds(duration);
-            return t.Hours > 0 ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds) : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
+            var t = TimeSpan.FromSeconds(duration);
+            return t.Hours > 0
+                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
+                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
         }
 
         internal static string TimeAgo(DateTime dt)
         {
-            TimeSpan span = DateTime.Now - dt;
+            var span = DateTime.Now - dt;
             if (span.Days > 365)
             {
-                int years = (span.Days / 365);
+                var years = span.Days / 365;
                 if (span.Days % 365 != 0)
+                {
                     years += 1;
-                return String.Format("about {0} {1} ago",
-                years, years == 1 ? "year" : "years");
+                }
+                return string.Format("about {0} {1} ago", years, years == 1 ? "year" : "years");
             }
             if (span.Days > 30)
             {
-                int months = (span.Days / 30);
+                var months = span.Days / 30;
                 if (span.Days % 31 != 0)
+                {
                     months += 1;
-                return String.Format("about {0} {1} ago",
-                months, months == 1 ? "month" : "months");
+                }
+                return string.Format("about {0} {1} ago", months, months == 1 ? "month" : "months");
             }
             if (span.Days > 0)
-                return String.Format("about {0} {1} ago",
-                span.Days, span.Days == 1 ? "day" : "days");
+            {
+                return string.Format("about {0} {1} ago", span.Days, span.Days == 1 ? "day" : "days");
+            }
             if (span.Hours > 0)
-                return String.Format("about {0} {1} ago",
-                span.Hours, span.Hours == 1 ? "hour" : "hours");
+            {
+                return string.Format("about {0} {1} ago", span.Hours, span.Hours == 1 ? "hour" : "hours");
+            }
             if (span.Minutes > 0)
-                return String.Format("about {0} {1} ago",
-                span.Minutes, span.Minutes == 1 ? "minute" : "minutes");
+            {
+                return string.Format("about {0} {1} ago", span.Minutes, span.Minutes == 1 ? "minute" : "minutes");
+            }
             if (span.Seconds > 5)
-                return String.Format("about {0} seconds ago", span.Seconds);
+            {
+                return string.Format("about {0} seconds ago", span.Seconds);
+            }
             if (span.Seconds <= 5)
+            {
                 return "just now";
+            }
             return string.Empty;
         }
 
@@ -457,7 +447,19 @@ namespace Models.BO
 
         public async Task Log(string text)
         {
-            await Task.Run(() => LogText += (text + Environment.NewLine));
+            await Task.Run(() => LogText += text + Environment.NewLine);
         }
+
+        #region INotifyPropertyChanged
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            var handler = PropertyChanged;
+            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        #endregion
     }
 }

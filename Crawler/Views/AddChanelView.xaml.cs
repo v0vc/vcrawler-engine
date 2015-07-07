@@ -1,19 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
 using System.Windows.Input;
-
 using Crawler.ViewModels;
 
 namespace Crawler.Views
 {
     /// <summary>
-    /// Interaction logic for AddChanelView.xaml
+    ///     Interaction logic for AddChanelView.xaml
     /// </summary>
     public partial class AddChanelView : Window
     {
@@ -32,11 +27,13 @@ namespace Crawler.Views
             }
             if (e.Key == Key.Enter)
             {
-                //нажмем кнопку программно
+                // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(ButtonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 if (invokeProv != null)
+                {
                     invokeProv.Invoke();
+                }
             }
         }
 
@@ -44,7 +41,9 @@ namespace Crawler.Views
         {
             var context = DataContext as MainWindowViewModel;
             if (context == null)
+            {
                 return;
+            }
 
             if (context.Model.IsEditMode)
             {
@@ -62,9 +61,11 @@ namespace Crawler.Views
                 TextBoxLink.Focus();
                 var text = Clipboard.GetData(DataFormats.Text) as string;
                 if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+                {
                     return;
+                }
                 context.Model.NewChannelLink = text;
-                TextBoxLink.SelectAll();    
+                TextBoxLink.SelectAll();
             }
         }
 

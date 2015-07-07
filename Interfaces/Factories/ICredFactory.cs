@@ -6,7 +6,6 @@ namespace Interfaces.Factories
     public interface ICredFactory
     {
         ICred CreateCred();
-
         Task<ICred> GetCredDbAsync(string site);
     }
 }

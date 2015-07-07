@@ -2,13 +2,13 @@
 
 namespace DataBaseAPI.POCO
 {
-    public class TagPOCO :ITagPOCO
+    public class TagPOCO : ITagPOCO
     {
-        public string Title { get; set; }
-
         public TagPOCO(string title)
         {
             Title = title;
         }
+
+        public string Title { get; set; }
     }
 }

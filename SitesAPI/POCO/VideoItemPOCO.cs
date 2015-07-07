@@ -11,26 +11,6 @@ namespace SitesAPI.POCO
 {
     public class VideoItemPOCO : IVideoItemPOCO
     {
-        public string ID { get; set; }
-
-        public string ParentID { get; set; }
-
-        public string Title { get; set; }
-
-        public string Description { get; set; }
-        
-        public long ViewCount { get; set; }
-
-        public int Duration { get; set; }
-
-        public int Comments { get; set; }        
-
-        public byte[] Thumbnail { get; set; }
-
-        public DateTime Timestamp { get; set; }
-
-        public string Status { get; set; }
-
         public VideoItemPOCO(string id)
         {
             ID = id;
@@ -38,27 +18,36 @@ namespace SitesAPI.POCO
 
         public VideoItemPOCO(HtmlNode node, string site)
         {
-            var dl = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
-            foreach (HtmlNode htmlNode in dl)
+            var dl =
+                node.Descendants("a")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
+            foreach (var htmlNode in dl)
             {
                 var videoLink = string.Format("http://{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
                 var sp = videoLink.Split('=');
                 if (sp.Length == 2)
+                {
                     ID = sp[1];
-                //Duration = GetTorrentSize(ScrubHtml(htmlNode.InnerText));
+                }
 
+                // Duration = GetTorrentSize(ScrubHtml(htmlNode.InnerText));
                 break;
             }
 
-            var counts = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
-            foreach (HtmlNode htmlNode in counts)
+            var counts =
+                node.Descendants("a")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            foreach (var htmlNode in counts)
             {
-                Title = (HttpUtility.HtmlDecode(htmlNode.InnerText)).Trim();
+                Title = HttpUtility.HtmlDecode(htmlNode.InnerText).Trim();
                 break;
             }
 
-            var prov = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
-            foreach (HtmlNode htmlNode in prov)
+            var prov =
+                node.Descendants("td")
+                    .Where(
+                        d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
+            foreach (var htmlNode in prov)
             {
                 var pdate = htmlNode.Descendants("p").ToList();
                 if (pdate.Count == 2)
@@ -68,45 +57,67 @@ namespace SitesAPI.POCO
                 }
             }
 
-            var seemed = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
-            foreach (HtmlNode htmlNode in seemed)
+            var seemed =
+                node.Descendants("td")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
+            foreach (var htmlNode in seemed)
             {
                 ViewCount = Convert.ToInt32(htmlNode.InnerText);
                 break;
             }
 
-            var med = node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
-            foreach (HtmlNode htmlNode in med)
+            var med =
+                node.Descendants("td")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
+            foreach (var htmlNode in med)
             {
                 Comments = Convert.ToInt32(htmlNode.InnerText);
                 break;
             }
 
-            var user = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
-            foreach (HtmlNode htmlNode in user)
+            var user =
+                node.Descendants("a")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
+            foreach (var htmlNode in user)
             {
                 var uid = htmlNode.Attributes["href"].Value;
                 var sp = uid.Split('=');
                 if (sp.Length == 2)
+                {
                     ParentID = sp[1];
-                //VideoOwnerName = htmlNode.InnerText;
+                }
+
+                // VideoOwnerName = htmlNode.InnerText;
                 break;
             }
 
-            var forum = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
-            foreach (HtmlNode htmlNode in forum)
+            var forum =
+                node.Descendants("a")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
+            foreach (var htmlNode in forum)
             {
                 Description = htmlNode.InnerText;
                 break;
             }
 
-            //var topic = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
-            //foreach (HtmlNode htmlNode in topic)
-            //{
-            //    PlaylistID = string.Format("http://{0}/forum{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
-            //    break;
-            //}
+            // var topic = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            // foreach (HtmlNode htmlNode in topic)
+            // {
+            // PlaylistID = string.Format("http://{0}/forum{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+            // break;
+            // }
         }
+
+        public string ID { get; set; }
+        public string ParentID { get; set; }
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public long ViewCount { get; set; }
+        public int Duration { get; set; }
+        public int Comments { get; set; }
+        public byte[] Thumbnail { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Status { get; set; }
 
         public void FillFieldsFromDetails(JToken record)
         {
@@ -123,7 +134,9 @@ namespace SitesAPI.POCO
                 Duration = (int)ts.TotalSeconds;
             }
             else
+            {
                 Duration = 0;
+            }
 
             var comm = record.SelectToken("statistics.commentCount");
             Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
@@ -165,10 +178,12 @@ namespace SitesAPI.POCO
             if (dur != null)
             {
                 var ts = XmlConvert.ToTimeSpan(dur.Value<string>());
-                Duration = (int) ts.TotalSeconds;
+                Duration = (int)ts.TotalSeconds;
             }
             else
+            {
                 Duration = 0;
+            }
 
             var comm = record.SelectToken("items[0].statistics.commentCount");
             Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
