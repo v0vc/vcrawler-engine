@@ -33,6 +33,13 @@ namespace Crawler.Views
             set { DataContext = value; }
         }
 
+        private static bool IsFfmegExist()
+        {
+            const string ff = "ffmpeg.exe";
+            var values = Environment.GetEnvironmentVariable("PATH");
+            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
+        }
+
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             // await ViewModel.Model.FillChannels();
@@ -59,13 +66,6 @@ namespace Crawler.Views
                     row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
                 }
             }
-        }
-
-        private static bool IsFfmegExist()
-        {
-            const string ff = "ffmpeg.exe";
-            var values = Environment.GetEnvironmentVariable("PATH");
-            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
 
         private void bgv_DoWork(object sender, DoWorkEventArgs e)
@@ -177,7 +177,8 @@ namespace Crawler.Views
                     // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
                     for (var i = channel.ChannelItems.Count; i > 0; i--)
                     {
-                        if (!channel.ChannelItems[i - 1].IsNewItem)
+                        if (!(channel.ChannelItems[i - 1].ItemState == "LocalYes" ||
+                              channel.ChannelItems[i - 1].ItemState == "Downloading"))
                         {
                             channel.ChannelItems.RemoveAt(i - 1);
                         }
