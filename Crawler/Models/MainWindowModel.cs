@@ -40,6 +40,7 @@ namespace Crawler.Models
         private VideoItem _selectedVideoItem;
         private string _youHeader;
         private string _youPath;
+        private string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
 
         public MainWindowModel()
         {
@@ -149,7 +150,7 @@ namespace Crawler.Models
                     MessageBox.Show("Fill channel link");
                     return;
                 }
-                await AddNewChannel();
+                await AddNewChannel(NewChannelLink);
             }
         }
 
@@ -400,7 +401,7 @@ namespace Crawler.Models
             }
 
             var vf = BaseFactory.CreateVideoItemFactory();
-            var regex = new Regex(@"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)");
+            var regex = new Regex(_youRegex);
             var match = regex.Match(Link);
             if (match.Success)
             {
@@ -429,16 +430,16 @@ namespace Crawler.Models
             }
         }
 
-        private async Task AddNewChannel()
+        public async Task AddNewChannel(string inputChannelId)
         {
             Result = "Working..";
             Info = string.Empty;
             const string youUser = "user";
             const string youChannel = "channel";
-
+            var parsedChannelId = string.Empty;
             var cf = BaseFactory.CreateChannelFactory();
 
-            var sp = NewChannelLink.Split('/');
+            var sp = inputChannelId.Split('/');
             if (sp.Length > 1)
             {
                 if (sp.Contains(youUser))
@@ -450,7 +451,7 @@ namespace Crawler.Models
                     }
 
                     var user = sp[indexuser + 1];
-                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(user);
+                    parsedChannelId = await cf.GetChannelIdByUserNameNetAsync(user);
                 }
                 else if (sp.Contains(youChannel))
                 {
@@ -460,28 +461,42 @@ namespace Crawler.Models
                         throw new Exception("Can't parse url");
                     }
 
-                    NewChannelLink = sp[indexchannel + 1];
+                    parsedChannelId = sp[indexchannel + 1];
+                }
+                else
+                {
+                    var regex = new Regex(_youRegex);
+                    var match = regex.Match(inputChannelId);
+                    if (match.Success)
+                    {
+                        var id = match.Groups[1].Value;
+                        var vi = await BaseFactory.CreateYouTubeSite().GetVideoItemLiteNetAsync(id);
+                        parsedChannelId = vi.ParentID;
+                    }
                 }
             }
             else
             {
                 try
                 {
-                    NewChannelLink = await cf.GetChannelIdByUserNameNetAsync(NewChannelLink);
+                    parsedChannelId = await cf.GetChannelIdByUserNameNetAsync(inputChannelId);
                 }
                 catch
                 {
-                    NewChannelLink = NewChannelLink; // :)
+                    parsedChannelId = inputChannelId;
                 }
             }
 
-            if (Channels.Select(x => x.ID).Contains(NewChannelLink))
+            if (Channels.Select(x => x.ID).Contains(parsedChannelId))
             {
                 MessageBox.Show("Has already");
                 return;
             }
 
-            await AddNewChannelAsync(NewChannelLink, NewChannelTitle);
+            if (!string.IsNullOrEmpty(parsedChannelId))
+            {
+                await AddNewChannelAsync(parsedChannelId, NewChannelTitle);
+            }
         }
 
         private async Task EditChannel()

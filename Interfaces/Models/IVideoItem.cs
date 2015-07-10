@@ -32,5 +32,6 @@ namespace Interfaces.Models
         Task RunItem(string mpcpath);
         Task DownloadItem(string youPath, string dirPath, bool isHd);
         void IsHasLocalFileFound(string dir);
+        string MakeLink();
     }
 }

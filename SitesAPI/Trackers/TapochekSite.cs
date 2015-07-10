@@ -32,12 +32,14 @@ namespace SitesAPI.Trackers
                 throw new Exception("Please, set login and password");
             }
 
+            var cc = new CookieContainer();
             var req = (HttpWebRequest) WebRequest.Create(_loginUrl);
+            req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
             req.Host = cred.Site;
             req.KeepAlive = true;
-            var postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4", 
-                Uri.EscapeDataString(cred.Login), 
+            var postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4",
+                Uri.EscapeDataString(cred.Login),
                 Uri.EscapeDataString(cred.Pass));
             var data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
@@ -56,9 +58,11 @@ namespace SitesAPI.Trackers
                 await stream.WriteAsync(data, 0, data.Length);
             }
 
-            var resp = (HttpWebResponse) (await req.GetResponseAsync());
+            var resp = await req.GetResponseAsync();
 
-            return resp.Cookies;
+            var res = (HttpWebResponse)resp;
+
+            return res.Cookies;
         }
 
         public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
@@ -83,7 +87,9 @@ namespace SitesAPI.Trackers
             {
                 var vi = new VideoItemPOCO(node, Site);
                 if (!string.IsNullOrEmpty(vi.ID))
+                {
                     lst.Add(vi);
+                }
             }
 
             if (maxresult == 0)
@@ -110,7 +116,9 @@ namespace SitesAPI.Trackers
                     {
                         var vi = new VideoItemPOCO(node, Site);
                         if (!string.IsNullOrEmpty(vi.ID))
+                        {
                             lst.Add(vi);
+                        }
                     }
                 }
 
@@ -144,7 +152,9 @@ namespace SitesAPI.Trackers
                     d.Attributes["class"].Value.Equals("small mrg_4")).ToList();
 
             if (title.Any())
+            {
                 ch.Title = HttpUtility.HtmlDecode(title[0].InnerText).Trim();
+            }
 
             title = doc.DocumentNode.Descendants("p").Where(
                 d =>
@@ -177,7 +187,9 @@ namespace SitesAPI.Trackers
                 {
                     var att = link.Attributes["href"];
                     if (att.Value != null && !hrefTags.Contains(att.Value) && att.Value.StartsWith("tracker"))
+                    {
                         hrefTags.Add(att.Value);
+                    }
                 }
             }
             return hrefTags.Select(link => string.Format("{0}/{1}", HostUrl, link)).ToList();

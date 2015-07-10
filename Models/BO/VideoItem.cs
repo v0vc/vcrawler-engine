@@ -58,28 +58,27 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
-
         public string ID { get; set; }
         public string ParentID { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public long ViewCount { get; set; }
-
         public int Duration
         {
-            get { return _duration; }
+            get
+            {
+                return _duration;
+            }
             set
             {
                 _duration = value;
                 DurationString = IntTostrTime(_duration);
             }
         }
-
         public string DurationString { get; set; }
         public string DateTimeAgo { get; set; }
         public int Comments { get; set; }
         public byte[] Thumbnail { get; set; }
-
         public byte[] LargeThumb
         {
             get { return _largeThumb; }
@@ -89,7 +88,6 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
-
         public DateTime Timestamp
         {
             get { return _timestamp; }
@@ -99,43 +97,50 @@ namespace Models.BO
                 DateTimeAgo = TimeAgo(_timestamp);
             }
         }
-
         public string LocalFilePath { get; set; }
         public bool IsNewItem { get; set; }
-
         public bool IsShowRow
         {
-            get { return _isShowRow; }
+            get
+            {
+                return _isShowRow;
+            }
             set
             {
                 _isShowRow = value;
                 OnPropertyChanged();
             }
         }
-
         public bool IsHasLocalFile
         {
-            get { return _isHasLocalFile; }
+            get
+            {
+                return _isHasLocalFile;
+            }
             set
             {
                 _isHasLocalFile = value;
                 OnPropertyChanged();
             }
         }
-
         public string ItemState
         {
-            get { return _itemState; }
+            get
+            {
+                return _itemState;
+            }
             set
             {
                 _itemState = value;
                 OnPropertyChanged();
             }
         }
-
         public double DownloadPercentage
         {
-            get { return _downloadPercentage; }
+            get
+            {
+                return _downloadPercentage;
+            }
             set
             {
                 _downloadPercentage = value;
@@ -192,7 +197,7 @@ namespace Models.BO
             }
             else
             {
-                var param = string.Format("\"{0}\" /play", MakeVideoLink());
+                var param = string.Format("\"{0}\" /play", MakeLink());
                 await Task.Run(() => Process.Start(mpcpath, param));
             }
         }
@@ -220,12 +225,20 @@ namespace Models.BO
             }
         }
 
+        public string MakeLink()
+        {
+            //TODO по типу площадки
+            return string.Format("https://www.youtube.com/watch?v={0}", ID);
+        }
+
         public async Task DownloadItem(string youPath, string dirPath, bool isHd)
         {
             ItemState = "Downloading";
             var dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
+            {
                 dir.Create();
+            }
 
             string param;
             if (isHd)
@@ -233,12 +246,12 @@ namespace Models.BO
                 param =
                     string.Format(
                         "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", 
-                        dir, MakeVideoLink());
+                        dir, MakeLink());
             }
             else
             {
-                param = string.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", 
-                    dir, MakeVideoLink());
+                param = string.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
+                    dir, MakeLink());
             }
 
             var startInfo = new ProcessStartInfo(youPath, param)
@@ -331,7 +344,10 @@ namespace Models.BO
             }
             var regex = new Regex(@"[0-9][0-9]{0,2}\.[0-9]%", RegexOptions.None);
             var match = regex.Match(input);
-            if (!match.Success) return 0;
+            if (!match.Success)
+            {
+                return 0;
+            }
             double res;
             var str = match.Value.TrimEnd('%').Replace('.', ',');
             return double.TryParse(str, out res) ? res : 0;
@@ -440,10 +456,10 @@ namespace Models.BO
             return string.Empty;
         }
 
-        internal string MakeVideoLink()
-        {
-            return string.Format("https://www.youtube.com/watch?v={0}", ID);
-        }
+        //internal string MakeVideoLink()
+        //{
+        //    return string.Format("https://www.youtube.com/watch?v={0}", ID);
+        //}
 
         public async Task Log(string text)
         {

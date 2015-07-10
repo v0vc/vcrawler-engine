@@ -77,22 +77,22 @@ namespace TestAPI
             ch.Site = cred.Site;
             ch.ID = "27253";
 
-            //if (cred.Expired <= DateTime.Now)
-            //{
-            //    await ch.FillChannelCookieNetAsync();
-            //    await ch.StoreCookiesAsync();
-            //}
-            //else
-            //{
-            //    await ch.FillChannelCookieDbAsync();
-            //}
+            if (cred.Expired <= DateTime.Now)
+            {
+                await ch.FillChannelCookieNetAsync();
+                await ch.StoreCookiesAsync();
+            }
+            else
+            {
+                await ch.FillChannelCookieDbAsync();
+            }
 
-            await ch.FillChannelCookieDbAsync();
+            //await ch.FillChannelCookieDbAsync();
             //await ch.FillChannelCookieNetAsync();
             //await ch.StoreCookiesAsync();
 
-            Task t = tp.GetChannelItemsAsync(ch, 0);
-            Assert.IsTrue(!t.IsFaulted);
+            var t = await tp.GetChannelItemsAsync(ch, 0);
+            Assert.IsTrue(t.Any());
         }
 
         [TestMethod]

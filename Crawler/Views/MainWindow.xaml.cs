@@ -246,18 +246,13 @@ namespace Crawler.Views
 
                     #region Link
 
-                    var vid = ViewModel.Model.SelectedVideoItem;
-                    if (vid != null)
+                    try
                     {
-                        try
-                        {
-                            var link = string.Format("https://www.youtube.com/watch?v={0}", vid.ID);
-                            Clipboard.SetText(link);
-                        }
-                        catch (Exception ex)
-                        {
-                            ViewModel.Model.Info = ex.Message;
-                        }
+                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
+                    }
+                    catch (Exception ex)
+                    {
+                        ViewModel.Model.Info = ex.Message;
                     }
 
                     break;
@@ -270,8 +265,8 @@ namespace Crawler.Views
 
                     var edv = new EditDescriptionView
                     {
-                        DataContext = ViewModel.Model.SelectedVideoItem, 
-                        Owner = Application.Current.MainWindow, 
+                        DataContext = ViewModel.Model.SelectedVideoItem,
+                        Owner = Application.Current.MainWindow,
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
 
@@ -294,13 +289,15 @@ namespace Crawler.Views
                     if (IsFfmegExist())
                     {
                         ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
+                        await
+                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath,
+                                ViewModel.Model.DirPath, true);
                     }
                     else
                     {
                         var ff = new FfmpegView
                         {
-                            Owner = Application.Current.MainWindow, 
+                            Owner = Application.Current.MainWindow,
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
                         };
 
@@ -325,7 +322,13 @@ namespace Crawler.Views
                         }
                     }
 
-                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
+                    if (sb.Length == 0)
+                    {
+                        return;
+                    }
+
+                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm",
+                        MessageBoxButton.OKCancel, MessageBoxImage.Information);
 
                     if (result == MessageBoxResult.OK)
                     {
@@ -353,6 +356,23 @@ namespace Crawler.Views
                             }
                         }
                     }
+
+                    #endregion
+
+                    break;
+
+                case "Subscribe":
+
+                    #region Subscribe
+
+                    if (ViewModel.Model.SelectedChannel.ID != "pop")
+                    {
+                        //этот канал по-любому есть - даже проверять не будем)
+                        MessageBox.Show("Has already");
+                        return;
+                    }
+
+                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink());
 
                     #endregion
 

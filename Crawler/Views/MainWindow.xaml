@@ -300,6 +300,7 @@
                             <MenuItem Header="Edit" Click="MenuItem_OnClick" CommandParameter="Edit" />
                             <MenuItem Header="Download HD" Click="MenuItem_OnClick" CommandParameter="HD" />
                             <MenuItem Header="Delete" Click="MenuItem_OnClick" CommandParameter="Delete" />
+                            <MenuItem Header="Subscribe" Click="MenuItem_OnClick" CommandParameter="Subscribe" />
                         </ContextMenu>
                     </DataGrid.Resources>
 
