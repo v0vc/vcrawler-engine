@@ -216,7 +216,7 @@ namespace Crawler.Views
                 item.IsShowRow = true;
             }
 
-            if (!ch.ChannelItems.Any() || ch.ChannelItems.Any(x => x.IsNewItem))
+            if (!ch.ChannelItems.Any())
             {
                 // заполняем только если либо ничего нет, либо одни новые
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
@@ -584,7 +584,7 @@ namespace Crawler.Views
             }
         }
 
-        private async void VideoItemSaveButton_onClick(object sender, RoutedEventArgs e)
+        private async void VideoItemSaveButton_OnClick(object sender, RoutedEventArgs e)
         {
             var item = ViewModel.Model.SelectedVideoItem;
             if (item == null)

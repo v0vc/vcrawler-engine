@@ -391,6 +391,17 @@
 
                                             <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
 
+                                            <!--<ComboBox Margin="10,0,0,0" ItemsSource="{Binding}">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <CheckBox IsChecked="{Binding IsSelected}" Width="20" />
+                                                            <TextBlock Text="{Binding DayOfWeek}" Width="100" />
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>-->
+
                                         </StackPanel>
                                     </Grid>
                                 </DataTemplate>
@@ -405,7 +416,7 @@
                             </DataGridTemplateColumn.HeaderStyle>
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <Button Click="VideoItemSaveButton_onClick" Margin="0,0,2,0">
+                                    <Button Click="VideoItemSaveButton_OnClick" Margin="0,0,2,0">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <StackPanel Orientation="Vertical">
