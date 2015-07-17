@@ -13,6 +13,7 @@ using System.Windows;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO;
 using Ninject;
@@ -33,11 +34,11 @@ namespace Crawler.Models
         private string _newChannelLink;
         private double _prValue;
         private string _result;
-        private Channel _selectedChannel;
+        private IChannel _selectedChannel;
         private string _selectedCountry;
-        private Cred _selectedCred;
-        private Playlist _selectedPlaylist;
-        private VideoItem _selectedVideoItem;
+        private ICred _selectedCred;
+        private IPlaylist _selectedPlaylist;
+        private IVideoItem _selectedVideoItem;
         private string _youHeader;
         private string _youPath;
         private string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
@@ -45,9 +46,10 @@ namespace Crawler.Models
         public MainWindowModel()
         {
             BaseFactory = Container.Kernel.Get<ICommonFactory>();
-            Channels = new ObservableCollection<Channel>();
-            ServiceChannels = new ObservableCollection<Channel>();
-            SupportedCreds = new List<Cred>();
+            Channels = new ObservableCollection<IChannel>();
+            ServiceChannels = new ObservableCollection<IChannel>();
+            RelatedChannels = new ObservableCollection<IChannel>();
+            SupportedCreds = new List<ICred>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
             IsIdle = true;
@@ -289,6 +291,31 @@ namespace Crawler.Models
                 Info = ex.Message;
                 MessageBox.Show(ex.Message);
             }
+        }
+
+        public async Task FindRelatedChannels(IChannel channel)
+        {
+            if (channel == null)
+            {
+                return;
+            }
+
+            Result = "Working..";
+
+            RelatedChannels.Clear();
+
+            var related = await BaseFactory.CreateYouTubeSite().GetRelatedChannelsByIdAsync(channel.ID);
+            foreach (IChannelPOCO poco in related)
+            {
+                var ch = new Channel(poco, BaseFactory.CreateChannelFactory());
+                if (Channels.Select(x => x.ID).Contains(ch.ID))
+                {
+                    ch.IsDownloading = true;
+                }
+                RelatedChannels.Add(ch);
+            }
+
+            Result = "Ready";
         }
 
         public async Task AddNewChannelAsync(string channelid, string channeltitle)
@@ -580,13 +607,15 @@ namespace Crawler.Models
 
         public ICommonFactory BaseFactory { get; set; }
 
-        public ObservableCollection<Channel> Channels { get; set; }
+        public ObservableCollection<IChannel> Channels { get; set; }
 
-        public ObservableCollection<Channel> ServiceChannels { get; set; }
+        public ObservableCollection<IChannel> ServiceChannels { get; set; }
+
+        public ObservableCollection<IChannel> RelatedChannels { get; set; }
 
         public List<string> Countries { get; set; }
 
-        public Channel SelectedChannel
+        public IChannel SelectedChannel
         {
             get
             {
@@ -599,7 +628,7 @@ namespace Crawler.Models
             }
         }
 
-        public VideoItem SelectedVideoItem
+        public IVideoItem SelectedVideoItem
         {
             get
             {
@@ -612,7 +641,7 @@ namespace Crawler.Models
             }
         }
 
-        public Playlist SelectedPlaylist
+        public IPlaylist SelectedPlaylist
         {
             get
             {
@@ -625,9 +654,9 @@ namespace Crawler.Models
             }
         }
 
-        public List<Cred> SupportedCreds { get; set; }
+        public List<ICred> SupportedCreds { get; set; }
 
-        public Cred SelectedCred
+        public ICred SelectedCred
         {
             get
             {

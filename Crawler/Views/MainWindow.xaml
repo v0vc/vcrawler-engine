@@ -53,10 +53,106 @@
             
             <Grid Grid.Column="0">
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
                     <RowDefinition />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="48" />
                 </Grid.RowDefinitions>
+
+                <DockPanel Grid.Row="0" Background="Lavender" Margin="0,1,0,1">
+                    <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
+                        <Expander ExpandDirection="Down" DockPanel.Dock="Left" FlowDirection="RightToLeft" MaxHeight="350">
+
+                            <Expander.Content>
+                                <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
+                                    <DataGrid CanUserAddRows="False"
+                                              CanUserDeleteRows="False"
+                                              AutoGenerateColumns="False"
+                                              ItemsSource="{Binding Model.RelatedChannels}"
+                                              HeadersVisibility="None"
+                                              GridLinesVisibility="Horizontal"
+                                              BorderThickness="1"
+                                              PreviewKeyDown="dataGrid_PreviewKeyDown"
+                                              SelectedItem="{Binding Model.SelectedChannel}"
+                                              x:Name="RelatedGrid"
+                                              SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                                              >
+                                        <DataGrid.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                            <ContextMenu x:Key="DataRowContextMenu">
+                                                <MenuItem Header="Subscribe" Click="Channel_OnClick" CommandParameter="Subscribe" />
+                                            </ContextMenu>
+                                        </DataGrid.Resources>
+
+                                        <DataGrid.CellStyle>
+                                            <Style TargetType="DataGridCell">
+                                                <Setter Property="BorderThickness" Value="0" />
+                                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                            </Style>
+                                        </DataGrid.CellStyle>
+
+                                        <DataGrid.RowStyle>
+                                            <Style TargetType="{x:Type DataGridRow}">
+                                                <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
+                                                <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
+                                                        <Setter Property="Background" Value="PaleGreen" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGrid.RowStyle>
+
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn CanUserResize="False">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <StackPanel Margin="1">
+                                                            <StackPanel.OpacityMask>
+                                                                <VisualBrush Visual="{Binding ElementName=Mask}" />
+                                                            </StackPanel.OpacityMask>
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                                    RenderOptions.BitmapScalingMode="Fant"
+                                                                    ToolTipService.ShowDuration="120000"
+                                                                    Stretch="Fill"
+                                                                    Width="48"
+                                                                    Height="48"
+                                                                    VerticalAlignment="Top"
+                                                                    Margin="0"
+                                                                    HorizontalAlignment="Center">
+                                                                <Image.ToolTip>
+                                                                    <StackPanel Orientation="Horizontal">
+                                                                        <Image Source="{Binding Thumbnail, IsAsync=True}" />
+                                                                        <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" TextWrapping="Wrap"/>
+                                                                    </StackPanel>
+                                                                </Image.ToolTip>
+                                                            </Image>
+                                                        </StackPanel>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                            <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Title, Mode=OneWay}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
+
+                                        </DataGrid.Columns>
+
+                                    </DataGrid>
+                                </DockPanel>
+                            </Expander.Content>
+
+                            <Expander.Header>
+                                <TextBlock FontSize="10" Text="{Binding Model.RelatedChannels.Count, StringFormat=Related: {0}}" IsEnabled="False"/>
+                            </Expander.Header>
+
+                        </Expander>
+                    </Border>
+                </DockPanel>
 
                 <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
@@ -69,10 +165,12 @@
                           SelectedItem="{Binding Model.SelectedChannel}"
                           x:Name="ChannelsGrid"
                           SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                          Grid.Row="1"
                           >
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
+                            <MenuItem Header="Related" Click="Channel_OnClick" CommandParameter="Related" />
                             <MenuItem Header="Delete" Click="Channel_OnClick" CommandParameter="Delete" />
                             <MenuItem Header="Edit" Click="Channel_OnClick" CommandParameter="Edit" />
                             <MenuItem Header="Update PL" Click="Channel_OnClick" CommandParameter="Update" />
@@ -158,7 +256,7 @@
                     
                 </DataGrid>
                 
-                <DockPanel Grid.Row="1" Background="Lavender" Margin="1,1,0,1">
+                <DockPanel Grid.Row="2" Background="Lavender" Margin="1,1,0,1">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft">
                             
@@ -251,7 +349,7 @@
                     </Border>
                 </DockPanel>
 
-                <DockPanel Grid.Row="2" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
+                <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <StackPanel Orientation="Horizontal">
                             <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">

@@ -789,5 +789,35 @@ namespace SitesAPI.Videos
 
             return lst.Where(x => x.Status != PrivacyDef).ToList();
         }
+
+        public async Task<List<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
+        {
+            var lst = new List<IChannelPOCO>();
+
+            var zap =
+                string.Format(
+                    "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}",
+                    Url, id, Key, Print);
+
+            var det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(det));
+
+            var par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
+
+            if (par != null)
+            {
+                foreach (JToken token in par)
+                {
+                    var ch = await GetChannelNetAsync(token.Value<string>());
+                    if (!string.IsNullOrEmpty(ch.Title))
+                    {
+                        lst.Add(ch);
+                    }
+                }
+            }
+
+            return lst;
+        }
     }
 }

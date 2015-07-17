@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
+using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ninject;
 
@@ -15,14 +15,13 @@ namespace TestAPI
 
         public YouTubeSiteTest()
         {
-            _fabric = IoC.Container.Kernel.Get<ICommonFactory>();
+            _fabric = Container.Kernel.Get<ICommonFactory>();
         }
 
         [TestMethod]
         public async Task SearchItemsAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
             var testindex = new[] {5};
             foreach (int i in testindex)
             {
@@ -35,8 +34,8 @@ namespace TestAPI
         public async Task GetPopularItemsAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
-            //var testindex = new[] { 1, 2, 25, 26, 27, 49, 50, 51 };
+
+            // var testindex = new[] { 1, 2, 25, 26, 27, 49, 50, 51 };
             var testindex = new[] { 2 };
             foreach (int i in testindex)
             {
@@ -49,9 +48,9 @@ namespace TestAPI
         public async Task GetChannelItemsAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
-            //UCQoZVSaWvaJN046F-8SmyPg
-            //UCq9B1wrqZKwucNkjHnUW39A
+
+            // UCQoZVSaWvaJN046F-8SmyPg
+            // UCq9B1wrqZKwucNkjHnUW39A
             var lst = await you.GetChannelItemsAsync("UCQoZVSaWvaJN046F-8SmyPg", 5);
 
             Assert.AreEqual(lst.Count, 5);
@@ -61,8 +60,6 @@ namespace TestAPI
         public async Task GetPlaylistNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-
-            //var you = new Mock<YouTubeSiteApiV2>();
 
             var res = await you.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
@@ -76,8 +73,6 @@ namespace TestAPI
         {
             var you = _fabric.CreateYouTubeSite();
 
-            //var you = new Mock<YouTubeSiteApiV2>();
-
             var lst = await you.GetPlaylistItemsNetAsync("PLiCpP_44QZByvNe1h9hGLlOXIXRwnz5l3");
 
             Assert.IsTrue(lst.Any());
@@ -87,7 +82,6 @@ namespace TestAPI
         public async Task GetChannelPlaylistNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
 
             var res = await you.GetChannelPlaylistNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
@@ -98,7 +92,6 @@ namespace TestAPI
         public async Task GetChannelNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
 
             var res = await you.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
@@ -109,9 +102,8 @@ namespace TestAPI
         public async Task GetVideoItemNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
 
-            var res = await you.GetVideoItemNetAsync("9bZkp7q19f0");//lHgIpxQac3w
+            var res = await you.GetVideoItemNetAsync("9bZkp7q19f0"); // lHgIpxQac3w
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -120,7 +112,6 @@ namespace TestAPI
         public async Task GetChannelItemsCountNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
 
             var res = await you.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
@@ -131,7 +122,6 @@ namespace TestAPI
         public async Task GetChannelItemsIdsListNetAsync()
         {
             var you = _fabric.CreateYouTubeSite();
-            //var you = new Mock<YouTubeSiteApiV2>();
 
             var res = await you.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
 
@@ -168,6 +158,14 @@ namespace TestAPI
             var res = await you.GetVideosListByIdsAsync(lst);
 
             Assert.AreEqual(res.Count, 1);
+        }
+
+        [TestMethod]
+        public async Task GetRelatedChannelsByIdAsync()
+        {
+            var you = _fabric.CreateYouTubeSite();
+            var res = await you.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
+            Assert.IsTrue(res.Any());
         }
     }
 }

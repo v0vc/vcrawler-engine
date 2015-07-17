@@ -120,6 +120,25 @@ namespace Crawler.Views
                     ViewModel.Model.Result = "Finished";
 
                     break;
+
+                case "Related":
+
+                    try
+                    {
+                        await ViewModel.Model.FindRelatedChannels(ViewModel.Model.SelectedChannel);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+
+                    break;
+
+                case "Subscribe":
+
+                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedChannel.ID);
+
+                    break;
             }
         }
 
@@ -221,11 +240,29 @@ namespace Crawler.Views
                 // заполняем только если либо ничего нет, либо одни новые
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
 
-                var pls = await ch.GetChannelPlaylistsAsync();
-
-                foreach (var pl in pls)
+                if (ch.ChannelItems.Any())
                 {
-                    ch.ChannelPlaylists.Add(pl);
+                    var pls = await ch.GetChannelPlaylistsAsync();
+
+                    if (pls.Any())
+                    {
+                        ch.ChannelPlaylists.Clear();
+                        foreach (var pl in pls)
+                        {
+                            ch.ChannelPlaylists.Add(pl);
+                        }
+                    }
+                }
+                else
+                {
+                    // нет в базе = related channel
+                    ViewModel.Model.Result = "Working..";
+                    var lst = await ch.GetChannelItemsNetAsync(0);
+                    foreach (IVideoItem item in lst)
+                    {
+                        ch.AddNewItem(item, false);
+                    }
+                    ViewModel.Model.Result = "Ready";
                 }
             }
 

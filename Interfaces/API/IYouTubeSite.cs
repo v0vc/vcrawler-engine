@@ -114,5 +114,12 @@ namespace Interfaces.API
         /// <param name="ids"></param>
         /// <returns></returns>
         Task<List<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids);
+
+        /// <summary>
+        /// Получить список похожих каналов
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<List<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id);
     }
 }
