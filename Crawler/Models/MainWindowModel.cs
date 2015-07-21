@@ -15,7 +15,6 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
-using Models.BO;
 using Ninject;
 using SitesAPI;
 using Container = IoC.Container;
@@ -56,6 +55,26 @@ namespace Crawler.Models
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
         }
 
+        public void SetStatus(int res)
+        {
+            if (res == 0)
+            {
+                Result = "Ready";
+            }
+            if (res == 1)
+            {
+                Result = "Working..";
+            }
+            if (res == 2)
+            {
+                Result = "Finished!";
+            }
+            if (res == 3)
+            {
+                Result = "Error";
+            }
+        }
+
         public async Task FillChannels()
         {
             var sf = BaseFactory.CreateSubscribeFactory();
@@ -80,7 +99,7 @@ namespace Crawler.Models
                 var lsss = lstc.OrderBy(x => x.Title);
                 foreach (var channel in lsss)
                 {
-                    Channels.Add(channel as Channel);
+                    Channels.Add(channel);
                 }
 
                 #region по ID
@@ -115,8 +134,8 @@ namespace Crawler.Models
                 var creds = await s.GetCredListAsync();
                 foreach (var cred in creds)
                 {
-                    var cr = (Cred)cred;
-                    SupportedCreds.Add(cr);
+                    //var cr = (Cred)cred;
+                    SupportedCreds.Add(cred);
                 }
 
                 if (SupportedCreds.Any())
@@ -162,7 +181,7 @@ namespace Crawler.Models
             {
                 PrValue = 0;
                 IsIdle = false;
-                Result = "Working..";
+                SetStatus(1);
                 var i = 0;
                 var prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -181,13 +200,13 @@ namespace Crawler.Models
 
                 PrValue = 0;
                 IsIdle = true;
-                Result = "Finished!";
+                SetStatus(2);
                 Info = "Total: " + i;
             }
             catch (Exception ex)
             {
                 IsIdle = true;
-                Result = "Error";
+                SetStatus(3);
                 Info = ex.Message;
                 MessageBox.Show(ex.Message);
             }
@@ -268,6 +287,7 @@ namespace Crawler.Models
             catch (Exception ex)
             {
                 Info = ex.Message;
+                SetStatus(3);
             }
         }
 
@@ -281,13 +301,13 @@ namespace Crawler.Models
                 await channel.SyncChannelAsync(DirPath, true);
                 watch.Stop();
                 Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
-                Result = "Finished!";
+                SetStatus(2);
                 IsIdle = true;
             }
             catch (Exception ex)
             {
                 IsIdle = true;
-                Result = "Error";
+                SetStatus(3);
                 Info = ex.Message;
                 MessageBox.Show(ex.Message);
             }
@@ -300,14 +320,13 @@ namespace Crawler.Models
                 return;
             }
 
-            Result = "Working..";
-
+            SetStatus(1);
             RelatedChannels.Clear();
-
+            var cf = BaseFactory.CreateChannelFactory();
             var related = await BaseFactory.CreateYouTubeSite().GetRelatedChannelsByIdAsync(channel.ID);
             foreach (IChannelPOCO poco in related)
             {
-                var ch = new Channel(poco, BaseFactory.CreateChannelFactory());
+                var ch = cf.CreateChannel(poco);
                 if (Channels.Select(x => x.ID).Contains(ch.ID))
                 {
                     ch.IsDownloading = true;
@@ -315,7 +334,7 @@ namespace Crawler.Models
                 RelatedChannels.Add(ch);
             }
 
-            Result = "Ready";
+            SetStatus(0);
         }
 
         public async Task AddNewChannelAsync(string channelid, string channeltitle)
@@ -324,7 +343,7 @@ namespace Crawler.Models
             var vf = BaseFactory.CreateVideoItemFactory();
             var you = BaseFactory.CreateYouTubeSite();
 
-            var channel = await cf.GetChannelNetAsync(channelid) as Channel;
+            var channel = await cf.GetChannelNetAsync(channelid);
             if (channel == null)
             {
                 throw new Exception("GetChannelNetAsync return null");
@@ -337,6 +356,7 @@ namespace Crawler.Models
 
             await channel.DeleteChannelAsync();
             Channels.Add(channel);
+            channel.IsDownloading = true;
             SelectedChannel = channel;
             var lst = await channel.GetChannelItemsNetAsync(0);
             foreach (var item in lst)
@@ -392,14 +412,14 @@ namespace Crawler.Models
 
                     foreach (var poco in lvfull)
                     {
-                        var v = new VideoItem(poco, vf);
-                        channel.AddNewItem(v, false);
-                        await v.InsertItemAsync();
+                        var vi = vf.CreateVideoItem(poco);
+                        channel.AddNewItem(vi, false);
+                        await vi.InsertItemAsync();
                     }
                 }
             }
 
-            Result = "Finished";
+            SetStatus(2);
         }
 
         public async Task DownloadLink()
@@ -435,10 +455,9 @@ namespace Crawler.Models
                 var id = match.Groups[1].Value;
                 var vi = await vf.GetVideoItemNetAsync(id);
                 vi.ParentID = null;
+                SelectedVideoItem = vi;
 
-                SelectedVideoItem = vi as VideoItem;
                 SelectedChannel = ServiceChannels.First();
-
                 ServiceChannels.First().AddNewItem(vi, true);
                 await vi.DownloadItem(_youPath, DirPath, IsHd);
                 vi.IsNewItem = true;
@@ -459,7 +478,7 @@ namespace Crawler.Models
 
         public async Task AddNewChannel(string inputChannelId)
         {
-            Result = "Working..";
+            SetStatus(1);
             Info = string.Empty;
             const string youUser = "user";
             const string youChannel = "channel";
@@ -541,7 +560,7 @@ namespace Crawler.Models
             var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";
-            ServiceChannels.Add(chpop as Channel);
+            ServiceChannels.Add(chpop);
         }
 
         private void FilterVideos()

@@ -456,11 +456,6 @@ namespace Models.BO
             return string.Empty;
         }
 
-        //internal string MakeVideoLink()
-        //{
-        //    return string.Format("https://www.youtube.com/watch?v={0}", ID);
-        //}
-
         public async Task Log(string text)
         {
             await Task.Run(() => LogText += text + Environment.NewLine);

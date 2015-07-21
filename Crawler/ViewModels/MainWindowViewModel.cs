@@ -131,12 +131,12 @@ namespace Crawler.ViewModels
                 {
                     File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
                     Model.Info = string.Format("{0} channels has been stored", lst.Count);
-                    Model.Result = "Done!";
+                    Model.SetStatus(2);
                 }
                 catch (Exception ex)
                 {
                     Model.Info = ex.Message;
-                    Model.Result = "Error";
+                    Model.SetStatus(3);
                 }
             }
         }
@@ -159,10 +159,10 @@ namespace Crawler.ViewModels
                 catch (Exception ex)
                 {
                     Model.Info = ex.Message;
-                    Model.Result = "Error";
+                    Model.SetStatus(3);
                 }
 
-                Model.Result = "Working..";
+                Model.SetStatus(1);
                 var rest = 0;
                 foreach (var s in lst)
                 {
@@ -199,7 +199,7 @@ namespace Crawler.ViewModels
                     }
                 }
 
-                Model.Result = "Done!";
+                Model.SetStatus(2);
 
                 Model.Info = "Total restored: " + rest;
             }

@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -18,6 +19,11 @@ namespace Models.Factories
         public IVideoItem CreateVideoItem()
         {
             return new VideoItem(this);
+        }
+
+        public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
+        {
+            return new VideoItem(poco, this);
         }
 
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)

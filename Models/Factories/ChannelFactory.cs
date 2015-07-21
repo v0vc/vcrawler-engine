@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -28,6 +29,11 @@ namespace Models.Factories
         public IChannel CreateChannel()
         {
             return new Channel(this);
+        }
+
+        public IChannel CreateChannel(IChannelPOCO poco)
+        {
+            return new Channel(poco, this);
         }
 
         public async Task<IChannel> GetChannelDbAsync(string channelID)

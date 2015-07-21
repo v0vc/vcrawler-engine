@@ -10,7 +10,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
 using Interfaces.Models;
-using Models.BO;
 
 namespace Crawler.Views
 {
@@ -43,7 +42,7 @@ namespace Crawler.Views
         private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
             // await ViewModel.Model.FillChannels();
-            ViewModel.Model.Result = "Loading..";
+            ViewModel.Model.SetStatus(1);
             using (var bgv = new BackgroundWorker())
             {
                 bgv.DoWork += bgv_DoWork;
@@ -54,7 +53,7 @@ namespace Crawler.Views
 
         private void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ViewModel.Model.Result = "Ready";
+            ViewModel.Model.SetStatus(0);
 
             if (ChannelsGrid.SelectedIndex >= 0)
             {
@@ -106,7 +105,7 @@ namespace Crawler.Views
 
                 case "Update":
 
-                    ViewModel.Model.Result = "Working..";
+                    ViewModel.Model.SetStatus(1);
 
                     try
                     {
@@ -115,9 +114,10 @@ namespace Crawler.Views
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
+                        ViewModel.Model.SetStatus(3);
                     }
 
-                    ViewModel.Model.Result = "Finished";
+                    ViewModel.Model.SetStatus(2);
 
                     break;
 
@@ -130,6 +130,7 @@ namespace Crawler.Views
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
+                        ViewModel.Model.SetStatus(2);
                     }
 
                     break;
@@ -146,7 +147,7 @@ namespace Crawler.Views
         {
             var sb = new StringBuilder();
 
-            foreach (Channel channel in dataGrid.SelectedItems)
+            foreach (IChannel channel in dataGrid.SelectedItems)
             {
                 sb.Append(channel.Title).Append(Environment.NewLine);
             }
@@ -157,7 +158,7 @@ namespace Crawler.Views
             {
                 for (var i = dataGrid.SelectedItems.Count; i > 0; i--)
                 {
-                    var channel = (Channel)dataGrid.SelectedItems[i - 1];
+                    var channel = (IChannel)dataGrid.SelectedItems[i - 1];
                     ViewModel.Model.Channels.Remove(channel);
                     await channel.DeleteChannelAsync();
                 }
@@ -183,7 +184,7 @@ namespace Crawler.Views
                 return;
             }
 
-            ViewModel.Model.Result = "Working..";
+            ViewModel.Model.SetStatus(1);
 
             if (channel.ID != "pop")
             {
@@ -213,7 +214,7 @@ namespace Crawler.Views
                 }
             }
 
-            ViewModel.Model.Result = "Finished";
+            ViewModel.Model.SetStatus(2);
         }
 
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -223,7 +224,7 @@ namespace Crawler.Views
                 return;
             }
 
-            var ch = e.AddedItems[0] as Channel;
+            var ch = e.AddedItems[0] as IChannel;
 
             if (ch == null)
             {
@@ -235,7 +236,7 @@ namespace Crawler.Views
                 item.IsShowRow = true;
             }
 
-            if (!ch.ChannelItems.Any())
+            if (!ch.ChannelItems.Any() & !ch.IsDownloading)
             {
                 // заполняем только если либо ничего нет, либо одни новые
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
@@ -256,13 +257,13 @@ namespace Crawler.Views
                 else
                 {
                     // нет в базе = related channel
-                    ViewModel.Model.Result = "Working..";
+                    ViewModel.Model.SetStatus(1);
                     var lst = await ch.GetChannelItemsNetAsync(0);
                     foreach (IVideoItem item in lst)
                     {
                         ch.AddNewItem(item, false);
                     }
-                    ViewModel.Model.Result = "Ready";
+                    ViewModel.Model.SetStatus(0);
                 }
             }
 
@@ -281,7 +282,7 @@ namespace Crawler.Views
             {
                 case "Link":
 
-                    #region Link
+                    
 
                     try
                     {
@@ -294,7 +295,7 @@ namespace Crawler.Views
 
                     break;
 
-                    #endregion
+                    
 
                 case "Edit":
 
@@ -302,8 +303,8 @@ namespace Crawler.Views
 
                     var edv = new EditDescriptionView
                     {
-                        DataContext = ViewModel.Model.SelectedVideoItem,
-                        Owner = Application.Current.MainWindow,
+                        DataContext = ViewModel.Model.SelectedVideoItem, 
+                        Owner = Application.Current.MainWindow, 
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
 
@@ -327,14 +328,14 @@ namespace Crawler.Views
                     {
                         ViewModel.Model.SelectedChannel.IsDownloading = true;
                         await
-                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath,
+                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, 
                                 ViewModel.Model.DirPath, true);
                     }
                     else
                     {
                         var ff = new FfmpegView
                         {
-                            Owner = Application.Current.MainWindow,
+                            Owner = Application.Current.MainWindow, 
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
                         };
 
@@ -364,14 +365,14 @@ namespace Crawler.Views
                         return;
                     }
 
-                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm",
+                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm", 
                         MessageBoxButton.OKCancel, MessageBoxImage.Information);
 
                     if (result == MessageBoxResult.OK)
                     {
                         for (var i = VideoGrid.SelectedItems.Count; i > 0; i--)
                         {
-                            var item = VideoGrid.SelectedItems[i - 1] as VideoItem;
+                            var item = VideoGrid.SelectedItems[i - 1] as IVideoItem;
 
                             if (item == null)
                             {
@@ -404,7 +405,7 @@ namespace Crawler.Views
 
                     if (ViewModel.Model.SelectedChannel.ID != "pop")
                     {
-                        //этот канал по-любому есть - даже проверять не будем)
+                        // этот канал по-любому есть - даже проверять не будем)
                         MessageBox.Show("Has already");
                         return;
                     }
@@ -424,7 +425,7 @@ namespace Crawler.Views
                 return;
             }
 
-            var pl = e.AddedItems[0] as Playlist;
+            var pl = e.AddedItems[0] as IPlaylist;
             if (pl == null)
             {
                 return;
@@ -477,7 +478,7 @@ namespace Crawler.Views
                 return;
             }
 
-            ViewModel.Model.Result = "Working..";
+            ViewModel.Model.SetStatus(1);
 
             var pls = await pl.GetPlaylistItemsIdsListNetAsync();
 
@@ -502,7 +503,7 @@ namespace Crawler.Views
                 }
             }
 
-            ViewModel.Model.Result = "Finished";
+            ViewModel.Model.SetStatus(2);
         }
 
         private void Playlist_OnClick(object sender, RoutedEventArgs e)
@@ -516,7 +517,7 @@ namespace Crawler.Views
             {
                 case "Link":
 
-                    #region Link
+                    
 
                     var pl = ViewModel.Model.SelectedPlaylist;
                     if (pl != null)
@@ -532,7 +533,7 @@ namespace Crawler.Views
                         }
                     }
 
-                    #endregion
+                    
 
                     break;
 
@@ -690,7 +691,7 @@ namespace Crawler.Views
                 return;
             }
 
-            var ch = grid.CurrentItem as Channel;
+            var ch = grid.CurrentItem as IChannel;
             if (ch == null)
             {
                 return;

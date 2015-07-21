@@ -31,6 +31,7 @@ namespace Interfaces.Models
         Task DeleteItemAsync();
         Task RunItem(string mpcpath);
         Task DownloadItem(string youPath, string dirPath, bool isHd);
+        Task Log(string text);
         void IsHasLocalFileFound(string dir);
         string MakeLink();
     }
