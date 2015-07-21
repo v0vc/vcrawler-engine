@@ -41,6 +41,7 @@ namespace Crawler.Models
         private string _youHeader;
         private string _youPath;
         private string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
+        private string _searchKey;
 
         public MainWindowModel()
         {
@@ -545,6 +546,46 @@ namespace Crawler.Models
             }
         }
 
+        public async Task Search()
+        {
+            if (string.IsNullOrEmpty(SearchKey))
+            {
+                return;
+            }
+
+            SetStatus(1);
+            try
+            {
+                var lst = await BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, 50);
+                var vf = BaseFactory.CreateVideoItemFactory();
+                if (lst.Any())
+                {
+                    var channel = ServiceChannels.First();
+                    for (var i = channel.ChannelItems.Count; i > 0; i--)
+                    {
+                        if (!(channel.ChannelItems[i - 1].ItemState == "LocalYes" ||
+                              channel.ChannelItems[i - 1].ItemState == "Downloading"))
+                        {
+                            channel.ChannelItems.RemoveAt(i - 1);
+                        }
+                    }
+                    foreach (var poco in lst)
+                    {
+                        var item = vf.CreateVideoItem(poco);
+                        channel.AddNewItem(item, false);
+                        item.IsHasLocalFileFound(DirPath);
+                    }
+                    SelectedChannel = channel;
+                }
+                SetStatus(2);
+            }
+            catch (Exception ex)
+            {
+                SetStatus(3);
+                Info = ex.Message;
+            }
+        }
+
         private async Task EditChannel()
         {
             SelectedChannel.Title = NewChannelTitle;
@@ -852,6 +893,16 @@ namespace Crawler.Models
 
         public bool IsHd { get; set; }
 
+        public string SearchKey
+        {
+            get { return _searchKey; }
+            set
+            {
+                _searchKey = value; 
+                OnPropertyChanged();
+            }
+        }
+
         #endregion
 
         #region INotifyPropertyChanged
@@ -868,5 +919,6 @@ namespace Crawler.Models
         }
 
         #endregion
+
     }
 }

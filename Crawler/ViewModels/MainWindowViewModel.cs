@@ -23,6 +23,7 @@ namespace Crawler.ViewModels
             SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
             SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
             DownloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink());
+            SearchCommand = new RelayCommand(async x => await Model.Search());
         }
 
         public MainWindowModel Model { get; set; }
@@ -32,6 +33,7 @@ namespace Crawler.ViewModels
         public RelayCommand OpenDirCommand { get; set; }
         public RelayCommand SaveCommand { get; set; }
         public RelayCommand DownloadLinkCommand { get; set; }
+        public RelayCommand SearchCommand { get; set; }
 
         private void OpenDir(object obj)
         {

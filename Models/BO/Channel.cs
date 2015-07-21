@@ -17,6 +17,8 @@ namespace Models.BO
         private int _countNew;
         private bool _isDownloading;
         private string _title;
+        private bool _isEnable;
+        private bool _isInWork;
 
         public Channel(IChannelFactory cf)
         {
@@ -82,6 +84,16 @@ namespace Models.BO
             set
             {
                 _isDownloading = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsInWork
+        {
+            get { return _isInWork; }
+            set
+            {
+                _isInWork = value; 
                 OnPropertyChanged();
             }
         }

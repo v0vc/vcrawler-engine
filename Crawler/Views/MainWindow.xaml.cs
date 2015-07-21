@@ -75,9 +75,21 @@ namespace Crawler.Views
         private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             var dataGrid = sender as DataGrid;
-            if (dataGrid != null && dataGrid.SelectedItems.Count > 0 && e.Key == Key.Delete)
+            if (dataGrid == null)
+            {
+                return;
+            }
+            if (e.Key == Key.Delete)
             {
                 await ConfirmDelete(dataGrid);
+            }
+            if (e.Key == Key.Enter)
+            {
+                var channel = dataGrid.SelectedItem as IChannel;
+                if (channel != null && channel.ID == "pop")
+                {
+                    await ViewModel.Model.Search();
+                }
             }
         }
 
@@ -106,6 +118,10 @@ namespace Crawler.Views
                 case "Update":
 
                     ViewModel.Model.SetStatus(1);
+                    if (ViewModel.Model.SelectedChannel.IsInWork)
+                    {
+                        return;
+                    }
 
                     try
                     {
@@ -137,7 +153,14 @@ namespace Crawler.Views
 
                 case "Subscribe":
 
-                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedChannel.ID);
+                    var channel = ViewModel.Model.SelectedChannel;
+                    if (channel.IsInWork)
+                    {
+                        return;
+                    }
+
+                    ViewModel.Model.Channels.Add(channel);
+                    await channel.InsertChannelItemsAsync();
 
                     break;
             }
@@ -149,7 +172,15 @@ namespace Crawler.Views
 
             foreach (IChannel channel in dataGrid.SelectedItems)
             {
-                sb.Append(channel.Title).Append(Environment.NewLine);
+                if (channel.ID != "pop")
+                {
+                    sb.Append(channel.Title).Append(Environment.NewLine);
+                }
+            }
+
+            if (sb.Length == 0)
+            {
+                return;
             }
 
             var result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
@@ -258,11 +289,13 @@ namespace Crawler.Views
                 {
                     // нет в базе = related channel
                     ViewModel.Model.SetStatus(1);
+                    ch.IsInWork = true;
                     var lst = await ch.GetChannelItemsNetAsync(0);
                     foreach (IVideoItem item in lst)
                     {
                         ch.AddNewItem(item, false);
                     }
+                    ch.IsInWork = false;
                     ViewModel.Model.SetStatus(0);
                 }
             }
@@ -281,9 +314,6 @@ namespace Crawler.Views
             switch (mitem.CommandParameter.ToString())
             {
                 case "Link":
-
-                    
-
                     try
                     {
                         Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
@@ -295,12 +325,7 @@ namespace Crawler.Views
 
                     break;
 
-                    
-
                 case "Edit":
-
-                    #region Edit
-
                     var edv = new EditDescriptionView
                     {
                         DataContext = ViewModel.Model.SelectedVideoItem, 
@@ -310,14 +335,9 @@ namespace Crawler.Views
 
                     edv.Show();
 
-                    #endregion
-
                     break;
 
                 case "HD":
-
-                    #region HD
-
                     if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
                     {
                         MessageBox.Show("Please, select youtube-dl");
@@ -342,14 +362,9 @@ namespace Crawler.Views
                         ff.ShowDialog();
                     }
 
-                    #endregion
-
                     break;
 
                 case "Delete":
-
-                    #region Delete
-
                     var sb = new StringBuilder();
 
                     foreach (IVideoItem item in VideoGrid.SelectedItems)
@@ -395,14 +410,9 @@ namespace Crawler.Views
                         }
                     }
 
-                    #endregion
-
                     break;
 
                 case "Subscribe":
-
-                    #region Subscribe
-
                     if (ViewModel.Model.SelectedChannel.ID != "pop")
                     {
                         // этот канал по-любому есть - даже проверять не будем)
@@ -411,8 +421,6 @@ namespace Crawler.Views
                     }
 
                     await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink());
-
-                    #endregion
 
                     break;
             }

@@ -17,6 +17,7 @@ namespace Interfaces.Models
         List<ITag> Tags { get; set; }
         int CountNew { get; set; }
         bool IsDownloading { get; set; }
+        bool IsInWork { get; set; }
         CookieCollection ChannelCookies { get; set; }
         Task<List<IVideoItem>> GetChannelItemsDbAsync();
         Task SyncChannelAsync(string dir, bool isSyncPls);

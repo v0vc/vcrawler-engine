@@ -135,7 +135,9 @@
                                             <DataGridTemplateColumn CanUserResize="True" Width="*">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <TextBlock Text="{Binding Title, Mode=OneWay}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding Title, Mode=OneWay}" 
+                                                                   Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" 
+                                                                   />
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
@@ -319,7 +321,42 @@
                                         <DataGridTemplateColumn CanUserResize="True" Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                        <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition />
+                                                            <ColumnDefinition />
+                                                        </Grid.ColumnDefinitions>
+                                                            <StackPanel Width="Auto" Orientation="Horizontal">
+                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" 
+                                                                         VerticalContentAlignment="Bottom" 
+                                                                         Text="{Binding DataContext.Model.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                                                                    <TextBox.Resources>
+                                                                        <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
+                                                                            <VisualBrush.Visual>
+                                                                                <TextBlock FontStyle="Normal" Text="#Search" FontSize="13" />
+                                                                            </VisualBrush.Visual>
+                                                                            <VisualBrush.Transform>
+                                                                                <ScaleTransform CenterX="100" ScaleX="0.99" ScaleY="0.89"/>
+                                                                            </VisualBrush.Transform>
+                                                                        </VisualBrush>
+                                                                    </TextBox.Resources>
+                                                                    <TextBox.Style>
+                                                                        <Style TargetType="TextBox">
+                                                                            <Style.Triggers>
+                                                                                <Trigger Property="Text" Value="{x:Null}">
+                                                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                                                </Trigger>
+                                                                                <Trigger Property="Text" Value="">
+                                                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                                                </Trigger>
+                                                                            </Style.Triggers>
+                                                                        </Style>
+                                                                    </TextBox.Style>
+                                                                </TextBox>
+                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                                            </StackPanel>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
+                                                        </Grid>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
