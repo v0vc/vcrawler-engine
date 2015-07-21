@@ -167,10 +167,6 @@
       <Project>{6a0b7942-8c56-448f-a8e7-615a06aae3af}</Project>
       <Name>IoC</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Models\Models.csproj">
-      <Project>{2DA3980E-45CD-4567-9981-25161ECB889B}</Project>
-      <Name>Models</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SitesAPI\SitesAPI.csproj">
       <Project>{77D90F39-3D28-43A8-BA0F-EE5611ABB977}</Project>
       <Name>SitesAPI</Name>

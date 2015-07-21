@@ -11,7 +11,7 @@ namespace DataBaseAPI.POCO
             Value = reader[SqLiteDatabase.SetVal] as string;
         }
 
-        public string Key { get; set; }
-        public string Value { get; set; }
+        public string Key { get; private set; }
+        public string Value { get; private set; }
     }
 }

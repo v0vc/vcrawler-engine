@@ -99,7 +99,7 @@ namespace Extensions
             return true;
         }
 
-        public static List<List<string>> SplitList(List<string> locations, int nSize = 50)
+        public static IEnumerable<List<string>> SplitList(List<string> locations, int nSize = 50)
         {
             var list = new List<List<string>>();
 

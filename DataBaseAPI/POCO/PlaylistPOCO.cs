@@ -14,10 +14,10 @@ namespace DataBaseAPI.POCO
             ChannelID = reader[SqLiteDatabase.PlaylistChannelId] as string;
         }
 
-        public string ID { get; set; }
-        public string Title { get; set; }
-        public string SubTitle { get; set; }
-        public byte[] Thumbnail { get; set; }
-        public string ChannelID { get; set; }
+        public string ID { get; private set; }
+        public string Title { get; private set; }
+        public string SubTitle { get; private set; }
+        public byte[] Thumbnail { get; private set; }
+        public string ChannelID { get; private set; }
     }
 }

@@ -13,7 +13,7 @@ using Models.Factories;
 
 namespace Models.BO
 {
-    public class VideoItem : INotifyPropertyChanged, IVideoItem
+    public sealed class VideoItem : INotifyPropertyChanged, IVideoItem
     {
         private readonly string[] _exts = {"mp4", "mkv"};
         private readonly VideoItemFactory _vf;
@@ -46,7 +46,7 @@ namespace Models.BO
             Timestamp = item.Timestamp;
         }
 
-        public string LogText
+        private string LogText
         {
             get
             {
@@ -240,19 +240,9 @@ namespace Models.BO
                 dir.Create();
             }
 
-            string param;
-            if (isHd)
-            {
-                param =
-                    string.Format(
-                        "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", 
-                        dir, MakeLink());
-            }
-            else
-            {
-                param = string.Format("-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title",
-                    dir, MakeLink());
-            }
+            var param = string.Format(isHd
+                ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title"
+                : "-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", dir, MakeLink());
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
@@ -404,7 +394,7 @@ namespace Models.BO
             }
         }
 
-        internal string IntTostrTime(int duration)
+        private static string IntTostrTime(int duration)
         {
             var t = TimeSpan.FromSeconds(duration);
             return t.Hours > 0
@@ -412,7 +402,7 @@ namespace Models.BO
                 : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
         }
 
-        internal static string TimeAgo(DateTime dt)
+        private static string TimeAgo(DateTime dt)
         {
             var span = DateTime.Now - dt;
             if (span.Days > 365)
@@ -465,7 +455,7 @@ namespace Models.BO
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var handler = PropertyChanged;
             if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));

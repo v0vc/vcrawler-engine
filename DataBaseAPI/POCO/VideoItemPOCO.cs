@@ -19,15 +19,15 @@ namespace DataBaseAPI.POCO
             Timestamp = (DateTime) reader[SqLiteDatabase.Timestamp];
         }
 
-        public string ID { get; set; }
-        public string ParentID { get; set; }
-        public string Title { get; set; }
-        public string Description { get; set; }
-        public long ViewCount { get; set; }
-        public int Duration { get; set; }
-        public int Comments { get; set; }
-        public byte[] Thumbnail { get; set; }
-        public DateTime Timestamp { get; set; }
+        public string ID { get; private set; }
+        public string ParentID { get; private set; }
+        public string Title { get; private set; }
+        public string Description { get; private set; }
+        public long ViewCount { get; private set; }
+        public int Duration { get; private set; }
+        public int Comments { get; private set; }
+        public byte[] Thumbnail { get; private set; }
+        public DateTime Timestamp { get; private set; }
         public string Status { get; set; }
     }
 }

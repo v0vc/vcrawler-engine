@@ -8,7 +8,7 @@ namespace SitesAPI.POCO
     {
         public string ID { get; set; }
         public string Title { get; set; }
-        public string SubTitle { get; set; }
+        public string SubTitle { get; private set; }
         public byte[] Thumbnail { get; set; }
         public string Site { get; set; }
 

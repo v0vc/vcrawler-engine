@@ -11,13 +11,12 @@ using Models.Factories;
 
 namespace Models.BO
 {
-    public class Channel : IChannel, INotifyPropertyChanged
+    public sealed class Channel : IChannel, INotifyPropertyChanged
     {
         private readonly ChannelFactory _cf;
         private int _countNew;
         private bool _isDownloading;
         private string _title;
-        private bool _isEnable;
         private bool _isInWork;
 
         public Channel(IChannelFactory cf)
@@ -238,7 +237,7 @@ namespace Models.BO
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var handler = PropertyChanged;
             if (handler != null)

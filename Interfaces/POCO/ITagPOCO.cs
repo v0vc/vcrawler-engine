@@ -2,6 +2,6 @@
 {
     public interface ITagPOCO
     {
-        string Title { get; set; }
+        string Title { get; }
     }
 }

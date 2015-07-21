@@ -1,6 +1,6 @@
 ﻿using System.Windows;
 using System.Windows.Input;
-using Models.BO;
+using Interfaces.Models;
 using SitesAPI;
 
 namespace Crawler.Views
@@ -27,7 +27,7 @@ namespace Crawler.Views
 
         private async void EditDescriptionView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            var context = DataContext as VideoItem;
+            var context = DataContext as IVideoItem;
             if (context == null)
             {
                 return;

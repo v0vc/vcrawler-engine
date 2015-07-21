@@ -16,11 +16,11 @@ namespace DataBaseAPI.POCO
             Autorization = Convert.ToInt16(reader[SqLiteDatabase.CredAutorization]);
         }
 
-        public string Site { get; set; }
-        public string Login { get; set; }
-        public string Pass { get; set; }
-        public string Cookie { get; set; }
-        public DateTime Expired { get; set; }
-        public short Autorization { get; set; }
+        public string Site { get; private set; }
+        public string Login { get; private set; }
+        public string Pass { get; private set; }
+        public string Cookie { get; private set; }
+        public DateTime Expired { get; private set; }
+        public short Autorization { get; private set; }
     }
 }

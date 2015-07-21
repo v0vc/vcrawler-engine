@@ -2,7 +2,7 @@
 {
     public interface ISettingPOCO
     {
-        string Key { get; set; }
-        string Value { get; set; }
+        string Key { get; }
+        string Value { get; }
     }
 }

@@ -251,7 +251,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task LoadSettings()
+        private async Task LoadSettings()
         {
             var sf = BaseFactory.CreateSettingFactory();
 
@@ -665,9 +665,9 @@ namespace Crawler.Models
 
         #region Fields
 
-        public ICommonFactory BaseFactory { get; set; }
+        public ICommonFactory BaseFactory { get; private set; }
 
-        public ObservableCollection<IChannel> Channels { get; set; }
+        public ObservableCollection<IChannel> Channels { get; private set; }
 
         public ObservableCollection<IChannel> ServiceChannels { get; set; }
 

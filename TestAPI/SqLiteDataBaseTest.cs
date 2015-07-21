@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Net;
-using System.Threading.Tasks;
 using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;

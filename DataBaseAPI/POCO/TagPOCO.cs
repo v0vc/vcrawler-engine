@@ -9,6 +9,6 @@ namespace DataBaseAPI.POCO
             Title = title;
         }
 
-        public string Title { get; set; }
+        public string Title { get; private set; }
     }
 }
