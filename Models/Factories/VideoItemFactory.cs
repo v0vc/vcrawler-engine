@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -103,6 +105,30 @@ namespace Models.Factories
             try
             {
                 await fb.DeleteItemAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<IChapter>> GetVideoItemChaptersAsync(string id)
+        {
+            var fb = _c.CreateYouTubeSite();
+            var res = new List<IChapter>();
+            try
+            {
+                var cf = _c.CreateChapterFactory();
+                var poco = await fb.GetVideoSubtitlesByIdAsync(id);
+                res.AddRange(poco.Select(chapterPoco => cf.CreateChapter(chapterPoco)));
+                if (!res.Any())
+                {
+                    var chap = cf.CreateChapter();
+                    chap.IsEnabled = false;
+                    chap.Language = "Auto";
+                    res.Add(chap);
+                }
+                return res;
             }
             catch (Exception ex)
             {

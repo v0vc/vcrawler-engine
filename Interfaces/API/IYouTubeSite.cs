@@ -121,5 +121,12 @@ namespace Interfaces.API
         /// <param name="id"></param>
         /// <returns></returns>
         Task<List<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id);
+
+        /// <summary>
+        /// Получить список субтитров видео
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<List<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
@@ -23,10 +24,13 @@ namespace Interfaces.Models
         double DownloadPercentage { get; set; }
         string LocalFilePath { get; set; }
         string ItemState { get; set; }
+        string LogText { get; set; }
+        ObservableCollection<IChapter> VideoItemChapters { get; set; }
         IVideoItem CreateVideoItem();
         Task<IVideoItem> GetVideoItemDbAsync();
         Task<IVideoItem> GetVideoItemNetAsync();
         Task<IChannel> GetParentChannelAsync();
+        Task FillChapters();
         Task InsertItemAsync();
         Task DeleteItemAsync();
         Task RunItem(string mpcpath);

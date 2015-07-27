@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
@@ -30,6 +33,7 @@ namespace Models.BO
         public VideoItem(IVideoItemFactory vf)
         {
             _vf = vf as VideoItemFactory;
+            VideoItemChapters = new ObservableCollection<IChapter>();
         }
 
         public VideoItem(IVideoItemPOCO item, IVideoItemFactory vf)
@@ -44,9 +48,10 @@ namespace Models.BO
             Comments = item.Comments;
             Thumbnail = item.Thumbnail;
             Timestamp = item.Timestamp;
+            VideoItemChapters = new ObservableCollection<IChapter>();
         }
 
-        private string LogText
+        public string LogText
         {
             get
             {
@@ -135,6 +140,9 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
+        public ObservableCollection<IChapter> VideoItemChapters { get; set; }
+
         public double DownloadPercentage
         {
             get
@@ -167,6 +175,18 @@ namespace Models.BO
         public async Task<IChannel> GetParentChannelAsync()
         {
             return await _vf.GetParentChannelAsync(ParentID);
+        }
+
+        public async Task FillChapters()
+        {
+            var res = await _vf.GetVideoItemChaptersAsync(ID);
+
+            VideoItemChapters.Clear();
+
+            foreach (IChapter chapter in res)
+            {
+                VideoItemChapters.Add(chapter);
+            }
         }
 
         public async Task InsertItemAsync()
@@ -243,6 +263,20 @@ namespace Models.BO
             var param = string.Format(isHd
                 ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title"
                 : "-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", dir, MakeLink());
+
+            if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
+            {
+                var sb = new StringBuilder();
+                foreach (IChapter chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
+                {
+                    sb.Append(chapter.Language).Append(',');
+                }
+                var res = sb.ToString().TrimEnd(',');
+
+                var srt = res == "Auto" ? "--write-srt --write-auto-sub" : string.Format("--write-srt --srt-lang {0}", res);
+                
+                param = string.Format("{0} {1}", param, srt);
+            }
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {

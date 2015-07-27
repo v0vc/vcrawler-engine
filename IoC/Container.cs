@@ -73,6 +73,7 @@ namespace IoC
             kern.Bind<ICredFactory>().To<CredFactory>().InSingletonScope();
             kern.Bind<ISettingFactory>().To<SettingFactory>().InSingletonScope();
             kern.Bind<ITapochekSite>().To<TapochekSite>().InSingletonScope();
+            kern.Bind<IChapterFactory>().To<ChapterFactory>().InSingletonScope();
 
             kern.Bind<ICommonFactory>().ToFactory();
 

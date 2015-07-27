@@ -59,6 +59,7 @@ namespace Models.BO
         public string Site { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
+        public ObservableCollection<IChapter> ChannelChapters { get; set; }
         public List<ITag> Tags { get; set; }
 
         public int CountNew

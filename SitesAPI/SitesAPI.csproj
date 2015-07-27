@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="POCO\ChannelPOCO.cs" />
+    <Compile Include="POCO\ChapterPOCO.cs" />
     <Compile Include="POCO\PlaylistPOCO.cs" />
     <Compile Include="POCO\VideoItemPOCO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

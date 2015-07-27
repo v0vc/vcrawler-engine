@@ -707,5 +707,13 @@ namespace Crawler.Views
 
             ViewModel.Model.SelectedChannel = ch;
         }
+
+        private async void MenuItem_OnSubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
+            {
+                await ViewModel.Model.SelectedVideoItem.FillChapters();
+            }
+        }
     }
 }

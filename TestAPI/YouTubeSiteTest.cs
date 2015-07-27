@@ -167,5 +167,13 @@ namespace TestAPI
             var res = await you.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
             Assert.IsTrue(res.Any());
         }
+
+        [TestMethod]
+        public async Task GetVideoSubtitlesByIdAsync()
+        {
+            var you = _fabric.CreateYouTubeSite();
+            var res = await you.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
+            Assert.IsTrue(res.Any());
+        }
     }
 }

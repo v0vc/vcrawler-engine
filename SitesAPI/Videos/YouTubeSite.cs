@@ -819,5 +819,22 @@ namespace SitesAPI.Videos
 
             return lst;
         }
+
+        public async Task<List<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id)
+        {
+            var zap =
+                string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}",
+                    Url, id, Key, Print);
+
+            var det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            var jsvideo = await Task.Run(() => JObject.Parse(det));
+
+            return (from pair in jsvideo["items"]
+                select pair.SelectToken("snippet.language")
+                into lang
+                where lang != null
+                select new ChapterPOCO { Language = lang.Value<string>() }).Cast<IChapterPOCO>().ToList();
+        }
     }
 }
