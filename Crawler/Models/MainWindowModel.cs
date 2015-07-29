@@ -11,9 +11,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Extensions;
+using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Ninject;
 using SitesAPI;
@@ -40,8 +40,19 @@ namespace Crawler.Models
         private IVideoItem _selectedVideoItem;
         private string _youHeader;
         private string _youPath;
-        private string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
+        private readonly string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
         private string _searchKey;
+        private const string PathToDownload = "pathToDownload";
+        private const string PathToMpc = "pathToMpc";
+        private const string PathToYoudl = "pathToYoudl";
+        private const string YoutubeDl = "youtube-dl.exe";
+
+        private readonly IChannelFactory _cf;
+        private readonly IVideoItemFactory _vf;
+        private readonly ISettingFactory _sf;
+        private readonly IYouTubeSite _yf;
+        private readonly ISqLiteDatabase _df;
+        private readonly ICredFactory _crf;
 
         public MainWindowModel()
         {
@@ -54,6 +65,12 @@ namespace Crawler.Models
             SelectedCountry = Countries.First();
             IsIdle = true;
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
+            _cf = BaseFactory.CreateChannelFactory();
+            _vf = BaseFactory.CreateVideoItemFactory();
+            _sf = BaseFactory.CreateSettingFactory();
+            _yf = BaseFactory.CreateYouTubeSite();
+            _df = BaseFactory.CreateSqLiteDatabase();
+            _crf = BaseFactory.CreateCredFactory();
         }
 
         public void SetStatus(int res)
@@ -78,80 +95,54 @@ namespace Crawler.Models
 
         public async Task FillChannels()
         {
-            var sf = BaseFactory.CreateSubscribeFactory();
-            var s = sf.GetSubscribe();
+            await LoadSettings();
 
-            try
+            
+
+            // var channelIds = await GetChannelsIdsListDbAsync();
+
+            // var channelsTemp = new List<IChannel>();
+            // foreach (var id in channelIds)
+            // {
+            // var ch = await _cf.GetChannelDbAsync(id);
+            // channelsTemp.Add(ch);
+            // }
+
+            // var channelsSorted = channelsTemp.OrderBy(x => x.Title);
+            // foreach (var channel in channelsSorted)
+            // {
+            // Channels.Add(channel);
+            // }
+
+            
+            #region по ID
+
+            // var lst = await GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
+
+            // foreach (string id in lst)
+            // {
+            // var ch = await _cf.GetChannelDbAsync(id);
+
+            // Channels.Add(ch);
+            // }
+            #endregion
+
+            #region за раз
+
+            var lst = await GetChannelsListAsync(); // все каналы за раз
+            foreach (var ch in lst)
             {
-                await LoadSettings();
-
-                var lst = await s.GetChannelsIdsListDbAsync();
-
-                // получим сначала ID каналов и начнем по одному заполнять список
-                var cf = BaseFactory.CreateChannelFactory();
-
-                var lstc = new List<IChannel>();
-                foreach (var id in lst)
-                {
-                    var ch = await cf.GetChannelDbAsync(id);
-                    lstc.Add(ch);
-                }
-
-                var lsss = lstc.OrderBy(x => x.Title);
-                foreach (var channel in lsss)
-                {
-                    Channels.Add(channel);
-                }
-
-                #region по ID
-
-                // var lst = await s.GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
-
-                // var cf = BaseFactory.CreateChannelFactory();
-
-                // foreach (string id in lst)
-                // {
-                // var ch = await cf.GetChannelDbAsync(id);
-
-                // Channels.Add(ch as Channel);
-                // }
-
-                #endregion
-                
-                #region за раз
-
-                // var lst = await s.GetChannelsListAsync(); //все каналы за раз
-                // foreach (var ch in lst.Cast<Channel>())
-                // {
-                // Channels.Add(ch);
-                // }
-                #endregion
-
-                if (Channels.Any())
-                {
-                    SelectedChannel = Channels.First();
-                }
-
-                var creds = await s.GetCredListAsync();
-                foreach (var cred in creds)
-                {
-                    //var cr = (Cred)cred;
-                    SupportedCreds.Add(cred);
-                }
-
-                if (SupportedCreds.Any())
-                {
-                    SelectedCred = SupportedCreds.First();
-                }
-
-                CreateServicesChannels();
-
-                // SelectedChannel = ServiceChannels.First();
+                Channels.Add(ch);
             }
-            catch (Exception ex)
+
+            #endregion
+
+            if (Channels.Any())
             {
-                MessageBox.Show(ex.Message);
+                SelectedChannel = Channels.First();
             }
+
+            CreateServicesChannels();
         }
 
         public async Task SaveNewItem()
@@ -178,18 +169,17 @@ namespace Crawler.Models
 
         public async Task SyncData()
         {
+            PrValue = 0;
+            IsIdle = false;
+            SetStatus(1);
+            var i = 0;
+            var prog = TaskbarManager.Instance;
+            prog.SetProgressState(TaskbarProgressBarState.Normal);
+
             try
             {
-                PrValue = 0;
-                IsIdle = false;
-                SetStatus(1);
-                var i = 0;
-                var prog = TaskbarManager.Instance;
-                prog.SetProgressState(TaskbarProgressBarState.Normal);
-
                 foreach (var channel in Channels)
                 {
-                    // SelectedChannel = channel;
                     i += 1;
                     PrValue = Math.Round((double)(100 * i) / Channels.Count);
                     prog.SetProgressValue((int)PrValue, 100);
@@ -215,23 +205,22 @@ namespace Crawler.Models
 
         public async Task SaveSettings()
         {
-            var sf = BaseFactory.CreateSettingFactory();
-
             try
             {
-                var savedir = await sf.GetSettingDbAsync("pathToDownload");
+                SetStatus(1);
+                var savedir = await _sf.GetSettingDbAsync(PathToDownload);
                 if (savedir.Value != DirPath)
                 {
                     await savedir.UpdateSettingAsync(DirPath);
                 }
 
-                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
+                var mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
                 if (mpcdir.Value != MpcPath)
                 {
                     await mpcdir.UpdateSettingAsync(MpcPath);
                 }
 
-                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                var youpath = await _sf.GetSettingDbAsync(PathToYoudl);
                 if (youpath.Value != YouPath)
                 {
                     await youpath.UpdateSettingAsync(YouPath);
@@ -243,21 +232,20 @@ namespace Crawler.Models
                     await cred.UpdatePasswordAsync(cred.Pass);
                 }
 
-                Result = "Saved";
+                SetStatus(0);
             }
             catch (Exception ex)
             {
                 Info = ex.Message;
+                SetStatus(3);
             }
         }
 
         private async Task LoadSettings()
         {
-            var sf = BaseFactory.CreateSettingFactory();
-
             try
             {
-                var savedir = await sf.GetSettingDbAsync("pathToDownload");
+                var savedir = await _sf.GetSettingDbAsync(PathToDownload);
                 DirPath = savedir.Value;
 
                 if (string.IsNullOrEmpty(DirPath))
@@ -267,22 +255,33 @@ namespace Crawler.Models
                     await savedir.UpdateSettingAsync(path);
                 }
 
-                var mpcdir = await sf.GetSettingDbAsync("pathToMpc");
+                var mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
                 MpcPath = mpcdir.Value;
 
-                var youpath = await sf.GetSettingDbAsync("pathToYoudl");
+                var youpath = await _sf.GetSettingDbAsync(PathToYoudl);
                 YouPath = youpath.Value;
 
                 if (string.IsNullOrEmpty(YouPath))
                 {
                     var path = AppDomain.CurrentDomain.BaseDirectory;
-                    var res = Path.Combine(path, "youtube-dl.exe");
+                    var res = Path.Combine(path, YoutubeDl);
                     var fn = new FileInfo(res);
                     if (fn.Exists)
                     {
                         YouPath = fn.FullName;
                         await youpath.UpdateSettingAsync(fn.FullName);
                     }
+                }
+
+                var creds = await GetCredListAsync();
+                foreach (var cred in creds)
+                {
+                    SupportedCreds.Add(cred);
+                }
+
+                if (SupportedCreds.Any())
+                {
+                    SelectedCred = SupportedCreds.First();
                 }
             }
             catch (Exception ex)
@@ -295,10 +294,10 @@ namespace Crawler.Models
         public async Task SyncChannel(IChannel channel)
         {
             Info = "Syncing: " + channel.Title;
+            IsIdle = false;
+            var watch = Stopwatch.StartNew();
             try
             {
-                IsIdle = false;
-                var watch = Stopwatch.StartNew();
                 await channel.SyncChannelAsync(DirPath, true);
                 watch.Stop();
                 Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
@@ -322,16 +321,18 @@ namespace Crawler.Models
             }
 
             SetStatus(1);
+
             RelatedChannels.Clear();
-            var cf = BaseFactory.CreateChannelFactory();
-            var related = await BaseFactory.CreateYouTubeSite().GetRelatedChannelsByIdAsync(channel.ID);
-            foreach (IChannelPOCO poco in related)
+
+            var related = await _yf.GetRelatedChannelsByIdAsync(channel.ID);
+
+            foreach (var ch in related.Select(poco => _cf.CreateChannel(poco)))
             {
-                var ch = cf.CreateChannel(poco);
                 if (Channels.Select(x => x.ID).Contains(ch.ID))
                 {
                     ch.IsDownloading = true;
                 }
+
                 RelatedChannels.Add(ch);
             }
 
@@ -340,11 +341,7 @@ namespace Crawler.Models
 
         public async Task AddNewChannelAsync(string channelid, string channeltitle)
         {
-            var cf = BaseFactory.CreateChannelFactory();
-            var vf = BaseFactory.CreateVideoItemFactory();
-            var you = BaseFactory.CreateYouTubeSite();
-
-            var channel = await cf.GetChannelNetAsync(channelid);
+            var channel = await _cf.GetChannelNetAsync(channelid);
             if (channel == null)
             {
                 throw new Exception("GetChannelNetAsync return null");
@@ -391,7 +388,7 @@ namespace Crawler.Models
                 var trueids = new List<string>();
                 foreach (var nchank in nchanks)
                 {
-                    var lvlite = await you.GetVideosListByIdsLiteAsync(nchank);
+                    var lvlite = await _yf.GetVideosListByIdsLiteAsync(nchank);
 
                     // получим лайтовые объекты, только id и parentid
                     foreach (var poco in lvlite)
@@ -409,11 +406,11 @@ namespace Crawler.Models
 
                 foreach (var truchank in truchanks)
                 {
-                    var lvfull = await you.GetVideosListByIdsAsync(truchank); // ну и начнем получать уже полные объекты
+                    var lvfull = await _yf.GetVideosListByIdsAsync(truchank); // ну и начнем получать уже полные объекты
 
                     foreach (var poco in lvfull)
                     {
-                        var vi = vf.CreateVideoItem(poco);
+                        var vi = _vf.CreateVideoItem(poco);
                         channel.AddNewItem(vi, false);
                         await vi.InsertItemAsync();
                     }
@@ -448,13 +445,12 @@ namespace Crawler.Models
                 return;
             }
 
-            var vf = BaseFactory.CreateVideoItemFactory();
             var regex = new Regex(_youRegex);
             var match = regex.Match(Link);
             if (match.Success)
             {
                 var id = match.Groups[1].Value;
-                var vi = await vf.GetVideoItemNetAsync(id);
+                var vi = await _vf.GetVideoItemNetAsync(id);
                 vi.ParentID = null;
                 SelectedVideoItem = vi;
 
@@ -484,7 +480,6 @@ namespace Crawler.Models
             const string youUser = "user";
             const string youChannel = "channel";
             var parsedChannelId = string.Empty;
-            var cf = BaseFactory.CreateChannelFactory();
 
             var sp = inputChannelId.Split('/');
             if (sp.Length > 1)
@@ -498,7 +493,7 @@ namespace Crawler.Models
                     }
 
                     var user = sp[indexuser + 1];
-                    parsedChannelId = await cf.GetChannelIdByUserNameNetAsync(user);
+                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(user);
                 }
                 else if (sp.Contains(youChannel))
                 {
@@ -526,7 +521,7 @@ namespace Crawler.Models
             {
                 try
                 {
-                    parsedChannelId = await cf.GetChannelIdByUserNameNetAsync(inputChannelId);
+                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(inputChannelId);
                 }
                 catch
                 {
@@ -556,8 +551,7 @@ namespace Crawler.Models
             SetStatus(1);
             try
             {
-                var lst = await BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, 50);
-                var vf = BaseFactory.CreateVideoItemFactory();
+                var lst = await _yf.SearchItemsAsync(SearchKey, SelectedCountry, 50);
                 if (lst.Any())
                 {
                     var channel = ServiceChannels.First();
@@ -571,7 +565,7 @@ namespace Crawler.Models
                     }
                     foreach (var poco in lst)
                     {
-                        var item = vf.CreateVideoItem(poco);
+                        var item = _vf.CreateVideoItem(poco);
                         channel.AddNewItem(item, false);
                         item.IsHasLocalFileFound(DirPath);
                     }
@@ -592,10 +586,51 @@ namespace Crawler.Models
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
         }
 
+        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        {
+            try
+            {
+                return await _df.GetChannelsIdsListDbAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<IChannel>> GetChannelsListAsync()
+        {
+            var lst = new List<IChannel>();
+            try
+            {
+                var fbres = await _df.GetChannelsListAsync();
+                lst.AddRange(fbres.Select(poco => _cf.CreateChannel(poco)));
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<List<ICred>> GetCredListAsync()
+        {
+            var lst = new List<ICred>();
+            try
+            {
+                var fbres = await _df.GetCredListAsync();
+                lst.AddRange(fbres.Select(poco => _crf.CreateCred(poco)));
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         private void CreateServicesChannels()
         {
-            var cf = BaseFactory.CreateChannelFactory();
-            var chpop = cf.CreateChannel();
+            var chpop = _cf.CreateChannel();
             chpop.Title = "#Popular";
             chpop.Site = "youtube.com";
             var img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
@@ -895,7 +930,10 @@ namespace Crawler.Models
 
         public string SearchKey
         {
-            get { return _searchKey; }
+            get
+            {
+                return _searchKey;
+            }
             set
             {
                 _searchKey = value; 
@@ -919,6 +957,5 @@ namespace Crawler.Models
         }
 
         #endregion
-
     }
 }

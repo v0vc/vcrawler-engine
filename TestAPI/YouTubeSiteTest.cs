@@ -25,7 +25,7 @@ namespace TestAPI
             var testindex = new[] {5};
             foreach (int i in testindex)
             {
-                var lst = await you.SearchItemsAsync("russia", i);
+                var lst = await you.SearchItemsAsync("russia", "RU", i);
                 Assert.AreEqual(lst.Count, i);
             }
         }

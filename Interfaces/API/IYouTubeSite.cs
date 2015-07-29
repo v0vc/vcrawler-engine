@@ -28,7 +28,7 @@ namespace Interfaces.API
         /// <param name="key">Запрос</param>
         /// <param name="maxResult">Желаемое количество записей</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> SearchItemsAsync(string key, int maxResult);
+        Task<List<IVideoItemPOCO>> SearchItemsAsync(string key, string region, int maxResult);
 
         /// <summary>
         /// Получение видео по ID

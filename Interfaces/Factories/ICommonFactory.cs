@@ -8,7 +8,7 @@ namespace Interfaces.Factories
         ICredFactory CreateCredFactory();
         IPlaylistFactory CreatePlaylistFactory();
         ISettingFactory CreateSettingFactory();
-        ISubscribeFactory CreateSubscribeFactory();
+        //ISubscribeFactory CreateSubscribeFactory();
         ITagFactory CreateTagFactory();
         IVideoItemFactory CreateVideoItemFactory();
         ISqLiteDatabase CreateSqLiteDatabase();

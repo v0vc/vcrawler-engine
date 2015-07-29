@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 
 namespace Models.BO
@@ -11,21 +9,13 @@ namespace Models.BO
     {
         private readonly PlaylistFactory _pf;
 
-        public Playlist(IPlaylistFactory pf)
+        private Playlist()
         {
-            _pf = pf as PlaylistFactory;
-            PlaylistItems = new List<IVideoItem>();
         }
 
-        public Playlist(IPlaylistPOCO playlist, IPlaylistFactory pf)
+        public Playlist(PlaylistFactory pf)
         {
-            _pf = pf as PlaylistFactory;
-            ID = playlist.ID;
-            Title = playlist.Title;
-            SubTitle = playlist.SubTitle;
-            Thumbnail = playlist.Thumbnail;
-            ChannelId = playlist.ChannelID;
-            PlaylistItems = new List<IVideoItem>();
+            _pf = pf;
         }
 
         public string ID { get; set; }

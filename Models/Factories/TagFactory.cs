@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -19,7 +20,13 @@ namespace Models.Factories
 
         public ITag CreateTag()
         {
-            return new Tag(_c.CreateTagFactory());
+            return new Tag(this);
+        }
+
+        public ITag CreateTag(ITagPOCO poco)
+        {
+            var tag = new Tag(this) { Title = poco.Title };
+            return tag;
         }
 
         public async Task DeleteTagAsync(string tag)
@@ -53,11 +60,12 @@ namespace Models.Factories
         public async Task<List<IChannel>> GetChannelsByTagAsync(string tag)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var cf = _c.CreateChannelFactory();
             try
             {
                 var lst = new List<IChannel>();
                 var fbres = await fb.GetChannelsByTagAsync(tag);
-                lst.AddRange(fbres.Select(item => new Channel(item, _c.CreateChannelFactory())));
+                lst.AddRange(fbres.Select(poco => cf.CreateChannel(poco)));
                 return lst;
             }
             catch (Exception ex)

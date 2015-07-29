@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -28,12 +29,31 @@ namespace Models.Factories
 
         public IChannel CreateChannel()
         {
-            return new Channel(this);
+            var channel = new Channel(this)
+            {
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                Tags = new List<ITag>(),
+                ChannelCookies = new CookieCollection()
+            };
+            return channel;
         }
 
         public IChannel CreateChannel(IChannelPOCO poco)
         {
-            return new Channel(poco, this);
+            var channel = new Channel(this)
+            {
+                ID = poco.ID,
+                Title = poco.Title,
+                SubTitle = poco.SubTitle, // .WordWrap(80);
+                Thumbnail = poco.Thumbnail,
+                Site = poco.Site,
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                Tags = new List<ITag>(),
+                ChannelCookies = new CookieCollection()
+            };
+            return channel;
         }
 
         public async Task<IChannel> GetChannelDbAsync(string channelID)
@@ -43,7 +63,8 @@ namespace Models.Factories
             try
             {
                 var poco = await fb.GetChannelAsync(channelID);
-                return new Channel(poco, _c.CreateChannelFactory());
+                var channel = CreateChannel(poco);
+                return channel;
             }
             catch (Exception ex)
             {
@@ -57,7 +78,8 @@ namespace Models.Factories
             try
             {
                 var poco = await fb.GetChannelNetAsync(channelID);
-                return new Channel(poco, _c.CreateChannelFactory());
+                var channel = CreateChannel(poco);
+                return channel;
             }
             catch (Exception ex)
             {
@@ -81,11 +103,12 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetChannelItemsDbAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
                 var fbres = await fb.GetChannelItemsAsync(channelID);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -148,20 +171,21 @@ namespace Models.Factories
 
         public async Task<List<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
         {
+            var vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
             switch (channel.Site)
             {
                 case "youtube.com":
 
                     var youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
-                    lst.AddRange(youres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                    lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
                 case "tapochek.net":
 
                     var tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
-                    lst.AddRange(tapres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                    lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
@@ -175,11 +199,12 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
                 var fbres = await fb.GetPopularItemsAsync(regionID, maxresult);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -188,14 +213,15 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, int maxresult)
+        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, string regionID, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
-                var fbres = await fb.SearchItemsAsync(key, maxresult);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                var fbres = await fb.SearchItemsAsync(key, regionID, maxresult);
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -207,11 +233,12 @@ namespace Models.Factories
         public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var fb = _c.CreateYouTubeSite();
+            var pf = _c.CreatePlaylistFactory();
             try
             {
                 var lst = new List<IPlaylist>();
                 var fbres = await fb.GetChannelPlaylistNetAsync(channelID);
-                lst.AddRange(fbres.Select(item => new Playlist(item, _c.CreatePlaylistFactory())));
+                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -223,11 +250,13 @@ namespace Models.Factories
         public async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var pf = _c.CreatePlaylistFactory();
+
             try
             {
                 var lst = new List<IPlaylist>();
                 var fbres = await fb.GetChannelPlaylistAsync(channelID);
-                lst.AddRange(fbres.Select(item => new Playlist(item, _c.CreatePlaylistFactory())));
+                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -239,11 +268,12 @@ namespace Models.Factories
         public async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var tf = _c.CreateTagFactory();
             try
             {
                 var lst = new List<ITag>();
                 var fbres = await fb.GetChannelTagsAsync(id);
-                lst.AddRange(fbres.Select(item => new Tag(item, _c.CreateTagFactory())));
+                lst.AddRange(fbres.Select(poco => tf.CreateTag(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -301,7 +331,9 @@ namespace Models.Factories
                     var you = _c.CreateYouTubeSite();
 
                     if (!channel.ChannelItems.Any())
+                    {
                         await channel.FillChannelItemsDbAsync(dir);
+                    }
 
                     lsid.Reverse();
 
@@ -315,7 +347,7 @@ namespace Models.Factories
 
                         foreach (var poco in res)
                         {
-                            var vi = new VideoItem(poco, vf);
+                            var vi = vf.CreateVideoItem(poco);
                             channel.AddNewItem(vi, true);
                             await vi.InsertItemAsync();
                         }

@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.WindowsAPICodePack.Shell">
+      <HintPath>..\Crawler\DLL\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -46,7 +49,6 @@
     <Compile Include="BO\Cred.cs" />
     <Compile Include="BO\Playlist.cs" />
     <Compile Include="BO\Setting.cs" />
-    <Compile Include="BO\Subscribe.cs" />
     <Compile Include="BO\Tag.cs" />
     <Compile Include="BO\VideoItem.cs" />
     <Compile Include="Factories\ChannelFactory.cs" />
@@ -54,7 +56,6 @@
     <Compile Include="Factories\CredFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
     <Compile Include="Factories\SettingFactory.cs" />
-    <Compile Include="Factories\SubscribeFactory.cs" />
     <Compile Include="Factories\TagFactory.cs" />
     <Compile Include="Factories\VideoItemFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

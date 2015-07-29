@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -20,15 +21,27 @@ namespace Models.Factories
             return new Setting(this);
         }
 
+        public ISetting CreateSetting(ISettingPOCO poco)
+        {
+            var set = new Setting(this)
+            {
+                Key = poco.Key,
+                Value = poco.Value
+            };
+            return set;
+        }
+
         public async Task<ISetting> GetSettingDbAsync(string key)
         {
-            var fb = _c.CreateSqLiteDatabase();
-
             // var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            var sf = _c.CreateSettingFactory();
+
             try
             {
                 var fbres = await fb.GetSettingAsync(key);
-                return new Setting(fbres, _c.CreateSettingFactory());
+                var set = sf.CreateSetting(fbres);
+                return set;
             }
             catch (Exception ex)
             {

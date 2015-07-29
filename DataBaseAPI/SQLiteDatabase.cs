@@ -72,7 +72,7 @@ namespace DataBaseAPI
         {
             var res = new List<IChannelPOCO>();
 
-            var zap = string.Format("SELECT * FROM {0}", Tablechannels);
+            var zap = string.Format("SELECT * FROM {0} ORDER BY {1} ASC", Tablechannels, ChannelTitle);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))

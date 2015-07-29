@@ -4,9 +4,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 
 namespace Models.BO
@@ -19,34 +17,23 @@ namespace Models.BO
         private string _title;
         private bool _isInWork;
 
-        public Channel(IChannelFactory cf)
+        private Channel()
         {
-            _cf = cf as ChannelFactory;
-            ChannelItems = new ObservableCollection<IVideoItem>();
-            ChannelPlaylists = new ObservableCollection<IPlaylist>();
-            Tags = new List<ITag>();
-            ChannelCookies = new CookieCollection();
         }
 
-        public Channel(IChannelPOCO channel, IChannelFactory cf)
+        public Channel(ChannelFactory cf)
         {
-            _cf = cf as ChannelFactory;
-            ID = channel.ID;
-            Title = channel.Title;
-            SubTitle = channel.SubTitle; // .WordWrap(80);
-            Thumbnail = channel.Thumbnail;
-            Site = channel.Site;
-            ChannelItems = new ObservableCollection<IVideoItem>();
-            ChannelPlaylists = new ObservableCollection<IPlaylist>();
-            Tags = new List<ITag>();
-            ChannelCookies = new CookieCollection();
+            _cf = cf;
         }
 
         public string ID { get; set; }
 
         public string Title
         {
-            get { return _title; }
+            get
+            {
+                return _title;
+            }
             set
             {
                 _title = value;
@@ -59,7 +46,6 @@ namespace Models.BO
         public string Site { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
-        public ObservableCollection<IChapter> ChannelChapters { get; set; }
         public List<ITag> Tags { get; set; }
 
         public int CountNew
@@ -90,7 +76,10 @@ namespace Models.BO
 
         public bool IsInWork
         {
-            get { return _isInWork; }
+            get
+            {
+                return _isInWork;
+            }
             set
             {
                 _isInWork = value; 
@@ -171,9 +160,9 @@ namespace Models.BO
             return await _cf.GetPopularItemsNetAsync(regionID, maxresult);
         }
 
-        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, int maxresult)
+        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult)
         {
-            return await _cf.SearchItemsNetAsync(key, maxresult);
+            return await _cf.SearchItemsNetAsync(key, region, maxresult);
         }
 
         public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync()

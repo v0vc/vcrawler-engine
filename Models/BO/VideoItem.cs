@@ -9,17 +9,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.Factories;
 
 namespace Models.BO
 {
     public sealed class VideoItem : INotifyPropertyChanged, IVideoItem
     {
-        private readonly string[] _exts = {"mp4", "mkv"};
         private readonly VideoItemFactory _vf;
+        private readonly string[] _exts = {"mp4", "mkv"};
         private double _downloadPercentage;
         private int _duration;
         private bool _isHasLocalFile;
@@ -29,26 +28,15 @@ namespace Models.BO
         private string _logText;
         private string _tempname = string.Empty;
         private DateTime _timestamp;
+        private TaskbarManager _taskbar;
 
-        public VideoItem(IVideoItemFactory vf)
+        private VideoItem()
         {
-            _vf = vf as VideoItemFactory;
-            VideoItemChapters = new ObservableCollection<IChapter>();
         }
 
-        public VideoItem(IVideoItemPOCO item, IVideoItemFactory vf)
+        public VideoItem(VideoItemFactory vf)
         {
-            _vf = vf as VideoItemFactory;
-            ID = item.ID;
-            Title = item.Title;
-            ParentID = item.ParentID;
-            Description = item.Description; // .WordWrap(80);
-            ViewCount = item.ViewCount;
-            Duration = item.Duration;
-            Comments = item.Comments;
-            Thumbnail = item.Thumbnail;
-            Timestamp = item.Timestamp;
-            VideoItemChapters = new ObservableCollection<IChapter>();
+            _vf = vf;
         }
 
         public string LogText
@@ -63,11 +51,13 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
         public string ID { get; set; }
         public string ParentID { get; set; }
         public string Title { get; set; }
         public string Description { get; set; }
         public long ViewCount { get; set; }
+
         public int Duration
         {
             get
@@ -80,30 +70,41 @@ namespace Models.BO
                 DurationString = IntTostrTime(_duration);
             }
         }
+
         public string DurationString { get; set; }
         public string DateTimeAgo { get; set; }
         public int Comments { get; set; }
         public byte[] Thumbnail { get; set; }
+
         public byte[] LargeThumb
         {
-            get { return _largeThumb; }
+            get
+            {
+                return _largeThumb;
+            }
             set
             {
                 _largeThumb = value;
                 OnPropertyChanged();
             }
         }
+
         public DateTime Timestamp
         {
-            get { return _timestamp; }
+            get
+            {
+                return _timestamp;
+            }
             set
             {
                 _timestamp = value;
                 DateTimeAgo = TimeAgo(_timestamp);
             }
         }
+
         public string LocalFilePath { get; set; }
         public bool IsNewItem { get; set; }
+
         public bool IsShowRow
         {
             get
@@ -116,6 +117,7 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
         public bool IsHasLocalFile
         {
             get
@@ -128,6 +130,7 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
         public string ItemState
         {
             get
@@ -183,7 +186,7 @@ namespace Models.BO
 
             VideoItemChapters.Clear();
 
-            foreach (IChapter chapter in res)
+            foreach (var chapter in res)
             {
                 VideoItemChapters.Add(chapter);
             }
@@ -247,7 +250,7 @@ namespace Models.BO
 
         public string MakeLink()
         {
-            //TODO по типу площадки
+            // TODO по типу площадки
             return string.Format("https://www.youtube.com/watch?v={0}", ID);
         }
 
@@ -267,14 +270,16 @@ namespace Models.BO
             if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
             {
                 var sb = new StringBuilder();
-                foreach (IChapter chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
+                foreach (var chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
                 {
                     sb.Append(chapter.Language).Append(',');
                 }
                 var res = sb.ToString().TrimEnd(',');
 
-                var srt = res == "Auto" ? "--write-srt --write-auto-sub" : string.Format("--write-srt --srt-lang {0}", res);
-                
+                var srt = res == "Auto"
+                    ? "--write-srt --write-auto-sub"
+                    : string.Format("--write-srt --srt-lang {0}", res);
+
                 param = string.Format("{0} {1}", param, srt);
             }
 
@@ -288,6 +293,9 @@ namespace Models.BO
                 ErrorDialog = false, 
                 CreateNoWindow = true
             };
+
+            _taskbar = TaskbarManager.Instance;
+            _taskbar.SetProgressState(TaskbarProgressBarState.Normal);
 
             await Task.Run(() =>
             {
@@ -303,6 +311,11 @@ namespace Models.BO
                 proc.BeginErrorReadLine();
                 proc.WaitForExit();
             });
+        }
+
+        public async Task Log(string text)
+        {
+            await Task.Run(() => LogText += text + Environment.NewLine);
         }
 
         private async void EncodeOnProcessExited(object sender, EventArgs e)
@@ -358,6 +371,8 @@ namespace Models.BO
             await Log(e.Data);
 
             DownloadPercentage = GetPercentFromYoudlOutput(e.Data);
+           
+            _taskbar.SetProgressValue((int)DownloadPercentage, 100);
         }
 
         private static double GetPercentFromYoudlOutput(string input)
@@ -380,8 +395,12 @@ namespace Models.BO
         private void process_Exited()
         {
             DownloadPercentage = 100;
+            _taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
+
             if (_tempname == string.Empty)
+            {
                 return;
+            }
 
             _tempname = _tempname.TrimStart('"').TrimEnd('"');
 
@@ -390,7 +409,7 @@ namespace Models.BO
             var cleartitle = Title.MakeValidFileName();
 
 
-            if (cleartitle == fn.Name) 
+            if (cleartitle == fn.Name)
             {
                 // в имени нет запретных знаков
                 if (fn.Exists)
@@ -441,8 +460,8 @@ namespace Models.BO
             var span = DateTime.Now - dt;
             if (span.Days > 365)
             {
-                var years = span.Days / 365;
-                if (span.Days % 365 != 0)
+                var years = span.Days/365;
+                if (span.Days%365 != 0)
                 {
                     years += 1;
                 }
@@ -450,8 +469,8 @@ namespace Models.BO
             }
             if (span.Days > 30)
             {
-                var months = span.Days / 30;
-                if (span.Days % 31 != 0)
+                var months = span.Days/30;
+                if (span.Days%31 != 0)
                 {
                     months += 1;
                 }
@@ -480,11 +499,6 @@ namespace Models.BO
             return string.Empty;
         }
 
-        public async Task Log(string text)
-        {
-            await Task.Run(() => LogText += text + Environment.NewLine);
-        }
-
         #region INotifyPropertyChanged
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -492,7 +506,10 @@ namespace Models.BO
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var handler = PropertyChanged;
-            if (handler != null) handler(this, new PropertyChangedEventArgs(propertyName));
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         #endregion

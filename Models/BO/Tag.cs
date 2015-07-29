@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 
 namespace Models.BO
@@ -11,19 +9,16 @@ namespace Models.BO
     {
         private readonly TagFactory _tf;
 
-        public Tag(ITagFactory tf)
+        private Tag()
         {
-            _tf = tf as TagFactory;
         }
 
-        public Tag(ITagPOCO tag, ITagFactory tf)
+        public Tag(TagFactory tf)
         {
-            _tf = tf as TagFactory;
-            Title = tag.Title;
+            _tf = tf;
         }
 
         public string Title { get; set; }
-        public List<IChannel> Channels { get; set; }
 
         public async Task DeleteTagAsync()
         {

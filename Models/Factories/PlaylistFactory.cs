@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -19,18 +20,35 @@ namespace Models.Factories
 
         public IPlaylist CreatePlaylist()
         {
-            return new Playlist(this);
+            var pl = new Playlist(this) { PlaylistItems = new List<IVideoItem>() };
+            return pl;
+        }
+
+        public IPlaylist CreatePlaylist(IPlaylistPOCO poco)
+        {
+            var pl = new Playlist(this)
+            {
+                ID = poco.ID,
+                Title = poco.Title,
+                SubTitle = poco.SubTitle,
+                Thumbnail = poco.Thumbnail,
+                ChannelId = poco.ChannelID,
+                PlaylistItems = new List<IVideoItem>()
+            };
+            return pl;
         }
 
         public async Task<IPlaylist> GetPlaylistDbAsync(string id)
         {
-            var fb = _c.CreateSqLiteDatabase();
-
             // var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            var pf = _c.CreatePlaylistFactory();
+
             try
             {
-                var fbres = await fb.GetPlaylistAsync(id);
-                return new Playlist(fbres, _c.CreatePlaylistFactory());
+                var poco = await fb.GetPlaylistAsync(id);
+                var pl = pf.CreatePlaylist(poco);
+                return pl;
             }
             catch (Exception ex)
             {
@@ -41,10 +59,12 @@ namespace Models.Factories
         public async Task<IPlaylist> GetPlaylistNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
+            var pf = _c.CreatePlaylistFactory();
             try
             {
                 var fbres = await fb.GetPlaylistNetAsync(id);
-                return new Playlist(fbres, _c.CreatePlaylistFactory());
+                var pl = pf.CreatePlaylist(fbres);
+                return pl;
             }
             catch (Exception ex)
             {
@@ -55,11 +75,12 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
             var fb = _c.CreateYouTubeSite();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
                 var fbres = await fb.GetPlaylistItemsNetAsync(playlist.ID);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -71,11 +92,12 @@ namespace Models.Factories
         public async Task<List<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
                 var fbres = await fb.GetPlaylistItemsAsync(id, channelID);
-                lst.AddRange(fbres.Select(item => new VideoItem(item, _c.CreateVideoItemFactory())));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)

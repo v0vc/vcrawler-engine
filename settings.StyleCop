@@ -333,7 +333,7 @@
         <StringProperty Name="AdvancedNaming_StructInternal">$(AaBb)</StringProperty>
         <StringProperty Name="AdvancedNaming_PrivateConst">$(aaBb)</StringProperty>
         <StringProperty Name="AdvancedNaming_InternalConst">$(AaBb)</StringProperty>
-        <StringProperty Name="AdvancedNaming_Words">POCO API ID</StringProperty>
+        <StringProperty Name="AdvancedNaming_Words">POCO API ID BO</StringProperty>
         <StringProperty Name="AdvancedNaming_ProtectedInstanceField">$(aaBb)</StringProperty>
         <StringProperty Name="AdvancedNaming_PrivateInstanceField">$(aaBb)</StringProperty>
         <StringProperty Name="AdvancedNaming_ProtectedStaticField">$(aaBb)</StringProperty>

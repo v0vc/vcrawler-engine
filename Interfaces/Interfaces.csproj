@@ -48,7 +48,6 @@
     <Compile Include="Factories\ICredFactory.cs" />
     <Compile Include="Factories\IPlaylistFactory.cs" />
     <Compile Include="Factories\ISettingFactory.cs" />
-    <Compile Include="Factories\ISubscribeFactory.cs" />
     <Compile Include="Factories\ITagFactory.cs" />
     <Compile Include="Factories\IVideoItemFactory.cs" />
     <Compile Include="Models\IChannel.cs" />
@@ -56,7 +55,6 @@
     <Compile Include="Models\ICred.cs" />
     <Compile Include="Models\IPlaylist.cs" />
     <Compile Include="Models\ISetting.cs" />
-    <Compile Include="Models\ISubscribe.cs" />
     <Compile Include="Models\ITag.cs" />
     <Compile Include="Models\IVideoItem.cs" />
     <Compile Include="POCO\IChannelPOCO.cs" />

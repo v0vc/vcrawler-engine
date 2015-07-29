@@ -211,7 +211,7 @@ namespace SitesAPI.Videos
             return res;
         }
 
-        public async Task<List<IVideoItemPOCO>> SearchItemsAsync(string keyword, int maxResult)
+        public async Task<List<IVideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
             var itemsppage = ItemsPerPage;
 
@@ -223,8 +223,8 @@ namespace SitesAPI.Videos
             var res = new List<IVideoItemPOCO>();
 
             var zap = string.Format(
-                "{0}search?&q={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}",
-                Url, keyword, Key, itemsppage, Print);
+                "{0}search?&q={1}&key={2}&maxResults={3}&regionCode={4}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
+                Url, keyword, Key, itemsppage, region, Print);
 
             object pagetoken;
 
@@ -292,8 +292,8 @@ namespace SitesAPI.Videos
                 }
 
                 zap = string.Format(
-                    "{0}search?&q={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
-                    Url, keyword, Key, itemsppage, pagetoken, Print);
+                    "{0}search?&q={1}&key={2}&maxResults={3}&regionCode={4}&pageToken={5}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{6}",
+                    Url, keyword, Key, itemsppage, region, pagetoken, Print);
             }
             while (pagetoken != null);
 

@@ -1,7 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 
 namespace Models.BO
@@ -10,16 +8,13 @@ namespace Models.BO
     {
         private readonly SettingFactory _sf;
 
-        public Setting(ISettingFactory sf)
+        private Setting()
         {
-            _sf = sf as SettingFactory;
         }
 
-        public Setting(ISettingPOCO setting, ISettingFactory sf)
+        public Setting(SettingFactory sf)
         {
-            _sf = sf as SettingFactory;
-            Key = setting.Key;
-            Value = setting.Value;
+            _sf = sf;
         }
 
         public string Key { get; set; }

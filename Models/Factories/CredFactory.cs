@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -20,14 +21,31 @@ namespace Models.Factories
             return new Cred(this);
         }
 
+        public ICred CreateCred(ICredPOCO poco)
+        {
+            var cred = new Cred(this)
+            {
+                Site = poco.Site,
+                Login = poco.Login,
+                Pass = poco.Pass,
+                Cookie = poco.Cookie,
+                Expired = poco.Expired,
+                Autorization = poco.Autorization
+            };
+            return cred;
+        }
+
         public async Task<ICred> GetCredDbAsync(string site)
         {
-            var fb = _c.CreateSqLiteDatabase();
             // var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            var cf = _c.CreateCredFactory();
+            
             try
             {
-                var fbres = await fb.GetCredAsync(site);
-                return new Cred(fbres, _c.CreateCredFactory());
+                var poco = await fb.GetCredAsync(site);
+                var cred = cf.CreateCred(poco);
+                return cred;
             }
             catch (Exception ex)
             {

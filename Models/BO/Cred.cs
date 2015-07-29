@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Interfaces.Factories;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 
 namespace Models.BO
@@ -11,20 +9,13 @@ namespace Models.BO
     {
         private readonly CredFactory _credFactory;
 
-        public Cred(ICredFactory credFactory)
+        private Cred()
         {
-            _credFactory = credFactory as CredFactory;
         }
 
-        public Cred(ICredPOCO poco, ICredFactory credFactory)
+        public Cred(CredFactory credFactory)
         {
-            _credFactory = credFactory as CredFactory;
-            Site = poco.Site;
-            Login = poco.Login;
-            Pass = poco.Pass;
-            Cookie = poco.Cookie;
-            Expired = poco.Expired;
-            Autorization = poco.Autorization;
+            _credFactory = credFactory;
         }
 
         public string Site { get; set; }

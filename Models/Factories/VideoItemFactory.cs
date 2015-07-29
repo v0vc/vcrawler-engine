@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
@@ -25,18 +26,33 @@ namespace Models.Factories
 
         public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
         {
-            return new VideoItem(poco, this);
+            var vi = new VideoItem(this)
+            {
+                ID = poco.ID,
+                Title = poco.Title,
+                ParentID = poco.ParentID,
+                Description = poco.Description, // .WordWrap(80);
+                ViewCount = poco.ViewCount,
+                Duration = poco.Duration,
+                Comments = poco.Comments,
+                Thumbnail = poco.Thumbnail,
+                Timestamp = poco.Timestamp,
+                VideoItemChapters = new ObservableCollection<IChapter>()
+            };
+            return vi;
         }
 
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
-            var fb = _c.CreateSqLiteDatabase();
-
             // var fb = ServiceLocator.SqLiteDatabase;
+            var fb = _c.CreateSqLiteDatabase();
+            var vf = _c.CreateVideoItemFactory();
+            
             try
             {
-                var fbres = await fb.GetVideoItemAsync(id);
-                return new VideoItem(fbres, this);
+                var poco = await fb.GetVideoItemAsync(id);
+                var vi = vf.CreateVideoItem(poco);
+                return vi;
             }
             catch (Exception ex)
             {
@@ -47,10 +63,12 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
-                var fbres = await fb.GetVideoItemNetAsync(id);
-                return new VideoItem(fbres, this);
+                var poco = await fb.GetVideoItemNetAsync(id);
+                var vi = vf.CreateVideoItem(poco);
+                return vi;
             }
             catch (Exception ex)
             {
@@ -61,10 +79,12 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
+            var vf = _c.CreateVideoItemFactory();
             try
             {
-                var fbres = await fb.GetVideoItemLiteNetAsync(id);
-                return new VideoItem(fbres, this);
+                var poco = await fb.GetVideoItemLiteNetAsync(id);
+                var vi = vf.CreateVideoItem(poco);
+                return vi;
             }
             catch (Exception ex)
             {
@@ -75,10 +95,12 @@ namespace Models.Factories
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
+            var cf = _c.CreateChannelFactory();
             try
             {
-                var fbres = await fb.GetChannelAsync(channelID);
-                return new Channel(fbres, _c.CreateChannelFactory());
+                var poco = await fb.GetChannelAsync(channelID);
+                var channel = cf.CreateChannel(poco);
+                return channel;
             }
             catch (Exception ex)
             {

@@ -1,14 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Interfaces.Models;
+﻿using Interfaces.Models;
+using Interfaces.POCO;
 
 namespace Interfaces.Factories
 {
     public interface ITagFactory
     {
         ITag CreateTag();
-        Task DeleteTagAsync(string tag);
-        Task InsertTagAsync(ITag tag);
-        Task<List<IChannel>> GetChannelsByTagAsync(string tag);
+        ITag CreateTag(ITagPOCO poco);
     }
 }
