@@ -263,9 +263,10 @@ namespace Models.BO
                 dir.Create();
             }
 
+            const string options = "--no-check-certificate --console-title --no-call-home";
             var param = string.Format(isHd
-                ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title"
-                : "-f best, -o {0}\\%(title)s.%(ext)s {1} --no-check-certificate --console-title", dir, MakeLink());
+                ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
+                : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}", dir, MakeLink(), options);
 
             if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
             {
