@@ -175,6 +175,12 @@ namespace Interfaces.API
         Task<List<ITagPOCO>> GetChannelTagsAsync(string id);
 
         /// <summary>
+        /// Получить все тэги
+        /// </summary>
+        /// <returns></returns>
+        Task<List<ITagPOCO>> GetAllTagsAsync();
+
+        /// <summary>
         /// Получить список всех креденшиалов (поддерживаемых площадок)
         /// </summary>
         /// <returns></returns>

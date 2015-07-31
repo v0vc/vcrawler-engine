@@ -17,23 +17,18 @@ namespace Models.Factories
     {
         private readonly ICommonFactory _c;
 
-        // private readonly ISqLiteDatabase _db;
-        // private readonly IYouTubeSite _youTubeSite;
         public ChannelFactory(ICommonFactory c)
         {
             _c = c;
-
-            // _db = c.CreateSqLiteDatabase();
-            // _youTubeSite = c.CreateYouTubeSite();
         }
 
         public IChannel CreateChannel()
         {
             var channel = new Channel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                Tags = new List<ITag>(),
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(),
                 ChannelCookies = new CookieCollection()
             };
             return channel;
@@ -43,14 +38,14 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ID = poco.ID,
-                Title = poco.Title,
+                ID = poco.ID, 
+                Title = poco.Title, 
                 SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail,
-                Site = poco.Site,
-                ChannelItems = new ObservableCollection<IVideoItem>(),
+                Thumbnail = poco.Thumbnail, 
+                Site = poco.Site, 
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                Tags = new List<ITag>(),
+                ChannelTags = new ObservableCollection<ITag>(), 
                 ChannelCookies = new CookieCollection()
             };
             return channel;
@@ -104,9 +99,10 @@ namespace Models.Factories
         {
             var fb = _c.CreateSqLiteDatabase();
             var vf = _c.CreateVideoItemFactory();
+            var lst = new List<IVideoItem>();
+
             try
             {
-                var lst = new List<IVideoItem>();
                 var fbres = await fb.GetChannelItemsAsync(channelID);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
@@ -200,9 +196,10 @@ namespace Models.Factories
         {
             var fb = _c.CreateYouTubeSite();
             var vf = _c.CreateVideoItemFactory();
+            var lst = new List<IVideoItem>();
+
             try
             {
-                var lst = new List<IVideoItem>();
                 var fbres = await fb.GetPopularItemsAsync(regionID, maxresult);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
@@ -217,9 +214,10 @@ namespace Models.Factories
         {
             var fb = _c.CreateYouTubeSite();
             var vf = _c.CreateVideoItemFactory();
+            var lst = new List<IVideoItem>();
+
             try
             {
-                var lst = new List<IVideoItem>();
                 var fbres = await fb.SearchItemsAsync(key, regionID, maxresult);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
@@ -234,9 +232,9 @@ namespace Models.Factories
         {
             var fb = _c.CreateYouTubeSite();
             var pf = _c.CreatePlaylistFactory();
+            var lst = new List<IPlaylist>();
             try
             {
-                var lst = new List<IPlaylist>();
                 var fbres = await fb.GetChannelPlaylistNetAsync(channelID);
                 lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
@@ -251,10 +249,10 @@ namespace Models.Factories
         {
             var fb = _c.CreateSqLiteDatabase();
             var pf = _c.CreatePlaylistFactory();
+            var lst = new List<IPlaylist>();
 
             try
             {
-                var lst = new List<IPlaylist>();
                 var fbres = await fb.GetChannelPlaylistAsync(channelID);
                 lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
@@ -269,9 +267,10 @@ namespace Models.Factories
         {
             var fb = _c.CreateSqLiteDatabase();
             var tf = _c.CreateTagFactory();
+            var lst = new List<ITag>();
+
             try
             {
-                var lst = new List<ITag>();
                 var fbres = await fb.GetChannelTagsAsync(id);
                 lst.AddRange(fbres.Select(poco => tf.CreateTag(poco)));
                 return lst;
@@ -314,8 +313,8 @@ namespace Models.Factories
             var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
 
             // получаем количество записей на канале
-            // var lsid = await channel.GetChannelItemsIdsListNetAsync(0);
-            // var netCount = lsid.Count;
+            // var lsids = await channel.GetChannelItemsIdsListNetAsync(0);
+            // var netCount = lsids.Count;
             var netCount = await GetChannelItemsCountNetAsync(channel.ID);
 
             if (netCount > dbCount)
@@ -326,10 +325,6 @@ namespace Models.Factories
 
                 if (lsid.Count != dbCount && lsid.Any())
                 {
-                    var vf = _c.CreateVideoItemFactory();
-
-                    var you = _c.CreateYouTubeSite();
-
                     if (!channel.ChannelItems.Any())
                     {
                         await channel.FillChannelItemsDbAsync(dir);
@@ -339,17 +334,24 @@ namespace Models.Factories
 
                     var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); // id которых нет
                     
-                    var tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
-
-                    foreach (var list in tchanks)
+                    if (trueids.Any())
                     {
-                        var res = await you.GetVideosListByIdsAsync(list); // получим скопом
+                        var vf = _c.CreateVideoItemFactory();
 
-                        foreach (var poco in res)
+                        var you = _c.CreateYouTubeSite();
+
+                        var tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
+
+                        foreach (var list in tchanks)
                         {
-                            var vi = vf.CreateVideoItem(poco);
-                            channel.AddNewItem(vi, true);
-                            await vi.InsertItemAsync();
+                            var res = await you.GetVideosListByIdsAsync(list); // получим скопом
+
+                            foreach (var poco in res)
+                            {
+                                var vi = vf.CreateVideoItem(poco);
+                                channel.AddNewItem(vi, true);
+                                await vi.InsertItemAsync();
+                            }
                         }
                     }
                 }

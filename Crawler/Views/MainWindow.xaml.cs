@@ -163,6 +163,23 @@ namespace Crawler.Views
                     await channel.InsertChannelItemsAsync();
 
                     break;
+
+                case "Tags":
+
+                    var etvm = new EditTagsViewModel
+                    {
+                        ParentChannel = ViewModel.Model.SelectedChannel,
+                        Tags = ViewModel.Model.Tags
+                    };
+
+                    var etv = new EditTagsView
+                    {
+                        DataContext = etvm,
+                        Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
+                    };
+                    etv.ShowDialog();
+
+                    break;
             }
         }
 

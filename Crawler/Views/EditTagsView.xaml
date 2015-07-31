@@ -1,0 +1,52 @@
+﻿<Window x:Class="Crawler.Views.EditTagsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Height="300" Width="250" MinWidth="250" 
+        WindowStyle="ToolWindow" 
+        Loaded="EditTagsView_OnLoaded"
+        >
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition Height="40"></RowDefinition>
+        </Grid.RowDefinitions>
+        <DataGrid CanUserAddRows="True" 
+                  AutoGenerateColumns="False" 
+                  CanUserDeleteRows="True"
+                  HeadersVisibility="None"
+                  RowHeaderWidth="0"
+                  ItemsSource="{Binding ParentChannel.ChannelTags}">
+            <DataGrid.Columns>
+                <DataGridTextColumn Binding="{Binding Title}" Width="*" />
+                <DataGridTemplateColumn>
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="D" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        <DockPanel Grid.Row="1">
+            <Button Style="{StaticResource RoundButtonTemplate}" 
+                HorizontalAlignment="Left" 
+                Width="100" Margin="5,3,3,5" 
+                Click="AddButton_OnClick">
+                <StackPanel Orientation="Horizontal">
+                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">ADD</Label>
+                    <Image Source="../Images/add-48.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </StackPanel>
+            </Button>
+            <Button Style="{StaticResource RoundButtonTemplate}" 
+                HorizontalAlignment="Right" 
+                Width="100" Margin="5,3,3,5" 
+                >
+                <StackPanel Orientation="Horizontal">
+                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">SAVE</Label>
+                    <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </StackPanel>
+            </Button>
+        </DockPanel>
+        
+    </Grid>
+</Window>

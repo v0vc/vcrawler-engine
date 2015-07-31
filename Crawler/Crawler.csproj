@@ -71,8 +71,16 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ViewModels\AddTagViewModel.cs" />
+    <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="Views\AddLinkView.xaml.cs">
       <DependentUpon>AddLinkView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\AddTagView.xaml.cs">
+      <DependentUpon>AddTagView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\EditTagsView.xaml.cs">
+      <DependentUpon>EditTagsView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\FfmpegView.xaml.cs">
       <DependentUpon>FfmpegView.xaml</DependentUpon>
@@ -92,7 +100,15 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Views\AddTagView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\EditDescriptionView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\EditTagsView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

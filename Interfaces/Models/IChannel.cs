@@ -14,7 +14,7 @@ namespace Interfaces.Models
         string Site { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
         ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
-        List<ITag> Tags { get; set; }
+        ObservableCollection<ITag> ChannelTags { get; set; }
         int CountNew { get; set; }
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }

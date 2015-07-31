@@ -56,15 +56,17 @@ namespace Crawler.Models
 
         public MainWindowModel()
         {
-            BaseFactory = Container.Kernel.Get<ICommonFactory>();
             Channels = new ObservableCollection<IChannel>();
             ServiceChannels = new ObservableCollection<IChannel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             SupportedCreds = new List<ICred>();
+            Tags = new ObservableCollection<ITag>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
             IsIdle = true;
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
+
+            BaseFactory = Container.Kernel.Get<ICommonFactory>();
             _cf = BaseFactory.CreateChannelFactory();
             _vf = BaseFactory.CreateVideoItemFactory();
             _sf = BaseFactory.CreateSettingFactory();
@@ -282,6 +284,12 @@ namespace Crawler.Models
                 if (SupportedCreds.Any())
                 {
                     SelectedCred = SupportedCreds.First();
+                }
+
+                var lsttags = await GetAllTagsAsync();
+                foreach (ITag tag in lsttags)
+                {
+                    Tags.Add(tag);
                 }
             }
             catch (Exception ex)
@@ -628,6 +636,22 @@ namespace Crawler.Models
             }
         }
 
+        public async Task<List<ITag>> GetAllTagsAsync()
+        {
+            var lst = new List<ITag>();
+
+            try
+            {
+                var fbres = await _df.GetAllTagsAsync();
+                lst.AddRange(fbres.Select(poco => BaseFactory.CreateTagFactory().CreateTag(poco)));
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         private void CreateServicesChannels()
         {
             var chpop = _cf.CreateChannel();
@@ -707,6 +731,8 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> ServiceChannels { get; set; }
 
         public ObservableCollection<IChannel> RelatedChannels { get; set; }
+
+        public ObservableCollection<ITag> Tags { get; set; } 
 
         public List<string> Countries { get; set; }
 

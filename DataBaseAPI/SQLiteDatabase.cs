@@ -506,6 +506,37 @@ namespace DataBaseAPI
             return res;
         }
 
+        public async Task<List<ITagPOCO>> GetAllTagsAsync()
+        {
+            var res = new List<ITagPOCO>();
+
+            var zap = string.Format("SELECT * FROM {0}", Tabletags);
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                    {
+                        if (!reader.HasRows)
+                        {
+                            return res;
+                        }
+
+                        while (await reader.ReadAsync())
+                        {
+                            var tag = new TagPOCO(reader[TagTitle].ToString());
+                            res.Add(tag);
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
         public async Task<List<ICredPOCO>> GetCredListAsync()
         {
             var res = new List<ICredPOCO>();
