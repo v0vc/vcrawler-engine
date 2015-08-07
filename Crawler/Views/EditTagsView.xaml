@@ -15,13 +15,18 @@
                   CanUserDeleteRows="True"
                   HeadersVisibility="None"
                   RowHeaderWidth="0"
-                  ItemsSource="{Binding ParentChannel.ChannelTags}">
+                  ItemsSource="{Binding ParentChannel.ChannelTags}"
+                  SelectedItem="{Binding SelectedTag}"
+                  Name="DataGridTags"
+                  >
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Title}" Width="*" />
                 <DataGridTemplateColumn>
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="D" />
+                            <Button Click="ButtonBase_OnClick">
+                                <Image Source="../Images/delete-16.png"></Image>
+                            </Button>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

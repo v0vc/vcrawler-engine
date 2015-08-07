@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Data;
+using System.Linq;
 using System.Windows;
+using System.Windows.Controls;
 using Crawler.ViewModels;
 using Interfaces.Models;
 
@@ -53,6 +55,19 @@ namespace Crawler.Views
             };
             
             atv.ShowDialog();
+        }
+
+        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        {
+            var tag = ((Button)e.Source).DataContext as ITag;
+            if (tag != null)
+            {
+                var row = (DataGridRow)DataGridTags.SelectedItem;
+                if (row != null)
+                {
+                    
+                }
+            }
         }
     }
 }
