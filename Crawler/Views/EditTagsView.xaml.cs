@@ -1,4 +1,4 @@
-﻿using System.Data;
+﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -62,10 +62,10 @@ namespace Crawler.Views
             var tag = ((Button)e.Source).DataContext as ITag;
             if (tag != null)
             {
-                var row = (DataGridRow)DataGridTags.SelectedItem;
-                if (row != null)
+                var lst = DataGridTags.ItemsSource as ObservableCollection<ITag>;
+                if (lst != null)
                 {
-                    
+                    lst.Remove(tag);
                 }
             }
         }

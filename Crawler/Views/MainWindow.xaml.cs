@@ -267,6 +267,16 @@ namespace Crawler.Views
 
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            ViewModel.Model.Filter = string.Empty;
+            if (ViewModel.Model.RelatedChannels.Any())
+            {
+                foreach (IChannel channel in ViewModel.Model.RelatedChannels)
+                {
+                    channel.ChannelItems.Clear();
+                }
+                ViewModel.Model.RelatedChannels.Clear();
+            }
+
             if (e.AddedItems.Count != 1)
             {
                 return;
