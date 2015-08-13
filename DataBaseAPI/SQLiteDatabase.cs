@@ -400,7 +400,7 @@ namespace DataBaseAPI
         {
             var zap =
                 string.Format(
-                    @"INSERT INTO '{0}' ('{1}') VALUES (@{1})", 
+                    @"INSERT OR IGNORE INTO '{0}' ('{1}') VALUES (@{1})", 
                     Tabletags, 
                     TagTitle);
 

@@ -10,7 +10,7 @@
             <RowDefinition></RowDefinition>
             <RowDefinition Height="40"></RowDefinition>
         </Grid.RowDefinitions>
-        <DataGrid CanUserAddRows="True" 
+        <DataGrid CanUserAddRows="False" 
                   AutoGenerateColumns="False" 
                   CanUserDeleteRows="True"
                   HeadersVisibility="None"
@@ -20,11 +20,17 @@
                   Name="DataGridTags"
                   >
             <DataGrid.Columns>
-                <DataGridTextColumn Binding="{Binding Title}" Width="*" />
-                <DataGridTemplateColumn>
+                <DataGridTextColumn Binding="{Binding Title}" Width="*" FontSize="16">
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center" />
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTemplateColumn Width="24">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Click="ButtonBase_OnClick">
+                            <Button Click="ButtonDeleteTag_OnClick" Height="20" Width="20">
                                 <Image Source="../Images/delete-16.png"></Image>
                             </Button>
                         </DataTemplate>
@@ -43,9 +49,11 @@
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource RoundButtonTemplate}" 
-                HorizontalAlignment="Right" 
-                Width="100" Margin="5,3,3,5" 
-                >
+                    HorizontalAlignment="Right" 
+                    Width="100" Margin="5,3,3,5"
+                    Command="{Binding SaveCommand}"
+                    Click="ButtonSave_OnClick"
+                    >
                 <StackPanel Orientation="Horizontal">
                     <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">SAVE</Label>
                     <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>

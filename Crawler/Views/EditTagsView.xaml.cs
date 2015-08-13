@@ -17,17 +17,27 @@ namespace Crawler.Views
             InitializeComponent();
         }
 
+        private EditTagsViewModel _viewModel;
+
         private async void EditTagsView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            var ch = DataContext as IChannel;
-            if (ch == null)
+            var etv = DataContext as EditTagsViewModel;
+            if (etv == null)
             {
                 return;
             }
 
-            if (!ch.ChannelTags.Any())
+            _viewModel = etv;
+
+            if (etv.ParentChannel.ChannelTags.Any())
             {
-                await ch.GetChannelTagsAsync();
+                etv.ParentChannel.ChannelTags.Clear();
+            }
+
+            var lst = await etv.ParentChannel.GetChannelTagsAsync();
+            foreach (ITag tag in lst)
+            {
+                etv.ParentChannel.ChannelTags.Add(tag);
             }
         }
 
@@ -57,7 +67,7 @@ namespace Crawler.Views
             atv.ShowDialog();
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
         {
             var tag = ((Button)e.Source).DataContext as ITag;
             if (tag != null)
@@ -66,8 +76,17 @@ namespace Crawler.Views
                 if (lst != null)
                 {
                     lst.Remove(tag);
+                    if (_viewModel != null)
+                    {
+                        _viewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
+                    }
                 }
             }
+        }
+
+        private void ButtonSave_OnClick(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }

@@ -3,10 +3,12 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Net;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Crawler.Properties;
 using Crawler.ViewModels;
 using Extensions;
+using Interfaces.Models;
 
 namespace Crawler.Views
 {
@@ -42,7 +44,7 @@ namespace Crawler.Views
             {
                 return;
             }
-            var link = (string)Settings.Default["pathToYoudl"];
+            var link = (string) Settings.Default["pathToYoudl"];
 
             ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
 
@@ -76,7 +78,18 @@ namespace Crawler.Views
             }
             else
             {
-                ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+                ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
+                    CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+            }
+        }
+
+        private async void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
+        {
+            var tag = ((Button)e.Source).DataContext as ITag;
+            if (tag != null)
+            {
+                ViewModel.Model.Tags.Remove(tag);
+                await tag.DeleteTagAsync();
             }
         }
     }

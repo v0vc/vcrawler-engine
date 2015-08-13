@@ -19,6 +19,7 @@ namespace Crawler.ViewModels
             Model = model;
             OpenDirCommand = new RelayCommand(OpenDir);
             AddNewItemCommand = new RelayCommand(x => AddNewItem(false));
+            AddNewTagCommand = new RelayCommand(x => AddNewTag());
             SaveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem());
             SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
             SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
@@ -28,6 +29,7 @@ namespace Crawler.ViewModels
 
         public MainWindowModel Model { get; set; }
         public RelayCommand AddNewItemCommand { get; set; }
+        public RelayCommand AddNewTagCommand { get; set; }
         public RelayCommand SaveNewItemCommand { get; set; }
         public RelayCommand SyncDataCommand { get; set; }
         public RelayCommand OpenDirCommand { get; set; }
@@ -66,6 +68,18 @@ namespace Crawler.ViewModels
                     }
                     break;
             }
+        }
+
+        private void AddNewTag()
+        {
+            var antv = new AddNewTagView
+            {
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                DataContext = this
+            };
+
+            antv.ShowDialog();
         }
 
         public void AddNewItem(bool isEditMode)

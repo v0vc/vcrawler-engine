@@ -24,6 +24,7 @@ namespace Crawler.Views
             {
                 atw.ParentChannel.ChannelTags.Add(atw.SelectedTag);
             }
+            Close();
         }
     }
 }

@@ -53,6 +53,7 @@ namespace Crawler.Models
         private readonly IYouTubeSite _yf;
         private readonly ISqLiteDatabase _df;
         private readonly ICredFactory _crf;
+        private string _newTag;
 
         public MainWindowModel()
         {
@@ -232,6 +233,11 @@ namespace Crawler.Models
                 {
                     await cred.UpdateLoginAsync(cred.Login);
                     await cred.UpdatePasswordAsync(cred.Pass);
+                }
+
+                foreach (ITag tag in Tags)
+                {
+                    await tag.InsertTagAsync();
                 }
 
                 SetStatus(0);
@@ -963,6 +969,16 @@ namespace Crawler.Models
             set
             {
                 _searchKey = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public string NewTag
+        {
+            get { return _newTag; }
+            set
+            {
+                _newTag = value; 
                 OnPropertyChanged();
             }
         }
