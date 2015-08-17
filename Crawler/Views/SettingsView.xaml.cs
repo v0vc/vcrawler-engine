@@ -31,9 +31,9 @@ namespace Crawler.Views
 
         private void SettingsView_KeyDown(object sender, KeyEventArgs e)
         {
+            KeyDown -= SettingsView_KeyDown;
             if (e.Key == Key.Escape)
             {
-                KeyDown -= SettingsView_KeyDown;
                 Close();
             }
         }
@@ -68,6 +68,12 @@ namespace Crawler.Views
             ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
                 CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
             ViewModel.Model.PrValue = 0;
+            var webClient = sender as WebClient;
+            if (webClient != null)
+            {
+                webClient.DownloadFileCompleted -= client_DownloadFileCompleted;
+                webClient.DownloadProgressChanged -= client_DownloadProgressChanged;
+            }
         }
 
         private void SettingsView_OnLoaded(object sender, RoutedEventArgs e)
@@ -88,8 +94,15 @@ namespace Crawler.Views
             var tag = ((Button)e.Source).DataContext as ITag;
             if (tag != null)
             {
-                ViewModel.Model.Tags.Remove(tag);
-                await tag.DeleteTagAsync();
+                var result = MessageBox.Show(string.Format("Are you sure to delete Tag:{0}<{1}>" + "?", Environment.NewLine, tag.Title),
+                    "Confirm",
+                    MessageBoxButton.OKCancel, MessageBoxImage.Information);
+
+                if (result == MessageBoxResult.OK)
+                {
+                    ViewModel.Model.Tags.Remove(tag);
+                    await tag.DeleteTagAsync();
+                }
             }
         }
     }

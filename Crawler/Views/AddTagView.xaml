@@ -11,7 +11,7 @@
                   Margin="1" Name="TextBox"
                   IsEditable="False"
                   />
-        <Button Width="30" Margin="2,1,1,1" Content="OK" Click="ButtonBase_OnClick" />
+        <Button Width="30" Margin="2,1,1,1" Content="OK" Click="ButtonBase_OnClick" Name="ButtonOk"/>
     </StackPanel>
     
 </Window>

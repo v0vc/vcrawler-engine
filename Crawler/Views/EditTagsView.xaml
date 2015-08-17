@@ -53,6 +53,7 @@
                     Width="100" Margin="5,3,3,5"
                     Command="{Binding SaveCommand}"
                     Click="ButtonSave_OnClick"
+                    Name="ButtonSave"
                     >
                 <StackPanel Orientation="Horizontal">
                     <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">SAVE</Label>

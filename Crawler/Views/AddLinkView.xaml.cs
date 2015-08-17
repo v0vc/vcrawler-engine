@@ -19,9 +19,9 @@ namespace Crawler.Views
 
         private void AddLinkView_KeyDown(object sender, KeyEventArgs e)
         {
+            KeyDown -= AddLinkView_KeyDown;
             if (e.Key == Key.Escape)
-            {
-                KeyDown -= AddLinkView_KeyDown;
+            { 
                 Close();
             }
             if (e.Key == Key.Enter)

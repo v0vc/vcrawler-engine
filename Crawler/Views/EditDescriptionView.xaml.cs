@@ -18,9 +18,9 @@ namespace Crawler.Views
 
         private void AddChanelView_KeyDown(object sender, KeyEventArgs e)
         {
+            KeyDown -= AddChanelView_KeyDown;
             if (e.Key == Key.Escape)
             {
-                KeyDown -= AddChanelView_KeyDown;
                 Close();
             }
         }

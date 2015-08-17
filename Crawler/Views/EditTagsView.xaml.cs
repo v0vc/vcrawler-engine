@@ -1,7 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Crawler.ViewModels;
 using Interfaces.Models;
 
@@ -12,45 +15,55 @@ namespace Crawler.Views
     /// </summary>
     public partial class EditTagsView : Window
     {
+        public EditTagsViewModel ViewModel
+        {
+            get { return DataContext as EditTagsViewModel; }
+            set { DataContext = value; }
+        }
+
         public EditTagsView()
         {
             InitializeComponent();
+            KeyDown += EditTagsView_KeyDown;
         }
 
-        private EditTagsViewModel _viewModel;
+        private void EditTagsView_KeyDown(object sender, KeyEventArgs e)
+        {
+            KeyDown -= EditTagsView_KeyDown;
+            if (e.Key == Key.Escape)
+            {
+                Close();
+            }
+            if (e.Key == Key.Enter)
+            {
+                // нажмем кнопку программно
+                var peer = new ButtonAutomationPeer(ButtonSave);
+                var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
+                if (invokeProv != null)
+                {
+                    invokeProv.Invoke();
+                }
+            }
+        }
 
         private async void EditTagsView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            var etv = DataContext as EditTagsViewModel;
-            if (etv == null)
+            if (ViewModel.ParentChannel.ChannelTags.Any())
             {
-                return;
+                ViewModel.ParentChannel.ChannelTags.Clear();
             }
 
-            _viewModel = etv;
-
-            if (etv.ParentChannel.ChannelTags.Any())
-            {
-                etv.ParentChannel.ChannelTags.Clear();
-            }
-
-            var lst = await etv.ParentChannel.GetChannelTagsAsync();
+            var lst = await ViewModel.ParentChannel.GetChannelTagsAsync();
             foreach (ITag tag in lst)
             {
-                etv.ParentChannel.ChannelTags.Add(tag);
+                ViewModel.ParentChannel.ChannelTags.Add(tag);
             }
         }
 
         private void AddButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var etvm = DataContext as EditTagsViewModel;
-            if (etvm == null)
-            {
-                return;
-            }
-
-            var atvm = new AddTagViewModel { ParentChannel = etvm.ParentChannel };
-            foreach (ITag tag in etvm.Tags)
+            var atvm = new AddTagViewModel { ParentChannel = ViewModel.ParentChannel };
+            foreach (ITag tag in ViewModel.Tags)
             {
                 atvm.Tags.Add(tag);
             }
@@ -76,9 +89,9 @@ namespace Crawler.Views
                 if (lst != null)
                 {
                     lst.Remove(tag);
-                    if (_viewModel != null)
+                    if (ViewModel != null)
                     {
-                        _viewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
+                        ViewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
                     }
                 }
             }

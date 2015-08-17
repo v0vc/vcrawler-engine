@@ -32,8 +32,8 @@ namespace DataBaseAPI
             var fdb = Path.Combine(_appstartdir, Dbfile);
             FileBase = new FileInfo(fdb);
             _dbConnection = string.Format(
-                    "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", 
-                    FileBase.FullName);
+                "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off",
+                FileBase.FullName);
             if (!FileBase.Exists)
             {
                 CreateDb();
@@ -44,7 +44,7 @@ namespace DataBaseAPI
 
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, id);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, id);
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -72,7 +72,7 @@ namespace DataBaseAPI
         {
             var res = new List<IChannelPOCO>();
 
-            var zap = string.Format("SELECT * FROM {0} ORDER BY {1} ASC", Tablechannels, ChannelTitle);
+            var zap = string.Format(@"SELECT * FROM {0} ORDER BY {1} ASC", Tablechannels, ChannelTitle);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -125,7 +125,7 @@ namespace DataBaseAPI
 
         public async Task DeleteChannelAsync(string parentID)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, parentID);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, parentID);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -134,7 +134,7 @@ namespace DataBaseAPI
 
         public async Task RenameChannelAsync(string id, string newName)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName, ChannelId, id);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName, ChannelId, id);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -153,7 +153,7 @@ namespace DataBaseAPI
 
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -179,7 +179,7 @@ namespace DataBaseAPI
         public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
         {
             var res = new List<IVideoItemPOCO>();
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -240,7 +240,7 @@ namespace DataBaseAPI
 
         public async Task DeleteItemAsync(string id)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -272,7 +272,7 @@ namespace DataBaseAPI
 
         public async Task DeletePlaylistAsync(string id)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -281,7 +281,7 @@ namespace DataBaseAPI
 
         public async Task<IPlaylistPOCO> GetPlaylistAsync(string id)
         {
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -335,7 +335,13 @@ namespace DataBaseAPI
         {
             var res = new List<IVideoItemPOCO>();
             var lst = new List<string>();
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'", Tableplaylistitems, FPlaylistId, id, FChannelId, channelID);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'",
+                Tableplaylistitems,
+                FPlaylistId,
+                id,
+                FChannelId,
+                channelID);
+
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -370,7 +376,7 @@ namespace DataBaseAPI
         public async Task<List<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistChannelId, channelID);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistChannelId, channelID);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -413,7 +419,12 @@ namespace DataBaseAPI
 
         public async Task DeleteTagAsync(string tag)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tabletags, TagTitle, tag);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tabletags, TagTitle, tag);
+            using (var command = GetCommand(zap))
+            {
+                await ExecuteNonQueryAsync(command);
+            }
+            zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablechanneltags, TagIdF, tag);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -438,7 +449,7 @@ namespace DataBaseAPI
 
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'", Tablechanneltags, ChannelIdF, channelid, TagIdF, tag);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'", Tablechanneltags, ChannelIdF, channelid, TagIdF, tag);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -449,7 +460,7 @@ namespace DataBaseAPI
         {
             var res = new List<IChannelPOCO>();
 
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablechanneltags, TagIdF, tag);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablechanneltags, TagIdF, tag);
 
             using (var command = GetCommand(zap))
             {
@@ -480,7 +491,7 @@ namespace DataBaseAPI
         public async Task<List<ITagPOCO>> GetChannelTagsAsync(string id)
         {
             var res = new List<ITagPOCO>();
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablechanneltags, ChannelIdF, id);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablechanneltags, ChannelIdF, id);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -510,7 +521,7 @@ namespace DataBaseAPI
         {
             var res = new List<ITagPOCO>();
 
-            var zap = string.Format("SELECT * FROM {0}", Tabletags);
+            var zap = string.Format(@"SELECT * FROM {0}", Tabletags);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -621,7 +632,7 @@ namespace DataBaseAPI
 
         public async Task DeleteCredAsync(string site)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablecredentials, CredSite, site);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablecredentials, CredSite, site);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -630,7 +641,7 @@ namespace DataBaseAPI
 
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredLogin, newlogin, CredSite, site);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredLogin, newlogin, CredSite, site);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -639,7 +650,7 @@ namespace DataBaseAPI
 
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredPass, newpassword, CredSite, site);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredPass, newpassword, CredSite, site);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -648,7 +659,7 @@ namespace DataBaseAPI
 
         public async Task UpdateCookieAsync(string site, string newcookie)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredCookie, newcookie, CredSite, site);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredCookie, newcookie, CredSite, site);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -657,7 +668,7 @@ namespace DataBaseAPI
 
         public async Task UpdateExpiredAsync(string site, DateTime newexpired)
         {
-            var zap = string.Format("UPDATE {0} SET {1}=@newexpired WHERE {2}='{3}'", Tablecredentials, CredExpired, CredSite, site);
+            var zap = string.Format(@"UPDATE {0} SET {1}=@newexpired WHERE {2}='{3}'", Tablecredentials, CredExpired, CredSite, site);
             using (var command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@newexpired", newexpired);
@@ -667,7 +678,13 @@ namespace DataBaseAPI
 
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredAutorization, autorize, CredSite, site);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                Tablecredentials,
+                CredAutorization,
+                autorize,
+                CredSite,
+                site);
+
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -692,7 +709,7 @@ namespace DataBaseAPI
 
         public async Task DeleteSettingAsync(string key)
         {
-            var zap = string.Format("DELETE FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
+            var zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -701,7 +718,7 @@ namespace DataBaseAPI
 
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            var zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablesettings, SetVal, newvalue, SetKey, key);
+            var zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablesettings, SetVal, newvalue, SetKey, key);
             using (var command = GetCommand(zap))
             {
                 await ExecuteNonQueryAsync(command);
@@ -710,7 +727,7 @@ namespace DataBaseAPI
 
         public async Task<ISettingPOCO> GetSettingAsync(string key)
         {
-            var zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
+            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -736,7 +753,7 @@ namespace DataBaseAPI
 
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)
         {
-            var zap = string.Format("SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", Tableitems, ParentID, channelID);
+            var zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", Tableitems, ParentID, channelID);
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -761,7 +778,7 @@ namespace DataBaseAPI
         {
             var res = new List<string>();
 
-            var zap = string.Format("SELECT {0} FROM {1} WHERE {2}='{3}'", FItemId, Tableplaylistitems, FPlaylistId, id);
+            var zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", FItemId, Tableplaylistitems, FPlaylistId, id);
 
             using (var command = GetCommand(zap))
             {
@@ -794,7 +811,7 @@ namespace DataBaseAPI
         {
             var res = new List<string>();
 
-            var zap = string.Format("SELECT {0} FROM {1}", ChannelId, Tablechannels);
+            var zap = string.Format(@"SELECT {0} FROM {1}", ChannelId, Tablechannels);
 
             using (var command = GetCommand(zap))
             {
@@ -827,7 +844,12 @@ namespace DataBaseAPI
         {
             var res = new List<string>();
 
-            var zap = string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC", ItemId, Tableitems, ParentID, channelID, Timestamp);
+            var zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC",
+                ItemId,
+                Tableitems,
+                ParentID,
+                channelID,
+                Timestamp);
 
             using (var command = GetCommand(zap))
             {
