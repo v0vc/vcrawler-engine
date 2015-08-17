@@ -26,7 +26,7 @@ namespace TestAPI
             foreach (int i in testindex)
             {
                 var lst = await you.SearchItemsAsync("russia", "RU", i);
-                Assert.AreEqual(lst.Count, i);
+                Assert.AreEqual(lst.Count(), i);
             }
         }
 
@@ -40,7 +40,7 @@ namespace TestAPI
             foreach (int i in testindex)
             {
                 var lst = await you.GetPopularItemsAsync("ru", i);
-                Assert.AreEqual(lst.Count, i);
+                Assert.AreEqual(lst.Count(), i);
             }
         }
 
@@ -53,7 +53,7 @@ namespace TestAPI
             // UCq9B1wrqZKwucNkjHnUW39A
             var lst = await you.GetChannelItemsAsync("UCQoZVSaWvaJN046F-8SmyPg", 5);
 
-            Assert.AreEqual(lst.Count, 5);
+            Assert.AreEqual(lst.Count(), 5);
         }
 
         [TestMethod]
@@ -125,7 +125,7 @@ namespace TestAPI
 
             var res = await you.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
 
-            Assert.AreEqual(res.Count, 5);
+            Assert.AreEqual(res.Count(), 5);
         }
 
         [TestMethod]
@@ -157,7 +157,7 @@ namespace TestAPI
 
             var res = await you.GetVideosListByIdsAsync(lst);
 
-            Assert.AreEqual(res.Count, 1);
+            Assert.AreEqual(res.Count(), 1);
         }
 
         [TestMethod]

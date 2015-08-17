@@ -72,7 +72,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
             var fb = _c.CreateYouTubeSite();
             var vf = _c.CreateVideoItemFactory();
@@ -89,7 +89,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
             var vf = _c.CreateVideoItemFactory();
@@ -132,7 +132,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string id)
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
             try
@@ -158,7 +158,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id)
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
             try

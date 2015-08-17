@@ -31,7 +31,7 @@ namespace Models.BO
             await _tf.InsertTagAsync(this);
         }
 
-        public async Task<List<IChannel>> GetChannelsByTagAsync()
+        public async Task<IEnumerable<IChannel>> GetChannelsByTagAsync()
         {
             return await _tf.GetChannelsByTagAsync(Title);
         }

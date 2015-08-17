@@ -12,7 +12,7 @@ namespace Interfaces.API
         /// <param name="channelID">ID канала</param>
         /// <param name="maxResult">Количество</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult);
+        Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult);
 
         /// <summary>
         /// Получение списка популярных видео по стране
@@ -20,15 +20,16 @@ namespace Interfaces.API
         /// <param name="regionID">Код региона</param>
         /// <param name="maxResult">Желаемое количество записей</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult);
+        Task<IEnumerable<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult);
 
         /// <summary>
         /// Получение результата запроса
         /// </summary>
         /// <param name="key">Запрос</param>
+        /// <param name="region"></param>
         /// <param name="maxResult">Желаемое количество записей</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> SearchItemsAsync(string key, string region, int maxResult);
+        Task<IEnumerable<IVideoItemPOCO>> SearchItemsAsync(string key, string region, int maxResult);
 
         /// <summary>
         /// Получение видео по ID
@@ -49,14 +50,14 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="channelID">ID канала</param>
         /// <returns>Список плейлистов</returns>
-        Task<List<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID);
+        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID);
 
         /// <summary>
         /// Получение списка видео плэйлиста
         /// </summary>
         /// <param name="link">Ссылка</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string link);
+        Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string link);
 
         /// <summary>
         /// Получение объекта "плэйлист"
@@ -78,14 +79,14 @@ namespace Interfaces.API
         /// <param name="channelID">ID канала</param>
         /// <param name="maxResult">Количество</param>
         /// <returns></returns>
-        Task<List<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult);
+        Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult);
 
         /// <summary>
         /// Получить список всех ID видео плэйлиста
         /// </summary>
         /// <param name="id">ID плэйлиста</param>
         /// <returns></returns>
-        Task<List<string>> GetPlaylistItemsIdsListNetAsync(string id);
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id);
 
         /// <summary>
         /// Получение ID канала по имени пользователя
@@ -106,27 +107,27 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids);
+        Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids);
 
         /// <summary>
         /// Получить список полных видео по списку id
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids);
+        Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids);
 
         /// <summary>
         /// Получить список похожих каналов
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<List<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id);
+        Task<IEnumerable<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id);
 
         /// <summary>
         /// Получить список субтитров видео
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<List<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id);
+        Task<IEnumerable<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id);
     }
 }

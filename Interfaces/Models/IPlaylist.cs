@@ -13,10 +13,10 @@ namespace Interfaces.Models
         List<IVideoItem> PlaylistItems { get; set; }
         Task DeletePlaylistAsync();
         Task InsertPlaylistAsync();
-        Task<List<IVideoItem>> GetPlaylistItemsNetAsync();
-        Task<List<string>> GetPlaylistItemsIdsListNetAsync();
-        Task<List<string>> GetPlaylistItemsIdsListDbAsync();
-        Task<List<IVideoItem>> GetPlaylistItemsDbAsync();
+        Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync();
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync();
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync();
+        Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync();
         Task UpdatePlaylistAsync(string videoId);
     }
 }

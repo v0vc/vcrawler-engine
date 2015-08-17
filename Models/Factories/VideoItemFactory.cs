@@ -134,7 +134,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IChapter>> GetVideoItemChaptersAsync(string id)
+        public async Task<IEnumerable<IChapter>> GetVideoItemChaptersAsync(string id)
         {
             var fb = _c.CreateYouTubeSite();
             var res = new List<IChapter>();

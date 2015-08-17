@@ -22,7 +22,7 @@ namespace SitesAPI.Videos
         private const string Key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
         private const string Site = "youtube.com";
 
-        public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
         {
             var res = new List<IVideoItemPOCO>();
 
@@ -123,7 +123,7 @@ namespace SitesAPI.Videos
             return res.Where(x => x.Status != PrivacyDef).ToList();
         }
 
-        public async Task<List<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
             var itemsppage = ItemsPerPage;
 
@@ -211,7 +211,7 @@ namespace SitesAPI.Videos
             return res;
         }
 
-        public async Task<List<IVideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
+        public async Task<IEnumerable<IVideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
             var itemsppage = ItemsPerPage;
 
@@ -334,7 +334,7 @@ namespace SitesAPI.Videos
             return ch;
         }
 
-        public async Task<List<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID)
+        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
 
@@ -371,7 +371,7 @@ namespace SitesAPI.Videos
             return res;
         }
 
-        public async Task<List<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
         {
             var res = new List<IVideoItemPOCO>();
 
@@ -500,7 +500,7 @@ namespace SitesAPI.Videos
             return total.Value<int>();
         }
 
-        public async Task<List<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
         {
             var res = new List<IVideoItemPOCO>();
 
@@ -594,7 +594,7 @@ namespace SitesAPI.Videos
             return res.Where(x => x.Status == PrivacyPub).Select(x => x.ID).ToList();
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string plid)
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
         {
             var res = new List<string>();
 
@@ -684,7 +684,7 @@ namespace SitesAPI.Videos
             return v;
         }
 
-        public async Task<List<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
 
@@ -729,7 +729,7 @@ namespace SitesAPI.Videos
             return lst;
         }
 
-        public async Task<List<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
 
@@ -790,7 +790,7 @@ namespace SitesAPI.Videos
             return lst.Where(x => x.Status != PrivacyDef).ToList();
         }
 
-        public async Task<List<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
+        public async Task<IEnumerable<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
         {
             var lst = new List<IChannelPOCO>();
 
@@ -820,7 +820,7 @@ namespace SitesAPI.Videos
             return lst;
         }
 
-        public async Task<List<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id)
+        public async Task<IEnumerable<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id)
         {
             var zap =
                 string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}",

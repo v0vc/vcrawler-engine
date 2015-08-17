@@ -19,24 +19,24 @@ namespace Interfaces.Models
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }
         CookieCollection ChannelCookies { get; set; }
-        Task<List<IVideoItem>> GetChannelItemsDbAsync();
+        Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync();
         Task SyncChannelAsync(string dir, bool isSyncPls);
         Task SyncChannelPlaylistsAsync();
-        Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult);
-        Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult);
-        Task<List<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult);
-        Task<List<IPlaylist>> GetChannelPlaylistsNetAsync();
-        Task<List<IPlaylist>> GetChannelPlaylistsAsync();
+        Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult);
+        Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult);
+        Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult);
+        Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync();
+        Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync();
         Task<int> GetChannelItemsCountDbAsync();
         Task<int> GetChannelItemsCountNetAsync();
-        Task<List<string>> GetChannelItemsIdsListNetAsync(int maxresult);
-        Task<List<string>> GetChannelItemsIdsListDbAsync();
+        Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult);
+        Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync();
         Task FillChannelItemsDbAsync(string dir);
         Task InsertChannelAsync();
         Task DeleteChannelAsync();
         Task RenameChannelAsync(string newName);
         Task InsertChannelItemsAsync();
-        Task<List<ITag>> GetChannelTagsAsync();
+        Task<IEnumerable<ITag>> GetChannelTagsAsync();
         Task InsertChannelTagAsync(string tag);
         Task DeleteChannelTagAsync(string tag);
         void AddNewItem(IVideoItem item, bool isNew);

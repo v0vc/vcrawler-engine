@@ -57,7 +57,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IChannel>> GetChannelsByTagAsync(string tag)
+        public async Task<IEnumerable<IChannel>> GetChannelsByTagAsync(string tag)
         {
             var fb = _c.CreateSqLiteDatabase();
             var cf = _c.CreateChannelFactory();

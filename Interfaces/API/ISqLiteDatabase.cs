@@ -26,7 +26,7 @@ namespace Interfaces.API
         /// Получить список всех каналов из бд
         /// </summary>
         /// <returns></returns>
-        Task<List<IChannelPOCO>> GetChannelsListAsync();
+        Task<IEnumerable<IChannelPOCO>> GetChannelsListAsync();
 
         /// <summary>
         /// Записать канал без списка видео
@@ -69,7 +69,7 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="parentID">ID канала</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string parentID);
+        Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string parentID);
 
         /// <summary>
         /// Записать видео
@@ -121,14 +121,14 @@ namespace Interfaces.API
         /// <param name="id">ID плэйлиста</param>
         /// <param name="channelID">ID канала</param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID);
+        Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID);
 
         /// <summary>
         /// Получить список всех плэйлистов канала
         /// </summary>
         /// <param name="channelID">ID канала</param>
         /// <returns></returns>
-        Task<List<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID);
+        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID);
 
         /// <summary>
         /// Записать тэг
@@ -165,26 +165,26 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="tag">ID тэга</param>
         /// <returns></returns>
-        Task<List<IChannelPOCO>> GetChannelsByTagAsync(string tag);
+        Task<IEnumerable<IChannelPOCO>> GetChannelsByTagAsync(string tag);
 
         /// <summary>
         /// Получить список тэгов канала
         /// </summary>
         /// <param name="id">ID канала</param>
         /// <returns></returns>
-        Task<List<ITagPOCO>> GetChannelTagsAsync(string id);
+        Task<IEnumerable<ITagPOCO>> GetChannelTagsAsync(string id);
 
         /// <summary>
         /// Получить все тэги
         /// </summary>
         /// <returns></returns>
-        Task<List<ITagPOCO>> GetAllTagsAsync();
+        Task<IEnumerable<ITagPOCO>> GetAllTagsAsync();
 
         /// <summary>
         /// Получить список всех креденшиалов (поддерживаемых площадок)
         /// </summary>
         /// <returns></returns>
-        Task<List<ICredPOCO>> GetCredListAsync();
+        Task<IEnumerable<ICredPOCO>> GetCredListAsync();
 
         /// <summary>
         /// Получить credentials сайта
@@ -288,20 +288,20 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="id">ID плэйлиста</param>
         /// <returns></returns>
-        Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id);
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id);
 
         /// <summary>
         /// Получить список всех ID каналов в базе
         /// </summary>
         /// <returns></returns>
-        Task<List<string>> GetChannelsIdsListDbAsync();
+        Task<IEnumerable<string>> GetChannelsIdsListDbAsync();
 
         /// <summary>
         /// Получить список ID видео с канала в базе
         /// </summary>
         /// <param name="channelID"></param>
         /// <returns></returns>
-        Task<List<string>> GetChannelItemsIdListDbAsync(string channelID);
+        Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID);
 
         /// <summary>
         /// Скукожить базу

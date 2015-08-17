@@ -600,7 +600,7 @@ namespace Crawler.Models
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
         }
 
-        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        public async Task<IEnumerable<string>> GetChannelsIdsListDbAsync()
         {
             try
             {

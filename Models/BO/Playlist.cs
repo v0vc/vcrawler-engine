@@ -36,22 +36,22 @@ namespace Models.BO
             await _pf.InsertPlaylistAsync(this);
         }
 
-        public async Task<List<IVideoItem>> GetPlaylistItemsNetAsync()
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync()
         {
             return await _pf.GetPlaylistItemsNetAsync(this);
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListNetAsync()
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync()
         {
             return await _pf.GetPlaylistItemsIdsListNetAsync(ID);
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListDbAsync()
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync()
         {
             return await _pf.GetPlaylistItemsIdsListDbAsync(ID);
         }
 
-        public async Task<List<IVideoItem>> GetPlaylistItemsDbAsync()
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync()
         {
             return await _pf.GetPlaylistItemsDbAsync(ID, ChannelId);
         }

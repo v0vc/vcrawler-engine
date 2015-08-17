@@ -89,7 +89,7 @@ namespace Models.BO
 
         public CookieCollection ChannelCookies { get; set; }
 
-        public async Task<List<IVideoItem>> GetChannelItemsDbAsync()
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync()
         {
             // return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
             return await _cf.GetChannelItemsDbAsync(ID);
@@ -115,12 +115,12 @@ namespace Models.BO
             return await _cf.GetChannelItemsCountNetAsync(ID);
         }
 
-        public async Task<List<string>> GetChannelItemsIdsListNetAsync(int maxresult)
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
         {
             return await _cf.GetChannelItemsIdsListNetAsync(ID, maxresult);
         }
 
-        public async Task<List<string>> GetChannelItemsIdsListDbAsync()
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()
         {
             return await _cf.GetChannelItemsIdsListDbAsync(ID);
         }
@@ -150,32 +150,32 @@ namespace Models.BO
             await _cf.InsertChannelItemsAsync(this);
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
         {
             return await _cf.GetChannelItemsNetAsync(this, maxresult);
         }
 
-        public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
             return await _cf.GetPopularItemsNetAsync(regionID, maxresult);
         }
 
-        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult)
         {
             return await _cf.SearchItemsNetAsync(key, region, maxresult);
         }
 
-        public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync()
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
         {
             return await _cf.GetChannelPlaylistsNetAsync(ID);
         }
 
-        public async Task<List<IPlaylist>> GetChannelPlaylistsAsync()
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync()
         {
             return await _cf.GetChannelPlaylistsAsync(ID);
         }
 
-        public async Task<List<ITag>> GetChannelTagsAsync()
+        public async Task<IEnumerable<ITag>> GetChannelTagsAsync()
         {
             return await _cf.GetChannelTagsAsync(ID);
         }

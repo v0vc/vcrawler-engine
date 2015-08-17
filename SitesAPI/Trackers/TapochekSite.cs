@@ -65,7 +65,7 @@ namespace SitesAPI.Trackers
             return res.Cookies;
         }
 
-        public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             var lst = new List<IVideoItemPOCO>();
 

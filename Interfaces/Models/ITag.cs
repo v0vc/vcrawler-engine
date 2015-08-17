@@ -8,6 +8,6 @@ namespace Interfaces.Models
         string Title { get; set; }
         Task DeleteTagAsync();
         Task InsertTagAsync();
-        Task<List<IChannel>> GetChannelsByTagAsync();
+        Task<IEnumerable<IChannel>> GetChannelsByTagAsync();
     }
 }

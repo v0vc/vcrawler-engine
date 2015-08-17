@@ -21,7 +21,7 @@ namespace Interfaces.API
         /// <param name="channel"></param>
         /// <param name="maxresult"></param>
         /// <returns></returns>
-        Task<List<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult);
+        Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult);
 
         /// <summary>
         /// Получение видео по ID

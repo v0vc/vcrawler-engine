@@ -146,7 +146,7 @@ namespace Crawler.ViewModels
                 try
                 {
                     File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
-                    Model.Info = string.Format("{0} channels has been stored", lst.Count);
+                    //Model.Info = string.Format("{0} channels has been stored", lst.Count);
                     Model.SetStatus(2);
                 }
                 catch (Exception ex)

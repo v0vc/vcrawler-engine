@@ -95,7 +95,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsDbAsync(string channelID)
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
             var vf = _c.CreateVideoItemFactory();
@@ -165,7 +165,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
         {
             var vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
@@ -192,7 +192,7 @@ namespace Models.Factories
             return lst;
         }
 
-        public async Task<List<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
             var vf = _c.CreateVideoItemFactory();
@@ -210,7 +210,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IVideoItem>> SearchItemsNetAsync(string key, string regionID, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string regionID, int maxresult)
         {
             var fb = _c.CreateYouTubeSite();
             var vf = _c.CreateVideoItemFactory();
@@ -228,7 +228,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var fb = _c.CreateYouTubeSite();
             var pf = _c.CreatePlaylistFactory();
@@ -245,7 +245,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
             var pf = _c.CreatePlaylistFactory();
@@ -263,7 +263,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<ITag>> GetChannelTagsAsync(string id)
+        public async Task<IEnumerable<ITag>> GetChannelTagsAsync(string id)
         {
             var fb = _c.CreateSqLiteDatabase();
             var tf = _c.CreateTagFactory();
@@ -321,7 +321,7 @@ namespace Models.Factories
             {
                 var nc = netCount - dbCount;
 
-                var lsid = await channel.GetChannelItemsIdsListNetAsync(nc);
+                var lsid = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
 
                 if (lsid.Count != dbCount && lsid.Any())
                 {
@@ -359,9 +359,9 @@ namespace Models.Factories
 
             if (isSyncPls)
             {
-                var dbpls = await channel.GetChannelPlaylistsAsync(); // получаем все плэйлисты из базы
+                var dbpls = (await channel.GetChannelPlaylistsAsync()).ToList(); // получаем все плэйлисты из базы
 
-                var pls = await channel.GetChannelPlaylistsNetAsync(); // получаем все плэйлисты из сети
+                var pls = (await channel.GetChannelPlaylistsNetAsync()).ToList(); // получаем все плэйлисты из сети
 
                 // в сети изменилось количество плэйлистов - тупо все удалим и запишем заново
                 if (dbpls.Count != pls.Count)
@@ -392,13 +392,13 @@ namespace Models.Factories
                     foreach (var pl in pls)
                     {
                         // получим количество видюх плейлиста в сети
-                        var plv = await pl.GetPlaylistItemsIdsListNetAsync();
+                        var plv = (await pl.GetPlaylistItemsIdsListNetAsync()).ToList();
 
                         // получим количество видюх плэйлиста в базе
                         var plvdb = await pl.GetPlaylistItemsIdsListDbAsync();
 
                         // если равно - считаем что содержимое плейлиста не изменилось (не факт конечно, но да пох)
-                        if (plv.Count == plvdb.Count)
+                        if (plv.Count == plvdb.Count())
                         {
                             continue;
                         }
@@ -447,7 +447,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
         {
             var fb = _c.CreateYouTubeSite();
             try
@@ -460,7 +460,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<List<string>> GetChannelItemsIdsListDbAsync(string channelID)
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync(string channelID)
         {
             var fb = _c.CreateSqLiteDatabase();
             try

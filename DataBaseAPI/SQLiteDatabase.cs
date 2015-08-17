@@ -68,7 +68,7 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        public async Task<List<IChannelPOCO>> GetChannelsListAsync()
+        public async Task<IEnumerable<IChannelPOCO>> GetChannelsListAsync()
         {
             var res = new List<IChannelPOCO>();
 
@@ -176,7 +176,7 @@ namespace DataBaseAPI
             throw new Exception(zap);
         }
 
-        public async Task<List<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
         {
             var res = new List<IVideoItemPOCO>();
             var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
@@ -331,7 +331,7 @@ namespace DataBaseAPI
             // }
         }
 
-        public async Task<List<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
         {
             var res = new List<IVideoItemPOCO>();
             var lst = new List<string>();
@@ -373,7 +373,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
+        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
             var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistChannelId, channelID);
@@ -456,7 +456,7 @@ namespace DataBaseAPI
             }
         }
 
-        public async Task<List<IChannelPOCO>> GetChannelsByTagAsync(string tag)
+        public async Task<IEnumerable<IChannelPOCO>> GetChannelsByTagAsync(string tag)
         {
             var res = new List<IChannelPOCO>();
 
@@ -488,7 +488,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<ITagPOCO>> GetChannelTagsAsync(string id)
+        public async Task<IEnumerable<ITagPOCO>> GetChannelTagsAsync(string id)
         {
             var res = new List<ITagPOCO>();
             var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablechanneltags, ChannelIdF, id);
@@ -517,7 +517,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<ITagPOCO>> GetAllTagsAsync()
+        public async Task<IEnumerable<ITagPOCO>> GetAllTagsAsync()
         {
             var res = new List<ITagPOCO>();
 
@@ -548,7 +548,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<ICredPOCO>> GetCredListAsync()
+        public async Task<IEnumerable<ICredPOCO>> GetCredListAsync()
         {
             var res = new List<ICredPOCO>();
             var zap = string.Format("SELECT * FROM {0}", Tablecredentials);
@@ -774,7 +774,7 @@ namespace DataBaseAPI
             }
         }
 
-        public async Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id)
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
             var res = new List<string>();
 
@@ -807,7 +807,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        public async Task<IEnumerable<string>> GetChannelsIdsListDbAsync()
         {
             var res = new List<string>();
 
@@ -840,7 +840,7 @@ namespace DataBaseAPI
             return res;
         }
 
-        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID)
+        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID)
         {
             var res = new List<string>();
 
