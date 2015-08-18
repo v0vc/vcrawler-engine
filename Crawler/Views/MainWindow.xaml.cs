@@ -270,6 +270,7 @@ namespace Crawler.Views
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ViewModel.Model.Filter = string.Empty;
+            ViewModel.Model.IsExpand = false;
 
             if (ViewModel.Model.RelatedChannels.Any())
             {

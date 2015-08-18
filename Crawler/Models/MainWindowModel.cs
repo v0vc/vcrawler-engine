@@ -54,9 +54,11 @@ namespace Crawler.Models
         private readonly ISqLiteDatabase _df;
         private readonly ICredFactory _crf;
         private string _newTag;
+        private bool _isExpand;
 
         public MainWindowModel()
         {
+            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
             ServiceChannels = new ObservableCollection<IChannel>();
             RelatedChannels = new ObservableCollection<IChannel>();
@@ -65,7 +67,6 @@ namespace Crawler.Models
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
             IsIdle = true;
-            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
 
             BaseFactory = Container.Kernel.Get<ICommonFactory>();
             _cf = BaseFactory.CreateChannelFactory();
@@ -612,7 +613,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task<List<IChannel>> GetChannelsListAsync()
+        public async Task<IEnumerable<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
             try
@@ -627,7 +628,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task<List<ICred>> GetCredListAsync()
+        public async Task<IEnumerable<ICred>> GetCredListAsync()
         {
             var lst = new List<ICred>();
             try
@@ -642,7 +643,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task<List<ITag>> GetAllTagsAsync()
+        public async Task<IEnumerable<ITag>> GetAllTagsAsync()
         {
             var lst = new List<ITag>();
 
@@ -740,7 +741,7 @@ namespace Crawler.Models
 
         public ObservableCollection<ITag> Tags { get; set; } 
 
-        public List<string> Countries { get; set; }
+        public IEnumerable<string> Countries { get; set; }
 
         public IChannel SelectedChannel
         {
@@ -941,6 +942,7 @@ namespace Crawler.Models
             set
             {
                 _filter = value;
+                OnPropertyChanged();
                 FilterVideos();
             }
         }
@@ -975,10 +977,26 @@ namespace Crawler.Models
 
         public string NewTag
         {
-            get { return _newTag; }
+            get
+            {
+                return _newTag;
+            }
             set
             {
                 _newTag = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsExpand
+        {
+            get
+            {
+                return _isExpand;
+            }
+            set
+            {
+                _isExpand = value;
                 OnPropertyChanged();
             }
         }
