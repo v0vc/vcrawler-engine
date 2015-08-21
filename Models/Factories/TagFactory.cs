@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.Factories;
 using Interfaces.Models;
@@ -50,23 +48,6 @@ namespace Models.Factories
             try
             {
                 await fb.InsertTagAsync(tag);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IEnumerable<IChannel>> GetChannelsByTagAsync(string tag)
-        {
-            var fb = _c.CreateSqLiteDatabase();
-            var cf = _c.CreateChannelFactory();
-            try
-            {
-                var lst = new List<IChannel>();
-                var fbres = await fb.GetChannelsByTagAsync(tag);
-                lst.AddRange(fbres.Select(poco => cf.CreateChannel(poco)));
-                return lst;
             }
             catch (Exception ex)
             {

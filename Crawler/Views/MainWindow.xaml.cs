@@ -169,6 +169,7 @@ namespace Crawler.Views
                     var etvm = new EditTagsViewModel
                     {
                         ParentChannel = ViewModel.Model.SelectedChannel,
+                        CurrentTags = ViewModel.Model.CurrentTags,
                         Tags = ViewModel.Model.Tags,
                     };
 
@@ -269,19 +270,6 @@ namespace Crawler.Views
 
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ViewModel.Model.Filter = string.Empty;
-            ViewModel.Model.IsExpand = false;
-
-            if (ViewModel.Model.RelatedChannels.Any())
-            {
-                foreach (IChannel channel in ViewModel.Model.RelatedChannels)
-                {
-                    channel.ChannelItems.Clear();
-                }
-
-                ViewModel.Model.RelatedChannels.Clear();
-            }
-
             if (e.AddedItems.Count != 1)
             {
                 return;
@@ -292,6 +280,19 @@ namespace Crawler.Views
             if (ch == null)
             {
                 return;
+            }
+
+            ViewModel.Model.Filter = string.Empty;
+            ViewModel.Model.IsExpand = false;
+
+            if (ViewModel.Model.RelatedChannels.Any() && !ViewModel.Model.RelatedChannels.Contains(ch))
+            {
+                foreach (IChannel channel in ViewModel.Model.RelatedChannels)
+                {
+                    channel.ChannelItems.Clear();
+                }
+
+                ViewModel.Model.RelatedChannels.Clear();
             }
 
             foreach (var item in ch.ChannelItems)
@@ -556,8 +557,6 @@ namespace Crawler.Views
             {
                 case "Link":
 
-                    
-
                     var pl = ViewModel.Model.SelectedPlaylist;
                     if (pl != null)
                     {
@@ -571,8 +570,6 @@ namespace Crawler.Views
                             ViewModel.Model.Info = ex.Message;
                         }
                     }
-
-                    
 
                     break;
 
@@ -619,6 +616,17 @@ namespace Crawler.Views
                 case "Vacuum":
 
                     await ViewModel.Vacuumdb();
+
+                    break;
+
+                case "ShowAll":
+
+                    foreach (IChannel channel in ViewModel.Model.Channels)
+                    {
+                        channel.IsShowRow = true;
+                    }
+
+                    ViewModel.Model.SelectedTag = null;
 
                     break;
 
@@ -744,6 +752,44 @@ namespace Crawler.Views
             if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
             {
                 await ViewModel.Model.SelectedVideoItem.FillChapters();
+            }
+        }
+
+        private async void ComboBoxTags_OnDropDownOpened(object sender, EventArgs e)
+        {
+            if (ViewModel.Model.CurrentTags.Any())
+            {
+                return;
+            }
+
+            foreach (var ch in ViewModel.Model.Channels)
+            {
+                var tags = await ch.GetChannelTagsAsync();
+                foreach (ITag tag in tags)
+                {
+                    ch.ChannelTags.Add(tag);
+                    if (!ViewModel.Model.CurrentTags.Select(x => x.Title).Contains(tag.Title))
+                    {
+                        ViewModel.Model.CurrentTags.Add(tag);
+                    }
+                }
+            }
+        }
+
+        private void CurrentTag_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ViewModel.Model.SelectedTag == null)
+            {
+                return;
+            }
+
+            foreach (IChannel channel in ViewModel.Model.Channels)
+            {
+                channel.IsShowRow = true;
+                if (!channel.ChannelTags.Select(x => x.Title).Contains(ViewModel.Model.SelectedTag.Title))
+                {
+                    channel.IsShowRow = false;
+                }
             }
         }
     }

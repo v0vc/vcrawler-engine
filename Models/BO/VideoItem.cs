@@ -53,9 +53,13 @@ namespace Models.BO
         }
 
         public string ID { get; set; }
+
         public string ParentID { get; set; }
+
         public string Title { get; set; }
+
         public string Description { get; set; }
+
         public long ViewCount { get; set; }
 
         public int Duration
@@ -72,8 +76,11 @@ namespace Models.BO
         }
 
         public string DurationString { get; set; }
+
         public string DateTimeAgo { get; set; }
+
         public int Comments { get; set; }
+
         public byte[] Thumbnail { get; set; }
 
         public byte[] LargeThumb
@@ -103,6 +110,7 @@ namespace Models.BO
         }
 
         public string LocalFilePath { get; set; }
+
         public bool IsNewItem { get; set; }
 
         public bool IsShowRow

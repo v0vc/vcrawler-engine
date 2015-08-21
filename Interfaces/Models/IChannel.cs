@@ -18,6 +18,7 @@ namespace Interfaces.Models
         int CountNew { get; set; }
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }
+        bool IsShowRow { get; set; }
         CookieCollection ChannelCookies { get; set; }
         Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync();
         Task SyncChannelAsync(string dir, bool isSyncPls);

@@ -1,7 +1,6 @@
 ﻿<Window x:Class="Crawler.Views.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         Title="{Binding Model.Version, Mode=OneWay}" Height="450" Width="1200"
         Loaded="MainWindow_OnLoaded"
         Icon="../Images/gear.ico"
@@ -30,6 +29,7 @@
             </MenuItem>
 
             <MenuItem Header="Tools">
+                <MenuItem Header="Show All" Click="MainMenuItem_OnClick" CommandParameter="ShowAll"/>
                 <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
                 <MenuItem Header="Vacuum" Click="MainMenuItem_OnClick" CommandParameter="Vacuum"/>
             </MenuItem>
@@ -194,6 +194,12 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
                                     <Setter Property="Background" Value="PaleGreen" />
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=IsShowRow}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -388,7 +394,7 @@
 
                 <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
-                        <StackPanel Orientation="Horizontal">
+                        <DockPanel LastChildFill="True">
                             <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
                                 <Image Source="../Images/sync-48.png" StretchDirection="Both" />
                                 <Button.ToolTip>
@@ -401,7 +407,27 @@
                                     <TextBlock Text="Add"></TextBlock>
                                 </Button.ToolTip>
                             </Button>
-                        </StackPanel>
+                            <ComboBox ItemsSource="{Binding Model.CurrentTags, Mode=OneWay}" 
+                                      Margin="0,2,2,2" 
+                                      DropDownOpened="ComboBoxTags_OnDropDownOpened"
+                                      VerticalContentAlignment="Center"
+                                      SelectionChanged="CurrentTag_OnSelectionChanged"
+                                      SelectedItem="{Binding Path=ViewModel.Model.SelectedTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                      >
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox IsChecked="{Binding IsChecked}" Margin="1">
+                                                <CheckBox.LayoutTransform>
+                                                    <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
+                                                </CheckBox.LayoutTransform>
+                                            </CheckBox>
+                                            <TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                             </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DockPanel>
                     </Border>
                 </DockPanel>
 

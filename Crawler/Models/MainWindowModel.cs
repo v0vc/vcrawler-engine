@@ -55,6 +55,7 @@ namespace Crawler.Models
         private readonly ICredFactory _crf;
         private string _newTag;
         private bool _isExpand;
+        private ITag _selectedTag;
 
         public MainWindowModel()
         {
@@ -64,6 +65,7 @@ namespace Crawler.Models
             RelatedChannels = new ObservableCollection<IChannel>();
             SupportedCreds = new List<ICred>();
             Tags = new ObservableCollection<ITag>();
+            CurrentTags = new ObservableCollection<ITag>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
             IsIdle = true;
@@ -101,45 +103,12 @@ namespace Crawler.Models
         {
             await LoadSettings();
 
-            
-
-            // var channelIds = await GetChannelsIdsListDbAsync();
-
-            // var channelsTemp = new List<IChannel>();
-            // foreach (var id in channelIds)
-            // {
-            // var ch = await _cf.GetChannelDbAsync(id);
-            // channelsTemp.Add(ch);
-            // }
-
-            // var channelsSorted = channelsTemp.OrderBy(x => x.Title);
-            // foreach (var channel in channelsSorted)
-            // {
-            // Channels.Add(channel);
-            // }
-
-            
-            #region по ID
-
-            // var lst = await GetChannelsIdsListDbAsync(); //получим сначала ID каналов и начнем по одному заполнять список
-
-            // foreach (string id in lst)
-            // {
-            // var ch = await _cf.GetChannelDbAsync(id);
-
-            // Channels.Add(ch);
-            // }
-            #endregion
-
-            #region за раз
-
             var lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (var ch in lst)
             {
+                ch.IsShowRow = true;
                 Channels.Add(ch);
             }
-
-            #endregion
 
             if (Channels.Any())
             {
@@ -739,7 +708,22 @@ namespace Crawler.Models
 
         public ObservableCollection<IChannel> RelatedChannels { get; set; }
 
-        public ObservableCollection<ITag> Tags { get; set; } 
+        public ObservableCollection<ITag> Tags { get; set; }
+
+        public ObservableCollection<ITag> CurrentTags { get; set; }
+
+        public ITag SelectedTag
+        {
+            get
+            {
+                return _selectedTag;
+            }
+            set
+            {
+                _selectedTag = value;
+                OnPropertyChanged();
+            }
+        }
 
         public IEnumerable<string> Countries { get; set; }
 

@@ -16,6 +16,7 @@ namespace Models.BO
         private bool _isDownloading;
         private string _title;
         private bool _isInWork;
+        private bool _isShowRow;
 
         private Channel()
         {
@@ -83,6 +84,19 @@ namespace Models.BO
             set
             {
                 _isInWork = value; 
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsShowRow
+        {
+            get
+            {
+                return _isShowRow;
+            }
+            set
+            {
+                _isShowRow = value;
                 OnPropertyChanged();
             }
         }

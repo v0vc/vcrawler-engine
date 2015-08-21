@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Interfaces.Models;
 using Models.Factories;
 
@@ -18,6 +17,8 @@ namespace Models.BO
             _tf = tf;
         }
 
+        public bool IsChecked { get; set; }
+
         public string Title { get; set; }
 
         public async Task DeleteTagAsync()
@@ -29,11 +30,6 @@ namespace Models.BO
         public async Task InsertTagAsync()
         {
             await _tf.InsertTagAsync(this);
-        }
-
-        public async Task<IEnumerable<IChannel>> GetChannelsByTagAsync()
-        {
-            return await _tf.GetChannelsByTagAsync(Title);
         }
     }
 }
