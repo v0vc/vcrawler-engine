@@ -79,6 +79,13 @@ namespace Crawler.Models
             _crf = BaseFactory.CreateCredFactory();
         }
 
+        /// <summary>
+        /// 0-Ready
+        /// 1-Working..
+        /// 2-Finished!
+        /// 3-Error
+        /// </summary>
+        /// <param name="res"></param>
         public void SetStatus(int res)
         {
             if (res == 0)
@@ -136,7 +143,14 @@ namespace Crawler.Models
                     MessageBox.Show("Fill channel link");
                     return;
                 }
-                await AddNewChannel(NewChannelLink);
+                try
+                {
+                    await AddNewChannel(NewChannelLink);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
 
@@ -339,6 +353,7 @@ namespace Crawler.Models
             await channel.DeleteChannelAsync();
             Channels.Add(channel);
             channel.IsDownloading = true;
+            channel.IsShowRow = true;
             SelectedChannel = channel;
             var lst = await channel.GetChannelItemsNetAsync(0);
             foreach (var item in lst)
