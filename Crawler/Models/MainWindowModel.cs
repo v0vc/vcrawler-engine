@@ -163,9 +163,9 @@ namespace Crawler.Models
             var prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
 
-            try
+            foreach (var channel in Channels)
             {
-                foreach (var channel in Channels)
+                try
                 {
                     i += 1;
                     PrValue = Math.Round((double)(100 * i) / Channels.Count);
@@ -173,21 +173,20 @@ namespace Crawler.Models
                     Info = "Syncing: " + channel.Title;
                     await channel.SyncChannelAsync(DirPath, false);
                 }
-
-                prog.SetProgressState(TaskbarProgressBarState.NoProgress);
-
-                PrValue = 0;
-                IsIdle = true;
-                SetStatus(2);
-                Info = "Total: " + i;
+                catch (Exception ex)
+                {
+                    IsIdle = true;
+                    SetStatus(3);
+                    Info = ex.Message;
+                    MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
+                }
             }
-            catch (Exception ex)
-            {
-                IsIdle = true;
-                SetStatus(3);
-                Info = ex.Message;
-                MessageBox.Show(ex.Message);
-            }
+
+            prog.SetProgressState(TaskbarProgressBarState.NoProgress);
+            PrValue = 0;
+            IsIdle = true;
+            SetStatus(2);
+            Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
         }
 
         public async Task SaveSettings()

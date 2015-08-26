@@ -792,5 +792,34 @@ namespace Crawler.Views
                 }
             }
         }
+
+        private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
+        {
+            foreach (IChannel channel in ViewModel.Model.Channels)
+            {
+                channel.IsShowRow = false;
+            }
+
+            if (ViewModel.Model.CurrentTags.Any(x => x.IsChecked))
+            {
+                foreach (ITag tag in ViewModel.Model.CurrentTags.Where(x => x.IsChecked))
+                {
+                    foreach (IChannel channel in ViewModel.Model.Channels)
+                    {
+                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
+                        {
+                            channel.IsShowRow = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (IChannel channel in ViewModel.Model.Channels)
+                {
+                    channel.IsShowRow = true;
+                }    
+            }
+        }
     }
 }

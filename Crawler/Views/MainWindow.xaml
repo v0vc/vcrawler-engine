@@ -29,8 +29,8 @@
             </MenuItem>
 
             <MenuItem Header="Tools">
-                <MenuItem Header="Show All" Click="MainMenuItem_OnClick" CommandParameter="ShowAll"/>
                 <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
+                <MenuItem Header="Show All" Click="MainMenuItem_OnClick" CommandParameter="ShowAll"/>
                 <MenuItem Header="Vacuum" Click="MainMenuItem_OnClick" CommandParameter="Vacuum"/>
             </MenuItem>
 
@@ -417,7 +417,9 @@
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <CheckBox IsChecked="{Binding IsChecked}" Margin="1">
+                                            <CheckBox IsChecked="{Binding IsChecked}" Margin="1" 
+                                                      Checked="CheckBoxTag_OnChecked" 
+                                                      Unchecked="CheckBoxTag_OnChecked">
                                                 <CheckBox.LayoutTransform>
                                                     <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
                                                 </CheckBox.LayoutTransform>

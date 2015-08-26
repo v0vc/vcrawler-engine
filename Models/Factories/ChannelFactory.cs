@@ -319,7 +319,7 @@ namespace Models.Factories
 
             if (netCount > dbCount)
             {
-                var nc = netCount - dbCount;
+                var nc = netCount - dbCount + 1; // с запасом :)
 
                 var lsid = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
 
