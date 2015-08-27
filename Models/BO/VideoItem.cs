@@ -330,6 +330,13 @@ namespace Models.BO
         private async void EncodeOnProcessExited(object sender, EventArgs e)
         {
             await Log("FINISHED!");
+            var proc = sender as Process;
+            if (proc != null)
+            {
+                proc.OutputDataReceived -= EncodeOnOutputDataReceived;
+                proc.ErrorDataReceived -= EncodeOnErrorDataReceived;
+                proc.Exited -= EncodeOnProcessExited;
+            }
         }
 
         private async void EncodeOnErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -341,7 +348,7 @@ namespace Models.BO
         {
             if (e.Data == null)
             {
-                process_Exited();
+                Process_Exited();
                 return;
             }
 
@@ -401,7 +408,7 @@ namespace Models.BO
             return double.TryParse(str, out res) ? res : 0;
         }
 
-        private void process_Exited()
+        private void Process_Exited()
         {
             DownloadPercentage = 100;
             _taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);

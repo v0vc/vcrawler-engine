@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Windows;
@@ -44,15 +45,27 @@ namespace Crawler.Views
             {
                 return;
             }
-            var link = (string) Settings.Default["pathToYoudl"];
+            var link = (string)Settings.Default["pathToYoudl"];
 
-            ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
+            ViewModel.Model.IsIdle = false;
 
-            using (var client = new WebClient())
+            ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
+
+            if (CheckForInternetConnection(link))
             {
-                client.DownloadProgressChanged += client_DownloadProgressChanged;
-                client.DownloadFileCompleted += client_DownloadFileCompleted;
-                client.DownloadFileAsync(new Uri(link), ViewModel.Model.YouPath);
+                ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
+                
+                using (var client = new WebClient())
+                {
+                    client.DownloadProgressChanged += client_DownloadProgressChanged;
+                    client.DownloadFileCompleted += client_DownloadFileCompleted;
+                    client.DownloadFileAsync(new Uri(link), ViewModel.Model.YouPath);
+                }
+            }
+            else
+            {
+                ViewModel.Model.IsIdle = true;
+                MessageBox.Show(link + " is not available");
             }
         }
 
@@ -66,8 +79,10 @@ namespace Crawler.Views
         private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
             ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
-                CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+                CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
             ViewModel.Model.PrValue = 0;
+            ViewModel.Model.IsIdle = true;
+            ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
             var webClient = sender as WebClient;
             if (webClient != null)
             {
@@ -85,7 +100,7 @@ namespace Crawler.Views
             else
             {
                 ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
-                    CommonExtensions.GetVersion(ViewModel.Model.YouPath, "--version").Trim());
+                    CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
             }
         }
 
@@ -94,15 +109,36 @@ namespace Crawler.Views
             var tag = ((Button)e.Source).DataContext as ITag;
             if (tag != null)
             {
-                var result = MessageBox.Show(string.Format("Are you sure to delete Tag:{0}<{1}>" + "?", Environment.NewLine, tag.Title),
-                    "Confirm",
-                    MessageBoxButton.OKCancel, MessageBoxImage.Information);
+                var result =
+                    MessageBox.Show(
+                        string.Format("Are you sure to delete Tag:{0}<{1}>" + "?", Environment.NewLine, tag.Title),
+                        "Confirm",
+                        MessageBoxButton.OKCancel,
+                        MessageBoxImage.Information);
 
                 if (result == MessageBoxResult.OK)
                 {
                     ViewModel.Model.Tags.Remove(tag);
                     await tag.DeleteTagAsync();
                 }
+            }
+        }
+
+        public static bool CheckForInternetConnection(string url)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    using (var stream = client.OpenRead(url))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
     }

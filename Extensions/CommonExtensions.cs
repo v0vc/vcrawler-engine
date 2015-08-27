@@ -21,7 +21,7 @@ namespace Extensions
             return s;
         }
 
-        public static string GetVersion(string path, string param)
+        public static string GetConsoleOutput(string path, string param, bool isClear)
         {
             var pProcess = new Process
             {
@@ -39,7 +39,7 @@ namespace Extensions
                 pProcess.Start();
                 var res = pProcess.StandardOutput.ReadToEnd();
                 pProcess.Close();
-                return res.MakeValidFileName();
+                return isClear ? res.MakeValidFileName() : res;
             }
             catch
             {

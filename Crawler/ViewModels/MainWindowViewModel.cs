@@ -132,7 +132,7 @@ namespace Crawler.ViewModels
             if (res == DialogResult.OK)
             {
                 var fb = Model.BaseFactory.CreateSqLiteDatabase();
-                var lst = await fb.GetChannelsListAsync();
+                var lst = (await fb.GetChannelsListAsync()).ToList();
                 var sb = new StringBuilder();
                 foreach (var poco in lst)
                 {
@@ -146,7 +146,7 @@ namespace Crawler.ViewModels
                 try
                 {
                     File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
-                    //Model.Info = string.Format("{0} channels has been stored", lst.Count);
+                    Model.Info = string.Format("{0} channels has been stored", lst);
                     Model.SetStatus(2);
                 }
                 catch (Exception ex)
