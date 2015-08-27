@@ -310,29 +310,33 @@ namespace Models.Factories
         public async Task SyncChannelAsync(IChannel channel, string dir, bool isSyncPls)
         {
             // получаем количество записей в базе
-            var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
+            //var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
+
+            var idsdb = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
 
             // получаем количество записей на канале
             // var lsids = await channel.GetChannelItemsIdsListNetAsync(0);
             // var netCount = lsids.Count;
             var netCount = await GetChannelItemsCountNetAsync(channel.ID);
 
-            if (netCount > dbCount)
+            if (netCount > idsdb.Count)
             {
-                var nc = netCount - dbCount + 1; // с запасом :)
+                var nc = netCount - idsdb.Count + 1; // с запасом :)
 
-                var lsid = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
+                var lsidNet = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
 
-                if (lsid.Count != dbCount && lsid.Any())
+                if (lsidNet.Count != idsdb.Count && lsidNet.Any())
                 {
-                    if (!channel.ChannelItems.Any())
-                    {
-                        await channel.FillChannelItemsDbAsync(dir);
-                    }
+                    //if (!channel.ChannelItems.Any())
+                    //{
+                    //    await channel.FillChannelItemsDbAsync(dir);
+                    //}
 
-                    lsid.Reverse();
+                    lsidNet.Reverse();
 
-                    var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); // id которых нет
+                    var trueids = lsidNet.Where(id => !idsdb.Contains(id)).ToList(); // id которых нет
+
+                    //var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); // id которых нет
                     
                     if (trueids.Any())
                     {
