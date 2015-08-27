@@ -106,6 +106,16 @@ namespace Crawler.Models
             }
         }
 
+        public void ShowAllChannels()
+        {
+            foreach (IChannel channel in Channels)
+            {
+                channel.IsShowRow = true;
+            }
+
+            SelectedTag = null;
+        }
+
         public async Task FillChannels()
         {
             await LoadSettings();
@@ -162,6 +172,7 @@ namespace Crawler.Models
             var i = 0;
             var prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
+            ShowAllChannels();
 
             foreach (var channel in Channels)
             {

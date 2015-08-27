@@ -621,12 +621,7 @@ namespace Crawler.Views
 
                 case "ShowAll":
 
-                    foreach (IChannel channel in ViewModel.Model.Channels)
-                    {
-                        channel.IsShowRow = true;
-                    }
-
-                    ViewModel.Model.SelectedTag = null;
+                    ViewModel.Model.ShowAllChannels();
 
                     break;
 
