@@ -300,10 +300,27 @@ namespace Crawler.Views
                 item.IsShowRow = true;
             }
 
-            if (!ch.ChannelItems.Any() & !ch.IsDownloading & ch.ChannelItems.All(x => x.IsNewItem))
+            // есть новые элементы после синхронизации
+            var isHasNewFromSync = ch.ChannelItems.Any() &&
+                                   ch.ChannelItems.Count == ch.ChannelItems.Count(x => x.IsNewItem);
+
+            // заполняем только если либо ничего нет, либо одни новые
+            if ((!ch.ChannelItems.Any() & !ch.IsDownloading) || isHasNewFromSync)
             {
-                // заполняем только если либо ничего нет, либо одни новые
-                await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
+                if (isHasNewFromSync)
+                {
+                    var lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
+                    ch.ChannelItems.Clear();
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
+                    foreach (IVideoItem item in from item in ch.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
+                    {
+                        item.IsNewItem = true;
+                    }
+                }
+                else
+                {
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
+                }
 
                 if (ch.ChannelItems.Any())
                 {

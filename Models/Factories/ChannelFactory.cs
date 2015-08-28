@@ -485,7 +485,7 @@ namespace Models.Factories
             var vf = _c.CreateVideoItemFactory();
             try
             {
-                var lst = await fb.GetChannelItemsIdListDbAsync(channel.ID);
+                var lst = (await fb.GetChannelItemsIdListDbAsync(channel.ID)).ToList();
                 if (lst.Any())
                 {
                     foreach (var id in lst)
