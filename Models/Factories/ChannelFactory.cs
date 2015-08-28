@@ -309,6 +309,7 @@ namespace Models.Factories
 
         public async Task SyncChannelAsync(IChannel channel, string dir, bool isSyncPls)
         {
+            channel.IsInWork = true;
             // получаем количество записей в базе
             //var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
 
@@ -363,7 +364,7 @@ namespace Models.Factories
 
             if (isSyncPls)
             {
-                var dbpls = (await channel.GetChannelPlaylistsAsync()).ToList(); // получаем все плэйлисты из базы
+                var dbpls = (await channel.GetChannelPlaylistsDbAsync()).ToList(); // получаем все плэйлисты из базы
 
                 var pls = (await channel.GetChannelPlaylistsNetAsync()).ToList(); // получаем все плэйлисты из сети
 
@@ -423,6 +424,7 @@ namespace Models.Factories
                     }
                 }
             }
+            channel.IsInWork = false;
         }
 
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)

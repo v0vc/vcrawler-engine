@@ -364,6 +364,7 @@ namespace Crawler.Models
             Channels.Add(channel);
             channel.IsDownloading = true;
             channel.IsShowRow = true;
+            channel.IsInWork = true;
             SelectedChannel = channel;
             var lst = await channel.GetChannelItemsNetAsync(0);
             foreach (var item in lst)
@@ -425,7 +426,7 @@ namespace Crawler.Models
                     }
                 }
             }
-
+            channel.IsInWork = false;
             SetStatus(2);
         }
 

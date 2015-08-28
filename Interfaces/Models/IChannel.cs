@@ -27,7 +27,7 @@ namespace Interfaces.Models
         Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult);
         Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult);
         Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync();
-        Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync();
+        Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync();
         Task<int> GetChannelItemsCountDbAsync();
         Task<int> GetChannelItemsCountNetAsync();
         Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult);

@@ -200,7 +200,7 @@
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
                                     <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>
+                                </DataTrigger>                         
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>

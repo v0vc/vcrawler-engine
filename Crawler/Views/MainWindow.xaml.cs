@@ -230,7 +230,7 @@ namespace Crawler.Views
             }
 
             var channel = row.Item as IChannel;
-            if (channel == null)
+            if (channel == null || channel.IsInWork)
             {
                 return;
             }
@@ -300,18 +300,19 @@ namespace Crawler.Views
                 item.IsShowRow = true;
             }
 
-            if (!ch.ChannelItems.Any() & !ch.IsDownloading)
+            if (!ch.ChannelItems.Any() & !ch.IsDownloading & ch.ChannelItems.All(x => x.IsNewItem))
             {
                 // заполняем только если либо ничего нет, либо одни новые
                 await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
 
                 if (ch.ChannelItems.Any())
                 {
-                    var pls = await ch.GetChannelPlaylistsAsync();
+                    var pls = (await ch.GetChannelPlaylistsDbAsync()).ToList();
 
                     if (pls.Any())
                     {
                         ch.ChannelPlaylists.Clear();
+
                         foreach (var pl in pls)
                         {
                             ch.ChannelPlaylists.Add(pl);
@@ -679,8 +680,16 @@ namespace Crawler.Views
             {
                 if (!string.IsNullOrEmpty(ViewModel.Model.YouPath))
                 {
-                    ViewModel.Model.SelectedChannel.IsDownloading = true;
-                    await item.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false);
+                    var fn = new FileInfo(ViewModel.Model.YouPath);
+                    if (fn.Exists)
+                    {
+                        ViewModel.Model.SelectedChannel.IsDownloading = true;
+                        await item.DownloadItem(fn.FullName, ViewModel.Model.DirPath, false);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Please, check path to youtube-dl");
+                    }
                 }
                 else
                 {

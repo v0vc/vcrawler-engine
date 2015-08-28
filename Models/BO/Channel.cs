@@ -184,7 +184,7 @@ namespace Models.BO
             return await _cf.GetChannelPlaylistsNetAsync(ID);
         }
 
-        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync()
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
         {
             return await _cf.GetChannelPlaylistsAsync(ID);
         }
