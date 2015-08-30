@@ -35,7 +35,7 @@
             <Border CornerRadius="3" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock FontSize="16" Padding="5 0 8 0" HorizontalAlignment="Center" VerticalAlignment="Center">Title:</TextBlock>
-                    <TextBox x:Name="TextBoxName" FontSize="16" Text="{Binding Model.NewChannelTitle}" Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0 2 0 2" Margin="2,0,0,0"/>
+                    <TextBox x:Name="TextBoxName" FontSize="16" Text="{Binding Model.NewChannelTitle, Mode=TwoWay}" Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="0 2 0 2" Margin="2,0,0,0"/>
                     <Image Source="../Images/label-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0">
                         <Image.ToolTip>
                             <TextBlock Text="Optional"></TextBlock>

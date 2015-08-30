@@ -56,6 +56,7 @@ namespace Crawler.Models
         private string _newTag;
         private bool _isExpand;
         private ITag _selectedTag;
+        private string _newChannelTitle;
 
         public MainWindowModel()
         {
@@ -522,7 +523,7 @@ namespace Crawler.Models
                     if (match.Success)
                     {
                         var id = match.Groups[1].Value;
-                        var vi = await BaseFactory.CreateYouTubeSite().GetVideoItemLiteNetAsync(id);
+                        var vi = await _yf.GetVideoItemLiteNetAsync(id);
                         parsedChannelId = vi.ParentID;
                     }
                 }
@@ -820,7 +821,15 @@ namespace Crawler.Models
             }
         }
 
-        public string NewChannelTitle { get; set; }
+        public string NewChannelTitle
+        {
+            get { return _newChannelTitle; }
+            set
+            {
+                _newChannelTitle = value; 
+                OnPropertyChanged();
+            }
+        }
 
         public string Info
         {

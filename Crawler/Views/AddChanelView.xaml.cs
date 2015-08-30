@@ -65,6 +65,7 @@ namespace Crawler.Views
                     return;
                 }
                 context.Model.NewChannelLink = text;
+                context.Model.NewChannelTitle = string.Empty;
                 TextBoxLink.SelectAll();
             }
         }
