@@ -8,7 +8,9 @@ using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
+using MessageBox = System.Windows.MessageBox;
 
 namespace Crawler.ViewModels
 {
@@ -179,6 +181,10 @@ namespace Crawler.ViewModels
                 }
 
                 Model.SetStatus(1);
+                var prog = TaskbarManager.Instance;
+                prog.SetProgressState(TaskbarProgressBarState.Normal);
+                Model.ShowAllChannels();
+                Model.IsIdle = false;
                 var rest = 0;
                 foreach (var s in lst)
                 {
@@ -194,12 +200,22 @@ namespace Crawler.ViewModels
                         {
                             case "youtube.com":
 
-                                Model.Info = "Restoring: " + sp[0];
-
-                                await Model.AddNewChannelAsync(sp[1], null);
+                                try
+                                {
+                                    Model.SetStatus(1);
+                                    Model.Info = "Restoring: " + sp[0];
+                                    await Model.AddNewChannelAsync(sp[1], null);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Model.SetStatus(3);
+                                    Model.Info = "Can't restore: " + sp[0];
+                                    MessageBox.Show(ex.Message);
+                                }
 
                                 rest++;
-
+                                Model.PrValue = Math.Round((double)(100 * rest) / lst.Count());
+                                prog.SetProgressValue((int)Model.PrValue, 100);
                                 break;
 
                             default:
@@ -215,6 +231,9 @@ namespace Crawler.ViewModels
                     }
                 }
 
+                prog.SetProgressState(TaskbarProgressBarState.NoProgress);
+                Model.PrValue = 0;
+                Model.IsIdle = true;
                 Model.SetStatus(2);
 
                 Model.Info = "Total restored: " + rest;

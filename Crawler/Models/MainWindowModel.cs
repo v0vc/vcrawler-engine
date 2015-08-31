@@ -351,9 +351,9 @@ namespace Crawler.Models
         public async Task AddNewChannelAsync(string channelid, string channeltitle)
         {
             var channel = await _cf.GetChannelNetAsync(channelid);
-            if (channel == null)
+            if (string.IsNullOrEmpty(channel.Title))
             {
-                throw new Exception("GetChannelNetAsync return null");
+                throw new Exception("Can't get channel: " + channel.ID);
             }
 
             if (!string.IsNullOrEmpty(channeltitle))
