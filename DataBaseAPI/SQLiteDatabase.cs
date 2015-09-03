@@ -936,7 +936,7 @@ namespace DataBaseAPI
 
                     if (res == null || res == DBNull.Value)
                     {
-                        throw new Exception(zap);
+                        return string.Empty;
                     }
 
                     return res as string;
@@ -960,7 +960,7 @@ namespace DataBaseAPI
 
                     if (res == null || res == DBNull.Value)
                     {
-                        throw new Exception(zap);
+                        return string.Empty;
                     }
 
                     return res as string;
