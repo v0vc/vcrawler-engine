@@ -310,9 +310,9 @@ namespace Models.Factories
         public async Task SyncChannelAsync(IChannel channel, string dir, bool isSyncPls)
         {
             channel.IsInWork = true;
-            // получаем количество записей в базе
-            //var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
 
+            // получаем количество записей в базе
+            // var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
             var idsdb = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
 
             // получаем количество записей на канале
@@ -323,26 +323,15 @@ namespace Models.Factories
             if (netCount > idsdb.Count)
             {
                 var nc = netCount - idsdb.Count + 1; // с запасом :)
-
                 var lsidNet = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
 
                 if (lsidNet.Count != idsdb.Count && lsidNet.Any())
                 {
-                    //if (!channel.ChannelItems.Any())
-                    //{
-                    //    await channel.FillChannelItemsDbAsync(dir);
-                    //}
-
                     lsidNet.Reverse();
-
                     var trueids = lsidNet.Where(id => !idsdb.Contains(id)).ToList(); // id которых нет
-
-                    //var trueids = lsid.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)).ToList(); // id которых нет
-                    
                     if (trueids.Any())
                     {
                         var vf = _c.CreateVideoItemFactory();
-
                         var you = _c.CreateYouTubeSite();
 
                         var tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
@@ -504,7 +493,8 @@ namespace Models.Factories
 
         public async Task SyncChannelPlaylistsAsync(Channel channel)
         {
-            var pls = await channel.GetChannelPlaylistsNetAsync();
+            var pls = (await channel.GetChannelPlaylistsNetAsync()).ToList();
+
             if (pls.Any())
             {
                 foreach (var playlist in channel.ChannelPlaylists)
@@ -612,6 +602,12 @@ namespace Models.Factories
 
                 channel.ChannelCookies.Add(cookie);
             }
+        }
+
+        public async Task FillChannelDescriptionAsync(IChannel channel)
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            channel.SubTitle = await fb.GetChannelDescriptionAsync(channel.ID);
         }
     }
 }

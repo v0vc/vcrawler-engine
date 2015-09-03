@@ -33,6 +33,11 @@ namespace Crawler.Views
                 return;
             }
 
+            if (string.IsNullOrEmpty(context.Description))
+            {
+                await context.FillDescriptionAsync();
+            }
+
             var id = context.ID;
             var link = string.Format("http://img.youtube.com/vi/{0}/0.jpg", id);
 

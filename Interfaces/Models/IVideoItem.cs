@@ -31,6 +31,7 @@ namespace Interfaces.Models
         Task<IVideoItem> GetVideoItemNetAsync();
         Task<IChannel> GetParentChannelAsync();
         Task FillChapters();
+        Task FillDescriptionAsync();
         Task InsertItemAsync();
         Task DeleteItemAsync();
         Task RunItem(string mpcpath);

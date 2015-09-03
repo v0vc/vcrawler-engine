@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Media.Imaging;
@@ -11,7 +12,8 @@ namespace Extensions
 {
     public static class CommonExtensions
     {
-        // private const string Newline = "\r\n";
+        private const string NewLine = "\r\n";
+
         public static string MakeValidFileName(this string name)
         {
             var regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
@@ -111,67 +113,84 @@ namespace Extensions
             return list;
         }
 
-        // public static string WordWrap(this string theString, int width)
-        // {
+        public static string WordWrap(this string theString, int width)
+        {
+            int pos, next;
+            var sb = new StringBuilder();
 
-        // int pos, next;
-        // var sb = new StringBuilder();
+            // Lucidity check
+            //if (Width < 1)
+            //    return theString;
 
-        // // Lucidity check
-        // //if (Width < 1)
-        // //    return theString;
+            // Parse each line of text
+            for (pos = 0; pos < theString.Length; pos = next)
+            {
+                // Find end of line
+                int eol = theString.IndexOf(NewLine, pos, StringComparison.Ordinal);
 
-        // // Parse each line of text
-        // for (pos = 0; pos < theString.Length; pos = next)
-        // {
-        // // Find end of line
-        // int eol = theString.IndexOf(Newline, pos, StringComparison.Ordinal);
+                if (eol == -1)
+                {
+                    next = eol = theString.Length;
+                }
+                else
+                {
+                    next = eol + NewLine.Length;
+                }
 
-        // if (eol == -1)
-        // next = eol = theString.Length;
-        // else
-        // next = eol + Newline.Length;
+                // Copy this line of text, breaking into smaller lines as needed
+                if (eol > pos)
+                {
+                    do
+                    {
+                        int len = eol - pos;
 
-        // // Copy this line of text, breaking into smaller lines as needed
-        // if (eol > pos)
-        // {
-        // do
-        // {
-        // int len = eol - pos;
+                        if (len > width)
+                        {
+                            len = BreakLine(theString, pos, width);
+                        }
 
-        // if (len > width)
-        // len = BreakLine(theString, pos, width);
+                        sb.Append(theString, pos, len);
+                        sb.Append(NewLine);
 
-        // sb.Append(theString, pos, len);
-        // sb.Append(Newline);
+                        // Trim whitespace following break
+                        pos += len;
 
-        // // Trim whitespace following break
-        // pos += len;
+                        while (pos < eol && char.IsWhiteSpace(theString[pos]))
+                        {
+                            pos++;
+                        }
+                    } while (!(eol <= pos));
+                }
+                else 
+                {
+                    sb.Append(NewLine); // Empty line
+                }
+            }
 
-        // while (pos < eol && Char.IsWhiteSpace(theString[pos]))
-        // pos++;
+            return sb.ToString();
+        }
 
-        // } while (!(eol <= pos));
-        // }
-        // else sb.Append(Newline); // Empty line
-        // }
+        private static int BreakLine(string text, int pos, int max)
+        {
+            // Find last whitespace in line
+            int i = max - 1;
+            while (i >= 0 && !char.IsWhiteSpace(text[pos + i]))
+            {
+                i--;
+            }
+            if (i < 0)
+            {
+                return max; // No whitespace found; break at maximum length
+            }
 
-        // return sb.ToString();
-        // }
+            // Find start of whitespace
+            while (i >= 0 && char.IsWhiteSpace(text[pos + i]))
+            {
+                i--;
+            }
 
-        // private static int BreakLine(string text, int pos, int max)
-        // {
-        // // Find last whitespace in line
-        // int i = max - 1;
-        // while (i >= 0 && !Char.IsWhiteSpace(text[pos + i]))
-        // i--;
-        // if (i < 0)
-        // return max; // No whitespace found; break at maximum length
-        // // Find start of whitespace
-        // while (i >= 0 && Char.IsWhiteSpace(text[pos + i]))
-        // i--;
-        // // Return length of text before whitespace
-        // return i + 1;
-        // }
+            // Return length of text before whitespace
+            return i + 1;
+        }
     }
 }

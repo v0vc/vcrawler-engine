@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Extensions;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -156,6 +157,13 @@ namespace Models.Factories
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task FillDescriptionAsync(IVideoItem videoItem)
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            var res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
+            videoItem.Description = res.WordWrap(150);
         }
     }
 }

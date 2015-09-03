@@ -481,9 +481,9 @@ namespace SitesAPI.Videos
         public async Task<int> GetChannelItemsCountNetAsync(string channelID)
         {
             var zap =
-                string.Format(
-                    "{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}",
-                    Url, channelID, Key, Print);
+                string.Format("{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}", Url,
+                    channelID, Key, Print);
+
             //var zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", Url, channelID, Key, Print);
 
             var str = await SiteHelper.DownloadStringAsync(new Uri(zap));
@@ -491,6 +491,7 @@ namespace SitesAPI.Videos
             var jsvideo = await Task.Run(() => JObject.Parse(str));
 
             var total = jsvideo.SelectToken("items[0].statistics.videoCount");
+
             //var total = jsvideo.SelectToken("pageInfo.totalResults");
 
             if (total == null)

@@ -10,7 +10,7 @@ namespace DataBaseAPI.POCO
         {
             ID = reader[SqLiteDatabase.ChannelId] as string;
             Title = reader[SqLiteDatabase.ChannelTitle] as string;
-            SubTitle = reader[SqLiteDatabase.ChannelSubTitle] as string;
+            // SubTitle = reader[SqLiteDatabase.ChannelSubTitle] as string;
             Thumbnail = reader[SqLiteDatabase.ChannelThumbnail] as byte[];
             Site = reader[SqLiteDatabase.ChannelSite] as string;
         }

@@ -213,15 +213,16 @@
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=Mask}" />
                                         </StackPanel.OpacityMask>
-                                        <Image Source="{Binding Thumbnail, IsAsync=True}"
-                                            RenderOptions.BitmapScalingMode="Fant"
-                                            ToolTipService.ShowDuration="120000"
-                                            Stretch="Fill"
-                                            Width="48"
-                                            Height="48"
-                                            VerticalAlignment="Top"
-                                            Margin="0"
-                                            HorizontalAlignment="Center">
+                                        <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                               ToolTipOpening="Channel_OnToolTipOpening"
+                                               RenderOptions.BitmapScalingMode="Fant"
+                                               ToolTipService.ShowDuration="120000"
+                                               Stretch="Fill"
+                                               Width="48"
+                                               Height="48"
+                                               VerticalAlignment="Top"
+                                               Margin="0"
+                                               HorizontalAlignment="Center">
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding Thumbnail, IsAsync=True}" />
@@ -529,7 +530,7 @@
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=Mask}" />
                                         </StackPanel.OpacityMask>
-                                        <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                        <Image Source="{Binding Thumbnail, IsAsync=True}" ToolTipOpening="VideoItem_OnToolTipOpening" 
                                                ToolTipService.ShowDuration="120000"
                                                RenderOptions.BitmapScalingMode="Fant"
                                                Stretch="Fill"
@@ -542,7 +543,7 @@
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                    <TextBlock Margin="10,0,0,0" Text="{Binding Description}" />
+                                                    <TextBlock Margin="10,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
                                                 </StackPanel>
                                             </Image.ToolTip>
                                         </Image>
@@ -826,7 +827,7 @@
                 <ItemsPanelTemplate>
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="100" />
+                            <ColumnDefinition Width="102" />
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />

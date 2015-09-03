@@ -44,5 +44,6 @@ namespace Interfaces.Models
         Task FillChannelCookieNetAsync();
         Task StoreCookiesAsync();
         Task FillChannelCookieDbAsync();
+        Task FillChannelDescriptionAsync();
     }
 }

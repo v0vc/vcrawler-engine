@@ -17,6 +17,7 @@ namespace Models.BO
         private string _title;
         private bool _isInWork;
         private bool _isShowRow;
+        private string _subTitle;
 
         private Channel()
         {
@@ -42,7 +43,19 @@ namespace Models.BO
             }
         }
 
-        public string SubTitle { get; set; }
+        public string SubTitle
+        {
+            get
+            {
+                return _subTitle;
+            }
+            set
+            {
+                _subTitle = value; 
+                OnPropertyChanged();
+            }
+        }
+
         public byte[] Thumbnail { get; set; }
         public string Site { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
@@ -235,6 +248,11 @@ namespace Models.BO
         public async Task FillChannelCookieDbAsync()
         {
             await _cf.FillChannelCookieDbAsync(this);
+        }
+
+        public async Task FillChannelDescriptionAsync()
+        {
+            await _cf.FillChannelDescriptionAsync(this);
         }
 
         #region INotifyPropertyChanged

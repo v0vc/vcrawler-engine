@@ -11,7 +11,7 @@ namespace DataBaseAPI.POCO
             ID = reader[SqLiteDatabase.ItemId] as string;
             ParentID = reader[SqLiteDatabase.ParentID] as string;
             Title = reader[SqLiteDatabase.Title] as string;
-            Description = reader[SqLiteDatabase.Description] as string;
+            // Description = reader[SqLiteDatabase.Description] as string;
             ViewCount = Convert.ToInt32(reader[SqLiteDatabase.ViewCount]);
             Duration = Convert.ToInt32(reader[SqLiteDatabase.Duration]);
             Comments = Convert.ToInt32(reader[SqLiteDatabase.Comments]);

@@ -29,6 +29,7 @@ namespace Models.BO
         private string _tempname = string.Empty;
         private DateTime _timestamp;
         private TaskbarManager _taskbar;
+        private string _description;
 
         private VideoItem()
         {
@@ -58,7 +59,18 @@ namespace Models.BO
 
         public string Title { get; set; }
 
-        public string Description { get; set; }
+        public string Description
+        {
+            get
+            {
+                return _description;
+            }
+            set
+            {
+                _description = value;
+                OnPropertyChanged();
+            }
+        }
 
         public long ViewCount { get; set; }
 
@@ -198,6 +210,11 @@ namespace Models.BO
             {
                 VideoItemChapters.Add(chapter);
             }
+        }
+
+        public async Task FillDescriptionAsync()
+        {
+            await _vf.FillDescriptionAsync(this);
         }
 
         public async Task InsertItemAsync()

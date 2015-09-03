@@ -843,5 +843,34 @@ namespace Crawler.Views
                 }    
             }
         }
+
+        private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            var image = e.Source as Image;
+            if (image == null)
+            {
+                return;
+            }
+
+            var channel = image.DataContext as IChannel;
+            if (channel != null && string.IsNullOrEmpty(channel.SubTitle))
+            {
+                await channel.FillChannelDescriptionAsync();
+            }
+        }
+
+        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            var image = e.Source as Image;
+            if (image == null)
+            {
+                return;
+            }
+            var item = image.DataContext as IVideoItem;
+            if (item != null && string.IsNullOrEmpty(item.Description))
+            {
+                await item.FillDescriptionAsync();
+            }
+        }
     }
 }

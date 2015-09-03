@@ -44,7 +44,15 @@ namespace DataBaseAPI
 
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
-            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, id);
+            var zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} WHERE {5}='{6}'",
+                ChannelId,
+                ChannelTitle,
+                ChannelThumbnail,
+                ChannelSite,
+                Tablechannels,
+                ChannelId,
+                id);
+
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -72,7 +80,15 @@ namespace DataBaseAPI
         {
             var res = new List<IChannelPOCO>();
 
-            var zap = string.Format(@"SELECT * FROM {0} ORDER BY {1} ASC", Tablechannels, ChannelTitle);
+            // var zap = string.Format(@"SELECT * FROM {0} ORDER BY {1} ASC", Tablechannels, ChannelTitle);
+            var zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} ORDER BY {5} ASC",
+                ChannelId,
+                ChannelTitle,
+                ChannelThumbnail,
+                ChannelSite,
+                Tablechannels,
+                ChannelTitle);
+
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -153,7 +169,20 @@ namespace DataBaseAPI
 
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
-            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
+            // var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
+            var zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'",
+                ItemId,
+                ParentID,
+                Title,
+                ViewCount,
+                Duration,
+                Comments,
+                Thumbnail,
+                Timestamp,
+                Tableitems,
+                ItemId,
+                id);
+
             using (var command = GetCommand(zap))
             using (var connection = new SQLiteConnection(_dbConnection))
             {
@@ -179,7 +208,20 @@ namespace DataBaseAPI
         public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
         {
             var res = new List<IVideoItemPOCO>();
-            var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
+            //var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
+            var zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC",
+                ItemId,
+                ParentID,
+                Title,
+                ViewCount,
+                Duration,
+                Comments,
+                Thumbnail,
+                Timestamp,
+                Tableitems,
+                ParentID,
+                parentID);
+
             using (var command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(_dbConnection))
@@ -876,6 +918,54 @@ namespace DataBaseAPI
             }
 
             return res;
+        }
+
+        public async Task<string> GetChannelDescriptionAsync(string channelID)
+        {
+            var zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", ChannelSubTitle, Tablechannels, ChannelId, channelID);
+
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    var res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                    if (res == null || res == DBNull.Value)
+                    {
+                        throw new Exception(zap);
+                    }
+
+                    return res as string;
+                }
+            }
+        }
+
+        public async Task<string> GetVideoItemDescriptionAsync(string id)
+        {
+            var zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", Description, Tableitems, ItemId, id);
+
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    var res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                    if (res == null || res == DBNull.Value)
+                    {
+                        throw new Exception(zap);
+                    }
+
+                    return res as string;
+                }
+            }
         }
 
         public async Task VacuumAsync()

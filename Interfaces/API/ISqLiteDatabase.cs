@@ -304,6 +304,20 @@ namespace Interfaces.API
         Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID);
 
         /// <summary>
+        /// Получить описание канала из базы
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        Task<string> GetChannelDescriptionAsync(string channelID);
+
+        /// <summary>
+        /// Получить описание видео из базы
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<string> GetVideoItemDescriptionAsync(string id);
+
+        /// <summary>
         /// Скукожить базу
         /// </summary>
         /// <returns></returns>
