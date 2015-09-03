@@ -83,16 +83,30 @@ namespace Crawler.Views
         private void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
         {
             var tag = ((Button)e.Source).DataContext as ITag;
-            if (tag != null)
+            if (tag == null)
             {
-                var lst = DataGridTags.ItemsSource as ObservableCollection<ITag>;
-                if (lst != null)
+                return;
+            }
+
+            var lst = DataGridTags.ItemsSource as ObservableCollection<ITag>;
+            if (lst == null)
+            {
+                return;
+            }
+            lst.Remove(tag);
+
+            if (ViewModel == null)
+            {
+                return;
+            }
+
+            ViewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
+            if (!ViewModel.Channels.Any(x => x.ChannelTags.Select(y => y.Title).Contains(tag.Title)))
+            {
+                var ctag = ViewModel.CurrentTags.FirstOrDefault(x => x.Title == tag.Title);
+                if (ctag != null)
                 {
-                    lst.Remove(tag);
-                    if (ViewModel != null)
-                    {
-                        ViewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
-                    }
+                    ViewModel.CurrentTags.Remove(ctag);
                 }
             }
         }

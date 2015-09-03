@@ -11,11 +11,13 @@ namespace Crawler.ViewModels
         {
             SaveCommand = new RelayCommand(x => Save());
         }
+
         public ITag SelectedTag { get; set; }
         public RelayCommand SaveCommand { get; set; }
         public IChannel ParentChannel { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; set; }
         public ObservableCollection<ITag> Tags { get; set; }
+        public ObservableCollection<IChannel> Channels { get; set; }
 
         private void Save()
         {

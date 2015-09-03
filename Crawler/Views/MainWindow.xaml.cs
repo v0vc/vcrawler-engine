@@ -171,6 +171,7 @@ namespace Crawler.Views
                         ParentChannel = ViewModel.Model.SelectedChannel,
                         CurrentTags = ViewModel.Model.CurrentTags,
                         Tags = ViewModel.Model.Tags,
+                        Channels = ViewModel.Model.Channels
                     };
 
                     var etv = new EditTagsView
