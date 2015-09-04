@@ -19,11 +19,28 @@ namespace Crawler.ViewModels
         public ObservableCollection<ITag> Tags { get; set; }
         public ObservableCollection<IChannel> Channels { get; set; }
 
-        private void Save()
+        private async void Save()
         {
+            if (!CurrentTags.Any())
+            {
+                foreach (var ch in Channels)
+                {
+                    var tags = await ch.GetChannelTagsAsync();
+                    foreach (ITag tag in tags)
+                    {
+                        ch.ChannelTags.Add(tag);
+                        if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
+                        {
+                            CurrentTags.Add(tag);
+                        }
+                    }
+                }
+            }
+
             foreach (ITag tag in ParentChannel.ChannelTags)
             {
-                ParentChannel.InsertChannelTagAsync(tag.Title);
+                await ParentChannel.InsertChannelTagAsync(tag.Title);
+
                 if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
                 {
                     CurrentTags.Add(tag);
