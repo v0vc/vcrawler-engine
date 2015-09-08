@@ -682,7 +682,14 @@ namespace Crawler.Views
             }
             if (item.IsHasLocalFile)
             {
-                await item.RunItem(ViewModel.Model.MpcPath);
+                if (!string.IsNullOrEmpty(ViewModel.Model.MpcPath))
+                {
+                    await item.RunItem(ViewModel.Model.MpcPath);
+                }
+                else
+                {
+                    MessageBox.Show("Path to MPC is not set, please check");
+                }
             }
             else
             {
