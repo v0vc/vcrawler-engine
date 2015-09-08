@@ -131,6 +131,13 @@ namespace Interfaces.API
         Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID);
 
         /// <summary>
+        /// Получить количество плейлистов канала
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        Task<int> GetChannelPlaylistCountDbAsync(string channelID);
+
+        /// <summary>
         /// Записать тэг
         /// </summary>
         /// <param name="tag">Тэг</param>

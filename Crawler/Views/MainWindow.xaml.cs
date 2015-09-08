@@ -325,17 +325,7 @@ namespace Crawler.Views
 
                 if (ch.ChannelItems.Any())
                 {
-                    var pls = (await ch.GetChannelPlaylistsDbAsync()).ToList();
-
-                    if (pls.Any())
-                    {
-                        ch.ChannelPlaylists.Clear();
-
-                        foreach (var pl in pls)
-                        {
-                            ch.ChannelPlaylists.Add(pl);
-                        }
-                    }
+                    ch.PlaylistCount = await ch.GetChannelPlaylistCountDbAsync();
                 }
                 else
                 {
@@ -870,6 +860,28 @@ namespace Crawler.Views
             if (item != null && string.IsNullOrEmpty(item.Description))
             {
                 await item.FillDescriptionAsync();
+            }
+        }
+
+        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
+        {
+            var ch = ViewModel.Model.SelectedChannel;
+            if (ch == null)
+            {
+                return;
+            }
+
+            if (ch.ChannelPlaylists.Any())
+            {
+                return;
+            }
+
+            var pls = await ch.GetChannelPlaylistsDbAsync();
+            {
+                foreach (var pl in pls)
+                {
+                    ch.ChannelPlaylists.Add(pl);
+                }
             }
         }
     }

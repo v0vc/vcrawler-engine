@@ -444,6 +444,29 @@ namespace DataBaseAPI
             return res;
         }
 
+        public async Task<int> GetChannelPlaylistCountDbAsync(string channelID)
+        {
+            var zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistChannelId, channelID);
+            using (var command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    var res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                    if (res == null || res == DBNull.Value)
+                    {
+                        throw new Exception(zap);
+                    }
+
+                    return Convert.ToInt32(res);
+                }
+            }
+        }
+
         public async Task InsertTagAsync(ITag tag)
         {
             var zap =

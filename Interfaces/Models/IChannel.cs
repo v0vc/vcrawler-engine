@@ -19,6 +19,7 @@ namespace Interfaces.Models
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }
         bool IsShowRow { get; set; }
+        int PlaylistCount { get; set; }
         CookieCollection ChannelCookies { get; set; }
         Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync();
         Task SyncChannelAsync(string dir, bool isSyncPls);
@@ -30,6 +31,7 @@ namespace Interfaces.Models
         Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync();
         Task<int> GetChannelItemsCountDbAsync();
         Task<int> GetChannelItemsCountNetAsync();
+        Task<int> GetChannelPlaylistCountDbAsync();
         Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult);
         Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync();
         Task FillChannelItemsDbAsync(string dir);

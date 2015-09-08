@@ -18,6 +18,7 @@ namespace Models.BO
         private bool _isInWork;
         private bool _isShowRow;
         private string _subTitle;
+        private int _playlistCount;
 
         private Channel()
         {
@@ -114,6 +115,19 @@ namespace Models.BO
             }
         }
 
+        public int PlaylistCount
+        {
+            get
+            {
+                return _playlistCount;
+            }
+            set
+            {
+                _playlistCount = value;
+                OnPropertyChanged();
+            }
+        }
+
         public CookieCollection ChannelCookies { get; set; }
 
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync()
@@ -140,6 +154,11 @@ namespace Models.BO
         public async Task<int> GetChannelItemsCountNetAsync()
         {
             return await _cf.GetChannelItemsCountNetAsync(ID);
+        }
+
+        public async Task<int> GetChannelPlaylistCountDbAsync()
+        {
+            return await _cf.GetChannelPlaylistCountDbAsync(ID);
         }
 
         public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)

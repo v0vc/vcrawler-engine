@@ -609,5 +609,18 @@ namespace Models.Factories
             var fb = _c.CreateSqLiteDatabase();
             channel.SubTitle = await fb.GetChannelDescriptionAsync(channel.ID);
         }
+
+        public async Task<int> GetChannelPlaylistCountDbAsync(string id)
+        {
+            var fb = _c.CreateSqLiteDatabase();
+            try
+            {
+                return await fb.GetChannelPlaylistCountDbAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

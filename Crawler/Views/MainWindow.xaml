@@ -716,6 +716,7 @@
                       BorderThickness="1" 
                       BorderBrush="Gray" 
                       Margin="0,0,2,0"
+                      Expanded="PlayListExpander_OnExpanded"
                       >
                 <Expander.Content>
                     <Grid Expander.Collapsed="Grid_Collapsed" Expander.Expanded="Grid_Expanded">
@@ -815,7 +816,7 @@
                         <TextBlock Text="T" HorizontalAlignment="Center"/>
                         <TextBlock Text="S" HorizontalAlignment="Center"/>
                         <TextBlock Text=". ." HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding Model.SelectedChannel.ChannelPlaylists.Count}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding Model.SelectedChannel.PlaylistCount}" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Expander.Header>
             </Expander>
