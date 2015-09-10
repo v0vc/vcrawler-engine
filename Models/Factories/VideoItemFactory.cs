@@ -1,9 +1,14 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Extensions;
+using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -13,118 +18,26 @@ namespace Models.Factories
 {
     public class VideoItemFactory : IVideoItemFactory
     {
+        #region Static and Readonly Fields
+
         private readonly ICommonFactory _c;
+
+        #endregion
+
+        #region Constructors
 
         public VideoItemFactory(ICommonFactory c)
         {
             _c = c;
         }
 
-        public IVideoItem CreateVideoItem()
-        {
-            return new VideoItem(this);
-        }
+        #endregion
 
-        public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
-        {
-            var vi = new VideoItem(this)
-            {
-                ID = poco.ID,
-                Title = poco.Title,
-                ParentID = poco.ParentID,
-                Description = poco.Description, // .WordWrap(80);
-                ViewCount = poco.ViewCount,
-                Duration = poco.Duration,
-                Comments = poco.Comments,
-                Thumbnail = poco.Thumbnail,
-                Timestamp = poco.Timestamp,
-                VideoItemChapters = new ObservableCollection<IChapter>()
-            };
-            return vi;
-        }
-
-        public async Task<IVideoItem> GetVideoItemDbAsync(string id)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            var fb = _c.CreateSqLiteDatabase();
-            var vf = _c.CreateVideoItemFactory();
-            
-            try
-            {
-                var poco = await fb.GetVideoItemAsync(id);
-                var vi = vf.CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IVideoItem> GetVideoItemNetAsync(string id)
-        {
-            var fb = _c.CreateYouTubeSite();
-            var vf = _c.CreateVideoItemFactory();
-            try
-            {
-                var poco = await fb.GetVideoItemNetAsync(id);
-                var vi = vf.CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
-        {
-            var fb = _c.CreateYouTubeSite();
-            var vf = _c.CreateVideoItemFactory();
-            try
-            {
-                var poco = await fb.GetVideoItemLiteNetAsync(id);
-                var vi = vf.CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IChannel> GetParentChannelAsync(string channelID)
-        {
-            var fb = _c.CreateSqLiteDatabase();
-            var cf = _c.CreateChannelFactory();
-            try
-            {
-                var poco = await fb.GetChannelAsync(channelID);
-                var channel = cf.CreateChannel(poco);
-                return channel;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task InsertItemAsync(IVideoItem item)
-        {
-            var fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                await fb.InsertItemAsync(item);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        #region Methods
 
         public async Task DeleteItemAsync(string id)
         {
-            var fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -135,18 +48,41 @@ namespace Models.Factories
             }
         }
 
+        public async Task FillDescriptionAsync(IVideoItem videoItem)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            string res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
+            videoItem.Description = res.WordWrap(150);
+        }
+
+        public async Task<IChannel> GetParentChannelAsync(string channelID)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            IChannelFactory cf = _c.CreateChannelFactory();
+            try
+            {
+                IChannelPOCO poco = await fb.GetChannelAsync(channelID);
+                IChannel channel = cf.CreateChannel(poco);
+                return channel;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<IEnumerable<IChapter>> GetVideoItemChaptersAsync(string id)
         {
-            var fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = _c.CreateYouTubeSite();
             var res = new List<IChapter>();
             try
             {
-                var cf = _c.CreateChapterFactory();
-                var poco = await fb.GetVideoSubtitlesByIdAsync(id);
+                IChapterFactory cf = _c.CreateChapterFactory();
+                IEnumerable<IChapterPOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
                 res.AddRange(poco.Select(chapterPoco => cf.CreateChapter(chapterPoco)));
                 if (!res.Any())
                 {
-                    var chap = cf.CreateChapter();
+                    IChapter chap = cf.CreateChapter();
                     chap.IsEnabled = false;
                     chap.Language = "Auto";
                     res.Add(chap);
@@ -159,11 +95,96 @@ namespace Models.Factories
             }
         }
 
-        public async Task FillDescriptionAsync(IVideoItem videoItem)
+        public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
-            var fb = _c.CreateSqLiteDatabase();
-            var res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
-            videoItem.Description = res.WordWrap(150);
+            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            try
+            {
+                IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
+                IVideoItem vi = vf.CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
+
+        public async Task InsertItemAsync(IVideoItem item)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            try
+            {
+                await fb.InsertItemAsync(item);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        #endregion
+
+        #region IVideoItemFactory Members
+
+        public IVideoItem CreateVideoItem()
+        {
+            return new VideoItem(this);
+        }
+
+        public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
+        {
+            var vi = new VideoItem(this)
+            {
+                ID = poco.ID, 
+                Title = poco.Title, 
+                ParentID = poco.ParentID, 
+                Description = poco.Description, // .WordWrap(80);
+                ViewCount = poco.ViewCount, 
+                Duration = poco.Duration, 
+                Comments = poco.Comments, 
+                Thumbnail = poco.Thumbnail, 
+                Timestamp = poco.Timestamp, 
+                VideoItemChapters = new ObservableCollection<IChapter>()
+            };
+            return vi;
+        }
+
+        public async Task<IVideoItem> GetVideoItemDbAsync(string id)
+        {
+            // var fb = ServiceLocator.SqLiteDatabase;
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+
+            try
+            {
+                IVideoItemPOCO poco = await fb.GetVideoItemAsync(id);
+                IVideoItem vi = vf.CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<IVideoItem> GetVideoItemNetAsync(string id)
+        {
+            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            try
+            {
+                IVideoItemPOCO poco = await fb.GetVideoItemNetAsync(id);
+                IVideoItem vi = vf.CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        #endregion
     }
 }

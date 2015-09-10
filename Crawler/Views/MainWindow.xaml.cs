@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -9,6 +14,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
+using Interfaces.Factories;
 using Interfaces.Models;
 
 namespace Crawler.Views
@@ -18,37 +24,96 @@ namespace Crawler.Views
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Fields
+
         private GridLength _rememberWidth = GridLength.Auto;
+
+        #endregion
+
+        #region Constructors
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
+        #endregion
+
+        #region Properties
+
         // [Inject]
         public MainWindowViewModel ViewModel
         {
-            get { return DataContext as MainWindowViewModel; }
-            set { DataContext = value; }
+            get
+            {
+                return DataContext as MainWindowViewModel;
+            }
+            set
+            {
+                DataContext = value;
+            }
         }
+
+        #endregion
+
+        #region Static Methods
 
         private static bool IsFfmegExist()
         {
             const string ff = "ffmpeg.exe";
-            var values = Environment.GetEnvironmentVariable("PATH");
+            string values = Environment.GetEnvironmentVariable("PATH");
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
 
-        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        #endregion
+
+        #region Methods
+
+        private async Task ConfirmDelete(MultiSelector dataGrid)
         {
-            // await ViewModel.Model.FillChannels();
-            ViewModel.Model.SetStatus(1);
-            using (var bgv = new BackgroundWorker())
+            var sb = new StringBuilder();
+
+            foreach (IChannel channel in dataGrid.SelectedItems)
             {
-                bgv.DoWork += bgv_DoWork;
-                bgv.RunWorkerCompleted += bgv_RunWorkerCompleted;
-                bgv.RunWorkerAsync();
+                if (channel.ID != "pop")
+                {
+                    sb.Append(channel.Title).Append(Environment.NewLine);
+                }
             }
+
+            if (sb.Length == 0)
+            {
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.OK)
+            {
+                for (int i = dataGrid.SelectedItems.Count; i > 0; i--)
+                {
+                    var channel = (IChannel)dataGrid.SelectedItems[i - 1];
+                    ViewModel.Model.Channels.Remove(channel);
+                    await channel.DeleteChannelAsync();
+                }
+
+                if (ViewModel.Model.Channels.Any())
+                {
+                    ViewModel.Model.SelectedChannel = ViewModel.Model.Channels.First();
+                }
+            }
+        }
+
+        #endregion
+
+        #region Event Handling
+
+        private void bgv_DoWork(object sender, DoWorkEventArgs e)
+        {
+            Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
         }
 
         private void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -63,32 +128,6 @@ namespace Crawler.Views
                 if (row != null)
                 {
                     row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                }
-            }
-        }
-
-        private void bgv_DoWork(object sender, DoWorkEventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
-        }
-
-        private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
-        {
-            var dataGrid = sender as DataGrid;
-            if (dataGrid == null)
-            {
-                return;
-            }
-            if (e.Key == Key.Delete)
-            {
-                await ConfirmDelete(dataGrid);
-            }
-            if (e.Key == Key.Enter)
-            {
-                var channel = dataGrid.SelectedItem as IChannel;
-                if (channel != null && channel.ID == "pop")
-                {
-                    await ViewModel.Model.Search();
                 }
             }
         }
@@ -153,7 +192,7 @@ namespace Crawler.Views
 
                 case "Subscribe":
 
-                    var channel = ViewModel.Model.SelectedChannel;
+                    IChannel channel = ViewModel.Model.SelectedChannel;
                     if (channel.IsInWork)
                     {
                         return;
@@ -168,57 +207,22 @@ namespace Crawler.Views
 
                     var etvm = new EditTagsViewModel
                     {
-                        ParentChannel = ViewModel.Model.SelectedChannel,
-                        CurrentTags = ViewModel.Model.CurrentTags,
-                        Tags = ViewModel.Model.Tags,
+                        ParentChannel = ViewModel.Model.SelectedChannel, 
+                        CurrentTags = ViewModel.Model.CurrentTags, 
+                        Tags = ViewModel.Model.Tags, 
                         Channels = ViewModel.Model.Channels
                     };
 
                     var etv = new EditTagsView
                     {
-                        DataContext = etvm,
-                        Owner = Application.Current.MainWindow,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        DataContext = etvm, 
+                        Owner = Application.Current.MainWindow, 
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                         Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
                     };
                     etv.ShowDialog();
 
                     break;
-            }
-        }
-
-        private async Task ConfirmDelete(MultiSelector dataGrid)
-        {
-            var sb = new StringBuilder();
-
-            foreach (IChannel channel in dataGrid.SelectedItems)
-            {
-                if (channel.ID != "pop")
-                {
-                    sb.Append(channel.Title).Append(Environment.NewLine);
-                }
-            }
-
-            if (sb.Length == 0)
-            {
-                return;
-            }
-
-            var result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
-
-            if (result == MessageBoxResult.OK)
-            {
-                for (var i = dataGrid.SelectedItems.Count; i > 0; i--)
-                {
-                    var channel = (IChannel)dataGrid.SelectedItems[i - 1];
-                    ViewModel.Model.Channels.Remove(channel);
-                    await channel.DeleteChannelAsync();
-                }
-
-                if (ViewModel.Model.Channels.Any())
-                {
-                    ViewModel.Model.SelectedChannel = ViewModel.Model.Channels.First();
-                }
             }
         }
 
@@ -247,19 +251,20 @@ namespace Crawler.Views
                 if (channel.ChannelItems.Any())
                 {
                     // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                    for (var i = channel.ChannelItems.Count; i > 0; i--)
+                    for (int i = channel.ChannelItems.Count; i > 0; i--)
                     {
-                        if (!(channel.ChannelItems[i - 1].ItemState == "LocalYes" ||
-                              channel.ChannelItems[i - 1].ItemState == "Downloading"))
+                        if (
+                            !(channel.ChannelItems[i - 1].ItemState == "LocalYes"
+                              || channel.ChannelItems[i - 1].ItemState == "Downloading"))
                         {
                             channel.ChannelItems.RemoveAt(i - 1);
                         }
                     }
                 }
 
-                var lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
+                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
 
-                foreach (var item in lst)
+                foreach (IVideoItem item in lst)
                 {
                     channel.AddNewItem(item, false);
                     item.IsHasLocalFileFound(ViewModel.Model.DirPath);
@@ -267,6 +272,21 @@ namespace Crawler.Views
             }
 
             ViewModel.Model.SetStatus(2);
+        }
+
+        private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            var image = e.Source as Image;
+            if (image == null)
+            {
+                return;
+            }
+
+            var channel = image.DataContext as IChannel;
+            if (channel != null && string.IsNullOrEmpty(channel.SubTitle))
+            {
+                await channel.FillChannelDescriptionAsync();
+            }
         }
 
         private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -296,21 +316,20 @@ namespace Crawler.Views
                 ViewModel.Model.RelatedChannels.Clear();
             }
 
-            foreach (var item in ch.ChannelItems)
+            foreach (IVideoItem item in ch.ChannelItems)
             {
                 item.IsShowRow = true;
             }
 
             // есть новые элементы после синхронизации
-            var isHasNewFromSync = ch.ChannelItems.Any() &&
-                                   ch.ChannelItems.Count == ch.ChannelItems.Count(x => x.IsNewItem);
+            bool isHasNewFromSync = ch.ChannelItems.Any() && ch.ChannelItems.Count == ch.ChannelItems.Count(x => x.IsNewItem);
 
             // заполняем только если либо ничего нет, либо одни новые
             if ((!ch.ChannelItems.Any() & !ch.IsDownloading) || isHasNewFromSync)
             {
                 if (isHasNewFromSync)
                 {
-                    var lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
+                    List<string> lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
                     ch.ChannelItems.Clear();
                     await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
                     foreach (IVideoItem item in from item in ch.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
@@ -332,7 +351,7 @@ namespace Crawler.Views
                     // нет в базе = related channel
                     ViewModel.Model.SetStatus(1);
                     ch.IsInWork = true;
-                    var lst = await ch.GetChannelItemsNetAsync(0);
+                    IEnumerable<IVideoItem> lst = await ch.GetChannelItemsNetAsync(0);
                     foreach (IVideoItem item in lst)
                     {
                         ch.AddNewItem(item, false);
@@ -345,174 +364,131 @@ namespace Crawler.Views
             ViewModel.Model.Filterlist.Clear();
         }
 
-        private async void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
         {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
+            foreach (IChannel channel in ViewModel.Model.Channels)
             {
-                return;
+                channel.IsShowRow = false;
             }
 
-            switch (mitem.CommandParameter.ToString())
+            if (ViewModel.Model.CurrentTags.Any(x => x.IsChecked))
             {
-                case "Link":
-                    try
+                foreach (ITag tag in ViewModel.Model.CurrentTags.Where(x => x.IsChecked))
+                {
+                    foreach (IChannel channel in ViewModel.Model.Channels)
                     {
-                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
-                    }
-                    catch (Exception ex)
-                    {
-                        ViewModel.Model.Info = ex.Message;
-                    }
-
-                    break;
-
-                case "Edit":
-                    var edv = new EditDescriptionView
-                    {
-                        DataContext = ViewModel.Model.SelectedVideoItem, 
-                        Owner = Application.Current.MainWindow, 
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    };
-
-                    edv.Show();
-
-                    break;
-
-                case "HD":
-                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-                    {
-                        MessageBox.Show("Please, select youtube-dl");
-                        return;
-                    }
-
-                    if (IsFfmegExist())
-                    {
-                        ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await
-                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, 
-                                ViewModel.Model.DirPath, true);
-                    }
-                    else
-                    {
-                        var ff = new FfmpegView
+                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
                         {
-                            Owner = Application.Current.MainWindow, 
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner
-                        };
-
-                        ff.ShowDialog();
-                    }
-
-                    break;
-
-                case "Delete":
-                    var sb = new StringBuilder();
-
-                    foreach (IVideoItem item in VideoGrid.SelectedItems)
-                    {
-                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
-                        {
-                            sb.Append(item.Title).Append(Environment.NewLine);
+                            channel.IsShowRow = true;
                         }
                     }
-
-                    if (sb.Length == 0)
-                    {
-                        return;
-                    }
-
-                    var result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
-
-                    if (result == MessageBoxResult.OK)
-                    {
-                        for (var i = VideoGrid.SelectedItems.Count; i > 0; i--)
-                        {
-                            var item = VideoGrid.SelectedItems[i - 1] as IVideoItem;
-
-                            if (item == null)
-                            {
-                                continue;
-                            }
-
-                            var fn = new FileInfo(item.LocalFilePath);
-                            try
-                            {
-                                fn.Delete();
-                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
-                                item.LocalFilePath = string.Empty;
-                                item.IsHasLocalFile = false;
-                                item.ItemState = "LocalNo";
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                            }
-                        }
-                    }
-
-                    break;
-
-                case "Subscribe":
-                    if (ViewModel.Model.SelectedChannel.ID != "pop")
-                    {
-                        // этот канал по-любому есть - даже проверять не будем)
-                        MessageBox.Show("Has already");
-                        return;
-                    }
-
-                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink());
-
-                    break;
+                }
+            }
+            else
+            {
+                foreach (IChannel channel in ViewModel.Model.Channels)
+                {
+                    channel.IsShowRow = true;
+                }
             }
         }
 
-        private async void PlaylistsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        private async void ComboBoxTags_OnDropDownOpened(object sender, EventArgs e)
         {
-            if (e.AddedItems.Count != 1)
+            if (ViewModel.Model.CurrentTags.Any())
             {
                 return;
             }
 
-            var pl = e.AddedItems[0] as IPlaylist;
-            if (pl == null)
+            foreach (IChannel ch in ViewModel.Model.Channels)
             {
-                return;
-            }
-
-            var lstv = await pl.GetPlaylistItemsIdsListDbAsync();
-            if (!lstv.Any())
-            {
-                foreach (var item in ViewModel.Model.SelectedChannel.ChannelItems)
+                IEnumerable<ITag> tags = await ch.GetChannelTagsAsync();
+                foreach (ITag tag in tags)
                 {
-                    item.IsShowRow = false;
-                }
-
-                foreach (var item in ViewModel.Model.SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
-                }
-
-                return;
-            }
-
-            pl.PlaylistItems.Clear();
-
-            foreach (var item in ViewModel.Model.SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = lstv.Contains(item.ID);
-                if (item.IsShowRow)
-                {
-                    pl.PlaylistItems.Add(item);
+                    ch.ChannelTags.Add(tag);
+                    if (!ViewModel.Model.CurrentTags.Select(x => x.Title).Contains(tag.Title))
+                    {
+                        ViewModel.Model.CurrentTags.Add(tag);
+                    }
                 }
             }
-
-            ViewModel.Model.Filterlist.Clear();
-
-            // VideoGrid.UpdateLayout();
         }
 
-        private async void Playlist_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void CurrentTag_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ViewModel.Model.SelectedTag == null)
+            {
+                return;
+            }
+
+            foreach (IChannel channel in ViewModel.Model.Channels)
+            {
+                channel.IsShowRow = true;
+                if (!channel.ChannelTags.Select(x => x.Title).Contains(ViewModel.Model.SelectedTag.Title))
+                {
+                    channel.IsShowRow = false;
+                }
+            }
+        }
+
+        private void DataGrid_CellGotFocus(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as DataGrid;
+            if (grid == null)
+            {
+                return;
+            }
+
+            var ch = grid.CurrentItem as IChannel;
+            if (ch == null)
+            {
+                return;
+            }
+
+            ViewModel.Model.SelectedChannel = ch;
+        }
+
+        private async void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            var dataGrid = sender as DataGrid;
+            if (dataGrid == null)
+            {
+                return;
+            }
+            if (e.Key == Key.Delete)
+            {
+                await ConfirmDelete(dataGrid);
+            }
+            if (e.Key == Key.Enter)
+            {
+                var channel = dataGrid.SelectedItem as IChannel;
+                if (channel != null && channel.ID == "pop")
+                {
+                    await ViewModel.Model.Search();
+                }
+            }
+        }
+
+        private void Grid_Collapsed(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as Grid;
+            if (grid != null)
+            {
+                _rememberWidth = grid.ColumnDefinitions[1].Width;
+                grid.ColumnDefinitions[1].Width = GridLength.Auto;
+            }
+        }
+
+        private void Grid_Expanded(object sender, RoutedEventArgs e)
+        {
+            var grid = sender as Grid;
+            if (grid != null)
+            {
+                grid.ColumnDefinitions[1].Width = _rememberWidth;
+            }
+        }
+
+        private async void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = sender as DataGridRow;
             if (row == null)
@@ -520,71 +496,20 @@ namespace Crawler.Views
                 return;
             }
 
-            var pl = row.Item as IPlaylist;
-
-            if (pl == null)
+            var item = row.Item as IVideoItem;
+            if (item == null)
             {
                 return;
             }
 
-            ViewModel.Model.SetStatus(1);
-
-            var pls = await pl.GetPlaylistItemsIdsListNetAsync();
-
-            var vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
-
-            pl.PlaylistItems.Clear();
-
-            foreach (var item in ViewModel.Model.SelectedChannel.ChannelItems)
+            string mpath = ViewModel.Model.MpcPath;
+            if (string.IsNullOrEmpty(mpath))
             {
-                item.IsShowRow = false;
+                MessageBox.Show("Please, select MPC");
             }
-
-            foreach (var id in pls)
+            else
             {
-                if (!pl.PlaylistItems.Select(x => x.ID).Contains(id))
-                {
-                    var vi = await vf.GetVideoItemNetAsync(id);
-
-                    ViewModel.Model.SelectedChannel.AddNewItem(vi, false);
-
-                    pl.PlaylistItems.Add(vi);
-                }
-            }
-
-            ViewModel.Model.SetStatus(2);
-        }
-
-        private void Playlist_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Link":
-
-                    var pl = ViewModel.Model.SelectedPlaylist;
-                    if (pl != null)
-                    {
-                        try
-                        {
-                            var link = string.Format("https://www.youtube.com/playlist?list={0}", pl.ID);
-                            Clipboard.SetText(link);
-                        }
-                        catch (Exception ex)
-                        {
-                            ViewModel.Model.Info = ex.Message;
-                        }
-                    }
-
-                    break;
-
-                case "Download":
-
-                    break;
+                await item.RunItem(ViewModel.Model.MpcPath);
             }
         }
 
@@ -648,7 +573,183 @@ namespace Crawler.Views
             }
         }
 
-        private async void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        {
+            // await ViewModel.Model.FillChannels();
+            ViewModel.Model.SetStatus(1);
+            using (var bgv = new BackgroundWorker())
+            {
+                bgv.DoWork += bgv_DoWork;
+                bgv.RunWorkerCompleted += bgv_RunWorkerCompleted;
+                bgv.RunWorkerAsync();
+            }
+        }
+
+        private async void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mitem = sender as MenuItem;
+            if (mitem == null)
+            {
+                return;
+            }
+
+            switch (mitem.CommandParameter.ToString())
+            {
+                case "Link":
+                    try
+                    {
+                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
+                    }
+                    catch (Exception ex)
+                    {
+                        ViewModel.Model.Info = ex.Message;
+                    }
+
+                    break;
+
+                case "Edit":
+                    var edv = new EditDescriptionView
+                    {
+                        DataContext = ViewModel.Model.SelectedVideoItem, 
+                        Owner = Application.Current.MainWindow, 
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+
+                    edv.Show();
+
+                    break;
+
+                case "HD":
+                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    {
+                        MessageBox.Show("Please, select youtube-dl");
+                        return;
+                    }
+
+                    if (IsFfmegExist())
+                    {
+                        ViewModel.Model.SelectedChannel.IsDownloading = true;
+                        await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
+                    }
+                    else
+                    {
+                        var ff = new FfmpegView
+                        {
+                            Owner = Application.Current.MainWindow, 
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+
+                        ff.ShowDialog();
+                    }
+
+                    break;
+
+                case "Delete":
+                    var sb = new StringBuilder();
+
+                    foreach (IVideoItem item in VideoGrid.SelectedItems)
+                    {
+                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                        {
+                            sb.Append(item.Title).Append(Environment.NewLine);
+                        }
+                    }
+
+                    if (sb.Length == 0)
+                    {
+                        return;
+                    }
+
+                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+                        "Confirm", 
+                        MessageBoxButton.OKCancel, 
+                        MessageBoxImage.Information);
+
+                    if (result == MessageBoxResult.OK)
+                    {
+                        for (int i = VideoGrid.SelectedItems.Count; i > 0; i--)
+                        {
+                            var item = VideoGrid.SelectedItems[i - 1] as IVideoItem;
+
+                            if (item == null)
+                            {
+                                continue;
+                            }
+
+                            var fn = new FileInfo(item.LocalFilePath);
+                            try
+                            {
+                                fn.Delete();
+                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
+                                item.LocalFilePath = string.Empty;
+                                item.IsHasLocalFile = false;
+                                item.ItemState = "LocalNo";
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                    }
+
+                    break;
+
+                case "Subscribe":
+                    if (ViewModel.Model.SelectedChannel.ID != "pop")
+                    {
+                        // этот канал по-любому есть - даже проверять не будем)
+                        MessageBox.Show("Has already");
+                        return;
+                    }
+
+                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink());
+
+                    break;
+            }
+        }
+
+        private async void MenuItem_OnSubmenuOpened(object sender, RoutedEventArgs e)
+        {
+            if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
+            {
+                await ViewModel.Model.SelectedVideoItem.FillChapters();
+            }
+        }
+
+        private void Playlist_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mitem = sender as MenuItem;
+            if (mitem == null)
+            {
+                return;
+            }
+            switch (mitem.CommandParameter.ToString())
+            {
+                case "Link":
+
+                    IPlaylist pl = ViewModel.Model.SelectedPlaylist;
+                    if (pl != null)
+                    {
+                        try
+                        {
+                            string link = string.Format("https://www.youtube.com/playlist?list={0}", pl.ID);
+                            Clipboard.SetText(link);
+                        }
+                        catch (Exception ex)
+                        {
+                            ViewModel.Model.Info = ex.Message;
+                        }
+                    }
+
+                    break;
+
+                case "Download":
+
+                    break;
+            }
+        }
+
+        private async void Playlist_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = sender as DataGridRow;
             if (row == null)
@@ -656,26 +757,142 @@ namespace Crawler.Views
                 return;
             }
 
-            var item = row.Item as IVideoItem;
-            if (item == null)
+            var pl = row.Item as IPlaylist;
+
+            if (pl == null)
             {
                 return;
             }
 
-            var mpath = ViewModel.Model.MpcPath;
-            if (string.IsNullOrEmpty(mpath))
+            ViewModel.Model.SetStatus(1);
+
+            IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
+
+            IVideoItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
+
+            pl.PlaylistItems.Clear();
+
+            foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
             {
-                MessageBox.Show("Please, select MPC");
+                item.IsShowRow = false;
             }
-            else
+
+            foreach (string id in pls)
             {
-                await item.RunItem(ViewModel.Model.MpcPath);
+                if (!pl.PlaylistItems.Select(x => x.ID).Contains(id))
+                {
+                    IVideoItem vi = await vf.GetVideoItemNetAsync(id);
+
+                    ViewModel.Model.SelectedChannel.AddNewItem(vi, false);
+
+                    pl.PlaylistItems.Add(vi);
+                }
+            }
+
+            ViewModel.Model.SetStatus(2);
+        }
+
+        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
+        {
+            IChannel ch = ViewModel.Model.SelectedChannel;
+            if (ch == null)
+            {
+                return;
+            }
+
+            if (ch.ChannelPlaylists.Any())
+            {
+                return;
+            }
+
+            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
+            {
+                foreach (IPlaylist pl in pls)
+                {
+                    ch.ChannelPlaylists.Add(pl);
+                }
+            }
+        }
+
+        private async void PlaylistsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.AddedItems.Count != 1)
+            {
+                return;
+            }
+
+            var pl = e.AddedItems[0] as IPlaylist;
+            if (pl == null)
+            {
+                return;
+            }
+
+            IEnumerable<string> lstv = await pl.GetPlaylistItemsIdsListDbAsync();
+            if (!lstv.Any())
+            {
+                foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = false;
+                }
+
+                foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
+                }
+
+                return;
+            }
+
+            pl.PlaylistItems.Clear();
+
+            foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = lstv.Contains(item.ID);
+                if (item.IsShowRow)
+                {
+                    pl.PlaylistItems.Add(item);
+                }
+            }
+
+            ViewModel.Model.Filterlist.Clear();
+
+            // VideoGrid.UpdateLayout();
+        }
+
+        private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
+        {
+            e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
+        }
+
+        private void VideoImage_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            var edv = new EditDescriptionView
+            {
+                DataContext = ViewModel.Model.SelectedVideoItem, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            edv.Show();
+        }
+
+        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            var image = e.Source as Image;
+            if (image == null)
+            {
+                return;
+            }
+            var item = image.DataContext as IVideoItem;
+            if (item != null && string.IsNullOrEmpty(item.Description))
+            {
+                await item.FillDescriptionAsync();
             }
         }
 
         private async void VideoItemSaveButton_OnClick(object sender, RoutedEventArgs e)
         {
-            var item = ViewModel.Model.SelectedVideoItem;
+            IVideoItem item = ViewModel.Model.SelectedVideoItem;
             if (item == null)
             {
                 return;
@@ -713,183 +930,6 @@ namespace Crawler.Views
             }
         }
 
-        private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
-        {
-            e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
-        }
-
-        private void VideoImage_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var edv = new EditDescriptionView
-            {
-                DataContext = ViewModel.Model.SelectedVideoItem, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            edv.Show();
-        }
-
-        private void Grid_Collapsed(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as Grid;
-            if (grid != null)
-            {
-                _rememberWidth = grid.ColumnDefinitions[1].Width;
-                grid.ColumnDefinitions[1].Width = GridLength.Auto;
-            }
-        }
-
-        private void Grid_Expanded(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as Grid;
-            if (grid != null)
-            {
-                grid.ColumnDefinitions[1].Width = _rememberWidth;
-            }
-        }
-
-        private void DataGrid_CellGotFocus(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as DataGrid;
-            if (grid == null)
-            {
-                return;
-            }
-
-            var ch = grid.CurrentItem as IChannel;
-            if (ch == null)
-            {
-                return;
-            }
-
-            ViewModel.Model.SelectedChannel = ch;
-        }
-
-        private async void MenuItem_OnSubmenuOpened(object sender, RoutedEventArgs e)
-        {
-            if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
-            {
-                await ViewModel.Model.SelectedVideoItem.FillChapters();
-            }
-        }
-
-        private async void ComboBoxTags_OnDropDownOpened(object sender, EventArgs e)
-        {
-            if (ViewModel.Model.CurrentTags.Any())
-            {
-                return;
-            }
-
-            foreach (var ch in ViewModel.Model.Channels)
-            {
-                var tags = await ch.GetChannelTagsAsync();
-                foreach (ITag tag in tags)
-                {
-                    ch.ChannelTags.Add(tag);
-                    if (!ViewModel.Model.CurrentTags.Select(x => x.Title).Contains(tag.Title))
-                    {
-                        ViewModel.Model.CurrentTags.Add(tag);
-                    }
-                }
-            }
-        }
-
-        private void CurrentTag_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ViewModel.Model.SelectedTag == null)
-            {
-                return;
-            }
-
-            foreach (IChannel channel in ViewModel.Model.Channels)
-            {
-                channel.IsShowRow = true;
-                if (!channel.ChannelTags.Select(x => x.Title).Contains(ViewModel.Model.SelectedTag.Title))
-                {
-                    channel.IsShowRow = false;
-                }
-            }
-        }
-
-        private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
-        {
-            foreach (IChannel channel in ViewModel.Model.Channels)
-            {
-                channel.IsShowRow = false;
-            }
-
-            if (ViewModel.Model.CurrentTags.Any(x => x.IsChecked))
-            {
-                foreach (ITag tag in ViewModel.Model.CurrentTags.Where(x => x.IsChecked))
-                {
-                    foreach (IChannel channel in ViewModel.Model.Channels)
-                    {
-                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
-                        {
-                            channel.IsShowRow = true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                foreach (IChannel channel in ViewModel.Model.Channels)
-                {
-                    channel.IsShowRow = true;
-                }    
-            }
-        }
-
-        private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            var image = e.Source as Image;
-            if (image == null)
-            {
-                return;
-            }
-
-            var channel = image.DataContext as IChannel;
-            if (channel != null && string.IsNullOrEmpty(channel.SubTitle))
-            {
-                await channel.FillChannelDescriptionAsync();
-            }
-        }
-
-        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            var image = e.Source as Image;
-            if (image == null)
-            {
-                return;
-            }
-            var item = image.DataContext as IVideoItem;
-            if (item != null && string.IsNullOrEmpty(item.Description))
-            {
-                await item.FillDescriptionAsync();
-            }
-        }
-
-        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
-        {
-            var ch = ViewModel.Model.SelectedChannel;
-            if (ch == null)
-            {
-                return;
-            }
-
-            if (ch.ChannelPlaylists.Any())
-            {
-                return;
-            }
-
-            var pls = await ch.GetChannelPlaylistsDbAsync();
-            {
-                foreach (var pl in pls)
-                {
-                    ch.ChannelPlaylists.Add(pl);
-                }
-            }
-        }
+        #endregion
     }
 }

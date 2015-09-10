@@ -1,5 +1,10 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Threading.Tasks;
+using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -9,27 +14,26 @@ namespace Models.Factories
 {
     public class TagFactory : ITagFactory
     {
+        #region Static and Readonly Fields
+
         private readonly ICommonFactory _c;
+
+        #endregion
+
+        #region Constructors
 
         public TagFactory(ICommonFactory c)
         {
             _c = c;
         }
 
-        public ITag CreateTag()
-        {
-            return new Tag(this);
-        }
+        #endregion
 
-        public ITag CreateTag(ITagPOCO poco)
-        {
-            var tag = new Tag(this) { Title = poco.Title };
-            return tag;
-        }
+        #region Methods
 
         public async Task DeleteTagAsync(string tag)
         {
-            var fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
 
             // var fb = ServiceLocator.SqLiteDatabase;
             try
@@ -44,7 +48,7 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            var fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);
@@ -54,5 +58,22 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
+
+        #endregion
+
+        #region ITagFactory Members
+
+        public ITag CreateTag()
+        {
+            return new Tag(this);
+        }
+
+        public ITag CreateTag(ITagPOCO poco)
+        {
+            var tag = new Tag(this) { Title = poco.Title };
+            return tag;
+        }
+
+        #endregion
     }
 }

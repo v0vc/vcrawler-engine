@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -11,6 +16,8 @@ namespace SitesAPI.POCO
 {
     public class VideoItemPOCO : IVideoItemPOCO
     {
+        #region Constructors
+
         public VideoItemPOCO(string id)
         {
             ID = id;
@@ -18,13 +25,12 @@ namespace SitesAPI.POCO
 
         public VideoItemPOCO(HtmlNode node, string site)
         {
-            var dl =
-                node.Descendants("a")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
-            foreach (var htmlNode in dl)
+            IEnumerable<HtmlNode> dl =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
+            foreach (HtmlNode htmlNode in dl)
             {
-                var videoLink = string.Format("http://{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
-                var sp = videoLink.Split('=');
+                string videoLink = string.Format("http://{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+                string[] sp = videoLink.Split('=');
                 if (sp.Length == 2)
                 {
                     ID = sp[1];
@@ -34,22 +40,20 @@ namespace SitesAPI.POCO
                 break;
             }
 
-            var counts =
-                node.Descendants("a")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
-            foreach (var htmlNode in counts)
+            IEnumerable<HtmlNode> counts =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            foreach (HtmlNode htmlNode in counts)
             {
                 Title = HttpUtility.HtmlDecode(htmlNode.InnerText).Trim();
                 break;
             }
 
-            var prov =
+            IEnumerable<HtmlNode> prov =
                 node.Descendants("td")
-                    .Where(
-                        d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
-            foreach (var htmlNode in prov)
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
+            foreach (HtmlNode htmlNode in prov)
             {
-                var pdate = htmlNode.Descendants("p").ToList();
+                List<HtmlNode> pdate = htmlNode.Descendants("p").ToList();
                 if (pdate.Count == 2)
                 {
                     Timestamp = Convert.ToDateTime(pdate[1].InnerText);
@@ -57,31 +61,28 @@ namespace SitesAPI.POCO
                 }
             }
 
-            var seemed =
-                node.Descendants("td")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
-            foreach (var htmlNode in seemed)
+            IEnumerable<HtmlNode> seemed =
+                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
+            foreach (HtmlNode htmlNode in seemed)
             {
                 ViewCount = Convert.ToInt32(htmlNode.InnerText);
                 break;
             }
 
-            var med =
-                node.Descendants("td")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
-            foreach (var htmlNode in med)
+            IEnumerable<HtmlNode> med =
+                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
+            foreach (HtmlNode htmlNode in med)
             {
                 Comments = Convert.ToInt32(htmlNode.InnerText);
                 break;
             }
 
-            var user =
-                node.Descendants("a")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
-            foreach (var htmlNode in user)
+            IEnumerable<HtmlNode> user =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
+            foreach (HtmlNode htmlNode in user)
             {
-                var uid = htmlNode.Attributes["href"].Value;
-                var sp = uid.Split('=');
+                string uid = htmlNode.Attributes["href"].Value;
+                string[] sp = uid.Split('=');
                 if (sp.Length == 2)
                 {
                     ParentID = sp[1];
@@ -91,10 +92,9 @@ namespace SitesAPI.POCO
                 break;
             }
 
-            var forum =
-                node.Descendants("a")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
-            foreach (var htmlNode in forum)
+            IEnumerable<HtmlNode> forum =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
+            foreach (HtmlNode htmlNode in forum)
             {
                 Description = htmlNode.InnerText;
                 break;
@@ -108,29 +108,22 @@ namespace SitesAPI.POCO
             // }
         }
 
-        public string ID { get; private set; }
-        public string ParentID { get; set; }
-        public string Title { get; private set; }
-        public string Description { get; private set; }
-        public long ViewCount { get; private set; }
-        public int Duration { get; private set; }
-        public int Comments { get; private set; }
-        public byte[] Thumbnail { get; private set; }
-        public DateTime Timestamp { get; private set; }
-        public string Status { get; set; }
+        #endregion
+
+        #region Methods
 
         public void FillFieldsFromDetails(JToken record)
         {
-            var desc = record.SelectToken("snippet.description");
+            JToken desc = record.SelectToken("snippet.description");
             Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 
-            var stat = record.SelectToken("statistics.viewCount");
+            JToken stat = record.SelectToken("statistics.viewCount");
             ViewCount = stat != null ? (stat.Value<int?>() ?? 0) : 0;
 
-            var dur = record.SelectToken("contentDetails.duration");
+            JToken dur = record.SelectToken("contentDetails.duration");
             if (dur != null)
             {
-                var ts = XmlConvert.ToTimeSpan(dur.Value<string>());
+                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
                 Duration = (int)ts.TotalSeconds;
             }
             else
@@ -138,60 +131,22 @@ namespace SitesAPI.POCO
                 Duration = 0;
             }
 
-            var comm = record.SelectToken("statistics.commentCount");
+            JToken comm = record.SelectToken("statistics.commentCount");
             Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
         }
 
         public async Task FillFieldsFromGetting(JToken record)
         {
-            var tpid = record.SelectToken("snippet.channelId");
+            JToken tpid = record.SelectToken("snippet.channelId");
             ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
 
-            var ttitle = record.SelectToken("snippet.title");
+            JToken ttitle = record.SelectToken("snippet.title");
             Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
 
-            var tm = record.SelectToken("snippet.publishedAt");
+            JToken tm = record.SelectToken("snippet.publishedAt");
             Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
 
-            var tlink = record.SelectToken("snippet.thumbnails.default.url");
-            if (tlink != null)
-            {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
-            }
-        }
-
-        public async Task FillFieldsFromSingleVideo(JObject record)
-        {
-            var ttitle = record.SelectToken("items[0].snippet.title");
-            Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
-
-            var par = record.SelectToken("items[0].snippet.channelId");
-            ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
-
-            var desc = record.SelectToken("items[0].snippet.description");
-            Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
-
-            var view = record.SelectToken("items[0].statistics.viewCount");
-            ViewCount = view != null ? (view.Value<int?>() ?? 0) : 0;
-
-            var dur = record.SelectToken("items[0].contentDetails.duration");
-            if (dur != null)
-            {
-                var ts = XmlConvert.ToTimeSpan(dur.Value<string>());
-                Duration = (int)ts.TotalSeconds;
-            }
-            else
-            {
-                Duration = 0;
-            }
-
-            var comm = record.SelectToken("items[0].statistics.commentCount");
-            Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
-
-            var pub = record.SelectToken("items[0].snippet.publishedAt");
-            Timestamp = pub != null ? (pub.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
-
-            var tlink = record.SelectToken("items[0].snippet.thumbnails.default.url");
+            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
             if (tlink != null)
             {
                 Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
@@ -200,14 +155,69 @@ namespace SitesAPI.POCO
 
         public void FillFieldsFromPlaylist(JToken record)
         {
-            var tpid = record.SelectToken("snippet.channelId");
+            JToken tpid = record.SelectToken("snippet.channelId");
             ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
 
-            var ttitle = record.SelectToken("snippet.title");
+            JToken ttitle = record.SelectToken("snippet.title");
             Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
 
-            var tm = record.SelectToken("snippet.publishedAt");
+            JToken tm = record.SelectToken("snippet.publishedAt");
             Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
         }
+
+        public async Task FillFieldsFromSingleVideo(JObject record)
+        {
+            JToken ttitle = record.SelectToken("items[0].snippet.title");
+            Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken par = record.SelectToken("items[0].snippet.channelId");
+            ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken desc = record.SelectToken("items[0].snippet.description");
+            Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken view = record.SelectToken("items[0].statistics.viewCount");
+            ViewCount = view != null ? (view.Value<int?>() ?? 0) : 0;
+
+            JToken dur = record.SelectToken("items[0].contentDetails.duration");
+            if (dur != null)
+            {
+                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
+                Duration = (int)ts.TotalSeconds;
+            }
+            else
+            {
+                Duration = 0;
+            }
+
+            JToken comm = record.SelectToken("items[0].statistics.commentCount");
+            Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+
+            JToken pub = record.SelectToken("items[0].snippet.publishedAt");
+            Timestamp = pub != null ? (pub.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
+
+            JToken tlink = record.SelectToken("items[0].snippet.thumbnails.default.url");
+            if (tlink != null)
+            {
+                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+            }
+        }
+
+        #endregion
+
+        #region IVideoItemPOCO Members
+
+        public int Comments { get; private set; }
+        public string Description { get; private set; }
+        public int Duration { get; private set; }
+        public string ID { get; private set; }
+        public string ParentID { get; set; }
+        public string Status { get; set; }
+        public byte[] Thumbnail { get; private set; }
+        public DateTime Timestamp { get; private set; }
+        public string Title { get; private set; }
+        public long ViewCount { get; private set; }
+
+        #endregion
     }
 }

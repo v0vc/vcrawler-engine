@@ -1,4 +1,8 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Windows;
 using System.Windows.Automation.Peers;
 using System.Windows.Automation.Provider;
@@ -12,11 +16,17 @@ namespace Crawler.Views
     /// </summary>
     public partial class AddChanelView : Window
     {
+        #region Constructors
+
         public AddChanelView()
         {
             InitializeComponent();
             KeyDown += AddChanelView_KeyDown;
         }
+
+        #endregion
+
+        #region Event Handling
 
         private void AddChanelView_KeyDown(object sender, KeyEventArgs e)
         {
@@ -74,5 +84,7 @@ namespace Crawler.Views
         {
             Close();
         }
+
+        #endregion
     }
 }

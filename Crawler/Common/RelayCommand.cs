@@ -1,9 +1,13 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Windows.Input;
 
 namespace Crawler.Common
 {
-// http://stackoverflow.com/questions/6634777/what-is-the-actual-task-of-canexecutechanged-and-commandmanager-requerysuggested
+    // http://stackoverflow.com/questions/6634777/what-is-the-actual-task-of-canexecutechanged-and-commandmanager-requerysuggested
 
     /// <summary>
     ///     A command whose sole purpose is to relay its functionality to other
@@ -12,12 +16,12 @@ namespace Crawler.Common
     /// </summary>
     public class RelayCommand : ICommand
     {
-        #region Fields
+        #region Static and Readonly Fields
 
-        private readonly Action<object> _execute;
         private readonly Predicate<object> _canExecute;
+        private readonly Action<object> _execute;
 
-        #endregion // Fields
+        #endregion
 
         #region Constructors
 
@@ -45,22 +49,22 @@ namespace Crawler.Common
             _canExecute = canExecute;
         }
 
-        #endregion // Constructors
+        #endregion
 
         #region ICommand Members
+
+        public event EventHandler CanExecuteChanged;
 
         public bool CanExecute(object parameters)
         {
             return _canExecute == null || _canExecute(parameters);
         }
 
-        public event EventHandler CanExecuteChanged;
-
         public void Execute(object parameters)
         {
             _execute(parameters);
         }
 
-        #endregion // ICommand Members
+        #endregion
     }
 }

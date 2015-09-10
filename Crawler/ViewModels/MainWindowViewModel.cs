@@ -1,4 +1,9 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -8,6 +13,8 @@ using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
+using Interfaces.API;
+using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
@@ -16,6 +23,8 @@ namespace Crawler.ViewModels
 {
     public class MainWindowViewModel
     {
+        #region Constructors
+
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
@@ -29,60 +38,23 @@ namespace Crawler.ViewModels
             SearchCommand = new RelayCommand(async x => await Model.Search());
         }
 
-        public MainWindowModel Model { get; set; }
+        #endregion
+
+        #region Properties
+
         public RelayCommand AddNewItemCommand { get; set; }
         public RelayCommand AddNewTagCommand { get; set; }
-        public RelayCommand SaveNewItemCommand { get; set; }
-        public RelayCommand SyncDataCommand { get; set; }
+        public RelayCommand DownloadLinkCommand { get; set; }
+        public MainWindowModel Model { get; set; }
         public RelayCommand OpenDirCommand { get; set; }
         public RelayCommand SaveCommand { get; set; }
-        public RelayCommand DownloadLinkCommand { get; set; }
+        public RelayCommand SaveNewItemCommand { get; set; }
         public RelayCommand SearchCommand { get; set; }
+        public RelayCommand SyncDataCommand { get; set; }
 
-        private void OpenDir(object obj)
-        {
-            switch (obj.ToString())
-            {
-                case "DirPath":
-                    var dlg = new FolderBrowserDialog();
-                    var res = dlg.ShowDialog();
-                    if (res == DialogResult.OK)
-                    {
-                        Model.DirPath = dlg.SelectedPath;
-                    }
-                    break;
+        #endregion
 
-                case "MpcPath":
-                    var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-                    var resm = dlgm.ShowDialog();
-                    if (resm == DialogResult.OK)
-                    {
-                        Model.MpcPath = dlgm.FileName;
-                    }
-                    break;
-
-                case "YouPath":
-                    var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-                    var resy = dlgy.ShowDialog();
-                    if (resy == DialogResult.OK)
-                    {
-                        Model.YouPath = dlgy.FileName;
-                    }
-                    break;
-            }
-        }
-
-        private void AddNewTag()
-        {
-            var antv = new AddNewTagView
-            {
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                DataContext = this
-            };
-
-            antv.ShowDialog();
-        }
+        #region Methods
 
         public void AddNewItem(bool isEditMode)
         {
@@ -98,29 +70,6 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
-        public void OpenSettings()
-        {
-            var set = new SettingsView
-            {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            set.ShowDialog();
-        }
-
-        public void OpenAddLink()
-        {
-            var adl = new AddLinkView
-            {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            adl.ShowDialog();
-        }
-
         public async Task Backup()
         {
             var dlg = new SaveFileDialog
@@ -130,20 +79,15 @@ namespace Crawler.ViewModels
                 Filter = @"Text documents (.txt)|*.txt", 
                 OverwritePrompt = true
             };
-            var res = dlg.ShowDialog();
+            DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                var fb = Model.BaseFactory.CreateSqLiteDatabase();
-                var lst = (await fb.GetChannelsListAsync()).ToList();
+                ISqLiteDatabase fb = Model.BaseFactory.CreateSqLiteDatabase();
+                List<IChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
                 var sb = new StringBuilder();
-                foreach (var poco in lst)
+                foreach (IChannelPOCO poco in lst)
                 {
-                    sb.Append(poco.Title)
-                        .Append("|")
-                        .Append(poco.ID)
-                        .Append("|")
-                        .Append(poco.Site)
-                        .Append(Environment.NewLine);
+                    sb.Append(poco.Title).Append("|").Append(poco.ID).Append("|").Append(poco.Site).Append(Environment.NewLine);
                 }
                 try
                 {
@@ -159,12 +103,35 @@ namespace Crawler.ViewModels
             }
         }
 
+        public void OpenAddLink()
+        {
+            var adl = new AddLinkView
+            {
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            adl.ShowDialog();
+        }
+
+        public void OpenSettings()
+        {
+            var set = new SettingsView
+            {
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            set.ShowDialog();
+        }
+
         public async Task Restore()
         {
             Model.Info = string.Empty;
 
             var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
-            var res = opf.ShowDialog();
+            DialogResult res = opf.ShowDialog();
 
             if (res == DialogResult.OK)
             {
@@ -181,14 +148,14 @@ namespace Crawler.ViewModels
                 }
 
                 Model.SetStatus(1);
-                var prog = TaskbarManager.Instance;
+                TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
                 Model.IsIdle = false;
                 var rest = 0;
-                foreach (var s in lst)
+                foreach (string s in lst)
                 {
-                    var sp = s.Split('|');
+                    string[] sp = s.Split('|');
                     if (sp.Length == 3)
                     {
                         if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
@@ -242,11 +209,58 @@ namespace Crawler.ViewModels
 
         public async Task Vacuumdb()
         {
-            var db = Model.BaseFactory.CreateSqLiteDatabase();
-            var sizebefore = db.FileBase.Length;
+            ISqLiteDatabase db = Model.BaseFactory.CreateSqLiteDatabase();
+            long sizebefore = db.FileBase.Length;
             await db.VacuumAsync();
-            var sizeafter = new FileInfo(db.FileBase.FullName).Length;
+            long sizeafter = new FileInfo(db.FileBase.FullName).Length;
             Model.Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
         }
+
+        private void AddNewTag()
+        {
+            var antv = new AddNewTagView
+            {
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = this
+            };
+
+            antv.ShowDialog();
+        }
+
+        private void OpenDir(object obj)
+        {
+            switch (obj.ToString())
+            {
+                case "DirPath":
+                    var dlg = new FolderBrowserDialog();
+                    DialogResult res = dlg.ShowDialog();
+                    if (res == DialogResult.OK)
+                    {
+                        Model.DirPath = dlg.SelectedPath;
+                    }
+                    break;
+
+                case "MpcPath":
+                    var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
+                    DialogResult resm = dlgm.ShowDialog();
+                    if (resm == DialogResult.OK)
+                    {
+                        Model.MpcPath = dlgm.FileName;
+                    }
+                    break;
+
+                case "YouPath":
+                    var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
+                    DialogResult resy = dlgy.ShowDialog();
+                    if (resy == DialogResult.OK)
+                    {
+                        Model.YouPath = dlgy.FileName;
+                    }
+                    break;
+            }
+        }
+
+        #endregion
     }
 }

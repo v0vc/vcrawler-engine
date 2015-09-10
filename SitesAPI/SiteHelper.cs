@@ -1,4 +1,8 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -10,39 +14,7 @@ namespace SitesAPI
 {
     public static class SiteHelper
     {
-        public static async Task<byte[]> GetStreamFromUrl(string url)
-        {
-            byte[] imageData;
-
-            try
-            {
-                using (var wc = new WebClient())
-                {
-                    imageData = await wc.DownloadDataTaskAsync(url);
-                }
-            }
-            catch
-            {
-                var b = Assembly.GetExecutingAssembly().GetManifestResourceStream("SitesAPI.Images.err404.png");
-                return ReadFully(b);
-            }
-
-            return imageData;
-        }
-
-        public static byte[] ReadFully(Stream input)
-        {
-            var buffer = new byte[16 * 1024];
-            using (var ms = new MemoryStream())
-            {
-                int read;
-                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
-                {
-                    ms.Write(buffer, 0, read);
-                }
-                return ms.ToArray();
-            }
-        }
+        #region Static Methods
 
         public static async Task<string> DownloadStringAsync(Uri uri)
         {
@@ -57,28 +29,6 @@ namespace SitesAPI
                 {
                     throw new Exception("Download Error: " + ex.Message);
                 }
-            }
-        }
-
-        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie)
-        {
-            var cc = new CookieContainer();
-            cc.Add(cookie);
-            using (var wc = new WebClientEx(cc))
-            {
-                var task = wc.DownloadStringTaskAsync(uri);
-                task.Wait();
-                return await task;
-            }
-        }
-
-        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
-        {
-            var cc = new CookieContainer();
-            cc.Add(cookie);
-            using (var wc = new WebClientEx(cc))
-            {
-                return wc.DownloadString(link);
             }
         }
 
@@ -103,16 +53,76 @@ namespace SitesAPI
                     }
                 };
                 client.DownloadStringAsync(uri);
-                var n = DateTime.Now;
+                DateTime n = DateTime.Now;
                 while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
                 {
                     await Task.Delay(100); // wait for respsonse
                 }
             }
             if (res == null)
+            {
                 throw new Exception("Download Error: " + uri.Segments.Last());
+            }
 
             return res;
         }
+
+        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
+        {
+            var cc = new CookieContainer();
+            cc.Add(cookie);
+            using (var wc = new WebClientEx(cc))
+            {
+                return wc.DownloadString(link);
+            }
+        }
+
+        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie)
+        {
+            var cc = new CookieContainer();
+            cc.Add(cookie);
+            using (var wc = new WebClientEx(cc))
+            {
+                Task<string> task = wc.DownloadStringTaskAsync(uri);
+                task.Wait();
+                return await task;
+            }
+        }
+
+        public static async Task<byte[]> GetStreamFromUrl(string url)
+        {
+            byte[] imageData;
+
+            try
+            {
+                using (var wc = new WebClient())
+                {
+                    imageData = await wc.DownloadDataTaskAsync(url);
+                }
+            }
+            catch
+            {
+                Stream b = Assembly.GetExecutingAssembly().GetManifestResourceStream("SitesAPI.Images.err404.png");
+                return ReadFully(b);
+            }
+
+            return imageData;
+        }
+
+        public static byte[] ReadFully(Stream input)
+        {
+            var buffer = new byte[16 * 1024];
+            using (var ms = new MemoryStream())
+            {
+                int read;
+                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                {
+                    ms.Write(buffer, 0, read);
+                }
+                return ms.ToArray();
+            }
+        }
+
+        #endregion
     }
 }

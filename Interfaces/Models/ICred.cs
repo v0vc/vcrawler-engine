@@ -1,22 +1,41 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
 {
     public interface ICred
     {
-        string Site { get; set; }
-        string Login { get; set; }
-        string Pass { get; set; }
+        #region Properties
+
+        short Autorization { get; set; }
         string Cookie { get; set; }
         DateTime Expired { get; set; }
-        short Autorization { get; set; }
-        Task InsertCredAsync();
+        string Login { get; set; }
+        string Pass { get; set; }
+        string Site { get; set; }
+
+        #endregion
+
+        #region Methods
+
         Task DeleteCredAsync();
-        Task UpdateLoginAsync(string newlogin);
-        Task UpdatePasswordAsync(string newpassword);
+
+        Task InsertCredAsync();
+
         Task UpdateAutorizationAsync(short autorize);
+
         Task UpdateCookieAsync(string newcookie);
+
         Task UpdateExpiredAsync(DateTime newexpired);
+
+        Task UpdateLoginAsync(string newlogin);
+
+        Task UpdatePasswordAsync(string newpassword);
+
+        #endregion
     }
 }

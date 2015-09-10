@@ -1,22 +1,41 @@
-﻿using System.Collections.Generic;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Interfaces.Models
 {
     public interface IPlaylist
     {
+        #region Properties
+
+        string ChannelId { get; set; }
         string ID { get; set; }
-        string Title { get; set; }
+        List<IVideoItem> PlaylistItems { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
-        string ChannelId { get; set; }
-        List<IVideoItem> PlaylistItems { get; set; }
+        string Title { get; set; }
+
+        #endregion
+
+        #region Methods
+
         Task DeletePlaylistAsync();
-        Task InsertPlaylistAsync();
-        Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync();
-        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync();
-        Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync();
+
         Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync();
+
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync();
+
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync();
+
+        Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync();
+
+        Task InsertPlaylistAsync();
+
         Task UpdatePlaylistAsync(string videoId);
+
+        #endregion
     }
 }

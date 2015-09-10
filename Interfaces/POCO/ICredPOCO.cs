@@ -1,14 +1,22 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 
 namespace Interfaces.POCO
 {
     public interface ICredPOCO
     {
-        string Site { get; }
-        string Login { get; }
-        string Pass { get; }
+        #region Properties
+
+        short Autorization { get; }
         string Cookie { get; }
         DateTime Expired { get; }
-        short Autorization { get; }
+        string Login { get; }
+        string Pass { get; }
+        string Site { get; }
+
+        #endregion
     }
 }

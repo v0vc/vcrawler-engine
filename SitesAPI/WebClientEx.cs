@@ -1,16 +1,30 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Net;
 
 namespace SitesAPI
 {
     public class WebClientEx : WebClient
     {
+        #region Static and Readonly Fields
+
         private readonly CookieContainer _container;
+
+        #endregion
+
+        #region Constructors
 
         public WebClientEx(CookieContainer container)
         {
             _container = container;
         }
+
+        #endregion
+
+        #region Methods
 
         protected override WebRequest GetWebRequest(Uri address)
         {
@@ -46,5 +60,7 @@ namespace SitesAPI
                 _container.Add(cookies);
             }
         }
+
+        #endregion
     }
 }

@@ -1,7 +1,17 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
+using Interfaces.API;
 using Interfaces.Factories;
+using Interfaces.Models;
+using Interfaces.POCO;
+using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Ninject;
 
@@ -10,52 +20,37 @@ namespace TestAPI
     [TestClass]
     public class TapochekSiteTest
     {
+        #region Constants
+
         private const string Credsite = "tapochek.net";
+
+        #endregion
+
+        #region Static and Readonly Fields
 
         private readonly ICommonFactory _fabric;
 
+        #endregion
+
+        #region Constructors
+
         public TapochekSiteTest()
         {
-            _fabric = IoC.Container.Kernel.Get<ICommonFactory>();
+            _fabric = Container.Kernel.Get<ICommonFactory>();
         }
 
-        [TestMethod]
-        public async Task GetChannelCookieNetAsync()
-        {
-            var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync(Credsite);
+        #endregion
 
-            var tp = _fabric.CreateTapochekSite();
-            var cookie = await tp.GetCookieNetAsync(cred);
-            Assert.IsTrue(cookie.Count > 0);
-        }
-
-        [TestMethod]
-        public async Task StoreCookiesAsync()
-        {
-            var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync(Credsite);
-
-            var tp = _fabric.CreateTapochekSite();
-            var cookie = await tp.GetCookieNetAsync(cred);
-
-            var chf = _fabric.CreateChannelFactory();
-            var ch = chf.CreateChannel();
-            ch.Site = cred.Site;
-            ch.ChannelCookies = cookie;
-
-            Task t = ch.StoreCookiesAsync();
-            Assert.IsTrue(!t.IsFaulted);
-        }
+        #region Methods
 
         [TestMethod]
         public async Task FillChannelCookieDbAsync()
         {
-            var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync(Credsite);
+            ICredFactory cf = _fabric.CreateCredFactory();
+            ICred cred = await cf.GetCredDbAsync(Credsite);
 
-            var chf = _fabric.CreateChannelFactory();
-            var ch = chf.CreateChannel();
+            IChannelFactory chf = _fabric.CreateChannelFactory();
+            IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
 
             Task t = ch.FillChannelCookieDbAsync();
@@ -63,15 +58,26 @@ namespace TestAPI
         }
 
         [TestMethod]
+        public async Task GetChannelCookieNetAsync()
+        {
+            ICredFactory cf = _fabric.CreateCredFactory();
+            ICred cred = await cf.GetCredDbAsync(Credsite);
+
+            ITapochekSite tp = _fabric.CreateTapochekSite();
+            CookieCollection cookie = await tp.GetCookieNetAsync(cred);
+            Assert.IsTrue(cookie.Count > 0);
+        }
+
+        [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync(Credsite);
+            ICredFactory cf = _fabric.CreateCredFactory();
+            ICred cred = await cf.GetCredDbAsync(Credsite);
 
-            var tp = _fabric.CreateTapochekSite();
+            ITapochekSite tp = _fabric.CreateTapochekSite();
 
-            var chf = _fabric.CreateChannelFactory();
-            var ch = chf.CreateChannel();
+            IChannelFactory chf = _fabric.CreateChannelFactory();
+            IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ID = "27253";
 
@@ -85,24 +91,23 @@ namespace TestAPI
                 await ch.FillChannelCookieDbAsync();
             }
 
-            //await ch.FillChannelCookieDbAsync();
-            //await ch.FillChannelCookieNetAsync();
-            //await ch.StoreCookiesAsync();
-
-            var t = await tp.GetChannelItemsAsync(ch, 0);
+            // await ch.FillChannelCookieDbAsync();
+            // await ch.FillChannelCookieNetAsync();
+            // await ch.StoreCookiesAsync();
+            IEnumerable<IVideoItemPOCO> t = await tp.GetChannelItemsAsync(ch, 0);
             Assert.IsTrue(t.Any());
         }
 
         [TestMethod]
         public async Task GetChannelNetAsync()
         {
-            var cf = _fabric.CreateCredFactory();
-            var cred = await cf.GetCredDbAsync(Credsite);
+            ICredFactory cf = _fabric.CreateCredFactory();
+            ICred cred = await cf.GetCredDbAsync(Credsite);
 
-            var tp = _fabric.CreateTapochekSite();
+            ITapochekSite tp = _fabric.CreateTapochekSite();
 
-            var chf = _fabric.CreateChannelFactory();
-            var ch = chf.CreateChannel();
+            IChannelFactory chf = _fabric.CreateChannelFactory();
+            IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ID = "27253";
             await ch.FillChannelCookieDbAsync();
@@ -110,5 +115,25 @@ namespace TestAPI
             Task t = tp.GetChannelNetAsync(ch.ChannelCookies, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
         }
+
+        [TestMethod]
+        public async Task StoreCookiesAsync()
+        {
+            ICredFactory cf = _fabric.CreateCredFactory();
+            ICred cred = await cf.GetCredDbAsync(Credsite);
+
+            ITapochekSite tp = _fabric.CreateTapochekSite();
+            CookieCollection cookie = await tp.GetCookieNetAsync(cred);
+
+            IChannelFactory chf = _fabric.CreateChannelFactory();
+            IChannel ch = chf.CreateChannel();
+            ch.Site = cred.Site;
+            ch.ChannelCookies = cookie;
+
+            Task t = ch.StoreCookiesAsync();
+            Assert.IsTrue(!t.IsFaulted);
+        }
+
+        #endregion
     }
 }

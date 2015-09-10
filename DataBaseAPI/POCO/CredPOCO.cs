@@ -1,4 +1,8 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Data;
 using Interfaces.POCO;
 
@@ -6,6 +10,8 @@ namespace DataBaseAPI.POCO
 {
     public class CredPOCO : ICredPOCO
     {
+        #region Constructors
+
         public CredPOCO(IDataRecord reader)
         {
             Site = reader[SqLiteDatabase.CredSite] as string;
@@ -16,11 +22,17 @@ namespace DataBaseAPI.POCO
             Autorization = Convert.ToInt16(reader[SqLiteDatabase.CredAutorization]);
         }
 
-        public string Site { get; private set; }
-        public string Login { get; private set; }
-        public string Pass { get; private set; }
+        #endregion
+
+        #region ICredPOCO Members
+
+        public short Autorization { get; private set; }
         public string Cookie { get; private set; }
         public DateTime Expired { get; private set; }
-        public short Autorization { get; private set; }
+        public string Login { get; private set; }
+        public string Pass { get; private set; }
+        public string Site { get; private set; }
+
+        #endregion
     }
 }

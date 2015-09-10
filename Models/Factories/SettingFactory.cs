@@ -1,5 +1,10 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Threading.Tasks;
+using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -9,62 +14,26 @@ namespace Models.Factories
 {
     public class SettingFactory : ISettingFactory
     {
+        #region Static and Readonly Fields
+
         private readonly ICommonFactory _c;
+
+        #endregion
+
+        #region Constructors
 
         public SettingFactory(ICommonFactory c)
         {
             _c = c;
         }
 
-        public ISetting CreateSetting()
-        {
-            return new Setting(this);
-        }
+        #endregion
 
-        public ISetting CreateSetting(ISettingPOCO poco)
-        {
-            var set = new Setting(this)
-            {
-                Key = poco.Key,
-                Value = poco.Value
-            };
-            return set;
-        }
-
-        public async Task<ISetting> GetSettingDbAsync(string key)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            var fb = _c.CreateSqLiteDatabase();
-            var sf = _c.CreateSettingFactory();
-
-            try
-            {
-                var fbres = await fb.GetSettingAsync(key);
-                var set = sf.CreateSetting(fbres);
-                return set;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task InsertSettingAsync(Setting setting)
-        {
-            var fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                await fb.InsertSettingAsync(setting);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        #region Methods
 
         public async Task DeleteSettingAsync(string key)
         {
-            var fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteSettingAsync(key);
@@ -75,9 +44,22 @@ namespace Models.Factories
             }
         }
 
+        public async Task InsertSettingAsync(Setting setting)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            try
+            {
+                await fb.InsertSettingAsync(setting);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            var fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateSettingAsync(key, newvalue);
@@ -87,5 +69,40 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
+
+        #endregion
+
+        #region ISettingFactory Members
+
+        public ISetting CreateSetting()
+        {
+            return new Setting(this);
+        }
+
+        public ISetting CreateSetting(ISettingPOCO poco)
+        {
+            var set = new Setting(this) { Key = poco.Key, Value = poco.Value };
+            return set;
+        }
+
+        public async Task<ISetting> GetSettingDbAsync(string key)
+        {
+            // var fb = ServiceLocator.SqLiteDatabase;
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISettingFactory sf = _c.CreateSettingFactory();
+
+            try
+            {
+                ISettingPOCO fbres = await fb.GetSettingAsync(key);
+                ISetting set = sf.CreateSetting(fbres);
+                return set;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        #endregion
     }
 }
