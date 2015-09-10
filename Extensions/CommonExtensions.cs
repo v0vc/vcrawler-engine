@@ -1,4 +1,8 @@
-﻿using System;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,16 +16,13 @@ namespace Extensions
 {
     public static class CommonExtensions
     {
+        #region Constants
+
         private const string NewLine = "\r\n";
 
-        public static string MakeValidFileName(this string name)
-        {
-            var regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            var s = r.Replace(name, string.Empty);
-            s = Regex.Replace(s, @"\s{2,}", " ");
-            return s;
-        }
+        #endregion
+
+        #region Static Methods
 
         public static string GetConsoleOutput(string path, string param, bool isClear)
         {
@@ -39,7 +40,7 @@ namespace Extensions
             try
             {
                 pProcess.Start();
-                var res = pProcess.StandardOutput.ReadToEnd();
+                string res = pProcess.StandardOutput.ReadToEnd();
                 pProcess.Close();
                 return isClear ? res.MakeValidFileName() : res;
             }
@@ -47,6 +48,36 @@ namespace Extensions
             {
                 return "Please, check";
             }
+        }
+
+        public static string GetFileVersion(Assembly assembly)
+        {
+            // Assembly assembly = Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            return "Crawler v" + fvi.FileVersion;
+        }
+
+        public static bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return false;
+            }
+            Uri uri;
+            if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) || null == uri)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static string MakeValidFileName(this string name)
+        {
+            string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            string s = r.Replace(name, string.Empty);
+            s = Regex.Replace(s, @"\s{2,}", " ");
+            return s;
         }
 
         public static bool RenameFile(FileInfo oldFile, FileInfo newFile)
@@ -67,6 +98,18 @@ namespace Extensions
             return false;
         }
 
+        public static IEnumerable<List<string>> SplitList(List<string> locations, int nSize = 50)
+        {
+            var list = new List<List<string>>();
+
+            for (var i = 0; i < locations.Count; i += nSize)
+            {
+                list.Add(locations.GetRange(i, Math.Min(nSize, locations.Count - i)));
+            }
+
+            return list;
+        }
+
         public static BitmapImage ToImage(byte[] array)
         {
             using (var ms = new MemoryStream(array))
@@ -80,47 +123,14 @@ namespace Extensions
             }
         }
 
-        public static string GetFileVersion(Assembly assembly)
-        {
-            // Assembly assembly = Assembly.GetExecutingAssembly();
-            var fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-            return "Crawler v" + fvi.FileVersion;
-        }
-
-        public static bool IsValidUrl(string url)
-        {
-            if (string.IsNullOrEmpty(url))
-            {
-                return false;
-            }
-            Uri uri;
-            if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) || null == uri)
-            {
-                return false;
-            }
-            return true;
-        }
-
-        public static IEnumerable<List<string>> SplitList(List<string> locations, int nSize = 50)
-        {
-            var list = new List<List<string>>();
-
-            for (var i = 0; i < locations.Count; i += nSize)
-            {
-                list.Add(locations.GetRange(i, Math.Min(nSize, locations.Count - i)));
-            }
-
-            return list;
-        }
-
         public static string WordWrap(this string theString, int width)
         {
             int pos, next;
             var sb = new StringBuilder();
 
             // Lucidity check
-            //if (Width < 1)
-            //    return theString;
+            // if (Width < 1)
+            // return theString;
 
             // Parse each line of text
             for (pos = 0; pos < theString.Length; pos = next)
@@ -159,9 +169,10 @@ namespace Extensions
                         {
                             pos++;
                         }
-                    } while (!(eol <= pos));
+                    }
+                    while (!(eol <= pos));
                 }
-                else 
+                else
                 {
                     sb.Append(NewLine); // Empty line
                 }
@@ -192,5 +203,7 @@ namespace Extensions
             // Return length of text before whitespace
             return i + 1;
         }
+
+        #endregion
     }
 }
