@@ -1219,7 +1219,6 @@ namespace DataBaseAPI
                     throw new Exception(ex.Message);
                 }
             }
-            throw new Exception("Can't store cookies: " + site);
         }
 
         public CookieContainer ReadCookies(string site)
