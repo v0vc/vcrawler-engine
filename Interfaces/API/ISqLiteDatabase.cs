@@ -329,5 +329,9 @@ namespace Interfaces.API
         /// </summary>
         /// <returns></returns>
         Task VacuumAsync();
+
+        void StoreCookies(string site, CookieContainer cookies);
+
+        CookieContainer ReadCookies(string site);
     }
 }

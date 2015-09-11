@@ -804,7 +804,7 @@ namespace Crawler.Models
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                await channel.SyncChannelAsync(DirPath, true);
+                await channel.SyncChannelAsync(true);
                 watch.Stop();
                 Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
                 SetStatus(2);
@@ -837,7 +837,7 @@ namespace Crawler.Models
                     PrValue = Math.Round((double)(100 * i) / Channels.Count);
                     prog.SetProgressValue((int)PrValue, 100);
                     Info = "Syncing: " + channel.Title;
-                    await channel.SyncChannelAsync(DirPath, false);
+                    await channel.SyncChannelAsync(false);
                 }
                 catch (Exception ex)
                 {

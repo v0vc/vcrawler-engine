@@ -61,7 +61,7 @@ namespace Models.BO
 
         #region IChannel Members
 
-        public CookieCollection ChannelCookies { get; set; }
+        public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
@@ -191,9 +191,9 @@ namespace Models.BO
             await _cf.DeleteChannelTagAsync(ID, tag);
         }
 
-        public async Task FillChannelCookieDbAsync()
+        public void FillChannelCookieDb()
         {
-            await _cf.FillChannelCookieDbAsync(this);
+            _cf.FillChannelCookieDb(this);
         }
 
         public async Task FillChannelCookieNetAsync()
@@ -292,12 +292,12 @@ namespace Models.BO
             return await _cf.SearchItemsNetAsync(key, region, maxresult);
         }
 
-        public async Task StoreCookiesAsync()
+        public void StoreCookies()
         {
-            await _cf.StoreCookiesAsync(Site, ChannelCookies);
+            _cf.StoreCookies(Site, ChannelCookies);
         }
 
-        public async Task SyncChannelAsync(string dir, bool isSyncPls)
+        public async Task SyncChannelAsync(bool isSyncPls)
         {
             await _cf.SyncChannelAsync(this, isSyncPls);
         }

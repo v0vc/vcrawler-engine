@@ -67,21 +67,17 @@ namespace SitesAPI
             return res;
         }
 
-        public static string DownloadStringWithCookie(string link, CookieCollection cookie)
+        public static string DownloadStringWithCookie(string link, CookieContainer cookie)
         {
-            var cc = new CookieContainer();
-            cc.Add(cookie);
-            using (var wc = new WebClientEx(cc))
+            using (var wc = new WebClientEx(cookie))
             {
                 return wc.DownloadString(link);
             }
         }
 
-        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieCollection cookie)
+        public static async Task<string> DownloadStringWithCookieAsync(Uri uri, CookieContainer cookie)
         {
-            var cc = new CookieContainer();
-            cc.Add(cookie);
-            using (var wc = new WebClientEx(cc))
+            using (var wc = new WebClientEx(cookie))
             {
                 Task<string> task = wc.DownloadStringTaskAsync(uri);
                 task.Wait();

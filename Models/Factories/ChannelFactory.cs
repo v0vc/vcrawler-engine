@@ -63,26 +63,17 @@ namespace Models.Factories
             }
         }
 
-        public async Task FillChannelCookieDbAsync(Channel channel)
+        public void FillChannelCookieDb(IChannel channel)
         {
-            ICredFactory cf = _c.CreateCredFactory();
+            ISqLiteDatabase cf = _c.CreateSqLiteDatabase();
 
-            ICred cred = await cf.GetCredDbAsync(channel.Site);
-
-            string[] lstcook = cred.Cookie.Split('|');
-
-            foreach (string cook in lstcook)
+            try
             {
-                string[] sp = cook.Split('=');
-
-                if (sp.Length != 2)
-                {
-                    continue;
-                }
-
-                var cookie = new Cookie(sp[0], sp[1]) { Expires = cred.Expired, Domain = "." + cred.Site, Path = "/" };
-
-                channel.ChannelCookies.Add(cookie);
+                channel.ChannelCookies = cf.ReadCookies(channel.Site);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 
@@ -387,29 +378,17 @@ namespace Models.Factories
             }
         }
 
-        public async Task StoreCookiesAsync(string site, CookieCollection cookies)
+        public void StoreCookies(string site, CookieContainer cookies)
         {
-            ICredFactory cf = _c.CreateCredFactory();
-
-            ICred cred = await cf.GetCredDbAsync(site);
-
-            var sb = new StringBuilder();
-
-            var lstdates = new List<DateTime>(cookies.Count);
-
-            for (var i = 0; i < cookies.Count; i++)
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            try
             {
-                sb.Append(cookies[i].Name + "=" + cookies[i].Value).Append("|");
-                lstdates.Add(cookies[i].Expires);
+                fb.StoreCookies(site, cookies);
             }
-
-            DateTime expired = lstdates.Min();
-
-            string rescookie = sb.ToString().TrimEnd('|');
-
-            await cred.UpdateCookieAsync(rescookie);
-
-            await cred.UpdateExpiredAsync(expired);
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         public async Task SyncChannelAsync(IChannel channel, bool isSyncPls)
@@ -576,7 +555,7 @@ namespace Models.Factories
                 ChannelItems = new ObservableCollection<IVideoItem>(), 
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
                 ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieCollection()
+                ChannelCookies = new CookieContainer()
             };
             return channel;
         }
@@ -593,7 +572,7 @@ namespace Models.Factories
                 ChannelItems = new ObservableCollection<IVideoItem>(), 
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
                 ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieCollection()
+                ChannelCookies = new CookieContainer()
             };
             return channel;
         }

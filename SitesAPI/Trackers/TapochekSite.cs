@@ -130,7 +130,7 @@ namespace SitesAPI.Trackers
             return lst;
         }
 
-        public async Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id)
+        public async Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id)
         {
             string zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, id);
 
@@ -168,7 +168,7 @@ namespace SitesAPI.Trackers
             return ch;
         }
 
-        public async Task<CookieCollection> GetCookieNetAsync(ICred cred)
+        public async Task<CookieContainer> GetCookieNetAsync(ICred cred)
         {
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
             {
@@ -204,8 +204,11 @@ namespace SitesAPI.Trackers
             WebResponse resp = await req.GetResponseAsync();
 
             var res = (HttpWebResponse)resp;
-
-            return res.Cookies;
+            if (res.StatusCode == HttpStatusCode.OK)
+            {
+                cc.Add(res.Cookies);
+            }
+            return cc;
         }
 
         public Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)

@@ -4,6 +4,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -53,8 +54,8 @@ namespace TestAPI
             IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
 
-            Task t = ch.FillChannelCookieDbAsync();
-            Assert.IsTrue(!t.IsFaulted);
+            ch.FillChannelCookieDb();
+            Assert.IsTrue(ch.ChannelCookies.Count > 0);
         }
 
         [TestMethod]
@@ -64,7 +65,7 @@ namespace TestAPI
             ICred cred = await cf.GetCredDbAsync(Credsite);
 
             ITapochekSite tp = _fabric.CreateTapochekSite();
-            CookieCollection cookie = await tp.GetCookieNetAsync(cred);
+            CookieContainer cookie = await tp.GetCookieNetAsync(cred);
             Assert.IsTrue(cookie.Count > 0);
         }
 
@@ -84,11 +85,11 @@ namespace TestAPI
             if (cred.Expired <= DateTime.Now)
             {
                 await ch.FillChannelCookieNetAsync();
-                await ch.StoreCookiesAsync();
+                ch.StoreCookies();
             }
             else
             {
-                await ch.FillChannelCookieDbAsync();
+                ch.FillChannelCookieDb();
             }
 
             // await ch.FillChannelCookieDbAsync();
@@ -110,7 +111,7 @@ namespace TestAPI
             IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ID = "27253";
-            await ch.FillChannelCookieDbAsync();
+            ch.FillChannelCookieDb();
 
             Task t = tp.GetChannelNetAsync(ch.ChannelCookies, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
@@ -123,15 +124,21 @@ namespace TestAPI
             ICred cred = await cf.GetCredDbAsync(Credsite);
 
             ITapochekSite tp = _fabric.CreateTapochekSite();
-            CookieCollection cookie = await tp.GetCookieNetAsync(cred);
+            CookieContainer cookie = await tp.GetCookieNetAsync(cred);
 
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ChannelCookies = cookie;
 
-            Task t = ch.StoreCookiesAsync();
-            Assert.IsTrue(!t.IsFaulted);
+            ch.StoreCookies();
+            ISqLiteDatabase c = _fabric.CreateSqLiteDatabase();
+            if (c.FileBase.DirectoryName != null)
+            {
+                var folder = new DirectoryInfo(Path.Combine(c.FileBase.DirectoryName, "Cookie"));
+                var fn = new FileInfo(Path.Combine(folder.FullName, ch.Site));
+                Assert.IsTrue(fn.Exists);
+            }
         }
 
         #endregion

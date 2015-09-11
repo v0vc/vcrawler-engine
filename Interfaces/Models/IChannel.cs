@@ -13,7 +13,7 @@ namespace Interfaces.Models
     {
         #region Properties
 
-        CookieCollection ChannelCookies { get; set; }
+        CookieContainer ChannelCookies { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
         ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         ObservableCollection<ITag> ChannelTags { get; set; }
@@ -38,7 +38,7 @@ namespace Interfaces.Models
 
         Task DeleteChannelTagAsync(string tag);
 
-        Task FillChannelCookieDbAsync();
+        void FillChannelCookieDb();
 
         Task FillChannelCookieNetAsync();
 
@@ -78,9 +78,9 @@ namespace Interfaces.Models
 
         Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult);
 
-        Task StoreCookiesAsync();
+        void StoreCookies();
 
-        Task SyncChannelAsync(string dir, bool isSyncPls);
+        Task SyncChannelAsync(bool isSyncPls);
 
         Task SyncChannelPlaylistsAsync();
 

@@ -8,7 +8,9 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Net;
 using System.Reflection;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +25,7 @@ namespace DataBaseAPI
     {
         #region Constants
 
+        private const string CookieFolder = "Cookies";
         private const string Dbfile = "db.sqlite";
         private const string SqlFile = "sqlite.sql";
         private const string SqlSchemaFolder = "Schema";
@@ -1177,6 +1180,65 @@ namespace DataBaseAPI
             using (SQLiteCommand command = GetCommand("vacuum"))
             {
                 await ExecuteNonQueryAsync(command);
+            }
+        }
+
+        public void StoreCookies(string site, CookieContainer cookies)
+        {
+            if (FileBase.DirectoryName == null)
+            {
+                throw new Exception("Check db directory");
+            }
+
+            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, CookieFolder));
+            if (!folder.Exists)
+            {
+                folder.Create();
+            }
+            var fn = new FileInfo(Path.Combine(folder.Name, site));
+            if (fn.Exists)
+            {
+                try
+                {
+                    fn.Delete();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+            using (Stream stream = File.Create(fn.FullName))
+            {
+                var formatter = new BinaryFormatter();
+                try
+                {
+                    formatter.Serialize(stream, cookies);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+            throw new Exception("Can't store cookies: " + site);
+        }
+
+        public CookieContainer ReadCookies(string site)
+        {
+            if (FileBase.DirectoryName == null)
+            {
+                throw new Exception("Check db directory");
+            }
+
+            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, CookieFolder));
+            var fn = new FileInfo(Path.Combine(folder.Name, site));
+            if (!fn.Exists)
+            {
+                return null;
+            }
+            using (Stream stream = File.Open(fn.FullName, FileMode.Open))
+            {
+                var formatter = new BinaryFormatter();
+                return (CookieContainer)formatter.Deserialize(stream);
             }
         }
 

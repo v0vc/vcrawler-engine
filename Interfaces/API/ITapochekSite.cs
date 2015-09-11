@@ -13,7 +13,7 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="cred"></param>
         /// <returns></returns>
-        Task<CookieCollection> GetCookieNetAsync(ICred cred);
+        Task<CookieContainer> GetCookieNetAsync(ICred cred);
 
         /// <summary>
         /// Получение релизов пользователя, 0 - все релизы
@@ -36,6 +36,6 @@ namespace Interfaces.API
         /// <param name="cookie"></param>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<IChannelPOCO> GetChannelNetAsync(CookieCollection cookie, string id);
+        Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id);
     }
 }
