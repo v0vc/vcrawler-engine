@@ -118,16 +118,24 @@ namespace Crawler.Views
 
         private void bgv_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            ViewModel.Model.SetStatus(0);
-
-            if (ChannelsGrid.SelectedIndex >= 0)
+            if (e.Error != null)
             {
-                // focus
-                ChannelsGrid.UpdateLayout();
-                var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
-                if (row != null)
+                MessageBox.Show(e.Error.Message);
+                ViewModel.Model.SetStatus(3);
+            }
+            else
+            {
+                ViewModel.Model.SetStatus(0);
+
+                if (ChannelsGrid.SelectedIndex >= 0)
                 {
-                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    // focus
+                    ChannelsGrid.UpdateLayout();
+                    var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
+                    if (row != null)
+                    {
+                        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                    }
                 }
             }
         }

@@ -74,28 +74,24 @@ namespace TestAPI
         {
             ICredFactory cf = _fabric.CreateCredFactory();
             ICred cred = await cf.GetCredDbAsync(Credsite);
-
             ITapochekSite tp = _fabric.CreateTapochekSite();
-
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel();
             ch.Site = cred.Site;
             ch.ID = "27253";
-
-            if (cred.Expired <= DateTime.Now)
+            ch.FillChannelCookieDb();
+            if (ch.ChannelCookies == null)
             {
                 await ch.FillChannelCookieNetAsync();
                 ch.StoreCookies();
             }
-            else
+            IEnumerable<IVideoItemPOCO> t = (await tp.GetChannelItemsAsync(ch, 0)).ToList();
+            if (!t.Any())
             {
-                ch.FillChannelCookieDb();
+                await ch.FillChannelCookieNetAsync();
+                ch.StoreCookies();
+                t = (await tp.GetChannelItemsAsync(ch, 0)).ToList();
             }
-
-            // await ch.FillChannelCookieDbAsync();
-            // await ch.FillChannelCookieNetAsync();
-            // await ch.StoreCookiesAsync();
-            IEnumerable<IVideoItemPOCO> t = await tp.GetChannelItemsAsync(ch, 0);
             Assert.IsTrue(t.Any());
         }
 

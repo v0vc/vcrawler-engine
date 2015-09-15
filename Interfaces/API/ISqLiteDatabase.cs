@@ -231,22 +231,6 @@ namespace Interfaces.API
         Task UpdatePasswordAsync(string site, string newpassword);
 
         /// <summary>
-        /// Обновить куку
-        /// </summary>
-        /// <param name="site"></param>
-        /// <param name="newcookie"></param>
-        /// <returns></returns>
-        Task UpdateCookieAsync(string site, string newcookie);
-
-        /// <summary>
-        /// Обновить пасскей
-        /// </summary>
-        /// <param name="site"></param>
-        /// <param name="newexpired"></param>
-        /// <returns></returns>
-        Task UpdateExpiredAsync(string site, DateTime newexpired);
-
-        /// <summary>
         /// Обновить поле требовать авторизацию или нет
         /// </summary>
         /// <param name="site">ID сайта</param>

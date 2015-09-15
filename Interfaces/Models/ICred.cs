@@ -28,10 +28,6 @@ namespace Interfaces.Models
 
         Task UpdateAutorizationAsync(short autorize);
 
-        Task UpdateCookieAsync(string newcookie);
-
-        Task UpdateExpiredAsync(DateTime newexpired);
-
         Task UpdateLoginAsync(string newlogin);
 
         Task UpdatePasswordAsync(string newpassword);

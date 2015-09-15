@@ -70,32 +70,6 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdateCookieAsync(string site, string newcookie)
-        {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                await fb.UpdateCookieAsync(site, newcookie);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task UpdateExpiredAsync(string site, DateTime newexpired)
-        {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                await fb.UpdateExpiredAsync(site, newexpired);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();

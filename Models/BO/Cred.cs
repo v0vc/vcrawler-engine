@@ -55,16 +55,6 @@ namespace Models.BO
             await _credFactory.UpdateAutorizationAsync(Site, autorize);
         }
 
-        public async Task UpdateCookieAsync(string newcookie)
-        {
-            await _credFactory.UpdateCookieAsync(Site, newcookie);
-        }
-
-        public async Task UpdateExpiredAsync(DateTime newexpired)
-        {
-            await _credFactory.UpdateExpiredAsync(Site, newexpired);
-        }
-
         public async Task UpdateLoginAsync(string newlogin)
         {
             await _credFactory.UpdateLoginAsync(Site, newlogin);

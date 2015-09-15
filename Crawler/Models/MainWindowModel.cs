@@ -711,7 +711,7 @@ namespace Crawler.Models
                     await tag.InsertTagAsync();
                 }
 
-                SetStatus(0);
+                SetStatus(4);
             }
             catch (Exception ex)
             {
@@ -765,6 +765,7 @@ namespace Crawler.Models
         ///     1-Working..
         ///     2-Finished!
         ///     3-Error
+        ///     4-Saved
         /// </summary>
         /// <param name="res"></param>
         public void SetStatus(int res)
@@ -784,6 +785,10 @@ namespace Crawler.Models
             if (res == 3)
             {
                 Result = "Error";
+            }
+            if (res == 4)
+            {
+                Result = "Saved";
             }
         }
 

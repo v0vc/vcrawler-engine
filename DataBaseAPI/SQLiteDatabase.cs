@@ -191,14 +191,19 @@ namespace DataBaseAPI
             if (fnsch.Exists)
             {
                 string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
-                using (SQLiteCommand command = GetCommand(sqltext))
-                {
-                    await ExecuteNonQueryAsync(command);
-                }
+                await RunSqlCodeAsync(sqltext);
             }
             else
             {
                 throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
+            }
+        }
+
+        private async Task RunSqlCodeAsync(string sqltext)
+        {
+            using (SQLiteCommand command = GetCommand(sqltext))
+            {
+                await ExecuteNonQueryAsync(command);
             }
         }
 
@@ -226,10 +231,7 @@ namespace DataBaseAPI
         public async Task DeleteChannelAsync(string parentID)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablechannels, ChannelId, parentID);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
@@ -240,60 +242,39 @@ namespace DataBaseAPI
                 channelid, 
                 TagIdF, 
                 tag);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeleteCredAsync(string site)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablecredentials, CredSite, site);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeleteItemAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeletePlaylistAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tableplaylists, PlaylistID, id);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeleteSettingAsync(string key)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablesettings, SetKey, key);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task DeleteTagAsync(string tag)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tabletags, TagTitle, tag);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
             zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", Tablechanneltags, TagIdF, tag);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task<IEnumerable<ITagPOCO>> GetAllTagsAsync()
@@ -1072,10 +1053,7 @@ namespace DataBaseAPI
         public async Task RenameChannelAsync(string id, string newName)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablechannels, ChannelTitle, newName, ChannelId, id);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task UpdateAutorizationAsync(string site, short autorize)
@@ -1086,44 +1064,13 @@ namespace DataBaseAPI
                 autorize, 
                 CredSite, 
                 site);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
-        }
-
-        public async Task UpdateCookieAsync(string site, string newcookie)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", 
-                Tablecredentials, 
-                CredCookie, 
-                newcookie, 
-                CredSite, 
-                site);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
-        }
-
-        public async Task UpdateExpiredAsync(string site, DateTime newexpired)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}=@newexpired WHERE {2}='{3}'", Tablecredentials, CredExpired, CredSite, site);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                command.Parameters.AddWithValue("@newexpired", newexpired);
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablecredentials, CredLogin, newlogin, CredSite, site);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task UpdatePasswordAsync(string site, string newpassword)
@@ -1134,10 +1081,7 @@ namespace DataBaseAPI
                 newpassword, 
                 CredSite, 
                 site);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
@@ -1169,10 +1113,7 @@ namespace DataBaseAPI
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", Tablesettings, SetVal, newvalue, SetKey, key);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
+            await RunSqlCodeAsync(zap);
         }
 
         public async Task VacuumAsync()
