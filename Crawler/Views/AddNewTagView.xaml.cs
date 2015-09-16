@@ -1,8 +1,8 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -24,16 +24,16 @@ namespace Crawler.Views
         public AddNewTagView()
         {
             InitializeComponent();
-            KeyDown += AddNewTag_KeyDown;
+            KeyDown += AddNewTagKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void AddNewTag_KeyDown(object sender, KeyEventArgs e)
+        private void AddNewTagKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= AddNewTag_KeyDown;
+            KeyDown -= AddNewTagKeyDown;
             if (e.Key == Key.Escape)
             {
                 Close();

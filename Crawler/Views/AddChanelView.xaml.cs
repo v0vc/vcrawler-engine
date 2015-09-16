@@ -21,16 +21,16 @@ namespace Crawler.Views
         public AddChanelView()
         {
             InitializeComponent();
-            KeyDown += AddChanelView_KeyDown;
+            KeyDown += AddChanelViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void AddChanelView_KeyDown(object sender, KeyEventArgs e)
+        private void AddChanelViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= AddChanelView_KeyDown;
+            KeyDown -= AddChanelViewKeyDown;
             if (e.Key == Key.Escape)
             {
                 Close();

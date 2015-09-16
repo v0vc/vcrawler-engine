@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Crawler.Views
         public EditTagsView()
         {
             InitializeComponent();
-            KeyDown += EditTagsView_KeyDown;
+            KeyDown += EditTagsViewKeyDown;
         }
 
         #endregion
@@ -99,9 +100,9 @@ namespace Crawler.Views
             Close();
         }
 
-        private void EditTagsView_KeyDown(object sender, KeyEventArgs e)
+        private void EditTagsViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= EditTagsView_KeyDown;
+            KeyDown -= EditTagsViewKeyDown;
             if (e.Key == Key.Escape)
             {
                 Close();

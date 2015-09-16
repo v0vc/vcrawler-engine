@@ -13,10 +13,14 @@
   
 Command line parameters:
 -------------
-/db|"[your path]" - to set custom database
-/dir|"[your dir]" - to set custom download directory
-/you|"[your path]" - to set custom path to youtube-dl
-/mpc|"[your path]" - to set custom path to mpc-be
+*  /db|"[your path]" - to set custom database
+
+*  /dir|"[your dir]" - to set custom download directory
+
+*  /you|"[your path]" - to set custom path to youtube-dl
+
+*  /mpc|"[your path]" - to set custom path to mpc-be
+
 
 Supported sites:
 -------------

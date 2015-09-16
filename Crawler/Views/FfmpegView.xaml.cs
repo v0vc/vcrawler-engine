@@ -17,16 +17,16 @@ namespace Crawler.Views
         public FfmpegView()
         {
             InitializeComponent();
-            KeyDown += FfmpegView_KeyDown;
+            KeyDown += FfmpegViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void FfmpegView_KeyDown(object sender, KeyEventArgs e)
+        private void FfmpegViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= FfmpegView_KeyDown;
+            KeyDown -= FfmpegViewKeyDown;
             if (e.Key == Key.Escape)
             {
                 Close();

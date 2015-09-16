@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -26,18 +27,19 @@ using Container = IoC.Container;
 
 namespace Crawler.Models
 {
-    public class MainWindowModel : INotifyPropertyChanged
+    public sealed class MainWindowModel : INotifyPropertyChanged
     {
         #region Constants
 
-        private const string DbLaunchParam = "db";
-        private const string DirLaunchParam = "dir";
-        private const string YouLaunchParam = "you";
-        private const string MpcLaunchParam = "mpc";
-        private const string PathToDownload = "pathToDownload";
-        private const string PathToMpc = "pathToMpc";
-        private const string PathToYoudl = "pathToYoudl";
-        private const string YoutubeDl = "youtube-dl.exe";
+        private const string dbLaunchParam = "db";
+        private const string dirLaunchParam = "dir";
+        private const string mpcLaunchParam = "mpc";
+        private const string pathToDownload = "pathToDownload";
+        private const string pathToMpc = "pathToMpc";
+        private const string pathToYoudl = "pathToYoudl";
+        private const string youLaunchParam = "you";
+        private const string youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
+        private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
 
@@ -51,7 +53,6 @@ namespace Crawler.Models
         private readonly ISettingFactory _sf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
-        private readonly string _youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
 
         #endregion
 
@@ -103,7 +104,7 @@ namespace Crawler.Models
             {
                 // через параметры запуска указали путь к своей базе
                 string dbpath;
-                if (_launchParam.TryGetValue(DbLaunchParam, out dbpath))
+                if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
                 {
                     _df.FileBase = new FileInfo(dbpath);
                 }
@@ -122,7 +123,7 @@ namespace Crawler.Models
         public ICommonFactory BaseFactory { get; private set; }
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
-        public ObservableCollection<ITag> CurrentTags { get; set; }
+        public ObservableCollection<ITag> CurrentTags { get; private set; }
 
         public string DirPath
         {
@@ -448,7 +449,7 @@ namespace Crawler.Models
                 }
                 else
                 {
-                    var regex = new Regex(_youRegex);
+                    var regex = new Regex(youRegex);
                     Match match = regex.Match(inputChannelId);
                     if (match.Success)
                     {
@@ -591,7 +592,7 @@ namespace Crawler.Models
                 return;
             }
 
-            var regex = new Regex(_youRegex);
+            var regex = new Regex(youRegex);
             Match match = regex.Match(Link);
             if (match.Success)
             {
@@ -698,19 +699,19 @@ namespace Crawler.Models
             try
             {
                 SetStatus(1);
-                ISetting savedir = await _sf.GetSettingDbAsync(PathToDownload);
+                ISetting savedir = await _sf.GetSettingDbAsync(pathToDownload);
                 if (savedir.Value != DirPath)
                 {
                     await savedir.UpdateSettingAsync(DirPath);
                 }
 
-                ISetting mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
+                ISetting mpcdir = await _sf.GetSettingDbAsync(pathToMpc);
                 if (mpcdir.Value != MpcPath)
                 {
                     await mpcdir.UpdateSettingAsync(MpcPath);
                 }
 
-                ISetting youpath = await _sf.GetSettingDbAsync(PathToYoudl);
+                ISetting youpath = await _sf.GetSettingDbAsync(pathToYoudl);
                 if (youpath.Value != YouPath)
                 {
                     await youpath.UpdateSettingAsync(YouPath);
@@ -845,7 +846,7 @@ namespace Crawler.Models
             PrValue = 0;
             IsIdle = false;
             SetStatus(1);
-            var i = 0;
+            int i = 0;
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
             ShowAllChannels();
@@ -874,15 +875,6 @@ namespace Crawler.Models
             IsIdle = true;
             SetStatus(2);
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
 
         private void CreateServicesChannels()
@@ -1013,7 +1005,7 @@ namespace Crawler.Models
             try
             {
                 string param;
-                if (_launchParam.TryGetValue(DirLaunchParam, out param))
+                if (_launchParam.TryGetValue(dirLaunchParam, out param))
                 {
                     var di = new DirectoryInfo(param);
                     if (di.Exists)
@@ -1028,7 +1020,7 @@ namespace Crawler.Models
                 }
                 else
                 {
-                    ISetting savedir = await _sf.GetSettingDbAsync(PathToDownload);
+                    ISetting savedir = await _sf.GetSettingDbAsync(pathToDownload);
                     DirPath = savedir.Value;
 
                     if (string.IsNullOrEmpty(DirPath))
@@ -1047,7 +1039,7 @@ namespace Crawler.Models
                     }
                 }
 
-                if (_launchParam.TryGetValue(MpcLaunchParam, out param))
+                if (_launchParam.TryGetValue(mpcLaunchParam, out param))
                 {
                     var fn = new FileInfo(param);
                     if (fn.Exists)
@@ -1062,7 +1054,7 @@ namespace Crawler.Models
                 }
                 else
                 {
-                    ISetting mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
+                    ISetting mpcdir = await _sf.GetSettingDbAsync(pathToMpc);
                     MpcPath = mpcdir.Value;
                     if (!string.IsNullOrEmpty(MpcPath))
                     {
@@ -1075,7 +1067,7 @@ namespace Crawler.Models
                     }
                 }
 
-                if (_launchParam.TryGetValue(YouLaunchParam, out param))
+                if (_launchParam.TryGetValue(youLaunchParam, out param))
                 {
                     var fn = new FileInfo(param);
                     if (fn.Exists)
@@ -1090,13 +1082,13 @@ namespace Crawler.Models
                 }
                 else
                 {
-                    ISetting youpath = await _sf.GetSettingDbAsync(PathToYoudl);
+                    ISetting youpath = await _sf.GetSettingDbAsync(pathToYoudl);
                     YouPath = youpath.Value;
 
                     if (string.IsNullOrEmpty(YouPath))
                     {
                         string path = AppDomain.CurrentDomain.BaseDirectory;
-                        string res = Path.Combine(path, YoutubeDl);
+                        string res = Path.Combine(path, youtubeDl);
                         var fn = new FileInfo(res);
                         if (fn.Exists)
                         {
@@ -1139,6 +1131,15 @@ namespace Crawler.Models
             }
         }
 
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
         private void ParseCommandLineArguments()
         {
             string[] args = Environment.GetCommandLineArgs();
@@ -1146,7 +1147,7 @@ namespace Crawler.Models
             {
                 return;
             }
-            for (var i = 1; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)

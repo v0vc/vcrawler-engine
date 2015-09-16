@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -20,26 +21,16 @@ namespace Crawler.Views
         public AddLinkView()
         {
             InitializeComponent();
-            KeyDown += AddLinkView_KeyDown;
+            KeyDown += AddLinkViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void AddLink_OnAudioMouseEnter(object sender, MouseButtonEventArgs e)
+        private void AddLinkViewKeyDown(object sender, KeyEventArgs e)
         {
-            checkBoxAudio.IsChecked = !checkBoxAudio.IsChecked;
-        }
-
-        private void AddLink_OnHdMouseEnter(object sender, MouseButtonEventArgs e)
-        {
-            checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
-        }
-
-        private void AddLinkView_KeyDown(object sender, KeyEventArgs e)
-        {
-            KeyDown -= AddLinkView_KeyDown;
+            KeyDown -= AddLinkViewKeyDown;
             if (e.Key == Key.Escape)
             {
                 Close();
@@ -66,6 +57,16 @@ namespace Crawler.Views
             TextBoxLink.Text = text;
             TextBoxLink.Focus();
             TextBoxLink.SelectAll();
+        }
+
+        private void AddLink_OnAudioMouseEnter(object sender, MouseButtonEventArgs e)
+        {
+            checkBoxAudio.IsChecked = !checkBoxAudio.IsChecked;
+        }
+
+        private void AddLink_OnHdMouseEnter(object sender, MouseButtonEventArgs e)
+        {
+            checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
         }
 
         private void ButtonGo_OnClick(object sender, RoutedEventArgs e)

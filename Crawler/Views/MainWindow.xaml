@@ -73,7 +73,7 @@
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              PreviewKeyDown="dataGrid_PreviewKeyDown"
+                                              PreviewKeyDown="DataGridPreviewKeyDown"
                                               SelectedItem="{Binding Model.SelectedChannel}"
                                               SelectionChanged="ChannelsGrid_OnSelectionChanged"
                                               >
@@ -163,7 +163,7 @@
                           HeadersVisibility="None"
                           GridLinesVisibility="Horizontal"
                           BorderThickness="1"
-                          PreviewKeyDown="dataGrid_PreviewKeyDown"
+                          PreviewKeyDown="DataGridPreviewKeyDown"
                           SelectedItem="{Binding Model.SelectedChannel}"
                           x:Name="ChannelsGrid"
                           SelectionChanged="ChannelsGrid_OnSelectionChanged"
@@ -278,10 +278,10 @@
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              PreviewKeyDown="dataGrid_PreviewKeyDown"
+                                              PreviewKeyDown="DataGridPreviewKeyDown"
                                               ItemsSource="{Binding Model.ServiceChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
-                                              GotFocus="DataGrid_CellGotFocus"
+                                              GotFocus="DataGridCellGotFocus"
                                               >
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
@@ -720,7 +720,7 @@
                       Expanded="PlayListExpander_OnExpanded"
                       >
                 <Expander.Content>
-                    <Grid Expander.Collapsed="Grid_Collapsed" Expander.Expanded="Grid_Expanded">
+                    <Grid Expander.Collapsed="GridCollapsed" Expander.Expanded="GridExpanded">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>

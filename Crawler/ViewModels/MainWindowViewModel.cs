@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -23,34 +24,95 @@ namespace Crawler.ViewModels
 {
     public class MainWindowViewModel
     {
+        #region Fields
+
+        private RelayCommand addNewItemCommand;
+        private RelayCommand addNewTagCommand;
+        private RelayCommand downloadLinkCommand;
+        private RelayCommand openDirCommand;
+        private RelayCommand saveCommand;
+        private RelayCommand saveNewItemCommand;
+        private RelayCommand searchCommand;
+        private RelayCommand syncDataCommand;
+
+        #endregion
+
         #region Constructors
 
         public MainWindowViewModel(MainWindowModel model)
         {
             Model = model;
-            OpenDirCommand = new RelayCommand(OpenDir);
-            AddNewItemCommand = new RelayCommand(x => AddNewItem(false));
-            AddNewTagCommand = new RelayCommand(x => AddNewTag());
-            SaveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem());
-            SyncDataCommand = new RelayCommand(async x => await Model.SyncData());
-            SaveCommand = new RelayCommand(async x => await Model.SaveSettings());
-            DownloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink());
-            SearchCommand = new RelayCommand(async x => await Model.Search());
         }
 
         #endregion
 
         #region Properties
 
-        public RelayCommand AddNewItemCommand { get; set; }
-        public RelayCommand AddNewTagCommand { get; set; }
-        public RelayCommand DownloadLinkCommand { get; set; }
         public MainWindowModel Model { get; set; }
-        public RelayCommand OpenDirCommand { get; set; }
-        public RelayCommand SaveCommand { get; set; }
-        public RelayCommand SaveNewItemCommand { get; set; }
-        public RelayCommand SearchCommand { get; set; }
-        public RelayCommand SyncDataCommand { get; set; }
+
+        public RelayCommand AddNewItemCommand
+        {
+            get
+            {
+                return addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem(false)));
+            }
+        }
+
+        public RelayCommand AddNewTagCommand
+        {
+            get
+            {
+                return addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
+            }
+        }
+
+        public RelayCommand DownloadLinkCommand
+        {
+            get
+            {
+                return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink()));
+            }
+        }
+
+        public RelayCommand OpenDirCommand
+        {
+            get
+            {
+                return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
+            }
+        }
+
+        public RelayCommand SaveCommand
+        {
+            get
+            {
+                return saveCommand ?? (saveCommand = new RelayCommand(async x => await Model.SaveSettings()));
+            }
+        }
+
+        public RelayCommand SaveNewItemCommand
+        {
+            get
+            {
+                return saveNewItemCommand ?? (saveNewItemCommand = new RelayCommand(async x => await Model.SaveNewItem()));
+            }
+        }
+
+        public RelayCommand SearchCommand
+        {
+            get
+            {
+                return searchCommand ?? (searchCommand = new RelayCommand(async x => await Model.Search()));
+            }
+        }
+
+        public RelayCommand SyncDataCommand
+        {
+            get
+            {
+                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await Model.SyncData()));
+            }
+        }
 
         #endregion
 
@@ -62,8 +124,8 @@ namespace Crawler.ViewModels
 
             var addview = new AddChanelView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -74,9 +136,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = @"Text documents (.txt)|*.txt", 
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = @"Text documents (.txt)|*.txt",
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -107,8 +169,8 @@ namespace Crawler.ViewModels
         {
             var adl = new AddLinkView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -118,8 +180,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -152,7 +214,7 @@ namespace Crawler.ViewModels
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
                 Model.IsIdle = false;
-                var rest = 0;
+                int rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -220,8 +282,8 @@ namespace Crawler.ViewModels
         {
             var antv = new AddNewTagView
             {
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 DataContext = this
             };
 

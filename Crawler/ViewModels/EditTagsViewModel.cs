@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -12,12 +13,9 @@ namespace Crawler.ViewModels
 {
     public class EditTagsViewModel
     {
-        #region Constructors
+        #region Fields
 
-        public EditTagsViewModel()
-        {
-            SaveCommand = new RelayCommand(x => Save());
-        }
+        private RelayCommand saveCommand;
 
         #endregion
 
@@ -26,7 +24,15 @@ namespace Crawler.ViewModels
         public ObservableCollection<IChannel> Channels { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; set; }
         public IChannel ParentChannel { get; set; }
-        public RelayCommand SaveCommand { get; set; }
+
+        public RelayCommand SaveCommand
+        {
+            get
+            {
+                return saveCommand ?? (saveCommand = new RelayCommand(x => Save()));
+            }
+        }
+
         public ITag SelectedTag { get; set; }
         public ObservableCollection<ITag> Tags { get; set; }
 
