@@ -2,6 +2,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Linq;
 using System.Windows;
 using System.Windows.Automation.Peers;
@@ -62,17 +63,20 @@ namespace Crawler.Views
                 return;
             }
 
-            if (!string.IsNullOrEmpty(mv.Model.NewTag))
+            if (string.IsNullOrEmpty(mv.Model.NewTag))
             {
-                ITagFactory tf = mv.Model.BaseFactory.CreateTagFactory();
-                ITag tag = tf.CreateTag();
-                tag.Title = mv.Model.NewTag;
-                if (!mv.Model.Tags.Select(x => x.Title).Contains(tag.Title))
-                {
-                    mv.Model.Tags.Add(tag);
-                    Close();
-                }
+                return;
             }
+            ITagFactory tf = mv.Model.BaseFactory.CreateTagFactory();
+            ITag tag = tf.CreateTag();
+            tag.Title = mv.Model.NewTag;
+            if (mv.Model.Tags.Select(x => x.Title).Contains(tag.Title))
+            {
+                return;
+            }
+            mv.Model.Tags.Add(tag);
+            mv.Model.NewTag = string.Empty;
+            Close();
         }
 
         #endregion

@@ -31,6 +31,9 @@ namespace Crawler.Models
         #region Constants
 
         private const string DbLaunchParam = "db";
+        private const string DirLaunchParam = "dir";
+        private const string YouLaunchParam = "you";
+        private const string MpcLaunchParam = "mpc";
         private const string PathToDownload = "pathToDownload";
         private const string PathToMpc = "pathToMpc";
         private const string PathToYoudl = "pathToYoudl";
@@ -44,7 +47,7 @@ namespace Crawler.Models
         private readonly IChannelFactory _cf;
         private readonly ICredFactory _crf;
         private readonly ISqLiteDatabase _df;
-        private readonly Dictionary<string, FileInfo> _launchParam = new Dictionary<string, FileInfo>();
+        private readonly Dictionary<string, string> _launchParam = new Dictionary<string, string>();
         private readonly ISettingFactory _sf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
@@ -99,10 +102,10 @@ namespace Crawler.Models
             if (_launchParam.Any())
             {
                 // через параметры запуска указали путь к своей базе
-                FileInfo fb;
-                if (_launchParam.TryGetValue(DbLaunchParam, out fb))
+                string dbpath;
+                if (_launchParam.TryGetValue(DbLaunchParam, out dbpath))
                 {
-                    _df.FileBase = fb;
+                    _df.FileBase = new FileInfo(dbpath);
                 }
             }
             _sf = BaseFactory.CreateSettingFactory();
@@ -1009,57 +1012,106 @@ namespace Crawler.Models
         {
             try
             {
-                ISetting savedir = await _sf.GetSettingDbAsync(PathToDownload);
-                DirPath = savedir.Value;
-
-                if (string.IsNullOrEmpty(DirPath))
+                string param;
+                if (_launchParam.TryGetValue(DirLaunchParam, out param))
                 {
-                    DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    await savedir.UpdateSettingAsync(DirPath);
+                    var di = new DirectoryInfo(param);
+                    if (di.Exists)
+                    {
+                        DirPath = di.FullName;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Check download path");
+                        DirPath = string.Empty;
+                    }
                 }
                 else
                 {
-                    var di = new DirectoryInfo(DirPath);
-                    if (!di.Exists)
+                    ISetting savedir = await _sf.GetSettingDbAsync(PathToDownload);
+                    DirPath = savedir.Value;
+
+                    if (string.IsNullOrEmpty(DirPath))
                     {
                         DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                         await savedir.UpdateSettingAsync(DirPath);
                     }
+                    else
+                    {
+                        var di = new DirectoryInfo(DirPath);
+                        if (!di.Exists)
+                        {
+                            DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                            await savedir.UpdateSettingAsync(DirPath);
+                        }
+                    }
                 }
 
-                ISetting mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
-                MpcPath = mpcdir.Value;
-                if (!string.IsNullOrEmpty(MpcPath))
+                if (_launchParam.TryGetValue(MpcLaunchParam, out param))
                 {
-                    var fn = new FileInfo(MpcPath);
-                    if (!fn.Exists)
+                    var fn = new FileInfo(param);
+                    if (fn.Exists)
+                    {
+                        MpcPath = fn.FullName;
+                    }
+                    else
                     {
                         MessageBox.Show("Check MPC-BE path");
                         MpcPath = string.Empty;
                     }
                 }
-
-                ISetting youpath = await _sf.GetSettingDbAsync(PathToYoudl);
-                YouPath = youpath.Value;
-
-                if (string.IsNullOrEmpty(YouPath))
+                else
                 {
-                    string path = AppDomain.CurrentDomain.BaseDirectory;
-                    string res = Path.Combine(path, YoutubeDl);
-                    var fn = new FileInfo(res);
+                    ISetting mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
+                    MpcPath = mpcdir.Value;
+                    if (!string.IsNullOrEmpty(MpcPath))
+                    {
+                        var fn = new FileInfo(MpcPath);
+                        if (!fn.Exists)
+                        {
+                            MessageBox.Show("Check MPC-BE path");
+                            MpcPath = string.Empty;
+                        }
+                    }
+                }
+
+                if (_launchParam.TryGetValue(YouLaunchParam, out param))
+                {
+                    var fn = new FileInfo(param);
                     if (fn.Exists)
                     {
                         YouPath = fn.FullName;
-                        await youpath.UpdateSettingAsync(fn.FullName);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Check youtube-dl path");
+                        YouPath = string.Empty;
                     }
                 }
                 else
                 {
-                    var fn = new FileInfo(YouPath);
-                    if (!fn.Exists)
+                    ISetting youpath = await _sf.GetSettingDbAsync(PathToYoudl);
+                    YouPath = youpath.Value;
+
+                    if (string.IsNullOrEmpty(YouPath))
                     {
-                        MessageBox.Show("Check youtube-dl path");
-                        YouPath = string.Empty;
+                        string path = AppDomain.CurrentDomain.BaseDirectory;
+                        string res = Path.Combine(path, YoutubeDl);
+                        var fn = new FileInfo(res);
+                        if (fn.Exists)
+                        {
+                            YouPath = fn.FullName;
+                            await youpath.UpdateSettingAsync(fn.FullName);
+                        }
+                    }
+                    else
+                    {
+                        var fn = new FileInfo(YouPath);
+                        if (!fn.Exists)
+                        {
+                            MessageBox.Show("Check youtube-dl path");
+                            YouPath = string.Empty;
+                        }
                     }
                 }
 
@@ -1101,10 +1153,17 @@ namespace Crawler.Models
                 {
                     continue;
                 }
-                var fn = new FileInfo(param[1]);
-                if (fn.Exists)
+                if (Directory.Exists(param[1]))
                 {
-                    _launchParam.Add(param[0].TrimStart('/'), fn);
+                    _launchParam.Add(param[0].TrimStart('/'), param[1]);
+                }
+                else
+                {
+                    var fn = new FileInfo(param[1]);
+                    if (fn.Exists)
+                    {
+                        _launchParam.Add(param[0].TrimStart('/'), fn.FullName);
+                    }
                 }
             }
         }
