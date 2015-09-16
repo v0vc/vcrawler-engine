@@ -30,6 +30,7 @@ namespace Crawler.Models
     {
         #region Constants
 
+        private const string DbLaunchParam = "db";
         private const string PathToDownload = "pathToDownload";
         private const string PathToMpc = "pathToMpc";
         private const string PathToYoudl = "pathToYoudl";
@@ -43,6 +44,7 @@ namespace Crawler.Models
         private readonly IChannelFactory _cf;
         private readonly ICredFactory _crf;
         private readonly ISqLiteDatabase _df;
+        private readonly Dictionary<string, FileInfo> _launchParam = new Dictionary<string, FileInfo>();
         private readonly ISettingFactory _sf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
@@ -80,6 +82,7 @@ namespace Crawler.Models
 
         public MainWindowModel()
         {
+            ParseCommandLineArguments();
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
             ServiceChannels = new ObservableCollection<IChannel>();
@@ -92,11 +95,20 @@ namespace Crawler.Models
             IsIdle = true;
 
             BaseFactory = Container.Kernel.Get<ICommonFactory>();
+            _df = BaseFactory.CreateSqLiteDatabase();
+            if (_launchParam.Any())
+            {
+                // через параметры запуска указали путь к своей базе
+                FileInfo fb;
+                if (_launchParam.TryGetValue(DbLaunchParam, out fb))
+                {
+                    _df.FileBase = fb;
+                }
+            }
+            _sf = BaseFactory.CreateSettingFactory();
             _cf = BaseFactory.CreateChannelFactory();
             _vf = BaseFactory.CreateVideoItemFactory();
-            _sf = BaseFactory.CreateSettingFactory();
             _yf = BaseFactory.CreateYouTubeSite();
-            _df = BaseFactory.CreateSqLiteDatabase();
             _crf = BaseFactory.CreateCredFactory();
         }
 
@@ -149,6 +161,7 @@ namespace Crawler.Models
             }
         }
 
+        public bool IsAudio { get; set; }
         public bool IsEditMode { get; set; }
 
         public bool IsExpand
@@ -165,8 +178,6 @@ namespace Crawler.Models
         }
 
         public bool IsHd { get; set; }
-
-        public bool IsAudio { get; set; }
 
         public bool IsIdle
         {
@@ -935,13 +946,14 @@ namespace Crawler.Models
 
                 foreach (IVideoItem item in Filterlist)
                 {
-                    if (item.Title.ToLower().Contains(Filter.ToLower()))
+                    if (!item.Title.ToLower().Contains(Filter.ToLower()))
                     {
-                        IVideoItem vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
-                        if (vid != null)
-                        {
-                            vid.IsShowRow = true;
-                        }
+                        continue;
+                    }
+                    IVideoItem vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+                    if (vid != null)
+                    {
+                        vid.IsShowRow = true;
                     }
                 }
             }
@@ -1072,6 +1084,28 @@ namespace Crawler.Models
             {
                 Info = ex.Message;
                 SetStatus(3);
+            }
+        }
+
+        private void ParseCommandLineArguments()
+        {
+            string[] args = Environment.GetCommandLineArgs();
+            if (args.Length <= 1)
+            {
+                return;
+            }
+            for (var i = 1; i < args.Length; i++)
+            {
+                string[] param = args[i].Split('|');
+                if (param.Length != 2)
+                {
+                    continue;
+                }
+                var fn = new FileInfo(param[1]);
+                if (fn.Exists)
+                {
+                    _launchParam.Add(param[0].TrimStart('/'), fn);
+                }
             }
         }
 

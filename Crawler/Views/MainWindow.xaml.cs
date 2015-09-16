@@ -669,7 +669,7 @@ namespace Crawler.Views
                 case "Delete":
                     var sb = new StringBuilder();
 
-                    foreach (IVideoItem item in VideoGrid.SelectedItems)
+                    foreach (IVideoItem item in videoGrid.SelectedItems)
                     {
                         if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
                         {
@@ -689,9 +689,9 @@ namespace Crawler.Views
 
                     if (result == MessageBoxResult.OK)
                     {
-                        for (int i = VideoGrid.SelectedItems.Count; i > 0; i--)
+                        for (int i = videoGrid.SelectedItems.Count; i > 0; i--)
                         {
-                            var item = VideoGrid.SelectedItems[i - 1] as IVideoItem;
+                            var item = videoGrid.SelectedItems[i - 1] as IVideoItem;
 
                             if (item == null)
                             {

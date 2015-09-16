@@ -43,7 +43,8 @@ namespace DataBaseAPI
         #region Static and Readonly Fields
 
         private readonly string _appstartdir;
-        private readonly string _dbConnection;
+        private string _dbConnection;
+        private FileInfo fileBase;
 
         #region items
 
@@ -156,10 +157,6 @@ namespace DataBaseAPI
             }
             string fdb = Path.Combine(_appstartdir, Dbfile);
             FileBase = new FileInfo(fdb);
-            _dbConnection =
-                string.Format(
-                              "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off", 
-                    FileBase.FullName);
             if (!FileBase.Exists)
             {
                 CreateDb();
@@ -226,7 +223,24 @@ namespace DataBaseAPI
 
         #region ISqLiteDatabase Members
 
-        public FileInfo FileBase { get; set; }
+        public FileInfo FileBase
+        {
+            get
+            {
+                return fileBase;
+            }
+            set
+            {
+                fileBase = value;
+                if (fileBase != null)
+                {
+                    _dbConnection =
+                        string.Format(
+                                      "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off",
+                            FileBase.FullName);
+                }
+            }
+        }
 
         public async Task DeleteChannelAsync(string parentID)
         {

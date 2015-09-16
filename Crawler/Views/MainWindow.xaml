@@ -453,7 +453,7 @@
                           BorderThickness="1"
                           ItemsSource="{Binding Model.SelectedChannel.ChannelItems}"
                           SelectedItem="{Binding Model.SelectedVideoItem}"
-                          x:Name="VideoGrid"
+                          x:Name="videoGrid"
                           Sorting="VideoGrid_OnSorting"
                           >
                     
