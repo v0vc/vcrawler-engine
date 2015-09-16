@@ -27,9 +27,14 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private void AddLink_OnMouseEnter(object sender, MouseButtonEventArgs e)
+        private void AddLink_OnAudioMouseEnter(object sender, MouseButtonEventArgs e)
         {
-            CheckBoxHd.IsChecked = !CheckBoxHd.IsChecked;
+            checkBoxAudio.IsChecked = !checkBoxAudio.IsChecked;
+        }
+
+        private void AddLink_OnHdMouseEnter(object sender, MouseButtonEventArgs e)
+        {
+            checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
         }
 
         private void AddLinkView_KeyDown(object sender, KeyEventArgs e)

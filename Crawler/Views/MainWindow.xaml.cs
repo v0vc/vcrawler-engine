@@ -627,6 +627,19 @@ namespace Crawler.Views
 
                     break;
 
+                case "Audio":
+
+                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    {
+                        MessageBox.Show("Please, select youtube-dl");
+                        return;
+                    }
+
+                    ViewModel.Model.SelectedChannel.IsDownloading = true;
+                    await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false, true);
+
+                    break;
+
                 case "HD":
                     if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
                     {
@@ -637,7 +650,8 @@ namespace Crawler.Views
                     if (IsFfmegExist())
                     {
                         ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true);
+                        await
+                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true, false);
                     }
                     else
                     {
@@ -924,7 +938,7 @@ namespace Crawler.Views
                     if (fn.Exists)
                     {
                         ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await item.DownloadItem(fn.FullName, ViewModel.Model.DirPath, false);
+                        await item.DownloadItem(fn.FullName, ViewModel.Model.DirPath, false, false);
                     }
                     else
                     {

@@ -6,6 +6,7 @@ using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -137,12 +138,14 @@ namespace Crawler.Views
 
         private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-            {
-                return;
-            }
             var link = (string)Settings.Default["pathToYoudl"];
 
+            if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+            {
+                ViewModel.Model.YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                    link.Split('/').Last());
+            }
+            
             ViewModel.Model.IsIdle = false;
 
             ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);

@@ -24,7 +24,7 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly string[] _exts = { "mp4", "mkv" };
+        private readonly string[] _exts = { "mp4", "mkv", "mp3" };
         private readonly VideoItemFactory _vf;
 
         #endregion
@@ -34,6 +34,7 @@ namespace Models.BO
         private string _description;
         private double _downloadPercentage;
         private int _duration;
+        private bool _isAudio;
         private bool _isHasLocalFile;
         private bool _isShowRow;
         private string _itemState;
@@ -142,7 +143,7 @@ namespace Models.BO
             }
         }
 
-        private void Process_Exited()
+        private void ProcessExited()
         {
             DownloadPercentage = 100;
             _taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
@@ -158,7 +159,7 @@ namespace Models.BO
 
             string cleartitle = Title.MakeValidFileName();
 
-            if (cleartitle == fn.Name)
+            if (cleartitle.Equals(Path.GetFileNameWithoutExtension(fn.Name), StringComparison.InvariantCulture))
             {
                 // в имени нет запретных знаков
                 if (fn.Exists)
@@ -351,8 +352,9 @@ namespace Models.BO
             await _vf.DeleteItemAsync(ID);
         }
 
-        public async Task DownloadItem(string youPath, string dirPath, bool isHd)
+        public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio)
         {
+            _isAudio = isAudio;
             ItemState = "Downloading";
             DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
@@ -361,14 +363,23 @@ namespace Models.BO
             }
 
             const string options = "--no-check-certificate --console-title --no-call-home";
-            string param =
-                string.Format(
-                              isHd
-                                  ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
-                                  : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}", 
-                    dir, 
-                    MakeLink(), 
-                    options);
+
+            string param;
+            if (isAudio)
+            {
+                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s {1} --audio-format mp3 {2}", dir, MakeLink(), options);
+            }
+            else
+            {
+                param =
+                    string.Format(
+                                  isHd
+                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}", 
+                        dir, 
+                        MakeLink(), 
+                        options);
+            }
 
             if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
             {
@@ -521,37 +532,49 @@ namespace Models.BO
         {
             if (e.Data == null)
             {
-                Process_Exited();
+                ProcessExited();
                 return;
             }
 
-            if (e.Data.StartsWith("[download] Destination"))
+            if (_isAudio && e.Data.StartsWith("[ffmpeg] Destination"))
             {
-                var regex = new Regex(@"(\[download\] Destination: )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                var regex = new Regex(@"(\[ffmpeg\] Destination: )(.+?)(\.(mp3))(.+)?");
                 Match match = regex.Match(e.Data);
                 if (match.Success)
                 {
                     _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
                 }
             }
-
-            if (e.Data.StartsWith("[ffmpeg] Merging formats into"))
+            else
             {
-                var regex = new Regex(@"(\[ffmpeg\] Merging formats into )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
-                Match match = regex.Match(e.Data);
-                if (match.Success)
+                if (e.Data.StartsWith("[download] Destination"))
                 {
-                    _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    var regex = new Regex(@"(\[download\] Destination: )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                    Match match = regex.Match(e.Data);
+                    if (match.Success)
+                    {
+                        _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    }
                 }
-            }
 
-            if (e.Data.EndsWith("has already been downloaded"))
-            {
-                var regex = new Regex(@"(\[download\])(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
-                Match match = regex.Match(e.Data);
-                if (match.Success)
+                if (e.Data.StartsWith("[ffmpeg] Merging formats into"))
                 {
-                    _tempname = regex.Replace(e.Data, "$2$3");
+                    var regex = new Regex(@"(\[ffmpeg\] Merging formats into )(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                    Match match = regex.Match(e.Data);
+                    if (match.Success)
+                    {
+                        _tempname = regex.Replace(e.Data, "$2$3") + match.Groups[match.Groups.Count - 1].ToString().Split(' ')[0];
+                    }
+                }
+
+                if (e.Data.EndsWith("has already been downloaded"))
+                {
+                    var regex = new Regex(@"(\[download\])(.+?)(\.(mp4|m4a|webm|flv|mp3|mkv))(.+)?");
+                    Match match = regex.Match(e.Data);
+                    if (match.Success)
+                    {
+                        _tempname = regex.Replace(e.Data, "$2$3");
+                    }
                 }
             }
 

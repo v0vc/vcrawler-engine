@@ -166,6 +166,8 @@ namespace Crawler.Models
 
         public bool IsHd { get; set; }
 
+        public bool IsAudio { get; set; }
+
         public bool IsIdle
         {
             get
@@ -586,7 +588,7 @@ namespace Crawler.Models
 
                 SelectedChannel = ServiceChannels.First();
                 ServiceChannels.First().AddNewItem(vi, true);
-                await vi.DownloadItem(_youPath, DirPath, IsHd);
+                await vi.DownloadItem(_youPath, DirPath, IsHd, IsAudio);
                 vi.IsNewItem = true;
             }
             else
@@ -1000,13 +1002,30 @@ namespace Crawler.Models
 
                 if (string.IsNullOrEmpty(DirPath))
                 {
-                    string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    DirPath = path;
-                    await savedir.UpdateSettingAsync(path);
+                    DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    await savedir.UpdateSettingAsync(DirPath);
+                }
+                else
+                {
+                    var di = new DirectoryInfo(DirPath);
+                    if (!di.Exists)
+                    {
+                        DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                        await savedir.UpdateSettingAsync(DirPath);
+                    }
                 }
 
                 ISetting mpcdir = await _sf.GetSettingDbAsync(PathToMpc);
                 MpcPath = mpcdir.Value;
+                if (!string.IsNullOrEmpty(MpcPath))
+                {
+                    var fn = new FileInfo(MpcPath);
+                    if (!fn.Exists)
+                    {
+                        MessageBox.Show("Check MPC-BE path");
+                        MpcPath = string.Empty;
+                    }
+                }
 
                 ISetting youpath = await _sf.GetSettingDbAsync(PathToYoudl);
                 YouPath = youpath.Value;
@@ -1020,6 +1039,15 @@ namespace Crawler.Models
                     {
                         YouPath = fn.FullName;
                         await youpath.UpdateSettingAsync(fn.FullName);
+                    }
+                }
+                else
+                {
+                    var fn = new FileInfo(YouPath);
+                    if (!fn.Exists)
+                    {
+                        MessageBox.Show("Check youtube-dl path");
+                        YouPath = string.Empty;
                     }
                 }
 

@@ -460,10 +460,11 @@
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
+                            <MenuItem Header="Delete" Click="MenuItem_OnClick" CommandParameter="Delete" />
                             <MenuItem Header="Copy Link" Click="MenuItem_OnClick" CommandParameter="Link" />
                             <MenuItem Header="Edit" Click="MenuItem_OnClick" CommandParameter="Edit" />
                             <MenuItem Header="Download HD" Click="MenuItem_OnClick" CommandParameter="HD" />
-                            <MenuItem Header="Delete" Click="MenuItem_OnClick" CommandParameter="Delete" />
+                            <MenuItem Header="Download Audio" Click="MenuItem_OnClick" CommandParameter="Audio" />
                             <MenuItem Header="Subscribe" Click="MenuItem_OnClick" CommandParameter="Subscribe" />
                             <Separator></Separator>
 

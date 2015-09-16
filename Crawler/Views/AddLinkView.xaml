@@ -40,11 +40,18 @@
             </TextBox>
             <StackPanel Grid.Row="1" Orientation="Horizontal">
                 <CheckBox Margin="5,0,0,0" 
-                          IsChecked="{Binding Model.IsHd, Mode=OneWay}" 
+                          IsChecked="{Binding Model.IsHd, Mode=TwoWay}" 
                           VerticalAlignment="Center" 
-                          Name="CheckBoxHd"
+                          Name="checkBoxHd"
                           />
-                <Label Content="HD" VerticalAlignment="Top" MouseLeftButtonDown="AddLink_OnMouseEnter" />
+                <Label Content="HD" VerticalAlignment="Top" MouseLeftButtonDown="AddLink_OnHdMouseEnter" />
+                
+                <CheckBox Margin="20,0,0,0" 
+                          IsChecked="{Binding Model.IsAudio, Mode=TwoWay}" 
+                          VerticalAlignment="Center" 
+                          Name="checkBoxAudio"
+                          />
+                <Label Content="Only Audio" VerticalAlignment="Top" MouseLeftButtonDown="AddLink_OnAudioMouseEnter" />
             </StackPanel>
         </Grid>
         <Button Grid.Column="1" Margin="5,10,5,8" Content="GO" Name="ButtonGo" Command="{Binding DownloadLinkCommand}" Click="ButtonGo_OnClick"/>

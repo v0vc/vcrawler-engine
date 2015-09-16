@@ -41,7 +41,7 @@ namespace Interfaces.Models
 
         Task DeleteItemAsync();
 
-        Task DownloadItem(string youPath, string dirPath, bool isHd);
+        Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio);
 
         Task FillChapters();
 
