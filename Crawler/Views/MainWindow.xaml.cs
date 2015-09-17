@@ -398,6 +398,7 @@ namespace Crawler.Views
                     channel.IsShowRow = true;
                 }
             }
+            ViewModel.Model.SelectedChannel = ViewModel.Model.Channels.First(x => x.IsShowRow);
         }
 
         private async void ComboBoxTags_OnDropDownOpened(object sender, EventArgs e)
