@@ -816,6 +816,11 @@ namespace Crawler.Models
                 channel.IsShowRow = true;
             }
 
+            foreach (ITag tag in CurrentTags)
+            {
+                tag.IsChecked = false;
+            }
+
             SelectedTag = null;
         }
 

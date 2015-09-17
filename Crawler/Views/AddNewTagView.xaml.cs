@@ -41,7 +41,7 @@ namespace Crawler.Views
             if (e.Key == Key.Enter)
             {
                 // нажмем кнопку программно
-                var peer = new ButtonAutomationPeer(ButtonOk);
+                var peer = new ButtonAutomationPeer(buttonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 if (invokeProv != null)
                 {
@@ -52,10 +52,10 @@ namespace Crawler.Views
 
         private void AddNewTagView_OnLoaded(object sender, RoutedEventArgs e)
         {
-            TextBoxTag.Focus();
+            textBoxTag.Focus();
         }
 
-        private void ButtonBase_OnClick(object sender, RoutedEventArgs e)
+        private async void ButtonBase_OnClick(object sender, RoutedEventArgs e)
         {
             var mv = DataContext as MainWindowViewModel;
             if (mv == null)
@@ -75,6 +75,7 @@ namespace Crawler.Views
                 return;
             }
             mv.Model.Tags.Add(tag);
+            await tag.InsertTagAsync();
             mv.Model.NewTag = string.Empty;
             Close();
         }

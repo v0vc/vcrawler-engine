@@ -2,17 +2,25 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Interfaces.Models;
 using Models.Factories;
 
 namespace Models.BO
 {
-    public class Tag : ITag
+    public sealed class Tag : ITag, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
         private readonly TagFactory _tf;
+
+        #endregion
+
+        #region Fields
+
+        private bool isChecked;
 
         #endregion
 
@@ -29,9 +37,40 @@ namespace Models.BO
 
         #endregion
 
+        #region Methods
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
         #region ITag Members
 
-        public bool IsChecked { get; set; }
+        public bool IsChecked
+        {
+            get
+            {
+                return isChecked;
+            }
+            set
+            {
+                isChecked = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string Title { get; set; }
 
         public async Task DeleteTagAsync()

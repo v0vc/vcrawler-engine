@@ -7,9 +7,9 @@
         <TextBox Width="250" 
                  Margin="1"
                  Text="{Binding Model.NewTag, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 Name="TextBoxTag"
+                 Name="textBoxTag"
                  />
-        <Button Width="30" Margin="2,1,1,1" Content="OK" Click="ButtonBase_OnClick" Name="ButtonOk"/>
+        <Button Width="30" Margin="2,1,1,1" Content="OK" Click="ButtonBase_OnClick" Name="buttonOk"/>
     </StackPanel>
 
 </Window>
