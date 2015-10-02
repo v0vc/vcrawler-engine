@@ -209,7 +209,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsAsync
-            t = _db.GetChannelItemsAsync(ch.ID);
+            t = _db.GetChannelItemsAsync(ch.ID, 0, 0);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsCountDbAsync

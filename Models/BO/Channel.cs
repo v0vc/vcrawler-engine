@@ -220,9 +220,9 @@ namespace Models.BO
             await _cf.FillChannelDescriptionAsync(this);
         }
 
-        public async Task FillChannelItemsDbAsync(string dir, int count)
+        public async Task FillChannelItemsDbAsync(string dir, int count, int offset)
         {
-            await _cf.FillChannelItemsFromDbAsync(this, dir, count);
+            await _cf.FillChannelItemsFromDbAsync(this, dir, count, offset);
         }
 
         public async Task<int> GetChannelItemsCountDbAsync()
@@ -235,10 +235,10 @@ namespace Models.BO
             return await _cf.GetChannelItemsCountNetAsync(ID);
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync()
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset)
         {
             // return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
-            return await _cf.GetChannelItemsDbAsync(ID);
+            return await _cf.GetChannelItemsDbAsync(ID, count, offset);
         }
 
         public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()

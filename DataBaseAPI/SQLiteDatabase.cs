@@ -382,23 +382,38 @@ namespace DataBaseAPI
             }
         }
 
-        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string parentID)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
         {
             var res = new List<IVideoItemPOCO>();
 
             // var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC", 
-                ItemId, 
-                ParentID, 
-                Title, 
-                ViewCount, 
-                Duration, 
-                Comments, 
-                Thumbnail, 
-                Timestamp, 
-                Tableitems, 
-                ParentID, 
-                parentID);
+            string zap = count == 0
+                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC",
+                    ItemId,
+                    ParentID,
+                    Title,
+                    ViewCount,
+                    Duration,
+                    Comments,
+                    Thumbnail,
+                    Timestamp,
+                    Tableitems,
+                    ParentID,
+                    channelID)
+                : string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC LIMIT {8} OFFSET {9}",
+                    ItemId,
+                    ParentID,
+                    Title,
+                    ViewCount,
+                    Duration,
+                    Comments,
+                    Thumbnail,
+                    Timestamp,
+                    Tableitems,
+                    ParentID,
+                    channelID,
+                    count,
+                    offset);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -448,16 +463,25 @@ namespace DataBaseAPI
             }
         }
 
-        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID)
+        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID, int count, int offset)
         {
             var res = new List<string>();
 
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC", 
-                ItemId, 
-                Tableitems, 
-                ParentID, 
-                channelID, 
-                Timestamp);
+            string zap = count == 0
+                ? string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC",
+                    ItemId,
+                    Tableitems,
+                    ParentID,
+                    channelID,
+                    Timestamp)
+                : string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC LIMIT {5} OFFSET {6}",
+                    ItemId,
+                    Tableitems,
+                    ParentID,
+                    channelID,
+                    Timestamp,
+                    count,
+                    offset);
 
             using (SQLiteCommand command = GetCommand(zap))
             {

@@ -166,7 +166,7 @@
                           BorderThickness="1"
                           PreviewKeyDown="DataGridPreviewKeyDown"
                           SelectedItem="{Binding Model.SelectedChannel}"
-                          x:Name="ChannelsGrid"
+                          x:Name="channelsGrid"
                           SelectionChanged="ChannelsGrid_OnSelectionChanged"
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
@@ -459,6 +459,8 @@
                           Sorting="VideoGrid_OnSorting"
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
+                          ScrollViewer.ScrollChanged="VideoGrid_OnScrollChanged"
+                          ScrollViewer.CanContentScroll="False"
                           >
                     
                     <DataGrid.Resources>

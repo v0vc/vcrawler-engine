@@ -104,17 +104,19 @@ namespace Models.Factories
             channel.SubTitle = await fb.GetChannelDescriptionAsync(channel.ID);
         }
 
-        public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count)
+        public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             IVideoItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
-                List<string> lst = (await fb.GetChannelItemsIdListDbAsync(channel.ID)).ToList();
-                channel.ChannelItemsCount = lst.Count;
+                channel.ChannelItemsCount = await fb.GetChannelItemsCountDbAsync(channel.ID);
+
+                List<string> lst = (await fb.GetChannelItemsIdListDbAsync(channel.ID, count, offset)).ToList();
+
                 if (lst.Any())
                 {
-                    foreach (string id in lst.Take(count))
+                    foreach (string id in lst)
                     {
                         IVideoItem vid = await vf.GetVideoItemDbAsync(id);
                         channel.AddNewItem(vid, false);
@@ -154,7 +156,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID)
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID, int count, int offset)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             IVideoItemFactory vf = _c.CreateVideoItemFactory();
@@ -162,7 +164,7 @@ namespace Models.Factories
 
             try
             {
-                IEnumerable<IVideoItemPOCO> fbres = await fb.GetChannelItemsAsync(channelID);
+                IEnumerable<IVideoItemPOCO> fbres = await fb.GetChannelItemsAsync(channelID, count, offset);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
@@ -177,7 +179,7 @@ namespace Models.Factories
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             try
             {
-                return await fb.GetChannelItemsIdListDbAsync(channelID);
+                return await fb.GetChannelItemsIdListDbAsync(channelID, 0, 0);
             }
             catch (Exception ex)
             {

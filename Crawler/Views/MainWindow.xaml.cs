@@ -126,11 +126,11 @@ namespace Crawler.Views
             {
                 ViewModel.Model.SetStatus(0);
 
-                if (ChannelsGrid.SelectedIndex >= 0)
+                if (channelsGrid.SelectedIndex >= 0)
                 {
                     // focus
-                    ChannelsGrid.UpdateLayout();
-                    var row = (DataGridRow)ChannelsGrid.ItemContainerGenerator.ContainerFromIndex(ChannelsGrid.SelectedIndex);
+                    channelsGrid.UpdateLayout();
+                    var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
                     if (row != null)
                     {
                         row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
@@ -151,7 +151,7 @@ namespace Crawler.Views
             {
                 case "Delete":
 
-                    await ConfirmDelete(ChannelsGrid);
+                    await ConfirmDelete(channelsGrid);
 
                     break;
 
@@ -309,7 +309,7 @@ namespace Crawler.Views
             {
                 return;
             }
-
+            
             ViewModel.Model.Filter = string.Empty;
             ViewModel.Model.IsExpand = false;
 
@@ -338,7 +338,7 @@ namespace Crawler.Views
                 {
                     List<string> lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
                     ch.ChannelItems.Clear();
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25);
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 15, 0);
                     foreach (IVideoItem item in from item in ch.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
                     {
                         item.IsNewItem = true;
@@ -346,7 +346,7 @@ namespace Crawler.Views
                 }
                 else
                 {
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25);
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 15, 0);
                 }
 
                 if (ch.ChannelItems.Any())
@@ -368,6 +368,7 @@ namespace Crawler.Views
                 }
             }
 
+            // videoGrid.ScrollIntoView(ch.ChannelItems.First());
             ViewModel.Model.Filterlist.Clear();
         }
 
@@ -393,6 +394,7 @@ namespace Crawler.Views
             }
             else
             {
+                ViewModel.Model.SelectedTag = null;
                 foreach (IChannel channel in ViewModel.Model.Channels)
                 {
                     channel.IsShowRow = true;
@@ -441,6 +443,13 @@ namespace Crawler.Views
                 if (!channel.ChannelTags.Select(x => x.Title).Contains(ViewModel.Model.SelectedTag.Title))
                 {
                     channel.IsShowRow = false;
+                }
+            }
+            foreach (ITag tag in ViewModel.Model.CurrentTags)
+            {
+                if (tag.Title != ViewModel.Model.SelectedTag.Title && tag.IsChecked)
+                {
+                    tag.IsChecked = false;
                 }
             }
         }
@@ -883,6 +892,21 @@ namespace Crawler.Views
             ViewModel.Model.Filterlist.Clear();
 
             // VideoGrid.UpdateLayout();
+        }
+
+        private async void VideoGrid_OnScrollChanged(object sender, ScrollChangedEventArgs e)
+        {
+            if (e.VerticalChange <= 0)
+            {
+                return;
+            }
+            if (ViewModel.Model.SelectedChannel.ChannelItemsCount > ViewModel.Model.SelectedChannel.ChannelItems.Count)
+            {
+                await
+                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath,
+                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count,
+                        ViewModel.Model.SelectedChannel.ChannelItems.Count);
+            }
         }
 
         private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)

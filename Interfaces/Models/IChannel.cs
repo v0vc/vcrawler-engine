@@ -45,13 +45,13 @@ namespace Interfaces.Models
 
         Task FillChannelDescriptionAsync();
 
-        Task FillChannelItemsDbAsync(string dir, int count);
+        Task FillChannelItemsDbAsync(string dir, int count, int offset);
 
         Task<int> GetChannelItemsCountDbAsync();
 
         Task<int> GetChannelItemsCountNetAsync();
 
-        Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync();
+        Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset);
 
         Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync();
 

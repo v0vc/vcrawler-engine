@@ -65,11 +65,13 @@ namespace Interfaces.API
         Task<IVideoItemPOCO> GetVideoItemAsync(string id);
 
         /// <summary>
-        /// Получить список всех видео канала
+        /// Получить список видео канала, 0 - все
         /// </summary>
-        /// <param name="parentID">ID канала</param>
+        /// <param name="channelID">ID канала</param>
+        /// <param name="count"></param>
+        /// <param name="offset"></param>
         /// <returns></returns>
-        Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string parentID);
+        Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset);
 
         /// <summary>
         /// Записать видео
@@ -288,11 +290,13 @@ namespace Interfaces.API
         Task<IEnumerable<string>> GetChannelsIdsListDbAsync();
 
         /// <summary>
-        /// Получить список ID видео с канала в базе
+        /// Получить список ID видео с канала в базе, 0 - все
         /// </summary>
         /// <param name="channelID"></param>
+        /// <param name="count"></param>
+        /// <param name="offset"></param>
         /// <returns></returns>
-        Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID);
+        Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID, int count, int offset);
 
         /// <summary>
         /// Получить описание канала из базы
