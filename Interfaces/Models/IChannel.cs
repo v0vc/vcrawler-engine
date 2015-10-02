@@ -27,6 +27,7 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
+        int ChannelItemsCount { get; set; }
 
         #endregion
 
@@ -44,7 +45,7 @@ namespace Interfaces.Models
 
         Task FillChannelDescriptionAsync();
 
-        Task FillChannelItemsDbAsync(string dir);
+        Task FillChannelItemsDbAsync(string dir, int count);
 
         Task<int> GetChannelItemsCountDbAsync();
 

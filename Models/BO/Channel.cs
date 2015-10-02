@@ -30,6 +30,7 @@ namespace Models.BO
         private int _playlistCount;
         private string _subTitle;
         private string _title;
+        private int channelItemsCount;
 
         #endregion
 
@@ -163,6 +164,19 @@ namespace Models.BO
             }
         }
 
+        public int ChannelItemsCount
+        {
+            get
+            {
+                return channelItemsCount;
+            }
+            set
+            {
+                channelItemsCount = value;
+                OnPropertyChanged();
+            }
+        }
+
         public void AddNewItem(IVideoItem item, bool isNew)
         {
             item.IsNewItem = isNew;
@@ -206,9 +220,9 @@ namespace Models.BO
             await _cf.FillChannelDescriptionAsync(this);
         }
 
-        public async Task FillChannelItemsDbAsync(string dir)
+        public async Task FillChannelItemsDbAsync(string dir, int count)
         {
-            await _cf.FillChannelItemsFromDbAsync(this, dir);
+            await _cf.FillChannelItemsFromDbAsync(this, dir, count);
         }
 
         public async Task<int> GetChannelItemsCountDbAsync()

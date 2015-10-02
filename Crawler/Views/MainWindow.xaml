@@ -156,7 +156,8 @@
                     </Border>
                 </DockPanel>
 
-                <DataGrid CanUserAddRows="False"
+                <DataGrid Grid.Row="1"
+                          CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
                           ItemsSource="{Binding Model.Channels}"
@@ -167,7 +168,8 @@
                           SelectedItem="{Binding Model.SelectedChannel}"
                           x:Name="ChannelsGrid"
                           SelectionChanged="ChannelsGrid_OnSelectionChanged"
-                          Grid.Row="1"
+                          EnableColumnVirtualization="True"
+                          EnableRowVirtualization="True"
                           >
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
@@ -455,6 +457,8 @@
                           SelectedItem="{Binding Model.SelectedVideoItem}"
                           x:Name="videoGrid"
                           Sorting="VideoGrid_OnSorting"
+                          EnableColumnVirtualization="True"
+                          EnableRowVirtualization="True"
                           >
                     
                     <DataGrid.Resources>
@@ -848,7 +852,7 @@
                 <TextBlock Text="{Binding Model.Info, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
             </StatusBarItem>
             <!--<Separator Grid.Column="3" />-->
-            <StatusBarItem Grid.Column="4" Content="{Binding Model.SelectedChannel.ChannelItems.Count}" HorizontalContentAlignment="Right" />
+            <StatusBarItem Grid.Column="4" Content="{Binding Model.SelectedChannel.ChannelItemsCount}" HorizontalContentAlignment="Right" />
             <Separator Grid.Column="5" />
             <StatusBarItem Grid.Column="6">
                 <ProgressBar Width="90" Height="16" Value="{Binding Model.PrValue, Mode=OneWay}"/>

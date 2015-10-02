@@ -28,7 +28,7 @@ namespace Crawler.Views
         public SettingsView()
         {
             InitializeComponent();
-            KeyDown += SettingsView_KeyDown;
+            KeyDown += SettingsViewKeyDown;
         }
 
         #endregion
@@ -51,7 +51,7 @@ namespace Crawler.Views
 
         #region Static Methods
 
-        public static bool CheckForInternetConnection(string url)
+        private static bool CheckForInternetConnection(string url)
         {
             try
             {
@@ -76,23 +76,25 @@ namespace Crawler.Views
         private async void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
         {
             var tag = ((Button)e.Source).DataContext as ITag;
-            if (tag != null)
+            if (tag == null)
             {
-                MessageBoxResult result =
-                    MessageBox.Show(string.Format("Are you sure to delete Tag:{0}<{1}>" + "?", Environment.NewLine, tag.Title), 
-                        "Confirm", 
-                        MessageBoxButton.OKCancel, 
-                        MessageBoxImage.Information);
-
-                if (result == MessageBoxResult.OK)
-                {
-                    ViewModel.Model.Tags.Remove(tag);
-                    await tag.DeleteTagAsync();
-                }
+                return;
             }
+            MessageBoxResult result =
+                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}<{1}>" + "?", Environment.NewLine, tag.Title), 
+                    "Confirm", 
+                    MessageBoxButton.OKCancel, 
+                    MessageBoxImage.Information);
+
+            if (result != MessageBoxResult.OK)
+            {
+                return;
+            }
+            ViewModel.Model.Tags.Remove(tag);
+            await tag.DeleteTagAsync();
         }
 
-        private void client_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        private void ClientDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
             ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
                 CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
@@ -100,27 +102,19 @@ namespace Crawler.Views
             ViewModel.Model.IsIdle = true;
             ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
             var webClient = sender as WebClient;
-            if (webClient != null)
+            if (webClient == null)
             {
-                webClient.DownloadFileCompleted -= client_DownloadFileCompleted;
-                webClient.DownloadProgressChanged -= client_DownloadProgressChanged;
+                return;
             }
+            webClient.DownloadFileCompleted -= ClientDownloadFileCompleted;
+            webClient.DownloadProgressChanged -= ClientDownloadProgressChanged;
         }
 
-        private void client_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        private void ClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
             double bytesIn = double.Parse(e.BytesReceived.ToString(CultureInfo.InvariantCulture));
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString(CultureInfo.InvariantCulture));
             ViewModel.Model.PrValue = bytesIn / totalBytes * 100;
-        }
-
-        private void SettingsView_KeyDown(object sender, KeyEventArgs e)
-        {
-            KeyDown -= SettingsView_KeyDown;
-            if (e.Key == Key.Escape)
-            {
-                Close();
-            }
         }
 
         private void SettingsView_OnLoaded(object sender, RoutedEventArgs e)
@@ -136,16 +130,25 @@ namespace Crawler.Views
             }
         }
 
+        private void SettingsViewKeyDown(object sender, KeyEventArgs e)
+        {
+            KeyDown -= SettingsViewKeyDown;
+            if (e.Key == Key.Escape)
+            {
+                Close();
+            }
+        }
+
         private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
         {
             var link = (string)Settings.Default["pathToYoudl"];
 
             if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
             {
-                ViewModel.Model.YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
+                ViewModel.Model.YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
                     link.Split('/').Last());
             }
-            
+
             ViewModel.Model.IsIdle = false;
 
             ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
@@ -156,8 +159,8 @@ namespace Crawler.Views
 
                 using (var client = new WebClient())
                 {
-                    client.DownloadProgressChanged += client_DownloadProgressChanged;
-                    client.DownloadFileCompleted += client_DownloadFileCompleted;
+                    client.DownloadProgressChanged += ClientDownloadProgressChanged;
+                    client.DownloadFileCompleted += ClientDownloadFileCompleted;
                     client.DownloadFileAsync(new Uri(link), ViewModel.Model.YouPath);
                 }
             }

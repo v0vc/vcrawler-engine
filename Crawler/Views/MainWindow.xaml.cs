@@ -338,7 +338,7 @@ namespace Crawler.Views
                 {
                     List<string> lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
                     ch.ChannelItems.Clear();
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25);
                     foreach (IVideoItem item in from item in ch.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
                     {
                         item.IsNewItem = true;
@@ -346,7 +346,7 @@ namespace Crawler.Views
                 }
                 else
                 {
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath);
+                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25);
                 }
 
                 if (ch.ChannelItems.Any())

@@ -104,16 +104,17 @@ namespace Models.Factories
             channel.SubTitle = await fb.GetChannelDescriptionAsync(channel.ID);
         }
 
-        public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir)
+        public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
             IVideoItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 List<string> lst = (await fb.GetChannelItemsIdListDbAsync(channel.ID)).ToList();
+                channel.ChannelItemsCount = lst.Count;
                 if (lst.Any())
                 {
-                    foreach (string id in lst)
+                    foreach (string id in lst.Take(count))
                     {
                         IVideoItem vid = await vf.GetVideoItemDbAsync(id);
                         channel.AddNewItem(vid, false);
