@@ -1,7 +1,7 @@
 ﻿<Window x:Class="Crawler.Views.AddTagView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Tag" Height="55" Width="300" WindowStyle="ToolWindow"
+        Title="Tag" Height="60" Width="300" WindowStyle="ToolWindow"
         >
     <StackPanel Orientation="Horizontal">
         <ComboBox Width="250" 
