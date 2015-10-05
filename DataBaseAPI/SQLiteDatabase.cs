@@ -386,34 +386,61 @@ namespace DataBaseAPI
         {
             var res = new List<IVideoItemPOCO>();
 
-            // var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' ORDER BY {3} DESC", Tableitems, ParentID, parentID, Timestamp);
             string zap = count == 0
-                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC",
+                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}' ORDER BY {6} DESC",
                     ItemId,
                     ParentID,
                     Title,
                     ViewCount,
                     Duration,
                     Comments,
-                    Thumbnail,
                     Timestamp,
                     Tableitems,
                     ParentID,
                     channelID)
-                : string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC LIMIT {8} OFFSET {9}",
+                : string.Format(
+                                @"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}' ORDER BY {6} DESC LIMIT {10} OFFSET {11}",
                     ItemId,
                     ParentID,
                     Title,
                     ViewCount,
                     Duration,
                     Comments,
-                    Thumbnail,
                     Timestamp,
                     Tableitems,
                     ParentID,
                     channelID,
                     count,
                     offset);
+
+            //string zap = count == 0
+            //    ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC",
+            //        ItemId,
+            //        ParentID,
+            //        Title,
+            //        ViewCount,
+            //        Duration,
+            //        Comments,
+            //        Thumbnail,
+            //        Timestamp,
+            //        Tableitems,
+            //        ParentID,
+            //        channelID)
+            //    : string.Format(
+            //                    @"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {7} DESC LIMIT {11} OFFSET {12}",
+            //        ItemId,
+            //        ParentID,
+            //        Title,
+            //        ViewCount,
+            //        Duration,
+            //        Comments,
+            //        Thumbnail,
+            //        Timestamp,
+            //        Tableitems,
+            //        ParentID,
+            //        channelID,
+            //        count,
+            //        offset);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -887,17 +914,30 @@ namespace DataBaseAPI
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
             // var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'", 
-                ItemId, 
-                ParentID, 
-                Title, 
-                ViewCount, 
-                Duration, 
-                Comments, 
-                Thumbnail, 
-                Timestamp, 
-                Tableitems, 
-                ItemId, 
+
+            //string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'", 
+            //    ItemId, 
+            //    ParentID, 
+            //    Title, 
+            //    ViewCount, 
+            //    Duration, 
+            //    Comments, 
+            //    Thumbnail, 
+            //    Timestamp, 
+            //    Tableitems, 
+            //    ItemId, 
+            //    id);
+
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}'",
+                ItemId,
+                ParentID,
+                Title,
+                ViewCount,
+                Duration,
+                Comments,
+                Timestamp,
+                Tableitems,
+                ItemId,
                 id);
 
             using (SQLiteCommand command = GetCommand(zap))
@@ -944,6 +984,30 @@ namespace DataBaseAPI
                     }
 
                     return res as string;
+                }
+            }
+        }
+
+        public async Task<byte[]> GetVideoItemThumbnailAsync(string id)
+        {
+            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", Thumbnail, Tableitems, ItemId, id);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(_dbConnection))
+                {
+                    await connection.OpenAsync();
+
+                    command.Connection = connection;
+
+                    object res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                    if (res == null || res == DBNull.Value)
+                    {
+                        return null;
+                    }
+
+                    return res as byte[];
                 }
             }
         }

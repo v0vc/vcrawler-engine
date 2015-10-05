@@ -347,6 +347,10 @@ namespace Crawler.Views
                 else
                 {
                     await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25, 0);
+                    foreach (IVideoItem item in ch.ChannelItems)
+                    {
+                        await item.FillThumbnail();
+                    }
                 }
 
                 if (ch.ChannelItems.Any())

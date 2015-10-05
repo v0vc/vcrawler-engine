@@ -45,6 +45,8 @@ namespace Interfaces.Models
 
         Task FillChapters();
 
+        Task FillThumbnail();
+
         Task FillDescriptionAsync();
 
         Task<IChannel> GetParentChannelAsync();
