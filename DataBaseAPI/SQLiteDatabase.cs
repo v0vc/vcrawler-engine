@@ -915,26 +915,14 @@ namespace DataBaseAPI
         {
             // var zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", Tableitems, ItemId, id);
 
-            //string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'", 
-            //    ItemId, 
-            //    ParentID, 
-            //    Title, 
-            //    ViewCount, 
-            //    Duration, 
-            //    Comments, 
-            //    Thumbnail, 
-            //    Timestamp, 
-            //    Tableitems, 
-            //    ItemId, 
-            //    id);
-
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}'",
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'",
                 ItemId,
                 ParentID,
                 Title,
                 ViewCount,
                 Duration,
                 Comments,
+                Thumbnail,
                 Timestamp,
                 Tableitems,
                 ItemId,
@@ -953,15 +941,15 @@ namespace DataBaseAPI
                             throw new KeyNotFoundException("No item: " + id);
                         }
 
-                        if (await reader.ReadAsync())
+                        if (!await reader.ReadAsync())
                         {
-                            var vi = new VideoItemPOCO(reader);
-                            return vi;
+                            throw new Exception(zap);
                         }
+                        var vi = new VideoItemPOCO(reader);
+                        return vi;
                     }
                 }
             }
-            throw new Exception(zap);
         }
 
         public async Task<string> GetVideoItemDescriptionAsync(string id)
@@ -984,30 +972,6 @@ namespace DataBaseAPI
                     }
 
                     return res as string;
-                }
-            }
-        }
-
-        public async Task<byte[]> GetVideoItemThumbnailAsync(string id)
-        {
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", Thumbnail, Tableitems, ItemId, id);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(_dbConnection))
-                {
-                    await connection.OpenAsync();
-
-                    command.Connection = connection;
-
-                    object res = await command.ExecuteScalarAsync(CancellationToken.None);
-
-                    if (res == null || res == DBNull.Value)
-                    {
-                        return null;
-                    }
-
-                    return res as byte[];
                 }
             }
         }

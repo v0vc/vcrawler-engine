@@ -22,7 +22,7 @@ namespace DataBaseAPI.POCO
             ViewCount = Convert.ToInt32(reader[SqLiteDatabase.ViewCount]);
             Duration = Convert.ToInt32(reader[SqLiteDatabase.Duration]);
             Comments = Convert.ToInt32(reader[SqLiteDatabase.Comments]);
-            // Thumbnail = (byte[])reader[SqLiteDatabase.Thumbnail];
+            Thumbnail = (byte[])reader[SqLiteDatabase.Thumbnail];
             Timestamp = (DateTime)reader[SqLiteDatabase.Timestamp];
         }
 

@@ -187,17 +187,5 @@ namespace Models.Factories
 
         #endregion
 
-        public async Task FillThumbnail(IVideoItem videoItem)
-        {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                videoItem.Thumbnail = await fb.GetVideoItemThumbnailAsync(videoItem.ID);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
     }
 }

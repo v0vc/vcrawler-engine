@@ -437,11 +437,6 @@ namespace Models.BO
             }
         }
 
-        public async Task FillThumbnail()
-        {
-            await _vf.FillThumbnail(this);
-        }
-
         public async Task FillDescriptionAsync()
         {
             await _vf.FillDescriptionAsync(this);

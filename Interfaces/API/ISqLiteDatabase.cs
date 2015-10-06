@@ -216,13 +216,6 @@ namespace Interfaces.API
         Task<string> GetVideoItemDescriptionAsync(string id);
 
         /// <summary>
-        ///     Получить превьюшку видео
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        Task<byte[]> GetVideoItemThumbnailAsync(string id);
-
-        /// <summary>
         ///     Записать канал без списка видео
         /// </summary>
         /// <param name="channel">Канал</param>
