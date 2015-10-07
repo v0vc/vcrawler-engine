@@ -563,6 +563,7 @@ namespace Crawler.Models
                     }
                 }
             }
+            channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.IsInWork = false;
             SetStatus(2);
         }
