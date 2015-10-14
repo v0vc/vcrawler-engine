@@ -11,7 +11,7 @@ using Interfaces.POCO;
 
 namespace Interfaces.API
 {
-    public interface ITapochekSite
+    public interface IRutrackerSite
     {
         #region Properties
 

@@ -4,7 +4,9 @@
 
 using System;
 using System.Threading.Tasks;
+using Extensions;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -109,17 +111,18 @@ namespace Models.Factories
         {
             var cred = new Cred(this)
             {
-                Site = poco.Site, 
+                SiteAdress = poco.Site, 
                 Login = poco.Login, 
                 Pass = poco.Pass, 
                 Cookie = poco.Cookie, 
                 Expired = poco.Expired, 
-                Autorization = poco.Autorization
+                Autorization = poco.Autorization,
+                Site = CommonExtensions.GetSiteType(poco.Site)
             };
             return cred;
         }
 
-        public async Task<ICred> GetCredDbAsync(string site)
+        public async Task<ICred> GetCredDbAsync(SiteType site)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
@@ -127,7 +130,7 @@ namespace Models.Factories
 
             try
             {
-                ICredPOCO poco = await fb.GetCredAsync(site);
+                ICredPOCO poco = await fb.GetCredAsync(CommonExtensions.GetSiteAdress(site));
                 ICred cred = cf.CreateCred(poco);
                 return cred;
             }

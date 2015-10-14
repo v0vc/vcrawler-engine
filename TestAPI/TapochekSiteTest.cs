@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -27,11 +28,19 @@ namespace TestAPI
 
         #endregion
 
+        #region Fields
+
+        private ITapochekSite _tf;
+        private ICred cred;
+
+        #endregion
+
         #region Constructors
 
         public TapochekSiteTest()
         {
             _fabric = Container.Kernel.Get<ICommonFactory>();
+            FillCred();
         }
 
         #endregion
@@ -50,12 +59,11 @@ namespace TestAPI
         [TestMethod]
         public async Task FillChannelNetAsync()
         {
-            ITapochekSite tp = _fabric.CreateTapochekSite();
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
             ch.ID = "27253";
             ch.FillChannelCookieDb();
-            await tp.FillChannelNetAsync(ch);
+            await _tf.FillChannelNetAsync(ch);
             Assert.IsTrue(ch.ChannelItems.Any());
         }
 
@@ -64,9 +72,7 @@ namespace TestAPI
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
-            ICred cred = await ch.GetChannelCredentialsAsync();
-            ITapochekSite tp = _fabric.CreateTapochekSite();
-            CookieContainer cookie = await tp.GetCookieNetAsync(ch);
+            CookieContainer cookie = await _tf.GetCookieNetAsync(ch);
             Assert.IsTrue(cookie.Count > 0);
         }
 
@@ -75,7 +81,6 @@ namespace TestAPI
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
-            ITapochekSite tp = _fabric.CreateTapochekSite();
             ch.ID = "27253";
             ch.FillChannelCookieDb();
             if (ch.ChannelCookies == null)
@@ -83,12 +88,12 @@ namespace TestAPI
                 await ch.FillChannelCookieNetAsync();
                 ch.StoreCookies();
             }
-            IEnumerable<IVideoItemPOCO> t = (await tp.GetChannelItemsAsync(ch, 0)).ToList();
+            IEnumerable<IVideoItemPOCO> t = (await _tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
                 await ch.FillChannelCookieNetAsync();
                 ch.StoreCookies();
-                t = (await tp.GetChannelItemsAsync(ch, 0)).ToList();
+                t = (await _tf.GetChannelItemsAsync(ch, 0)).ToList();
             }
             Assert.IsTrue(t.Any());
         }
@@ -98,9 +103,7 @@ namespace TestAPI
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
-            ICred cred = await ch.GetChannelCredentialsAsync();
-            ITapochekSite tp = _fabric.CreateTapochekSite();
-            CookieContainer cookie = await tp.GetCookieNetAsync(ch);
+            CookieContainer cookie = await _tf.GetCookieNetAsync(ch);
             ch.ChannelCookies = cookie;
 
             ch.StoreCookies();
@@ -111,6 +114,13 @@ namespace TestAPI
                 var fn = new FileInfo(Path.Combine(folder.FullName, ch.SiteAdress));
                 Assert.IsTrue(fn.Exists);
             }
+        }
+
+        private async void FillCred()
+        {
+            cred = await _fabric.CreateCredFactory().GetCredDbAsync(SiteType.Tapochek);
+            _tf = _fabric.CreateTapochekSite();
+            _tf.Cred = cred;
         }
 
         #endregion

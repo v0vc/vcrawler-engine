@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -31,40 +32,6 @@ namespace Models.Factories
         public ChannelFactory(ICommonFactory c)
         {
             _c = c;
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        private static string GetSiteAdress(SiteType site)
-        {
-            switch (site)
-            {
-                case SiteType.YouTube:
-                    return "youtube.com";
-                case SiteType.Tapochek:
-                    return "tapochek.net";
-                case SiteType.RuTracker:
-                    return "rutracker.org";
-                default:
-                    return string.Empty;
-            }
-        }
-
-        private static SiteType GetSiteType(string site)
-        {
-            switch (site)
-            {
-                case "youtube.com":
-                    return SiteType.YouTube;
-                case "tapochek.net":
-                    return SiteType.Tapochek;
-                case "rutracker.org":
-                    return SiteType.RuTracker;
-                default:
-                    return SiteType.NotSet;
-            }
         }
 
         #endregion
@@ -164,7 +131,7 @@ namespace Models.Factories
             ICredFactory cf = _c.CreateCredFactory();
             try
             {
-                return await cf.GetCredDbAsync(channel.SiteAdress);
+                return await cf.GetCredDbAsync(channel.Site);
             }
             catch (Exception ex)
             {
@@ -207,7 +174,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.GetChannelItemsAsync(channelID, count, offset);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(vf.CreateVideoItem));
                 return lst;
             }
             catch (Exception ex)
@@ -251,15 +218,14 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     IEnumerable<IVideoItemPOCO> youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
-                    lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
+                    lst.AddRange(youres.Select(vf.CreateVideoItem));
 
                     break;
 
                 case SiteType.Tapochek:
 
-                    ICred cred = await channel.GetChannelCredentialsAsync();
                     IEnumerable<IVideoItemPOCO> tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
-                    lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
+                    lst.AddRange(tapres.Select(vf.CreateVideoItem));
 
                     break;
 
@@ -292,7 +258,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistAsync(channelID);
-                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
+                lst.AddRange(fbres.Select(pf.CreatePlaylist));
                 return lst;
             }
             catch (Exception ex)
@@ -309,7 +275,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistNetAsync(channelID);
-                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
+                lst.AddRange(fbres.Select(pf.CreatePlaylist));
                 return lst;
             }
             catch (Exception ex)
@@ -327,7 +293,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<ITagPOCO> fbres = await fb.GetChannelTagsAsync(id);
-                lst.AddRange(fbres.Select(poco => tf.CreateTag(poco)));
+                lst.AddRange(fbres.Select(tf.CreateTag));
                 return lst;
             }
             catch (Exception ex)
@@ -345,7 +311,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.GetPopularItemsAsync(regionID, maxresult);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(vf.CreateVideoItem));
                 return lst;
             }
             catch (Exception ex)
@@ -415,7 +381,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.SearchItemsAsync(key, regionID, maxresult);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(vf.CreateVideoItem));
                 return lst;
             }
             catch (Exception ex)
@@ -598,9 +564,9 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
                 ChannelCookies = new CookieContainer()
             };
             return channel;
@@ -610,12 +576,12 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
-                Site = site, 
-                SiteAdress = GetSiteAdress(site)
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelCookies = new CookieContainer(),
+                Site = site,
+                SiteAdress = CommonExtensions.GetSiteAdress(site)
             };
             return channel;
         }
@@ -624,16 +590,16 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
+                ID = poco.ID,
+                Title = poco.Title,
                 SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail, 
-                SiteAdress = poco.Site, 
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
-                Site = GetSiteType(poco.Site)
+                Thumbnail = poco.Thumbnail,
+                SiteAdress = poco.Site,
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelCookies = new CookieContainer(),
+                Site = CommonExtensions.GetSiteType(poco.Site)
             };
             return channel;
         }

@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -9,11 +10,13 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.Factories;
@@ -60,6 +63,11 @@ namespace Models.BO
         #endregion
 
         #region Static Methods
+
+        private static string AviodTooLongFileName(string path)
+        {
+            return path.Length > 240 ? path.Remove(240) : path;
+        }
 
         private static double GetPercentFromYoudlOutput(string input)
         {
@@ -133,6 +141,138 @@ namespace Models.BO
         #endregion
 
         #region Methods
+
+        private void DownloadRutracker(string topicUrl, string dirPath, CookieContainer cookie)
+        {
+            var httpRequest = (HttpWebRequest)WebRequest.Create(MakeLink());
+            httpRequest.Method = WebRequestMethods.Http.Post;
+
+            httpRequest.Referer = string.Format("{0}={1}", topicUrl, ID);
+            httpRequest.CookieContainer = cookie;
+
+            // Include post data in the HTTP request
+            const string postData = "dummy=";
+            httpRequest.ContentLength = postData.Length;
+            httpRequest.ContentType = "application/x-www-form-urlencoded";
+
+            // Write the post data to the HTTP request
+            var requestWriter = new StreamWriter(httpRequest.GetRequestStream(), Encoding.ASCII);
+            requestWriter.Write(postData);
+            requestWriter.Close();
+
+            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+            Stream httpResponseStream = httpResponse.GetResponseStream();
+
+            const int bufferSize = 1024;
+            var buffer = new byte[bufferSize];
+
+            // Read from response and write to file
+            var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
+            if (!dir.Exists)
+            {
+                dir.Create();
+            }
+
+            {
+                string dpath = AviodTooLongFileName(Path.Combine(dir.FullName, MakeTorrentFileName()));
+                FileStream fileStream = File.Create(dpath);
+                int bytesRead;
+                while (httpResponseStream != null && (bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
+                {
+                    fileStream.Write(buffer, 0, bytesRead);
+                } // end while
+                var fn = new FileInfo(dpath);
+                if (fn.Exists)
+                {
+                    ItemState = "LocalYes";
+                    IsHasLocalFile = true;
+                    LocalFilePath = fn.FullName;
+                }
+                else
+                {
+                    ItemState = "LocalNo";
+                    IsHasLocalFile = false;
+                }
+            }
+        }
+
+        private async Task DownloadYoutube(string youPath, string dirPath, bool isHd, bool isAudio)
+        {
+            _isAudio = isAudio;
+            ItemState = "Downloading";
+            DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
+            if (!dir.Exists)
+            {
+                dir.Create();
+            }
+
+            const string options = "--no-check-certificate --console-title --no-call-home";
+
+            string param;
+            if (isAudio)
+            {
+                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s {1} --audio-format mp3 {2}", dir, MakeLink(), options);
+            }
+            else
+            {
+                param =
+                    string.Format(
+                                  isHd
+                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}",
+                        dir,
+                        MakeLink(),
+                        options);
+            }
+
+            if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
+            {
+                var sb = new StringBuilder();
+                foreach (IChapter chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
+                {
+                    sb.Append(chapter.Language).Append(',');
+                }
+                string res = sb.ToString().TrimEnd(',');
+
+                string srt = res == "Auto" ? "--write-srt --write-auto-sub" : string.Format("--write-srt --srt-lang {0}", res);
+
+                param = string.Format("{0} {1}", param, srt);
+            }
+
+            var startInfo = new ProcessStartInfo(youPath, param)
+            {
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                ErrorDialog = false,
+                CreateNoWindow = true
+            };
+
+            _taskbar = TaskbarManager.Instance;
+            _taskbar.SetProgressState(TaskbarProgressBarState.Normal);
+
+            await Task.Run(() =>
+            {
+                var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+
+                proc.OutputDataReceived += EncodeOnOutputDataReceived;
+                proc.ErrorDataReceived += EncodeOnErrorDataReceived;
+                proc.Exited += EncodeOnProcessExited;
+
+                proc.Start();
+                proc.StandardInput.Close();
+                proc.BeginOutputReadLine();
+                proc.BeginErrorReadLine();
+                proc.WaitForExit();
+            });
+        }
+
+        private string MakeTorrentFileName()
+        {
+            return string.Format("t{0}.torrent", ID);
+        }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -322,6 +462,7 @@ namespace Models.BO
         }
 
         public string ParentID { get; set; }
+        public SiteType Site { get; set; }
         public byte[] Thumbnail { get; set; }
 
         public DateTime Timestamp
@@ -354,75 +495,15 @@ namespace Models.BO
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio)
         {
-            _isAudio = isAudio;
-            ItemState = "Downloading";
-            DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
-            if (!dir.Exists)
+            switch (Site)
             {
-                dir.Create();
+                case SiteType.YouTube:
+                    await DownloadYoutube(youPath, dirPath, isHd, isAudio);
+                    break;
+                case SiteType.RuTracker:
+                    DownloadRutracker("", dirPath, null);
+                    break;
             }
-
-            const string options = "--no-check-certificate --console-title --no-call-home";
-
-            string param;
-            if (isAudio)
-            {
-                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s {1} --audio-format mp3 {2}", dir, MakeLink(), options);
-            }
-            else
-            {
-                param =
-                    string.Format(
-                                  isHd
-                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}", 
-                        dir, 
-                        MakeLink(), 
-                        options);
-            }
-
-            if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
-            {
-                var sb = new StringBuilder();
-                foreach (IChapter chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
-                {
-                    sb.Append(chapter.Language).Append(',');
-                }
-                string res = sb.ToString().TrimEnd(',');
-
-                string srt = res == "Auto" ? "--write-srt --write-auto-sub" : string.Format("--write-srt --srt-lang {0}", res);
-
-                param = string.Format("{0} {1}", param, srt);
-            }
-
-            var startInfo = new ProcessStartInfo(youPath, param)
-            {
-                WindowStyle = ProcessWindowStyle.Hidden, 
-                UseShellExecute = false, 
-                RedirectStandardOutput = true, 
-                RedirectStandardError = true, 
-                RedirectStandardInput = true, 
-                ErrorDialog = false, 
-                CreateNoWindow = true
-            };
-
-            _taskbar = TaskbarManager.Instance;
-            _taskbar.SetProgressState(TaskbarProgressBarState.Normal);
-
-            await Task.Run(() =>
-            {
-                var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
-
-                proc.OutputDataReceived += EncodeOnOutputDataReceived;
-                proc.ErrorDataReceived += EncodeOnErrorDataReceived;
-                proc.Exited += EncodeOnProcessExited;
-
-                proc.Start();
-                proc.StandardInput.Close();
-                proc.BeginOutputReadLine();
-                proc.BeginErrorReadLine();
-                proc.WaitForExit();
-            });
         }
 
         public async Task FillChapters()
@@ -492,8 +573,17 @@ namespace Models.BO
 
         public string MakeLink()
         {
-            // TODO по типу площадки
-            return string.Format("https://www.youtube.com/watch?v={0}", ID);
+            switch (Site)
+            {
+                case SiteType.YouTube:
+                    return string.Format("https://www.youtube.com/watch?v={0}", ID);
+                case SiteType.Tapochek:
+                    return string.Format("http://tapochek.net/download.php?id={0}", ID);
+                case SiteType.RuTracker:
+                    return string.Format("http://dl.rutracker.org/forum/dl.php?t={0}", ID);
+                default:
+                    return string.Empty;
+            }
         }
 
         public async Task RunItem(string mpcpath)

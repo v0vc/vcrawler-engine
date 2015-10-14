@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
 
@@ -37,11 +38,12 @@ namespace Models.BO
         public DateTime Expired { get; set; }
         public string Login { get; set; }
         public string Pass { get; set; }
-        public string Site { get; set; }
+        public string SiteAdress { get; set; }
+        public SiteType Site { get; set; }
 
         public async Task DeleteCredAsync()
         {
-            await _credFactory.DeleteCredAsync(Site);
+            await _credFactory.DeleteCredAsync(SiteAdress);
         }
 
         public async Task InsertCredAsync()
@@ -52,17 +54,17 @@ namespace Models.BO
 
         public async Task UpdateAutorizationAsync(short autorize)
         {
-            await _credFactory.UpdateAutorizationAsync(Site, autorize);
+            await _credFactory.UpdateAutorizationAsync(SiteAdress, autorize);
         }
 
         public async Task UpdateLoginAsync(string newlogin)
         {
-            await _credFactory.UpdateLoginAsync(Site, newlogin);
+            await _credFactory.UpdateLoginAsync(SiteAdress, newlogin);
         }
 
         public async Task UpdatePasswordAsync(string newpassword)
         {
-            await _credFactory.UpdatePasswordAsync(Site, newpassword);
+            await _credFactory.UpdatePasswordAsync(SiteAdress, newpassword);
         }
 
         #endregion

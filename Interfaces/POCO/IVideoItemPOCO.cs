@@ -1,8 +1,10 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using Interfaces.Enums;
 
 namespace Interfaces.POCO
 {
@@ -15,6 +17,7 @@ namespace Interfaces.POCO
         int Duration { get; }
         string ID { get; }
         string ParentID { get; }
+        SiteType Site { get; }
         string Status { get; }
         byte[] Thumbnail { get; }
         DateTime Timestamp { get; }

@@ -62,14 +62,14 @@ namespace TestAPI
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
             ch.Thumbnail = GetStreamFromUrl(TestPhoto);
-            ch.SiteAdress = cred.Site;
+            ch.SiteAdress = cred.SiteAdress;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
         }
 
         private static void FillTestCred(ICred cred)
         {
-            cred.Site = "testsite.com";
+            cred.SiteAdress = "testsite.com";
             cred.Login = "testlogin";
             cred.Pass = "testpass";
             cred.Cookie = "cookie";
@@ -135,7 +135,7 @@ namespace TestAPI
             FillTestCred(cred);
 
             // DeleteCredAsync
-            Task t = db.DeleteCredAsync(cred.Site);
+            Task t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
@@ -143,19 +143,19 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // GetCredAsync
-            t = db.GetCredAsync(cred.Site);
+            t = db.GetCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdateLoginAsync
-            t = db.UpdateLoginAsync(cred.Site, "newlogin");
+            t = db.UpdateLoginAsync(cred.SiteAdress, "newlogin");
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdatePasswordAsync
-            t = db.UpdatePasswordAsync(cred.Site, "newpassword");
+            t = db.UpdatePasswordAsync(cred.SiteAdress, "newpassword");
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdateAutorizationAsync
-            t = db.UpdateAutorizationAsync(cred.Site, 1);
+            t = db.UpdateAutorizationAsync(cred.SiteAdress, 1);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetCredListAsync
@@ -163,7 +163,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = db.DeleteCredAsync(cred.Site);
+            t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 
@@ -181,7 +181,7 @@ namespace TestAPI
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
-            Task t = _db.DeleteCredAsync(cred.Site);
+            Task t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
@@ -251,7 +251,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.Site);
+            t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 
@@ -275,7 +275,7 @@ namespace TestAPI
             FillTestPl(pl, ch);
 
             // DeleteCredAsync
-            Task t = _db.DeleteCredAsync(cred.Site);
+            Task t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
@@ -323,7 +323,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.Site);
+            t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 
@@ -384,7 +384,7 @@ namespace TestAPI
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.Site);
+            t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
@@ -428,7 +428,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.Site);
+            t = _db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 

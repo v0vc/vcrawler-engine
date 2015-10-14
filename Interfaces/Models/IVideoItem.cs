@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 
 namespace Interfaces.Models
 {
@@ -32,6 +33,7 @@ namespace Interfaces.Models
         string Title { get; set; }
         ObservableCollection<IChapter> VideoItemChapters { get; set; }
         long ViewCount { get; set; }
+        SiteType Site { get; set; }
 
         #endregion
 

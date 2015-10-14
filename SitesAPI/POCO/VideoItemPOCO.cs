@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using HtmlAgilityPack;
+using Interfaces.Enums;
 using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
@@ -18,9 +19,10 @@ namespace SitesAPI.POCO
     {
         #region Constructors
 
-        public VideoItemPOCO(string id)
+        public VideoItemPOCO(string id, SiteType site)
         {
             ID = id;
+            Site = site;
         }
 
         public VideoItemPOCO(HtmlNode node, string site)
@@ -29,7 +31,7 @@ namespace SitesAPI.POCO
                 node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
             foreach (HtmlNode htmlNode in dl)
             {
-                string videoLink = string.Format("http://{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+                string videoLink = string.Format("{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
                 string[] sp = videoLink.Split('=');
                 if (sp.Length == 2)
                 {
@@ -217,6 +219,7 @@ namespace SitesAPI.POCO
         public DateTime Timestamp { get; private set; }
         public string Title { get; private set; }
         public long ViewCount { get; private set; }
+        public SiteType Site { get; set; }
 
         #endregion
     }

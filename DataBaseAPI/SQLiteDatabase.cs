@@ -1038,7 +1038,7 @@ namespace DataBaseAPI
 
             using (SQLiteCommand command = GetCommand(zap))
             {
-                command.Parameters.AddWithValue("@" + CredSite, cred.Site);
+                command.Parameters.AddWithValue("@" + CredSite, cred.SiteAdress);
                 command.Parameters.AddWithValue("@" + CredLogin, cred.Login);
                 command.Parameters.AddWithValue("@" + CredPass, cred.Pass);
                 command.Parameters.AddWithValue("@" + CredCookie, cred.Cookie);

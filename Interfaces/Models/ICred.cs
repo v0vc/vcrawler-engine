@@ -4,6 +4,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 
 namespace Interfaces.Models
 {
@@ -16,8 +17,9 @@ namespace Interfaces.Models
         DateTime Expired { get; set; }
         string Login { get; set; }
         string Pass { get; set; }
-        string Site { get; set; }
+        string SiteAdress { get; set; }
 
+        SiteType Site { get; set; }
         #endregion
 
         #region Methods

@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Windows.Media.Imaging;
+using Interfaces.Enums;
 
 namespace Extensions
 {
@@ -204,6 +205,35 @@ namespace Extensions
             return i + 1;
         }
 
+        public static string GetSiteAdress(SiteType site)
+        {
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    return "youtube.com";
+                case SiteType.Tapochek:
+                    return "tapochek.net";
+                case SiteType.RuTracker:
+                    return "rutracker.org";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        public static SiteType GetSiteType(string site)
+        {
+            switch (site)
+            {
+                case "youtube.com":
+                    return SiteType.YouTube;
+                case "tapochek.net":
+                    return SiteType.Tapochek;
+                case "rutracker.org":
+                    return SiteType.RuTracker;
+                default:
+                    return SiteType.NotSet;
+            }
+        }
         #endregion
     }
 }

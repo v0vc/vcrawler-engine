@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Extensions;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -53,6 +54,8 @@ namespace Crawler.Models
         private readonly ISettingFactory _sf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
+        private readonly ITapochekSite _tf;
+        private readonly IRutrackerSite _rf;
 
         #endregion
 
@@ -114,6 +117,8 @@ namespace Crawler.Models
             _vf = BaseFactory.CreateVideoItemFactory();
             _yf = BaseFactory.CreateYouTubeSite();
             _crf = BaseFactory.CreateCredFactory();
+            _tf = BaseFactory.CreateTapochekSite();
+            _rf = BaseFactory.CreateRutrackerSite();
         }
 
         #endregion
@@ -1117,6 +1122,20 @@ namespace Crawler.Models
                 foreach (ICred cred in creds)
                 {
                     SupportedCreds.Add(cred);
+                    switch (cred.Site)
+                    {
+                        case SiteType.Tapochek:
+                            _tf.Cred = cred;
+                            break;
+
+                        case SiteType.YouTube:
+                            _yf.Cred = cred;
+                            break;
+
+                        case SiteType.RuTracker:
+
+                            break;
+                    }
                 }
 
                 if (SupportedCreds.Any())

@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
 
@@ -16,7 +17,7 @@ namespace Interfaces.Factories
 
         ICred CreateCred(ICredPOCO poco);
 
-        Task<ICred> GetCredDbAsync(string site);
+        Task<ICred> GetCredDbAsync(SiteType site);
 
         #endregion
     }

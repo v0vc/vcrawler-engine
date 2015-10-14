@@ -31,6 +31,8 @@ namespace Interfaces.Factories
 
         IYouTubeSite CreateYouTubeSite();
 
+        IRutrackerSite CreateRutrackerSite();
+
         #endregion
     }
 }

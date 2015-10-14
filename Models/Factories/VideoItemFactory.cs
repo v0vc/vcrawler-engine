@@ -79,14 +79,15 @@ namespace Models.Factories
             {
                 IChapterFactory cf = _c.CreateChapterFactory();
                 IEnumerable<IChapterPOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
-                res.AddRange(poco.Select(chapterPoco => cf.CreateChapter(chapterPoco)));
-                if (!res.Any())
+                res.AddRange(poco.Select(cf.CreateChapter));
+                if (res.Any())
                 {
-                    IChapter chap = cf.CreateChapter();
-                    chap.IsEnabled = false;
-                    chap.Language = "Auto";
-                    res.Add(chap);
+                    return res;
                 }
+                IChapter chap = cf.CreateChapter();
+                chap.IsEnabled = false;
+                chap.Language = "Auto";
+                res.Add(chap);
                 return res;
             }
             catch (Exception ex)
@@ -145,7 +146,8 @@ namespace Models.Factories
                 Duration = poco.Duration, 
                 Comments = poco.Comments, 
                 Thumbnail = poco.Thumbnail, 
-                Timestamp = poco.Timestamp, 
+                Timestamp = poco.Timestamp,
+                Site = poco.Site,
                 VideoItemChapters = new ObservableCollection<IChapter>()
             };
             return vi;

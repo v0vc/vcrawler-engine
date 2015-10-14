@@ -4,6 +4,7 @@
 
 using System;
 using System.Data;
+using Interfaces.Enums;
 using Interfaces.POCO;
 
 namespace DataBaseAPI.POCO
@@ -35,6 +36,7 @@ namespace DataBaseAPI.POCO
         public int Duration { get; private set; }
         public string ID { get; private set; }
         public string ParentID { get; private set; }
+        public SiteType Site { get; private set; }
         public string Status { get; set; }
         public byte[] Thumbnail { get; private set; }
         public DateTime Timestamp { get; private set; }
