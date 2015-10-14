@@ -887,7 +887,7 @@ namespace Crawler.Models
         {
             IChannel chpop = _cf.CreateChannel();
             chpop.Title = "#Popular";
-            chpop.Site = "youtube.com";
+            //chpop.SiteAdress = "youtube.com";
             Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";

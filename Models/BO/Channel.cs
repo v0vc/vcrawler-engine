@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
 
@@ -134,7 +135,7 @@ namespace Models.BO
             }
         }
 
-        public string Site { get; set; }
+        public string SiteAdress { get; set; }
 
         public string SubTitle
         {
@@ -176,6 +177,8 @@ namespace Models.BO
                 OnPropertyChanged();
             }
         }
+
+        public SiteType Site { get; set; }
 
         public void AddNewItem(IVideoItem item, bool isNew)
         {
@@ -308,7 +311,7 @@ namespace Models.BO
 
         public void StoreCookies()
         {
-            _cf.StoreCookies(Site, ChannelCookies);
+            _cf.StoreCookies(SiteAdress, ChannelCookies);
         }
 
         public async Task SyncChannelAsync(bool isSyncPls)
@@ -319,6 +322,11 @@ namespace Models.BO
         public async Task SyncChannelPlaylistsAsync()
         {
             await _cf.SyncChannelPlaylistsAsync(this);
+        }
+
+        public async Task<ICred> GetChannelCredentialsAsync()
+        {
+            return await _cf.GetChannelCredentialsAsync(this);
         }
 
         #endregion

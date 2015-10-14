@@ -21,27 +21,9 @@ namespace SitesAPI.Trackers
 {
     public class TapochekSite : ITapochekSite
     {
-        #region Constants
-
-        private const string Site = "tapochek.net";
-
-        #endregion
-
-        #region Static and Readonly Fields
-
-        private static readonly string HostUrl = string.Format("http://{0}", Site);
-        private readonly string _indexUrl = string.Format("{0}/index.php", HostUrl);
-        private readonly string _loginUrl = string.Format("{0}/login.php", HostUrl);
-        private readonly string _profileUrl = string.Format("{0}/profile.php", HostUrl);
-        private readonly string _searchUrl = string.Format("{0}/tracker.php?nm", HostUrl);
-        private readonly string _topicUrl = string.Format("{0}/viewtopic.php?t", HostUrl);
-        private readonly string _userUrl = string.Format("{0}/tracker.php?rid", HostUrl);
-
-        #endregion
-
         #region Static Methods
 
-        private static IEnumerable<string> GetAllSearchLinks(HtmlDocument doc)
+        private static IEnumerable<string> GetAllSearchLinks(string siteAdress, HtmlDocument doc)
         {
             var hrefTags = new List<string>();
 
@@ -62,18 +44,58 @@ namespace SitesAPI.Trackers
                     }
                 }
             }
-            return hrefTags.Select(link => string.Format("{0}/{1}", HostUrl, link)).ToList();
+            return
+                hrefTags.Select(link => string.Format("{0}/{1}", string.Format("{0}/index.php", MakeBaseUrl(siteAdress)), link)).ToList();
+        }
+
+        private static string MakeBaseUrl(string site)
+        {
+            return string.Format("http://{0}", site);
         }
 
         #endregion
 
         #region ITapochekSite Members
 
+        public async Task FillChannelNetAsync(IChannel channel)
+        {
+            string profileUrl = string.Format("{0}/profile.php", channel.SiteAdress);
+            string zap = string.Format("{0}?mode=viewprofile&u={1}", profileUrl, channel.ID);
+
+            string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
+
+            var doc = new HtmlDocument();
+
+            doc.LoadHtml(page);
+
+            List<HtmlNode> title =
+                doc.DocumentNode.Descendants("p")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small mrg_4"))
+                    .ToList();
+
+            if (title.Any())
+            {
+                channel.Title = HttpUtility.HtmlDecode(title[0].InnerText).Trim();
+            }
+
+            title =
+                doc.DocumentNode.Descendants("p")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("mrg_4"))
+                    .ToList();
+
+            if (title.Any())
+            {
+                string img = title[0].FirstChild.Attributes["src"].Value;
+                string link = string.Format("{0}/{1}", MakeBaseUrl(channel.SiteAdress), img);
+                channel.Thumbnail = await SiteHelper.GetStreamFromUrl(link);
+            }
+        }
+
         public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             var lst = new List<IVideoItemPOCO>();
-
-            string zap = string.Format("{0}={1}", _userUrl, channel.ID);
+            string userUrl = string.Format("{0}/tracker.php?rid", MakeBaseUrl(channel.SiteAdress));
+            string zap = string.Format("{0}={1}", userUrl, channel.ID);
 
             string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
 
@@ -88,7 +110,7 @@ namespace SitesAPI.Trackers
 
             foreach (HtmlNode node in links)
             {
-                var vi = new VideoItemPOCO(node, Site);
+                var vi = new VideoItemPOCO(node, channel.SiteAdress);
                 if (!string.IsNullOrEmpty(vi.ID))
                 {
                     lst.Add(vi);
@@ -99,7 +121,7 @@ namespace SitesAPI.Trackers
             {
                 Thread.Sleep(500);
 
-                IEnumerable<string> searchlinks = GetAllSearchLinks(doc);
+                IEnumerable<string> searchlinks = GetAllSearchLinks(channel.SiteAdress, doc);
 
                 foreach (string link in searchlinks)
                 {
@@ -116,7 +138,7 @@ namespace SitesAPI.Trackers
 
                     foreach (HtmlNode node in links)
                     {
-                        var vi = new VideoItemPOCO(node, Site);
+                        var vi = new VideoItemPOCO(node, channel.SiteAdress);
                         if (!string.IsNullOrEmpty(vi.ID))
                         {
                             lst.Add(vi);
@@ -130,56 +152,20 @@ namespace SitesAPI.Trackers
             return lst;
         }
 
-        public async Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id)
+        public async Task<CookieContainer> GetCookieNetAsync(IChannel channel)
         {
-            string zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, id);
-
-            string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), cookie);
-
-            // var page = SiteHelper.DownloadStringWithCookie(zap, cookie);
-            var doc = new HtmlDocument();
-
-            doc.LoadHtml(page);
-
-            var ch = new ChannelPOCO { ID = id, Site = Site };
-
-            List<HtmlNode> title =
-                doc.DocumentNode.Descendants("p")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small mrg_4"))
-                    .ToList();
-
-            if (title.Any())
-            {
-                ch.Title = HttpUtility.HtmlDecode(title[0].InnerText).Trim();
-            }
-
-            title =
-                doc.DocumentNode.Descendants("p")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("mrg_4"))
-                    .ToList();
-
-            if (title.Any())
-            {
-                string img = title[0].FirstChild.Attributes["src"].Value;
-                string link = string.Format("{0}/{1}", HostUrl, img);
-                ch.Thumbnail = await SiteHelper.GetStreamFromUrl(link);
-            }
-
-            return ch;
-        }
-
-        public async Task<CookieContainer> GetCookieNetAsync(ICred cred)
-        {
+            ICred cred = await channel.GetChannelCredentialsAsync();
             if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
             {
                 throw new Exception("Please, set login and password");
             }
 
             var cc = new CookieContainer();
-            var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
+            string loginUrl = string.Format("{0}/login.php", MakeBaseUrl(channel.SiteAdress));
+            var req = (HttpWebRequest)WebRequest.Create(loginUrl);
             req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
-            req.Host = cred.Site;
+            req.Host = channel.SiteAdress;
             req.KeepAlive = true;
             string postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4", 
                 Uri.EscapeDataString(cred.Login), 
@@ -190,11 +176,11 @@ namespace SitesAPI.Trackers
             req.UserAgent = "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; rv:11.0) like Gecko";
             req.ContentType = "application/x-www-form-urlencoded";
             req.Headers.Add("Cache-Control", "max-age=0");
-            req.Headers.Add("Origin", HostUrl);
+            req.Headers.Add("Origin", MakeBaseUrl(channel.SiteAdress));
             req.Headers.Add("Accept-Language", "en-US,en;q=0.8");
             req.Headers.Add("Accept-Encoding", "gzip,deflate,sdch");
             req.Headers.Add("DNT", "1");
-            req.Referer = _indexUrl;
+            req.Referer = string.Format("{0}/index.php", MakeBaseUrl(channel.SiteAdress));
 
             using (Stream stream = await req.GetRequestStreamAsync())
             {
@@ -209,11 +195,6 @@ namespace SitesAPI.Trackers
                 cc.Add(res.Cookies);
             }
             return cc;
-        }
-
-        public Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

@@ -38,7 +38,7 @@ namespace Crawler.Views
             if (e.Key == Key.Enter)
             {
                 // нажмем кнопку программно
-                var peer = new ButtonAutomationPeer(ButtonOk);
+                var peer = new ButtonAutomationPeer(buttonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 if (invokeProv != null)
                 {
@@ -64,7 +64,7 @@ namespace Crawler.Views
                 TextBoxName.Text = context.Model.SelectedChannel.Title;
                 TextBoxName.Focus();
                 TextBoxName.SelectAll();
-                ComboBoxSities.IsEnabled = false;
+                comboBoxSities.IsEnabled = false;
             }
             else
             {

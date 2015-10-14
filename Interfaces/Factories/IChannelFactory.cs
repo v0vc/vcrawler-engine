@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
 
@@ -13,6 +14,8 @@ namespace Interfaces.Factories
         #region Methods
 
         IChannel CreateChannel();
+
+        IChannel CreateChannel(SiteType site);
 
         IChannel CreateChannel(IChannelPOCO poco);
 

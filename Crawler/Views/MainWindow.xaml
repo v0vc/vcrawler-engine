@@ -170,6 +170,7 @@
                           SelectionChanged="ChannelsGrid_OnSelectionChanged"
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
+                          HorizontalScrollBarVisibility="Disabled"
                           >
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />

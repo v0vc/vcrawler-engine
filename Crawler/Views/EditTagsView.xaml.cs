@@ -64,7 +64,7 @@ namespace Crawler.Views
             atv.ShowDialog();
         }
 
-        private void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
+        private async void ButtonDeleteTag_OnClick(object sender, RoutedEventArgs e)
         {
             var tag = ((Button)e.Source).DataContext as ITag;
             if (tag == null)
@@ -84,7 +84,7 @@ namespace Crawler.Views
                 return;
             }
 
-            ViewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
+            await ViewModel.ParentChannel.DeleteChannelTagAsync(tag.Title);
             if (!ViewModel.Channels.Any(x => x.ChannelTags.Select(y => y.Title).Contains(tag.Title)))
             {
                 ITag ctag = ViewModel.CurrentTags.FirstOrDefault(x => x.Title == tag.Title);

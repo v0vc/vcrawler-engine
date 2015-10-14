@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
+// 
+// Copyright (c) 2015, v0v All Rights Reserved
+
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Interfaces.Models;
@@ -8,15 +12,17 @@ namespace Interfaces.API
 {
     public interface ITapochekSite
     {
-        /// <summary>
-        /// Получить куки пользователя с сайта
-        /// </summary>
-        /// <param name="cred"></param>
-        /// <returns></returns>
-        Task<CookieContainer> GetCookieNetAsync(ICred cred);
+        #region Methods
 
         /// <summary>
-        /// Получение релизов пользователя, 0 - все релизы
+        ///     Заполнить канал элементами
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
+        Task FillChannelNetAsync(IChannel channel);
+
+        /// <summary>
+        ///     Получение релизов пользователя, 0 - все релизы
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="maxresult"></param>
@@ -24,18 +30,12 @@ namespace Interfaces.API
         Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult);
 
         /// <summary>
-        /// Получение видео по ID
+        ///     Получить куки пользователя с сайта
         /// </summary>
-        /// <param name="videoid">ID видео</param>
+        /// <param name="cred"></param>
         /// <returns></returns>
-        Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid);
+        Task<CookieContainer> GetCookieNetAsync(IChannel channel);
 
-        /// <summary>
-        /// Получить канал по ID
-        /// </summary>
-        /// <param name="cookie"></param>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        Task<IChannelPOCO> GetChannelNetAsync(CookieContainer cookie, string id);
+        #endregion
     }
 }

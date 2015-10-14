@@ -36,12 +36,14 @@
     <Reference Include="PresentationCore" />
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="API\ISqLiteDatabase.cs" />
     <Compile Include="API\ITapochekSite.cs" />
     <Compile Include="API\IYouTubeSite.cs" />
+    <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />
     <Compile Include="Factories\IChapterFactory.cs" />
     <Compile Include="Factories\ICommonFactory.cs" />

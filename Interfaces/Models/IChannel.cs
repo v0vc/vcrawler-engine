@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 
 namespace Interfaces.Models
 {
@@ -23,11 +24,12 @@ namespace Interfaces.Models
         bool IsInWork { get; set; }
         bool IsShowRow { get; set; }
         int PlaylistCount { get; set; }
-        string Site { get; set; }
+        string SiteAdress { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
         int ChannelItemsCount { get; set; }
+        SiteType Site { get; set; }
 
         #endregion
 
@@ -84,6 +86,8 @@ namespace Interfaces.Models
         Task SyncChannelAsync(bool isSyncPls);
 
         Task SyncChannelPlaylistsAsync();
+
+        Task<ICred> GetChannelCredentialsAsync();
 
         #endregion
     }

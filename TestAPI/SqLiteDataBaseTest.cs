@@ -62,7 +62,7 @@ namespace TestAPI
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
             ch.Thumbnail = GetStreamFromUrl(TestPhoto);
-            ch.Site = cred.Site;
+            ch.SiteAdress = cred.Site;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
         }

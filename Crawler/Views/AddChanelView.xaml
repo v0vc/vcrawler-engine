@@ -49,7 +49,7 @@
             <Border CornerRadius="3" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                 <StackPanel Orientation="Horizontal">
                     <TextBlock FontSize="16" Padding="5 0 8 0" HorizontalAlignment="Center" VerticalAlignment="Center">Site:</TextBlock>
-                    <ComboBox x:Name="ComboBoxSities" Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="15"
+                    <ComboBox x:Name="comboBoxSities" Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0" FontSize="15"
                               ItemsSource="{Binding Model.SupportedCreds}"
                               DisplayMemberPath="Site"
                               SelectedItem="{Binding Model.SelectedCred}"
@@ -61,7 +61,7 @@
         </DockPanel>
 
         <Button Grid.Row="3" Click="ButtonBase_OnClick" 
-                Name="ButtonOk"
+                Name="buttonOk"
                 Style="{StaticResource RoundButtonTemplate}" 
                 HorizontalAlignment="Right" 
                 Width="100" Margin="5,3,3,5" 

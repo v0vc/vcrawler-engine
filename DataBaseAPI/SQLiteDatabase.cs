@@ -993,7 +993,7 @@ namespace DataBaseAPI
                 command.Parameters.AddWithValue("@" + ChannelSubTitle, channel.SubTitle);
                 command.Parameters.Add("@" + ChannelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                 command.Parameters.AddWithValue("@" + ChannelThumbnail, channel.Thumbnail);
-                command.Parameters.AddWithValue("@" + ChannelSite, channel.Site);
+                command.Parameters.AddWithValue("@" + ChannelSite, channel.SiteAdress);
 
                 await ExecuteNonQueryAsync(command);
             }

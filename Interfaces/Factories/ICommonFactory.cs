@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Interfaces.API;
+using Interfaces.Models;
 
 namespace Interfaces.Factories
 {

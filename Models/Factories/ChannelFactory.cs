@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 using Extensions;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -31,6 +31,40 @@ namespace Models.Factories
         public ChannelFactory(ICommonFactory c)
         {
             _c = c;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        private static string GetSiteAdress(SiteType site)
+        {
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    return "youtube.com";
+                case SiteType.Tapochek:
+                    return "tapochek.net";
+                case SiteType.RuTracker:
+                    return "rutracker.org";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        private static SiteType GetSiteType(string site)
+        {
+            switch (site)
+            {
+                case "youtube.com":
+                    return SiteType.YouTube;
+                case "tapochek.net":
+                    return SiteType.Tapochek;
+                case "rutracker.org":
+                    return SiteType.RuTracker;
+                default:
+                    return SiteType.NotSet;
+            }
         }
 
         #endregion
@@ -69,7 +103,7 @@ namespace Models.Factories
 
             try
             {
-                channel.ChannelCookies = cf.ReadCookies(channel.Site);
+                channel.ChannelCookies = cf.ReadCookies(channel.SiteAdress);
             }
             catch (Exception ex)
             {
@@ -79,17 +113,12 @@ namespace Models.Factories
 
         public async Task FillChannelCookieNetAsync(Channel channel)
         {
-            ICredFactory cf = _c.CreateCredFactory();
-
-            ICred cred = await cf.GetCredDbAsync(channel.Site);
-
             switch (channel.Site)
             {
-                case "tapochek.net":
+                case SiteType.Tapochek:
 
                     ITapochekSite fb = _c.CreateTapochekSite();
-
-                    channel.ChannelCookies = await fb.GetCookieNetAsync(cred);
+                    channel.ChannelCookies = await fb.GetCookieNetAsync(channel);
 
                     break;
 
@@ -123,6 +152,19 @@ namespace Models.Factories
                         vid.IsHasLocalFileFound(dir);
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public async Task<ICred> GetChannelCredentialsAsync(IChannel channel)
+        {
+            ICredFactory cf = _c.CreateCredFactory();
+            try
+            {
+                return await cf.GetCredDbAsync(channel.SiteAdress);
             }
             catch (Exception ex)
             {
@@ -206,22 +248,23 @@ namespace Models.Factories
             var lst = new List<IVideoItem>();
             switch (channel.Site)
             {
-                case "youtube.com":
+                case SiteType.YouTube:
 
                     IEnumerable<IVideoItemPOCO> youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
                     lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
-                case "tapochek.net":
+                case SiteType.Tapochek:
 
+                    ICred cred = await channel.GetChannelCredentialsAsync();
                     IEnumerable<IVideoItemPOCO> tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
                 default:
-                    throw new Exception(channel.Site + " is not implemented yet");
+                    throw new Exception(channel.SiteAdress + " is not implemented yet");
             }
 
             return lst;
@@ -563,6 +606,20 @@ namespace Models.Factories
             return channel;
         }
 
+        public IChannel CreateChannel(SiteType site)
+        {
+            var channel = new Channel(this)
+            {
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
+                Site = site, 
+                SiteAdress = GetSiteAdress(site)
+            };
+            return channel;
+        }
+
         public IChannel CreateChannel(IChannelPOCO poco)
         {
             var channel = new Channel(this)
@@ -571,11 +628,12 @@ namespace Models.Factories
                 Title = poco.Title, 
                 SubTitle = poco.SubTitle, // .WordWrap(80);
                 Thumbnail = poco.Thumbnail, 
-                Site = poco.Site, 
+                SiteAdress = poco.Site, 
                 ChannelItems = new ObservableCollection<IVideoItem>(), 
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
                 ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer()
+                ChannelCookies = new CookieContainer(), 
+                Site = GetSiteType(poco.Site)
             };
             return channel;
         }
