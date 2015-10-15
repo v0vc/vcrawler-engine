@@ -47,6 +47,10 @@
     <Compile Include="BO\Channel.cs" />
     <Compile Include="BO\Chapter.cs" />
     <Compile Include="BO\Cred.cs" />
+    <Compile Include="BO\Items\CommonItem.cs" />
+    <Compile Include="BO\Items\RuTrackerItem.cs" />
+    <Compile Include="BO\Items\TapochekItem.cs" />
+    <Compile Include="BO\Items\YouTubeItem.cs" />
     <Compile Include="BO\Playlist.cs" />
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />

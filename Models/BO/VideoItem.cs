@@ -19,11 +19,12 @@ using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using Models.BO.Items;
 using Models.Factories;
 
 namespace Models.BO
 {
-    public sealed class VideoItem : INotifyPropertyChanged, IVideoItem
+    public sealed class VideoItem : CommonItem, INotifyPropertyChanged, IVideoItem
     {
         #region Static and Readonly Fields
 
@@ -64,10 +65,7 @@ namespace Models.BO
 
         #region Static Methods
 
-        private static string AviodTooLongFileName(string path)
-        {
-            return path.Length > 240 ? path.Remove(240) : path;
-        }
+
 
         private static double GetPercentFromYoudlOutput(string input)
         {
@@ -86,115 +84,65 @@ namespace Models.BO
             return double.TryParse(str, out res) ? res : 0;
         }
 
-        private static string IntTostrTime(int duration)
-        {
-            TimeSpan t = TimeSpan.FromSeconds(duration);
-            return t.Hours > 0
-                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
-                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
-        }
 
-        private static string TimeAgo(DateTime dt)
-        {
-            TimeSpan span = DateTime.Now - dt;
-            if (span.Days > 365)
-            {
-                int years = span.Days / 365;
-                if (span.Days % 365 != 0)
-                {
-                    years += 1;
-                }
-                return string.Format("about {0} {1} ago", years, years == 1 ? "year" : "years");
-            }
-            if (span.Days > 30)
-            {
-                int months = span.Days / 30;
-                if (span.Days % 31 != 0)
-                {
-                    months += 1;
-                }
-                return string.Format("about {0} {1} ago", months, months == 1 ? "month" : "months");
-            }
-            if (span.Days > 0)
-            {
-                return string.Format("about {0} {1} ago", span.Days, span.Days == 1 ? "day" : "days");
-            }
-            if (span.Hours > 0)
-            {
-                return string.Format("about {0} {1} ago", span.Hours, span.Hours == 1 ? "hour" : "hours");
-            }
-            if (span.Minutes > 0)
-            {
-                return string.Format("about {0} {1} ago", span.Minutes, span.Minutes == 1 ? "minute" : "minutes");
-            }
-            if (span.Seconds > 5)
-            {
-                return string.Format("about {0} seconds ago", span.Seconds);
-            }
-            if (span.Seconds <= 5)
-            {
-                return "just now";
-            }
-            return string.Empty;
-        }
 
         #endregion
 
         #region Methods
 
-        private void DownloadRutracker(string topicUrl, string dirPath, CookieContainer cookie)
-        {
-            var httpRequest = (HttpWebRequest)WebRequest.Create(MakeLink());
-            httpRequest.Method = WebRequestMethods.Http.Post;
+        //private void DownloadRutracker(string topicUrl, string dirPath, CookieContainer cookie)
+        //{
+        //    var httpRequest = (HttpWebRequest)WebRequest.Create(MakeLink());
+        //    httpRequest.Method = WebRequestMethods.Http.Post;
 
-            httpRequest.Referer = string.Format("{0}={1}", topicUrl, ID);
-            httpRequest.CookieContainer = cookie;
+        //    httpRequest.Referer = string.Format("{0}={1}", topicUrl, ID);
+        //    httpRequest.CookieContainer = cookie;
 
-            // Include post data in the HTTP request
-            const string postData = "dummy=";
-            httpRequest.ContentLength = postData.Length;
-            httpRequest.ContentType = "application/x-www-form-urlencoded";
+        //    // Include post data in the HTTP request
+        //    const string postData = "dummy=";
+        //    httpRequest.ContentLength = postData.Length;
+        //    httpRequest.ContentType = "application/x-www-form-urlencoded";
 
-            // Write the post data to the HTTP request
-            var requestWriter = new StreamWriter(httpRequest.GetRequestStream(), Encoding.ASCII);
-            requestWriter.Write(postData);
-            requestWriter.Close();
+        //    // Write the post data to the HTTP request
+        //    var requestWriter = new StreamWriter(httpRequest.GetRequestStream(), Encoding.ASCII);
+        //    requestWriter.Write(postData);
+        //    requestWriter.Close();
 
-            var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
-            Stream httpResponseStream = httpResponse.GetResponseStream();
+        //    var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+        //    Stream httpResponseStream = httpResponse.GetResponseStream();
 
-            const int bufferSize = 1024;
-            var buffer = new byte[bufferSize];
+        //    const int bufferSize = 1024;
+        //    var buffer = new byte[bufferSize];
 
-            // Read from response and write to file
-            var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
-            if (!dir.Exists)
-            {
-                dir.Create();
-            }
+        //    // Read from response and write to file
+        //    var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
+        //    if (!dir.Exists)
+        //    {
+        //        dir.Create();
+        //    }
 
-            {
-                string dpath = AviodTooLongFileName(Path.Combine(dir.FullName, MakeTorrentFileName()));
-                FileStream fileStream = File.Create(dpath);
-                int bytesRead;
-                while (httpResponseStream != null && (bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
-                {
-                    fileStream.Write(buffer, 0, bytesRead);
-                } // end while
-                var fn = new FileInfo(dpath);
-                if (fn.Exists)
-                {
-                    ItemState = "LocalYes";
-                    IsHasLocalFile = true;
-                    LocalFilePath = fn.FullName;
-                }
-                else
-                {
-                    ItemState = "LocalNo";
-                    IsHasLocalFile = false;
-                }
-            }
-        }
+        //    {
+        //        string dpath = AviodTooLongFileName(Path.Combine(dir.FullName, MakeTorrentFileName()));
+        //        FileStream fileStream = File.Create(dpath);
+        //        int bytesRead;
+        //        while (httpResponseStream != null && (bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
+        //        {
+        //            fileStream.Write(buffer, 0, bytesRead);
+        //        } // end while
+        //        var fn = new FileInfo(dpath);
+        //        if (fn.Exists)
+        //        {
+        //            ItemState = "LocalYes";
+        //            IsHasLocalFile = true;
+        //            LocalFilePath = fn.FullName;
+        //        }
+        //        else
+        //        {
+        //            ItemState = "LocalNo";
+        //            IsHasLocalFile = false;
+        //        }
+        //    }
+        //}
 
         private async Task DownloadYoutube(string youPath, string dirPath, bool isHd, bool isAudio)
         {
@@ -501,7 +449,7 @@ namespace Models.BO
                     await DownloadYoutube(youPath, dirPath, isHd, isAudio);
                     break;
                 case SiteType.RuTracker:
-                    DownloadRutracker("", dirPath, null);
+                    //DownloadRutracker("", dirPath, null);
                     break;
             }
         }
