@@ -49,6 +49,56 @@ namespace Models.BO.Items
         public Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio)
         {
             throw new NotImplementedException();
+            //    var httpRequest = (HttpWebRequest)WebRequest.Create(MakeLink());
+            //    httpRequest.Method = WebRequestMethods.Http.Post;
+
+            //    httpRequest.Referer = string.Format("{0}={1}", topicUrl, ID);
+            //    httpRequest.CookieContainer = cookie;
+
+            //    // Include post data in the HTTP request
+            //    const string postData = "dummy=";
+            //    httpRequest.ContentLength = postData.Length;
+            //    httpRequest.ContentType = "application/x-www-form-urlencoded";
+
+            //    // Write the post data to the HTTP request
+            //    var requestWriter = new StreamWriter(httpRequest.GetRequestStream(), Encoding.ASCII);
+            //    requestWriter.Write(postData);
+            //    requestWriter.Close();
+
+            //    var httpResponse = (HttpWebResponse)httpRequest.GetResponse();
+            //    Stream httpResponseStream = httpResponse.GetResponseStream();
+
+            //    const int bufferSize = 1024;
+            //    var buffer = new byte[bufferSize];
+
+            //    // Read from response and write to file
+            //    var dir = new DirectoryInfo(Path.Combine(dirPath, ParentID));
+            //    if (!dir.Exists)
+            //    {
+            //        dir.Create();
+            //    }
+
+            //    {
+            //        string dpath = AviodTooLongFileName(Path.Combine(dir.FullName, MakeTorrentFileName()));
+            //        FileStream fileStream = File.Create(dpath);
+            //        int bytesRead;
+            //        while (httpResponseStream != null && (bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
+            //        {
+            //            fileStream.Write(buffer, 0, bytesRead);
+            //        } // end while
+            //        var fn = new FileInfo(dpath);
+            //        if (fn.Exists)
+            //        {
+            //            ItemState = "LocalYes";
+            //            IsHasLocalFile = true;
+            //            LocalFilePath = fn.FullName;
+            //        }
+            //        else
+            //        {
+            //            ItemState = "LocalNo";
+            //            IsHasLocalFile = false;
+            //        }
+            //    }
         }
 
         public Task FillChapters()

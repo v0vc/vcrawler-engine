@@ -8,7 +8,7 @@ using Interfaces.POCO;
 
 namespace Interfaces.Factories
 {
-    public interface IVideoItemFactory
+    public interface ICommonItemFactory
     {
         #region Methods
 

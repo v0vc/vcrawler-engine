@@ -49,7 +49,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -92,7 +92,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
             IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();

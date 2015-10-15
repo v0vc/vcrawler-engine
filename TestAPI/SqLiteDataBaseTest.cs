@@ -33,7 +33,7 @@ namespace TestAPI
         private readonly IPlaylistFactory _pf;
         private readonly ISettingFactory _sf;
         private readonly ITagFactory _tf;
-        private readonly IVideoItemFactory _vf;
+        private readonly ICommonItemFactory _vf;
 
         #endregion
 

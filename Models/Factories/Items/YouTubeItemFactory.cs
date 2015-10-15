@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -9,26 +10,83 @@ using System.Linq;
 using System.Threading.Tasks;
 using Extensions;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using Models.BO;
+using Models.BO.Items;
 
-namespace Models.Factories
+namespace Models.Factories.Items
 {
-    public class VideoItemFactory : IVideoItemFactory
+    public class YouTubeItemFactory : ICommonItemFactory
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly ICommonFactory c;
 
         #endregion
 
         #region Constructors
 
-        public VideoItemFactory(ICommonFactory c)
+        public YouTubeItemFactory(ICommonFactory c)
         {
-            _c = c;
+            this.c = c;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        public static string TimeAgo(DateTime dt)
+        {
+            TimeSpan span = DateTime.Now - dt;
+            if (span.Days > 365)
+            {
+                int years = span.Days / 365;
+                if (span.Days % 365 != 0)
+                {
+                    years += 1;
+                }
+                return string.Format("about {0} {1} ago", years, years == 1 ? "year" : "years");
+            }
+            if (span.Days > 30)
+            {
+                int months = span.Days / 30;
+                if (span.Days % 31 != 0)
+                {
+                    months += 1;
+                }
+                return string.Format("about {0} {1} ago", months, months == 1 ? "month" : "months");
+            }
+            if (span.Days > 0)
+            {
+                return string.Format("about {0} {1} ago", span.Days, span.Days == 1 ? "day" : "days");
+            }
+            if (span.Hours > 0)
+            {
+                return string.Format("about {0} {1} ago", span.Hours, span.Hours == 1 ? "hour" : "hours");
+            }
+            if (span.Minutes > 0)
+            {
+                return string.Format("about {0} {1} ago", span.Minutes, span.Minutes == 1 ? "minute" : "minutes");
+            }
+            if (span.Seconds > 5)
+            {
+                return string.Format("about {0} seconds ago", span.Seconds);
+            }
+            if (span.Seconds <= 5)
+            {
+                return "just now";
+            }
+            return string.Empty;
+        }
+
+        private static string IntTostrTime(int duration)
+        {
+            TimeSpan t = TimeSpan.FromSeconds(duration);
+            return t.Hours > 0
+                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
+                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
         }
 
         #endregion
@@ -37,7 +95,7 @@ namespace Models.Factories
 
         public async Task DeleteItemAsync(string id)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -50,15 +108,15 @@ namespace Models.Factories
 
         public async Task FillDescriptionAsync(IVideoItem videoItem)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
             string res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
             videoItem.Description = res.WordWrap(150);
         }
 
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IChannelFactory cf = _c.CreateChannelFactory();
+            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
+            IChannelFactory cf = c.CreateChannelFactory();
             try
             {
                 IChannelPOCO poco = await fb.GetChannelAsync(channelID);
@@ -73,11 +131,11 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IChapter>> GetVideoItemChaptersAsync(string id)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = c.CreateYouTubeSite();
             var res = new List<IChapter>();
             try
             {
-                IChapterFactory cf = _c.CreateChapterFactory();
+                IChapterFactory cf = c.CreateChapterFactory();
                 IEnumerable<IChapterPOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
                 res.AddRange(poco.Select(cf.CreateChapter));
                 if (res.Any())
@@ -98,8 +156,8 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IYouTubeSite fb = c.CreateYouTubeSite();
+            ICommonItemFactory vf = c.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
@@ -114,7 +172,7 @@ namespace Models.Factories
 
         public async Task InsertItemAsync(IVideoItem item)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertItemAsync(item);
@@ -127,27 +185,29 @@ namespace Models.Factories
 
         #endregion
 
-        #region IVideoItemFactory Members
+        #region ICommonItemFactory Members
 
         public IVideoItem CreateVideoItem()
         {
-            return new VideoItem(this);
+            return new YouTubeItem(this) { Site = SiteType.YouTube, VideoItemChapters = new ObservableCollection<IChapter>() };
         }
 
         public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
         {
-            var vi = new VideoItem(this)
+            var vi = new YouTubeItem(this)
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
-                ParentID = poco.ParentID, 
+                ID = poco.ID,
+                Title = poco.Title,
+                ParentID = poco.ParentID,
                 Description = poco.Description, // .WordWrap(80);
-                ViewCount = poco.ViewCount, 
-                Duration = poco.Duration, 
-                Comments = poco.Comments, 
-                Thumbnail = poco.Thumbnail, 
+                ViewCount = poco.ViewCount,
+                Duration = poco.Duration,
+                Comments = poco.Comments,
+                Thumbnail = poco.Thumbnail,
                 Timestamp = poco.Timestamp,
                 Site = poco.Site,
+                DurationString = IntTostrTime(poco.Duration),
+                DateTimeAgo = TimeAgo(poco.Timestamp),
                 VideoItemChapters = new ObservableCollection<IChapter>()
             };
             return vi;
@@ -156,8 +216,8 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
+            ICommonItemFactory vf = c.CreateVideoItemFactory();
 
             try
             {
@@ -173,8 +233,8 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemNetAsync(string id)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IYouTubeSite fb = c.CreateYouTubeSite();
+            ICommonItemFactory vf = c.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemNetAsync(id);
@@ -188,6 +248,5 @@ namespace Models.Factories
         }
 
         #endregion
-
     }
 }

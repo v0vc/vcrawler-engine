@@ -103,7 +103,7 @@ namespace Models.Factories
         public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 channel.ChannelItemsCount = await fb.GetChannelItemsCountDbAsync(channel.ID);
@@ -168,7 +168,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID, int count, int offset)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -211,7 +211,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
         {
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
             switch (channel.Site)
             {
@@ -305,7 +305,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
             IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -375,7 +375,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string regionID, int maxresult)
         {
             IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -427,7 +427,7 @@ namespace Models.Factories
                     List<string> trueids = lsidNet.Where(id => !idsdb.Contains(id)).ToList(); // id которых нет
                     if (trueids.Any())
                     {
-                        IVideoItemFactory vf = _c.CreateVideoItemFactory();
+                        ICommonItemFactory vf = _c.CreateVideoItemFactory();
                         IYouTubeSite you = _c.CreateYouTubeSite();
 
                         IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
@@ -525,7 +525,7 @@ namespace Models.Factories
                 channel.ChannelPlaylists.Clear();
             }
 
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ICommonItemFactory vf = _c.CreateVideoItemFactory();
 
             foreach (IPlaylist playlist in pls)
             {

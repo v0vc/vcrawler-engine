@@ -25,6 +25,11 @@ namespace Extensions
 
         #region Static Methods
 
+        public static string AviodTooLongFileName(string path)
+        {
+            return path.Length > 240 ? path.Remove(240) : path;
+        }
+
         public static string GetConsoleOutput(string path, string param, bool isClear)
         {
             var pProcess = new Process
@@ -60,7 +65,7 @@ namespace Extensions
 
         public static bool IsValidUrl(string url)
         {
-            if (string.IsNullOrEmpty(url))
+            if (String.IsNullOrEmpty(url))
             {
                 return false;
             }
@@ -75,8 +80,8 @@ namespace Extensions
         public static string MakeValidFileName(this string name)
         {
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
-            string s = r.Replace(name, string.Empty);
+            var r = new Regex(String.Format("[{0}]", Regex.Escape(regexSearch)));
+            string s = r.Replace(name, String.Empty);
             s = Regex.Replace(s, @"\s{2,}", " ");
             return s;
         }
@@ -166,7 +171,7 @@ namespace Extensions
                         // Trim whitespace following break
                         pos += len;
 
-                        while (pos < eol && char.IsWhiteSpace(theString[pos]))
+                        while (pos < eol && Char.IsWhiteSpace(theString[pos]))
                         {
                             pos++;
                         }
@@ -186,7 +191,7 @@ namespace Extensions
         {
             // Find last whitespace in line
             int i = max - 1;
-            while (i >= 0 && !char.IsWhiteSpace(text[pos + i]))
+            while (i >= 0 && !Char.IsWhiteSpace(text[pos + i]))
             {
                 i--;
             }
@@ -196,7 +201,7 @@ namespace Extensions
             }
 
             // Find start of whitespace
-            while (i >= 0 && char.IsWhiteSpace(text[pos + i]))
+            while (i >= 0 && Char.IsWhiteSpace(text[pos + i]))
             {
                 i--;
             }
@@ -216,7 +221,7 @@ namespace Extensions
                 case SiteType.RuTracker:
                     return "rutracker.org";
                 default:
-                    return string.Empty;
+                    return String.Empty;
             }
         }
 

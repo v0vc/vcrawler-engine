@@ -47,21 +47,20 @@
     <Compile Include="BO\Channel.cs" />
     <Compile Include="BO\Chapter.cs" />
     <Compile Include="BO\Cred.cs" />
-    <Compile Include="BO\Items\CommonItem.cs" />
     <Compile Include="BO\Items\RuTrackerItem.cs" />
     <Compile Include="BO\Items\TapochekItem.cs" />
     <Compile Include="BO\Items\YouTubeItem.cs" />
     <Compile Include="BO\Playlist.cs" />
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />
-    <Compile Include="BO\VideoItem.cs" />
     <Compile Include="Factories\ChannelFactory.cs" />
     <Compile Include="Factories\ChapterFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
     <Compile Include="Factories\SettingFactory.cs" />
     <Compile Include="Factories\TagFactory.cs" />
-    <Compile Include="Factories\VideoItemFactory.cs" />
+    <Compile Include="Factories\Items\TapochekItemFactory.cs" />
+    <Compile Include="Factories\Items\YouTubeItemFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

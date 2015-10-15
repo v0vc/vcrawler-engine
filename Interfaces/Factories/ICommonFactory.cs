@@ -27,7 +27,7 @@ namespace Interfaces.Factories
 
         ITapochekSite CreateTapochekSite();
 
-        IVideoItemFactory CreateVideoItemFactory();
+        ICommonItemFactory CreateVideoItemFactory();
 
         IYouTubeSite CreateYouTubeSite();
 

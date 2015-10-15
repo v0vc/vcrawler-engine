@@ -829,7 +829,7 @@ namespace Crawler.Views
 
             IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
 
-            IVideoItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
+            ICommonItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
 
             pl.PlaylistItems.Clear();
 

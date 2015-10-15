@@ -51,11 +51,11 @@ namespace Crawler.Models
         private readonly ICredFactory _crf;
         private readonly ISqLiteDatabase _df;
         private readonly Dictionary<string, string> _launchParam = new Dictionary<string, string>();
-        private readonly ISettingFactory _sf;
-        private readonly IVideoItemFactory _vf;
-        private readonly IYouTubeSite _yf;
-        private readonly ITapochekSite _tf;
         private readonly IRutrackerSite _rf;
+        private readonly ISettingFactory _sf;
+        private readonly ITapochekSite _tf;
+        private readonly ICommonItemFactory _vf;
+        private readonly IYouTubeSite _yf;
 
         #endregion
 
@@ -422,69 +422,14 @@ namespace Crawler.Models
 
         public async Task AddNewChannel(string inputChannelId)
         {
-            SetStatus(1);
-            Info = string.Empty;
-            const string youUser = "user";
-            const string youChannel = "channel";
-            string parsedChannelId = string.Empty;
-
-            string[] sp = inputChannelId.Split('/');
-            if (sp.Length > 1)
+            switch (SelectedCred.Site)
             {
-                if (sp.Contains(youUser))
-                {
-                    int indexuser = Array.IndexOf(sp, youUser);
-                    if (indexuser < 0)
-                    {
-                        throw new Exception("Can't parse url");
-                    }
-
-                    string user = sp[indexuser + 1];
-                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(user);
-                }
-                else if (sp.Contains(youChannel))
-                {
-                    int indexchannel = Array.IndexOf(sp, youChannel);
-                    if (indexchannel < 0)
-                    {
-                        throw new Exception("Can't parse url");
-                    }
-
-                    parsedChannelId = sp[indexchannel + 1];
-                }
-                else
-                {
-                    var regex = new Regex(youRegex);
-                    Match match = regex.Match(inputChannelId);
-                    if (match.Success)
-                    {
-                        string id = match.Groups[1].Value;
-                        IVideoItemPOCO vi = await _yf.GetVideoItemLiteNetAsync(id);
-                        parsedChannelId = vi.ParentID;
-                    }
-                }
-            }
-            else
-            {
-                try
-                {
-                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(inputChannelId);
-                }
-                catch
-                {
-                    parsedChannelId = inputChannelId;
-                }
-            }
-
-            if (Channels.Select(x => x.ID).Contains(parsedChannelId))
-            {
-                MessageBox.Show("Has already");
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(parsedChannelId))
-            {
-                await AddNewChannelAsync(parsedChannelId, NewChannelTitle);
+                case SiteType.YouTube:
+                    await AddYouTubeChannel(inputChannelId);
+                    break;
+                default:
+                    MessageBox.Show("Not ready yet=/");
+                    break;
             }
         }
 
@@ -886,6 +831,74 @@ namespace Crawler.Models
             IsIdle = true;
             SetStatus(2);
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
+        }
+
+        private async Task AddYouTubeChannel(string inputChannelId)
+        {
+            SetStatus(1);
+            Info = string.Empty;
+            const string youUser = "user";
+            const string youChannel = "channel";
+            string parsedChannelId = string.Empty;
+
+            string[] sp = inputChannelId.Split('/');
+            if (sp.Length > 1)
+            {
+                if (sp.Contains(youUser))
+                {
+                    int indexuser = Array.IndexOf(sp, youUser);
+                    if (indexuser < 0)
+                    {
+                        throw new Exception("Can't parse url");
+                    }
+
+                    string user = sp[indexuser + 1];
+                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(user);
+                }
+                else if (sp.Contains(youChannel))
+                {
+                    int indexchannel = Array.IndexOf(sp, youChannel);
+                    if (indexchannel < 0)
+                    {
+                        throw new Exception("Can't parse url");
+                    }
+
+                    parsedChannelId = sp[indexchannel + 1];
+                }
+                else
+                {
+                    var regex = new Regex(youRegex);
+                    Match match = regex.Match(inputChannelId);
+                    if (match.Success)
+                    {
+                        string id = match.Groups[1].Value;
+                        IVideoItemPOCO vi = await _yf.GetVideoItemLiteNetAsync(id);
+                        parsedChannelId = vi.ParentID;
+                    }
+                }
+            }
+            else
+            {
+                try
+                {
+                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(inputChannelId);
+                }
+                catch
+                {
+                    parsedChannelId = inputChannelId;
+                }
+            }
+
+            if (Channels.Select(x => x.ID).Contains(parsedChannelId))
+            {
+                MessageBox.Show("Has already");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(parsedChannelId))
+            {
+                await AddNewChannelAsync(parsedChannelId, NewChannelTitle);
+            }
         }
 
         private void CreateServicesChannels()
