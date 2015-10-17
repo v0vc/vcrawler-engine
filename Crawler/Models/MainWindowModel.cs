@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -739,25 +738,23 @@ namespace Crawler.Models
         /// <param name="res"></param>
         public void SetStatus(int res)
         {
-            if (res == 0)
+            switch (res)
             {
-                Result = "Ready";
-            }
-            if (res == 1)
-            {
-                Result = "Working..";
-            }
-            if (res == 2)
-            {
-                Result = "Finished!";
-            }
-            if (res == 3)
-            {
-                Result = "Error";
-            }
-            if (res == 4)
-            {
-                Result = "Saved";
+                case 0:
+                    Result = "Ready";
+                    break;
+                case 1:
+                    Result = "Working..";
+                    break;
+                case 2:
+                    Result = "Finished!";
+                    break;
+                case 3:
+                    Result = "Error";
+                    break;
+                case 4:
+                    Result = "Saved";
+                    break;
             }
         }
 
@@ -803,7 +800,7 @@ namespace Crawler.Models
             PrValue = 0;
             IsIdle = false;
             SetStatus(1);
-            int i = 0;
+            var i = 0;
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
             ShowAllChannels();
@@ -906,7 +903,8 @@ namespace Crawler.Models
         {
             IChannel chpop = _cf.CreateChannel();
             chpop.Title = "#Popular";
-            //chpop.SiteAdress = "youtube.com";
+
+            // chpop.SiteAdress = "youtube.com";
             Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";
@@ -1186,7 +1184,7 @@ namespace Crawler.Models
             {
                 return;
             }
-            for (int i = 1; i < args.Length; i++)
+            for (var i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)

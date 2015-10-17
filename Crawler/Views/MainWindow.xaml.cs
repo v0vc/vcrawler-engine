@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -15,7 +14,6 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
-using Interfaces.Factories;
 using Interfaces.Factories.Items;
 using Interfaces.Models;
 
@@ -87,9 +85,9 @@ namespace Crawler.Views
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -111,35 +109,6 @@ namespace Crawler.Views
         #endregion
 
         #region Event Handling
-
-        private void BgvDoWork(object sender, DoWorkEventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
-        }
-
-        private void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
-            {
-                MessageBox.Show(e.Error.Message);
-                ViewModel.Model.SetStatus(3);
-            }
-            else
-            {
-                ViewModel.Model.SetStatus(0);
-
-                if (channelsGrid.SelectedIndex >= 0)
-                {
-                    // focus
-                    channelsGrid.UpdateLayout();
-                    var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
-                    if (row != null)
-                    {
-                        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                    }
-                }
-            }
-        }
 
         private async void Channel_OnClick(object sender, RoutedEventArgs e)
         {
@@ -216,17 +185,17 @@ namespace Crawler.Views
 
                     var etvm = new EditTagsViewModel
                     {
-                        ParentChannel = ViewModel.Model.SelectedChannel,
-                        CurrentTags = ViewModel.Model.CurrentTags,
-                        Tags = ViewModel.Model.Tags,
+                        ParentChannel = ViewModel.Model.SelectedChannel, 
+                        CurrentTags = ViewModel.Model.CurrentTags, 
+                        Tags = ViewModel.Model.Tags, 
                         Channels = ViewModel.Model.Channels
                     };
 
                     var etv = new EditTagsView
                     {
-                        DataContext = etvm,
-                        Owner = Application.Current.MainWindow,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                        DataContext = etvm, 
+                        Owner = Application.Current.MainWindow, 
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                         Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
                     };
                     etv.ShowDialog();
@@ -599,15 +568,20 @@ namespace Crawler.Views
             }
         }
 
-        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        private async void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
         {
-            // await ViewModel.Model.FillChannels();
             ViewModel.Model.SetStatus(1);
-            using (var bgv = new BackgroundWorker())
+            await ViewModel.Model.FillChannels();
+            ViewModel.Model.SetStatus(0);
+            if (channelsGrid.SelectedIndex >= 0)
             {
-                bgv.DoWork += BgvDoWork;
-                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                bgv.RunWorkerAsync();
+                // focus
+                channelsGrid.UpdateLayout();
+                var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
+                if (row != null)
+                {
+                    row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                }
             }
         }
 
@@ -636,8 +610,8 @@ namespace Crawler.Views
                 case "Edit":
                     var edv = new EditDescriptionView
                     {
-                        DataContext = ViewModel.Model.SelectedVideoItem,
-                        Owner = Application.Current.MainWindow,
+                        DataContext = ViewModel.Model.SelectedVideoItem, 
+                        Owner = Application.Current.MainWindow, 
                         WindowStartupLocation = WindowStartupLocation.CenterOwner
                     };
 
@@ -675,7 +649,7 @@ namespace Crawler.Views
                     {
                         var ff = new FfmpegView
                         {
-                            Owner = Application.Current.MainWindow,
+                            Owner = Application.Current.MainWindow, 
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
                         };
 
@@ -700,9 +674,9 @@ namespace Crawler.Views
                         return;
                     }
 
-                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                        "Confirm",
-                        MessageBoxButton.OKCancel,
+                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+                        "Confirm", 
+                        MessageBoxButton.OKCancel, 
                         MessageBoxImage.Information);
 
                     if (result == MessageBoxResult.OK)
@@ -753,28 +727,6 @@ namespace Crawler.Views
             if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
             {
                 await ViewModel.Model.SelectedVideoItem.FillChapters();
-            }
-        }
-
-        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
-        {
-            IChannel ch = ViewModel.Model.SelectedChannel;
-            if (ch == null)
-            {
-                return;
-            }
-
-            if (ch.ChannelPlaylists.Any())
-            {
-                return;
-            }
-
-            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
-            {
-                foreach (IPlaylist pl in pls)
-                {
-                    ch.ChannelPlaylists.Add(pl);
-                }
             }
         }
 
@@ -851,6 +803,28 @@ namespace Crawler.Views
             ViewModel.Model.SetStatus(2);
         }
 
+        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
+        {
+            IChannel ch = ViewModel.Model.SelectedChannel;
+            if (ch == null)
+            {
+                return;
+            }
+
+            if (ch.ChannelPlaylists.Any())
+            {
+                return;
+            }
+
+            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
+            {
+                foreach (IPlaylist pl in pls)
+                {
+                    ch.ChannelPlaylists.Add(pl);
+                }
+            }
+        }
+
         private async void PlaylistsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count != 1)
@@ -905,8 +879,8 @@ namespace Crawler.Views
             if (ViewModel.Model.SelectedChannel.ChannelItemsCount > ViewModel.Model.SelectedChannel.ChannelItems.Count)
             {
                 await
-                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath,
-                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count,
+                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 
+                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count, 
                         ViewModel.Model.SelectedChannel.ChannelItems.Count);
             }
         }
@@ -920,12 +894,26 @@ namespace Crawler.Views
         {
             var edv = new EditDescriptionView
             {
-                DataContext = ViewModel.Model.SelectedVideoItem,
-                Owner = Application.Current.MainWindow,
+                DataContext = ViewModel.Model.SelectedVideoItem, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
             edv.Show();
+        }
+
+        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
+        {
+            var image = e.Source as Image;
+            if (image == null)
+            {
+                return;
+            }
+            var item = image.DataContext as IVideoItem;
+            if (item != null && string.IsNullOrEmpty(item.Description))
+            {
+                await item.FillDescriptionAsync();
+            }
         }
 
         private async void VideoItemSaveButton_OnClick(object sender, RoutedEventArgs e)
@@ -965,20 +953,6 @@ namespace Crawler.Views
                 {
                     MessageBox.Show("Please, select youtube-dl");
                 }
-            }
-        }
-
-        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            var image = e.Source as Image;
-            if (image == null)
-            {
-                return;
-            }
-            var item = image.DataContext as IVideoItem;
-            if (item != null && string.IsNullOrEmpty(item.Description))
-            {
-                await item.FillDescriptionAsync();
             }
         }
 
