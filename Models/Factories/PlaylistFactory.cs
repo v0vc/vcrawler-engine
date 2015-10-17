@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.API;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
@@ -49,7 +50,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            ICommonItemFactory vf = _c.CreateVideoItemFactory();
+            IVideoItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -92,7 +93,7 @@ namespace Models.Factories
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
             IYouTubeSite fb = _c.CreateYouTubeSite();
-            ICommonItemFactory vf = _c.CreateVideoItemFactory();
+            IVideoItemFactory vf = _c.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();

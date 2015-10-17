@@ -19,6 +19,7 @@ using Extensions;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -54,7 +55,7 @@ namespace Crawler.Models
         private readonly IRutrackerSite _rf;
         private readonly ISettingFactory _sf;
         private readonly ITapochekSite _tf;
-        private readonly ICommonItemFactory _vf;
+        private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
 
         #endregion

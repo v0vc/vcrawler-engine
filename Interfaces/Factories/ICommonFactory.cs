@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Interfaces.API;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 
 namespace Interfaces.Factories
@@ -27,7 +28,7 @@ namespace Interfaces.Factories
 
         ITapochekSite CreateTapochekSite();
 
-        ICommonItemFactory CreateVideoItemFactory();
+        IVideoItemFactory CreateVideoItemFactory();
 
         IYouTubeSite CreateYouTubeSite();
 

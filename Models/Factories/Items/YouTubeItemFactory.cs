@@ -12,13 +12,14 @@ using Extensions;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO.Items;
 
 namespace Models.Factories.Items
 {
-    public class YouTubeItemFactory : ICommonItemFactory
+    public class YouTubeItemFactory : IVideoItemFactory
     {
         #region Static and Readonly Fields
 
@@ -157,7 +158,7 @@ namespace Models.Factories.Items
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
             IYouTubeSite fb = c.CreateYouTubeSite();
-            ICommonItemFactory vf = c.CreateVideoItemFactory();
+            IVideoItemFactory vf = c.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
@@ -217,7 +218,7 @@ namespace Models.Factories.Items
         {
             // var fb = ServiceLocator.SqLiteDatabase;
             ISqLiteDatabase fb = c.CreateSqLiteDatabase();
-            ICommonItemFactory vf = c.CreateVideoItemFactory();
+            IVideoItemFactory vf = c.CreateVideoItemFactory();
 
             try
             {
@@ -234,7 +235,7 @@ namespace Models.Factories.Items
         public async Task<IVideoItem> GetVideoItemNetAsync(string id)
         {
             IYouTubeSite fb = c.CreateYouTubeSite();
-            ICommonItemFactory vf = c.CreateVideoItemFactory();
+            IVideoItemFactory vf = c.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemNetAsync(id);

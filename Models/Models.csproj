@@ -56,6 +56,7 @@
     <Compile Include="Factories\ChannelFactory.cs" />
     <Compile Include="Factories\ChapterFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
+    <Compile Include="Factories\Items\RuTrackerItemFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
     <Compile Include="Factories\SettingFactory.cs" />
     <Compile Include="Factories\TagFactory.cs" />

@@ -5,6 +5,7 @@
 using DataBaseAPI;
 using Interfaces.API;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Models.Factories;
 using Models.Factories.Items;
 using Ninject;
@@ -45,7 +46,9 @@ namespace IoC
             var kern = new StandardKernel();
 
             kern.Bind<IChannelFactory>().To<ChannelFactory>().InSingletonScope();
-            kern.Bind<ICommonItemFactory>().To<YouTubeItemFactory>().InSingletonScope();
+            kern.Bind<IVideoItemFactory>().To<YouTubeItemFactory>().InSingletonScope().Named("YouTubeItemFactory");
+            //kern.Bind<IVideoItemFactory>().To<TapochekItemFactory>().InSingletonScope().Named("TapochekItemFactory");
+            //kern.Bind<IVideoItemFactory>().To<RuTrackerItemFactory>().InSingletonScope().Named("RuTrackerItemFactory");
             kern.Bind<IPlaylistFactory>().To<PlaylistFactory>().InSingletonScope();
             kern.Bind<ISqLiteDatabase>().To<SqLiteDatabase>().InSingletonScope();
             kern.Bind<IYouTubeSite>().To<YouTubeSite>().InSingletonScope();

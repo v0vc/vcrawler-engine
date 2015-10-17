@@ -8,6 +8,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Interfaces.API;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,7 +34,7 @@ namespace TestAPI
         private readonly IPlaylistFactory _pf;
         private readonly ISettingFactory _sf;
         private readonly ITagFactory _tf;
-        private readonly ICommonItemFactory _vf;
+        private readonly IVideoItemFactory _vf;
 
         #endregion
 

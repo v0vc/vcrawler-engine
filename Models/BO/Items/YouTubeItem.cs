@@ -22,7 +22,7 @@ using Models.Factories.Items;
 
 namespace Models.BO.Items
 {
-    public class YouTubeItem : IVideoItem, INotifyPropertyChanged
+    public sealed class YouTubeItem : IVideoItem, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -33,7 +33,14 @@ namespace Models.BO.Items
 
         #region Fields
 
+        private double downloadPercentage;
+
         private bool isAudio;
+        private bool isHasLocalFile;
+        private bool isShowRow;
+        private string itemState;
+        private byte[] largeThumb;
+        private string logText;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
 
@@ -75,7 +82,7 @@ namespace Models.BO.Items
 
         #region Methods
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null)
@@ -151,17 +158,113 @@ namespace Models.BO.Items
         public int Comments { get; set; }
         public string DateTimeAgo { get; set; }
         public string Description { get; set; }
-        public double DownloadPercentage { get; set; }
+
+        public double DownloadPercentage
+        {
+            get
+            {
+                return downloadPercentage;
+            }
+            set
+            {
+                downloadPercentage = value;
+                OnPropertyChanged();
+            }
+        }
+
         public int Duration { get; set; }
         public string DurationString { get; set; }
         public string ID { get; set; }
-        public bool IsHasLocalFile { get; set; }
+
+        public bool IsHasLocalFile
+        {
+            get
+            {
+                return isHasLocalFile;
+            }
+            set
+            {
+                if (value == isHasLocalFile)
+                {
+                    return;
+                }
+                isHasLocalFile = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool IsNewItem { get; set; }
-        public bool IsShowRow { get; set; }
-        public string ItemState { get; set; }
-        public byte[] LargeThumb { get; set; }
+
+        public bool IsShowRow
+        {
+            get
+            {
+                return isShowRow;
+            }
+            set
+            {
+                if (value == isShowRow)
+                {
+                    return;
+                }
+                isShowRow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ItemState
+        {
+            get
+            {
+                return itemState;
+            }
+            set
+            {
+                if (value == itemState)
+                {
+                    return;
+                }
+                itemState = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public byte[] LargeThumb
+        {
+            get
+            {
+                return largeThumb;
+            }
+            set
+            {
+                if (value == largeThumb)
+                {
+                    return;
+                }
+                largeThumb = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string LocalFilePath { get; set; }
-        public string LogText { get; set; }
+
+        public string LogText
+        {
+            get
+            {
+                return logText;
+            }
+            set
+            {
+                if (value == logText)
+                {
+                    return;
+                }
+                logText = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
         public byte[] Thumbnail { get; set; }

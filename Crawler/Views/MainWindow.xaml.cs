@@ -16,6 +16,7 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
 using Interfaces.Factories;
+using Interfaces.Factories.Items;
 using Interfaces.Models;
 
 namespace Crawler.Views
@@ -829,7 +830,7 @@ namespace Crawler.Views
 
             IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
 
-            ICommonItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
+            IVideoItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
 
             pl.PlaylistItems.Clear();
 

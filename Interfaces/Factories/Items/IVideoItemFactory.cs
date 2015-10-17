@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using Interfaces.Models;
 using Interfaces.POCO;
 
-namespace Interfaces.Factories
+namespace Interfaces.Factories.Items
 {
-    public interface ICommonItemFactory
+    public interface IVideoItemFactory
     {
         #region Methods
 

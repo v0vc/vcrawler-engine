@@ -12,7 +12,7 @@ using Interfaces.POCO;
 
 namespace Models.Factories.Items
 {
-    public class TapochekItemFactory : IVideoItemFactory
+    public class RuTrackerItemFactory : IVideoItemFactory
     {
         #region ICommonItemFactory Members
 
