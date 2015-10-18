@@ -5,12 +5,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Autofac;
 using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.POCO;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ninject;
 
 namespace TestAPI
 {
@@ -27,7 +27,10 @@ namespace TestAPI
 
         public YouTubeSiteTest()
         {
-            _fabric = Container.Kernel.Get<ICommonFactory>();
+            using (var scope = Container.Kernel.BeginLifetimeScope())
+            {
+                _fabric = scope.Resolve<ICommonFactory>();
+            }
         }
 
         #endregion

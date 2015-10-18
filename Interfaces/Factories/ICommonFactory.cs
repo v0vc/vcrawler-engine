@@ -25,11 +25,11 @@ namespace Interfaces.Factories
 
         ITagFactory CreateTagFactory();
 
-        ITapochekSite CreateTapochekSite();
-
         IVideoItemFactory CreateVideoItemFactory();
 
         IYouTubeSite CreateYouTubeSite();
+
+        ITapochekSite CreateTapochekSite();
 
         IRutrackerSite CreateRutrackerSite();
 

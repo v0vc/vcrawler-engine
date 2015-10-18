@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Autofac;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
@@ -15,7 +16,6 @@ using Interfaces.Models;
 using Interfaces.POCO;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ninject;
 
 namespace TestAPI
 {
@@ -39,7 +39,10 @@ namespace TestAPI
 
         public TapochekSiteTest()
         {
-            _fabric = Container.Kernel.Get<ICommonFactory>();
+            using (var scope = Container.Kernel.BeginLifetimeScope())
+            {
+                _fabric = scope.Resolve<ICommonFactory>();
+            }
             FillCred();
         }
 

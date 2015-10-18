@@ -6,13 +6,13 @@ using System;
 using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
+using Autofac;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Ninject;
 
 namespace TestAPI
 {
@@ -42,7 +42,10 @@ namespace TestAPI
 
         public SqLiteDataBaseTest()
         {
-            _factory = Container.Kernel.Get<ICommonFactory>();
+            using (var scope = Container.Kernel.BeginLifetimeScope())
+            {
+                _factory = scope.Resolve<ICommonFactory>();
+            }
             _vf = _factory.CreateVideoItemFactory();
             _db = _factory.CreateSqLiteDatabase();
             _cf = _factory.CreateChannelFactory();

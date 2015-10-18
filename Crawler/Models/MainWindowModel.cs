@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using Autofac;
 using DataAPI;
 using Extensions;
 using Interfaces.API;
@@ -23,7 +24,7 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
-using Ninject;
+//using Ninject;
 using Container = IoC.Container;
 
 namespace Crawler.Models
@@ -47,15 +48,14 @@ namespace Crawler.Models
         #region Static and Readonly Fields
 
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
-        private IChannelFactory _cf;
-        private ICredFactory _crf;
-        private ISqLiteDatabase _df;
+        private readonly IChannelFactory _cf;
+        private readonly ICredFactory _crf;
+        private readonly ISqLiteDatabase _df;
         private readonly Dictionary<string, string> _launchParam = new Dictionary<string, string>();
-        private IRutrackerSite _rf;
-        private ISettingFactory _sf;
-        private ITapochekSite _tf;
-        private IVideoItemFactory _vf;
-        private IYouTubeSite _yf;
+        private readonly ISettingFactory _sf;
+        private readonly ITapochekSite _tf;
+        private readonly IVideoItemFactory _vf;
+        private readonly IYouTubeSite _yf;
 
         #endregion
 
@@ -73,6 +73,7 @@ namespace Crawler.Models
         private string _newTag;
         private double _prValue;
         private string _result;
+        private IRutrackerSite _rf;
         private string _searchKey;
         private IChannel _selectedChannel;
         private string _selectedCountry;
@@ -89,51 +90,44 @@ namespace Crawler.Models
 
         public MainWindowModel()
         {
-            Init();
+            ParseCommandLineArguments();
+            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
+            Channels = new ObservableCollection<IChannel>();
+            ServiceChannels = new ObservableCollection<IChannel>();
+            RelatedChannels = new ObservableCollection<IChannel>();
+            SupportedCreds = new List<ICred>();
+            Tags = new ObservableCollection<ITag>();
+            CurrentTags = new ObservableCollection<ITag>();
+            Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
+            SelectedCountry = Countries.First();
+            IsIdle = true;
+
+            //BaseFactory = Container.Kernel.Get<ICommonFactory>();
+            using (var scope = Container.Kernel.BeginLifetimeScope())
+            {
+                BaseFactory = scope.Resolve<ICommonFactory>();
+            }
+            _df = BaseFactory.CreateSqLiteDatabase();
+
+            if (_launchParam.Any())
+            {
+                // через параметры запуска указали путь к своей базе
+                string dbpath;
+                if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
+                {
+                    _df.FileBase = new FileInfo(dbpath);
+                }
+            }
+            _sf = BaseFactory.CreateSettingFactory();
+            _cf = BaseFactory.CreateChannelFactory();
+            _vf = BaseFactory.CreateVideoItemFactory();
+            _yf = BaseFactory.CreateYouTubeSite();
+            _crf = BaseFactory.CreateCredFactory();
+            _tf = BaseFactory.CreateTapochekSite();
+            _rf = BaseFactory.CreateRutrackerSite();
         }
 
         #endregion
-
-        private void Init()
-        {
-            try
-            {
-                ParseCommandLineArguments();
-                Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
-                Channels = new ObservableCollection<IChannel>();
-                ServiceChannels = new ObservableCollection<IChannel>();
-                RelatedChannels = new ObservableCollection<IChannel>();
-                SupportedCreds = new List<ICred>();
-                Tags = new ObservableCollection<ITag>();
-                CurrentTags = new ObservableCollection<ITag>();
-                Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
-                SelectedCountry = Countries.First();
-                IsIdle = true;
-
-                BaseFactory = Container.Kernel.Get<ICommonFactory>();
-                _df = BaseFactory.CreateSqLiteDatabase();
-                if (_launchParam.Any())
-                {
-                    // через параметры запуска указали путь к своей базе
-                    string dbpath;
-                    if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
-                    {
-                        _df.FileBase = new FileInfo(dbpath);
-                    }
-                }
-                _sf = BaseFactory.CreateSettingFactory();
-                _cf = BaseFactory.CreateChannelFactory();
-                _vf = BaseFactory.CreateVideoItemFactory();
-                _yf = BaseFactory.CreateYouTubeSite();
-                _crf = BaseFactory.CreateCredFactory();
-                _tf = BaseFactory.CreateTapochekSite();
-                _rf = BaseFactory.CreateRutrackerSite();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-            }
-        }
 
         #region Properties
 
@@ -291,7 +285,7 @@ namespace Crawler.Models
             }
         }
 
-        public ObservableCollection<IChannel> RelatedChannels { get; set; }
+        public ObservableCollection<IChannel> RelatedChannels { get; private set; }
 
         public string Result
         {
@@ -450,6 +444,7 @@ namespace Crawler.Models
                         return;
                     }
                     break;
+
                 case SiteType.Tapochek:
                     // парсим с других площадок
                     parsedId = string.Empty;

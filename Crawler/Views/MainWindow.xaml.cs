@@ -270,12 +270,19 @@ namespace Crawler.Views
                     }
                 }
 
-                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
-
-                foreach (IVideoItem item in lst)
+                try
                 {
-                    channel.AddNewItem(item, false);
-                    item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                    IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
+                    foreach (IVideoItem item in lst)
+                    {
+                        channel.AddNewItem(item, false);
+                        item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                    ViewModel.Model.SetStatus(3);
                 }
             }
 
