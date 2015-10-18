@@ -84,12 +84,14 @@ namespace IoC
 
             builder.RegisterType<ChannelFactory>().As<IChannelFactory>().SingleInstance();
             builder.RegisterType<VideoItemFactory>().As<IVideoItemFactory>().SingleInstance();
+            builder.RegisterType<PlaylistFactory>().As<IPlaylistFactory>().SingleInstance();
             builder.RegisterType<TagFactory>().As<ITagFactory>().SingleInstance();
             builder.RegisterType<CredFactory>().As<ICredFactory>().SingleInstance();
             builder.RegisterType<SettingFactory>().As<ISettingFactory>().SingleInstance();
+            builder.RegisterType<ChapterFactory>().As<IChapterFactory>().SingleInstance();
 
             builder.RegisterType<CommonFactory>().As<ICommonFactory>().SingleInstance();
-            //builder.RegisterType<CommonFactory>().As<ICommonFactory>().SingleInstance();
+
             return builder.Build();
         }
     }
