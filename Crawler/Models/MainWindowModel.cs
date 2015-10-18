@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+//using Ninject;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,7 +25,6 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
-//using Ninject;
 using Container = IoC.Container;
 
 namespace Crawler.Models
@@ -73,7 +73,6 @@ namespace Crawler.Models
         private string _newTag;
         private double _prValue;
         private string _result;
-        private IRutrackerSite _rf;
         private string _searchKey;
         private IChannel _selectedChannel;
         private string _selectedCountry;
@@ -103,7 +102,7 @@ namespace Crawler.Models
             IsIdle = true;
 
             //BaseFactory = Container.Kernel.Get<ICommonFactory>();
-            using (var scope = Container.Kernel.BeginLifetimeScope())
+            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 BaseFactory = scope.Resolve<ICommonFactory>();
             }
@@ -124,7 +123,6 @@ namespace Crawler.Models
             _yf = BaseFactory.CreateYouTubeSite();
             _crf = BaseFactory.CreateCredFactory();
             _tf = BaseFactory.CreateTapochekSite();
-            _rf = BaseFactory.CreateRutrackerSite();
         }
 
         #endregion
@@ -859,7 +857,8 @@ namespace Crawler.Models
         {
             IChannel chpop = _cf.CreateChannel();
             chpop.Title = "#Popular";
-            //chpop.SiteAdress = "youtube.com";
+
+            // chpop.SiteAdress = "youtube.com";
             Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";
