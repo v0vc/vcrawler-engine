@@ -27,9 +27,9 @@ namespace Interfaces.API
         /// <summary>
         ///     Удалить канал
         /// </summary>
-        /// <param name="parentID">ID канала</param>
+        /// <param name="parID">ID канала</param>
         /// <returns></returns>
-        Task DeleteChannelAsync(string parentID);
+        Task DeleteChannelAsync(string parID);
 
         /// <summary>
         ///     Удалить тэг у канала

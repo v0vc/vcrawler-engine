@@ -13,7 +13,6 @@ using Extensions;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
@@ -542,7 +541,7 @@ namespace Models.Factories
                     }
                     else
                     {
-                        IVideoItem item = await vf.GetVideoItemNetAsync(id);
+                        IVideoItem item = await vf.GetVideoItemNetAsync(id, channel.Site);
                         if (item.ParentID != channel.ID)
                         {
                             continue;
@@ -634,12 +633,23 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IChannel> GetChannelNetAsync(string channelID)
+        public async Task<IChannel> GetChannelNetAsync(string channelID, SiteType site)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
             try
             {
-                IChannelPOCO poco = await fb.GetChannelNetAsync(channelID);
+                IChannelPOCO poco = null;
+                switch (site)
+                {
+                    case SiteType.YouTube:
+                        poco = await _c.CreateYouTubeSite().GetChannelNetAsync(channelID);
+                        break;
+                    case SiteType.RuTracker:
+                        poco = await _c.CreateRutrackerSite().GetChannelNetAsync(channelID);
+                        break;
+                    case SiteType.Tapochek:
+                        poco = await _c.CreateTapochekSite().GetChannelNetAsync(channelID);
+                        break;
+                }
                 IChannel channel = CreateChannel(poco);
                 return channel;
             }

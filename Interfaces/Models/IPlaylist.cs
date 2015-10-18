@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 
 namespace Interfaces.Models
 {
@@ -18,6 +19,7 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
 
+        SiteType Site { get; set; }
         #endregion
 
         #region Methods

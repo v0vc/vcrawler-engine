@@ -136,6 +136,13 @@ namespace Interfaces.API
         Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids);
 
         /// <summary>
+        ///     Парсим что ввел юзер для получения ID канала
+        /// </summary>
+        /// <param name="inputChannelLink"></param>
+        /// <returns></returns>
+        Task<string> ParseChannelLink(string inputChannelLink);
+
+        /// <summary>
         ///     Получение результата запроса
         /// </summary>
         /// <param name="key">Запрос</param>

@@ -15,6 +15,7 @@ using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
@@ -233,7 +234,7 @@ namespace Crawler.ViewModels
                                 {
                                     Model.SetStatus(1);
                                     Model.Info = "Restoring: " + sp[0];
-                                    await Model.AddNewChannelAsync(sp[1], null);
+                                    await Model.AddNewChannelAsync(sp[1], null, SiteType.YouTube);
                                 }
                                 catch (Exception ex)
                                 {

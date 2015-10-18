@@ -1,17 +1,16 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using DataBaseAPI;
+using DataAPI.Database;
+using DataAPI.Trackers;
+using DataAPI.Videos;
 using Interfaces.API;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Models.Factories;
-using Models.Factories.Items;
 using Ninject;
 using Ninject.Extensions.Factory;
-using SitesAPI.Trackers;
-using SitesAPI.Videos;
 
 namespace IoC
 {
@@ -46,18 +45,18 @@ namespace IoC
             var kern = new StandardKernel();
 
             kern.Bind<IChannelFactory>().To<ChannelFactory>().InSingletonScope();
-            kern.Bind<IVideoItemFactory>().To<YouTubeItemFactory>().InSingletonScope().Named("YouTubeItemFactory");
-            //kern.Bind<IVideoItemFactory>().To<TapochekItemFactory>().InSingletonScope().Named("TapochekItemFactory");
-            //kern.Bind<IVideoItemFactory>().To<RuTrackerItemFactory>().InSingletonScope().Named("RuTrackerItemFactory");
+            kern.Bind<IVideoItemFactory>().To<VideoItemFactory>().InSingletonScope();
             kern.Bind<IPlaylistFactory>().To<PlaylistFactory>().InSingletonScope();
-            kern.Bind<ISqLiteDatabase>().To<SqLiteDatabase>().InSingletonScope();
-            kern.Bind<IYouTubeSite>().To<YouTubeSite>().InSingletonScope();
             kern.Bind<ITagFactory>().To<TagFactory>().InSingletonScope();
             kern.Bind<ICredFactory>().To<CredFactory>().InSingletonScope();
             kern.Bind<ISettingFactory>().To<SettingFactory>().InSingletonScope();
-            kern.Bind<ITapochekSite>().To<TapochekSite>().InSingletonScope();
             kern.Bind<IChapterFactory>().To<ChapterFactory>().InSingletonScope();
+
+            kern.Bind<IYouTubeSite>().To<YouTubeSite>().InSingletonScope();
+            kern.Bind<ITapochekSite>().To<TapochekSite>().InSingletonScope();
             kern.Bind<IRutrackerSite>().To<RutrackerSite>().InSingletonScope();
+
+            kern.Bind<ISqLiteDatabase>().To<SqLiteDatabase>().InSingletonScope();
 
             kern.Bind<ICommonFactory>().ToFactory();
 
@@ -65,8 +64,6 @@ namespace IoC
         }
 
         #endregion
-
-        #region autofac
 
         //private static IContainer _kernel;
 
@@ -98,7 +95,5 @@ namespace IoC
         //    builder.RegisterType<CommonFactory>().As<ICommonFactory>().SingleInstance();
         //    return builder.Build();
         //}
-
-        #endregion
     }
 }

@@ -4,6 +4,7 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
 
@@ -38,6 +39,7 @@ namespace Models.BO
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
+        public SiteType Site { get; set; }
 
         public async Task DeletePlaylistAsync()
         {

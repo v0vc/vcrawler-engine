@@ -15,16 +15,15 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using DataAPI;
 using Extensions;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Ninject;
-using SitesAPI;
 using Container = IoC.Container;
 
 namespace Crawler.Models
@@ -48,15 +47,15 @@ namespace Crawler.Models
         #region Static and Readonly Fields
 
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
-        private readonly IChannelFactory _cf;
-        private readonly ICredFactory _crf;
-        private readonly ISqLiteDatabase _df;
+        private IChannelFactory _cf;
+        private ICredFactory _crf;
+        private ISqLiteDatabase _df;
         private readonly Dictionary<string, string> _launchParam = new Dictionary<string, string>();
-        private readonly IRutrackerSite _rf;
-        private readonly ISettingFactory _sf;
-        private readonly ITapochekSite _tf;
-        private readonly IVideoItemFactory _vf;
-        private readonly IYouTubeSite _yf;
+        private IRutrackerSite _rf;
+        private ISettingFactory _sf;
+        private ITapochekSite _tf;
+        private IVideoItemFactory _vf;
+        private IYouTubeSite _yf;
 
         #endregion
 
@@ -90,39 +89,51 @@ namespace Crawler.Models
 
         public MainWindowModel()
         {
-            ParseCommandLineArguments();
-            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
-            Channels = new ObservableCollection<IChannel>();
-            ServiceChannels = new ObservableCollection<IChannel>();
-            RelatedChannels = new ObservableCollection<IChannel>();
-            SupportedCreds = new List<ICred>();
-            Tags = new ObservableCollection<ITag>();
-            CurrentTags = new ObservableCollection<ITag>();
-            Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
-            SelectedCountry = Countries.First();
-            IsIdle = true;
-
-            BaseFactory = Container.Kernel.Get<ICommonFactory>();
-            _df = BaseFactory.CreateSqLiteDatabase();
-            if (_launchParam.Any())
-            {
-                // через параметры запуска указали путь к своей базе
-                string dbpath;
-                if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
-                {
-                    _df.FileBase = new FileInfo(dbpath);
-                }
-            }
-            _sf = BaseFactory.CreateSettingFactory();
-            _cf = BaseFactory.CreateChannelFactory();
-            _vf = BaseFactory.CreateVideoItemFactory();
-            _yf = BaseFactory.CreateYouTubeSite();
-            _crf = BaseFactory.CreateCredFactory();
-            _tf = BaseFactory.CreateTapochekSite();
-            _rf = BaseFactory.CreateRutrackerSite();
+            Init();
         }
 
         #endregion
+
+        private void Init()
+        {
+            try
+            {
+                ParseCommandLineArguments();
+                Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
+                Channels = new ObservableCollection<IChannel>();
+                ServiceChannels = new ObservableCollection<IChannel>();
+                RelatedChannels = new ObservableCollection<IChannel>();
+                SupportedCreds = new List<ICred>();
+                Tags = new ObservableCollection<ITag>();
+                CurrentTags = new ObservableCollection<ITag>();
+                Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
+                SelectedCountry = Countries.First();
+                IsIdle = true;
+
+                BaseFactory = Container.Kernel.Get<ICommonFactory>();
+                _df = BaseFactory.CreateSqLiteDatabase();
+                if (_launchParam.Any())
+                {
+                    // через параметры запуска указали путь к своей базе
+                    string dbpath;
+                    if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
+                    {
+                        _df.FileBase = new FileInfo(dbpath);
+                    }
+                }
+                _sf = BaseFactory.CreateSettingFactory();
+                _cf = BaseFactory.CreateChannelFactory();
+                _vf = BaseFactory.CreateVideoItemFactory();
+                _yf = BaseFactory.CreateYouTubeSite();
+                _crf = BaseFactory.CreateCredFactory();
+                _tf = BaseFactory.CreateTapochekSite();
+                _rf = BaseFactory.CreateRutrackerSite();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+        }
 
         #region Properties
 
@@ -421,22 +432,39 @@ namespace Crawler.Models
 
         #region Methods
 
-        public async Task AddNewChannel(string inputChannelId)
+        public async Task AddNewChannel(string inputChannelId, SiteType site)
         {
-            switch (SelectedCred.Site)
+            string parsedId = null;
+            switch (site)
             {
                 case SiteType.YouTube:
-                    await AddYouTubeChannel(inputChannelId);
+                    parsedId = await _yf.ParseChannelLink(inputChannelId);
+                    if (string.IsNullOrEmpty(parsedId))
+                    {
+                        MessageBox.Show("Can't parse url");
+                        return;
+                    }
+                    if (Channels.Select(x => x.ID).Contains(parsedId))
+                    {
+                        MessageBox.Show("Has already");
+                        return;
+                    }
                     break;
-                default:
-                    MessageBox.Show("Not ready yet=/");
+                case SiteType.Tapochek:
+                    // парсим с других площадок
+                    parsedId = string.Empty;
                     break;
+            }
+
+            if (!string.IsNullOrEmpty(parsedId))
+            {
+                await AddNewChannelAsync(parsedId, NewChannelTitle, site);
             }
         }
 
-        public async Task AddNewChannelAsync(string channelid, string channeltitle)
+        public async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
-            IChannel channel = await _cf.GetChannelNetAsync(channelid);
+            IChannel channel = await _cf.GetChannelNetAsync(channelid, site);
             if (string.IsNullOrEmpty(channel.Title))
             {
                 throw new Exception("Can't get channel: " + channel.ID);
@@ -453,14 +481,14 @@ namespace Crawler.Models
             channel.IsShowRow = true;
             channel.IsInWork = true;
             SelectedChannel = channel;
-            IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0);
+            IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0); // TODO add site
             foreach (IVideoItem item in lst)
             {
                 channel.AddNewItem(item, false);
             }
 
             await channel.InsertChannelItemsAsync();
-            IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync();
+            IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync(); // TODO add site
             foreach (IPlaylist pl in pls)
             {
                 channel.ChannelPlaylists.Add(pl);
@@ -549,7 +577,7 @@ namespace Crawler.Models
             if (match.Success)
             {
                 string id = match.Groups[1].Value;
-                IVideoItem vi = await _vf.GetVideoItemNetAsync(id);
+                IVideoItem vi = await _vf.GetVideoItemNetAsync(id, SiteType.YouTube);
                 vi.ParentID = null;
                 SelectedVideoItem = vi;
 
@@ -637,7 +665,7 @@ namespace Crawler.Models
                 }
                 try
                 {
-                    await AddNewChannel(NewChannelLink);
+                    await AddNewChannel(NewChannelLink, SelectedCred.Site);
                 }
                 catch (Exception ex)
                 {
@@ -739,25 +767,23 @@ namespace Crawler.Models
         /// <param name="res"></param>
         public void SetStatus(int res)
         {
-            if (res == 0)
+            switch (res)
             {
-                Result = "Ready";
-            }
-            if (res == 1)
-            {
-                Result = "Working..";
-            }
-            if (res == 2)
-            {
-                Result = "Finished!";
-            }
-            if (res == 3)
-            {
-                Result = "Error";
-            }
-            if (res == 4)
-            {
-                Result = "Saved";
+                case 0:
+                    Result = "Ready";
+                    break;
+                case 1:
+                    Result = "Working..";
+                    break;
+                case 2:
+                    Result = "Finished!";
+                    break;
+                case 3:
+                    Result = "Error";
+                    break;
+                case 4:
+                    Result = "Saved";
+                    break;
             }
         }
 
@@ -832,74 +858,6 @@ namespace Crawler.Models
             IsIdle = true;
             SetStatus(2);
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
-        }
-
-        private async Task AddYouTubeChannel(string inputChannelId)
-        {
-            SetStatus(1);
-            Info = string.Empty;
-            const string youUser = "user";
-            const string youChannel = "channel";
-            string parsedChannelId = string.Empty;
-
-            string[] sp = inputChannelId.Split('/');
-            if (sp.Length > 1)
-            {
-                if (sp.Contains(youUser))
-                {
-                    int indexuser = Array.IndexOf(sp, youUser);
-                    if (indexuser < 0)
-                    {
-                        throw new Exception("Can't parse url");
-                    }
-
-                    string user = sp[indexuser + 1];
-                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(user);
-                }
-                else if (sp.Contains(youChannel))
-                {
-                    int indexchannel = Array.IndexOf(sp, youChannel);
-                    if (indexchannel < 0)
-                    {
-                        throw new Exception("Can't parse url");
-                    }
-
-                    parsedChannelId = sp[indexchannel + 1];
-                }
-                else
-                {
-                    var regex = new Regex(youRegex);
-                    Match match = regex.Match(inputChannelId);
-                    if (match.Success)
-                    {
-                        string id = match.Groups[1].Value;
-                        IVideoItemPOCO vi = await _yf.GetVideoItemLiteNetAsync(id);
-                        parsedChannelId = vi.ParentID;
-                    }
-                }
-            }
-            else
-            {
-                try
-                {
-                    parsedChannelId = await _cf.GetChannelIdByUserNameNetAsync(inputChannelId);
-                }
-                catch
-                {
-                    parsedChannelId = inputChannelId;
-                }
-            }
-
-            if (Channels.Select(x => x.ID).Contains(parsedChannelId))
-            {
-                MessageBox.Show("Has already");
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(parsedChannelId))
-            {
-                await AddNewChannelAsync(parsedChannelId, NewChannelTitle);
-            }
         }
 
         private void CreateServicesChannels()

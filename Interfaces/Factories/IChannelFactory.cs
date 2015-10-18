@@ -23,7 +23,7 @@ namespace Interfaces.Factories
 
         Task<string> GetChannelIdByUserNameNetAsync(string username);
 
-        Task<IChannel> GetChannelNetAsync(string channelID);
+        Task<IChannel> GetChannelNetAsync(string channelID, SiteType site);
 
         #endregion
     }

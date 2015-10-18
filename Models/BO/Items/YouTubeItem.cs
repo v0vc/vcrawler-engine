@@ -18,7 +18,7 @@ using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
-using Models.Factories.Items;
+using Models.Factories;
 
 namespace Models.BO.Items
 {
@@ -27,7 +27,7 @@ namespace Models.BO.Items
         #region Static and Readonly Fields
 
         private readonly string[] exts = { "mp4", "mkv", "mp3" };
-        private readonly YouTubeItemFactory vf;
+        private readonly VideoItemFactory vf;
 
         #endregion
 
@@ -48,7 +48,7 @@ namespace Models.BO.Items
 
         #region Constructors
 
-        public YouTubeItem(YouTubeItemFactory vf)
+        public YouTubeItem(VideoItemFactory vf)
         {
             this.vf = vf;
         }
@@ -273,11 +273,6 @@ namespace Models.BO.Items
         public ObservableCollection<IChapter> VideoItemChapters { get; set; }
         public long ViewCount { get; set; }
 
-        public IVideoItem CreateVideoItem()
-        {
-            return vf.CreateVideoItem();
-        }
-
         public async Task DeleteItemAsync()
         {
             await vf.DeleteItemAsync(ID);
@@ -385,7 +380,7 @@ namespace Models.BO.Items
 
         public async Task<IVideoItem> GetVideoItemNetAsync()
         {
-            return await vf.GetVideoItemNetAsync(ID);
+            return await vf.GetVideoItemNetAsync(ID, Site);
         }
 
         public async Task InsertItemAsync()

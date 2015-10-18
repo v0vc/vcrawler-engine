@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Interfaces.API;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;

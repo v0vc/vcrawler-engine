@@ -16,7 +16,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 
 namespace Crawler.Views
@@ -742,7 +741,8 @@ namespace Crawler.Views
                         return;
                     }
 
-                    await ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink());
+                    await
+                        ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink(), ViewModel.Model.SelectedChannel.Site);
 
                     break;
             }
@@ -841,7 +841,7 @@ namespace Crawler.Views
 
             foreach (string id in pls.Where(id => !pl.PlaylistItems.Select(x => x.ID).Contains(id)))
             {
-                IVideoItem vi = await vf.GetVideoItemNetAsync(id);
+                IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
 
                 ViewModel.Model.SelectedChannel.AddNewItem(vi, false);
 

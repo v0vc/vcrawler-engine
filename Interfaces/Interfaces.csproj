@@ -52,7 +52,7 @@
     <Compile Include="Factories\IPlaylistFactory.cs" />
     <Compile Include="Factories\ISettingFactory.cs" />
     <Compile Include="Factories\ITagFactory.cs" />
-    <Compile Include="Factories\Items\IVideoItemFactory.cs" />
+    <Compile Include="Factories\IVideoItemFactory.cs" />
     <Compile Include="Models\IChannel.cs" />
     <Compile Include="Models\IChapter.cs" />
     <Compile Include="Models\ICred.cs" />

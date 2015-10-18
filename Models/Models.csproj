@@ -56,17 +56,14 @@
     <Compile Include="Factories\ChannelFactory.cs" />
     <Compile Include="Factories\ChapterFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
-    <Compile Include="Factories\Items\RuTrackerItemFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
     <Compile Include="Factories\SettingFactory.cs" />
     <Compile Include="Factories\TagFactory.cs" />
-    <Compile Include="Factories\Items\TapochekItemFactory.cs" />
-    <Compile Include="Factories\Items\YouTubeItemFactory.cs" />
+    <Compile Include="Factories\VideoItemFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
-    <None Include="packages.config" />
+    <Folder Include="Factories\Items\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Extensions\Extensions.csproj">

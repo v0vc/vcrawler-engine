@@ -43,6 +43,12 @@ namespace Interfaces.API
         /// <returns></returns>
         Task<CookieContainer> GetCookieNetAsync(IChannel channel);
 
+        /// <summary>
+        ///     Получение канала по ID
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <returns></returns>
+        Task<IChannelPOCO> GetChannelNetAsync(string channelID);
         #endregion
     }
 }

@@ -5,8 +5,8 @@
 
 using System;
 using System.Threading.Tasks;
+using Interfaces.Enums;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 using Interfaces.POCO;
 
@@ -17,6 +17,11 @@ namespace Models.Factories.Items
         #region ICommonItemFactory Members
 
         public IVideoItem CreateVideoItem()
+        {
+            throw new NotImplementedException();
+        }
+
+        public IVideoItem CreateVideoItem(SiteType site)
         {
             throw new NotImplementedException();
         }

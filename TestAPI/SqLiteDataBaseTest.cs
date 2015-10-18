@@ -7,8 +7,8 @@ using System.Collections.ObjectModel;
 using System.Net;
 using System.Threading.Tasks;
 using Interfaces.API;
+using Interfaces.Enums;
 using Interfaces.Factories;
-using Interfaces.Factories.Items;
 using Interfaces.Models;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -171,9 +171,9 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudItems()
         {
-            IVideoItem vi = _vf.CreateVideoItem();
+            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
-            IVideoItem vi2 = _vf.CreateVideoItem();
+            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
             ICred cred = _crf.CreateCred();
@@ -259,10 +259,10 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudPlaylists()
         {
-            IVideoItem vi = _vf.CreateVideoItem();
+            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
 
-            IVideoItem vi2 = _vf.CreateVideoItem();
+            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
 
@@ -371,10 +371,10 @@ namespace TestAPI
             t = _db.InsertTagAsync(tag);
             Assert.IsTrue(!t.IsFaulted);
 
-            IVideoItem vi = _vf.CreateVideoItem();
+            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
 
-            IVideoItem vi2 = _vf.CreateVideoItem();
+            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
 
