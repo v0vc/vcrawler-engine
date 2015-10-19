@@ -52,7 +52,7 @@ Database
 
 Using
 --------
-* [Ninject] (http://www.ninject.org/)
+* ~~[Ninject] (http://www.ninject.org/)~~ [Autofac] (http://autofac.org/)
 * [Json.NET] (http://www.newtonsoft.com/json)
 * [Html Agility Pack] (https://htmlagilitypack.codeplex.com/)
 
