@@ -3,7 +3,6 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-//using Ninject;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -40,7 +39,6 @@ namespace Crawler.Models
         private const string pathToMpc = "pathToMpc";
         private const string pathToYoudl = "pathToYoudl";
         private const string youLaunchParam = "you";
-        private const string youRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
         private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
@@ -565,7 +563,7 @@ namespace Crawler.Models
                 return;
             }
 
-            var regex = new Regex(youRegex);
+            var regex = new Regex(CommonExtensions.YouRegex);
             Match match = regex.Match(Link);
             if (match.Success)
             {

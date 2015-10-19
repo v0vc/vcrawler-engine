@@ -79,6 +79,10 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Extensions\Extensions.csproj">
+      <Project>{d592acb6-1c49-4ea9-9a76-a8d378ae6516}</Project>
+      <Name>Extensions</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Interfaces\Interfaces.csproj">
       <Project>{d7fc9cfb-9494-4079-bb7f-5aff0b2160ea}</Project>
       <Name>Interfaces</Name>

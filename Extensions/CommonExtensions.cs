@@ -19,7 +19,9 @@ namespace Extensions
     {
         #region Constants
 
-        private const string NewLine = "\r\n";
+        public const string YouRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
+
+        private const string newLine = "\r\n";
 
         #endregion
 
@@ -65,23 +67,19 @@ namespace Extensions
 
         public static bool IsValidUrl(string url)
         {
-            if (String.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url))
             {
                 return false;
             }
             Uri uri;
-            if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) || null == uri)
-            {
-                return false;
-            }
-            return true;
+            return Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) && null != uri;
         }
 
         public static string MakeValidFileName(this string name)
         {
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
-            var r = new Regex(String.Format("[{0}]", Regex.Escape(regexSearch)));
-            string s = r.Replace(name, String.Empty);
+            var r = new Regex(string.Format("[{0}]", Regex.Escape(regexSearch)));
+            string s = r.Replace(name, string.Empty);
             s = Regex.Replace(s, @"\s{2,}", " ");
             return s;
         }
@@ -142,7 +140,7 @@ namespace Extensions
             for (pos = 0; pos < theString.Length; pos = next)
             {
                 // Find end of line
-                int eol = theString.IndexOf(NewLine, pos, StringComparison.Ordinal);
+                int eol = theString.IndexOf(newLine, pos, StringComparison.Ordinal);
 
                 if (eol == -1)
                 {
@@ -150,7 +148,7 @@ namespace Extensions
                 }
                 else
                 {
-                    next = eol + NewLine.Length;
+                    next = eol + newLine.Length;
                 }
 
                 // Copy this line of text, breaking into smaller lines as needed
@@ -166,12 +164,12 @@ namespace Extensions
                         }
 
                         sb.Append(theString, pos, len);
-                        sb.Append(NewLine);
+                        sb.Append(newLine);
 
                         // Trim whitespace following break
                         pos += len;
 
-                        while (pos < eol && Char.IsWhiteSpace(theString[pos]))
+                        while (pos < eol && char.IsWhiteSpace(theString[pos]))
                         {
                             pos++;
                         }
@@ -180,7 +178,7 @@ namespace Extensions
                 }
                 else
                 {
-                    sb.Append(NewLine); // Empty line
+                    sb.Append(newLine); // Empty line
                 }
             }
 
@@ -191,7 +189,7 @@ namespace Extensions
         {
             // Find last whitespace in line
             int i = max - 1;
-            while (i >= 0 && !Char.IsWhiteSpace(text[pos + i]))
+            while (i >= 0 && !char.IsWhiteSpace(text[pos + i]))
             {
                 i--;
             }
@@ -201,7 +199,7 @@ namespace Extensions
             }
 
             // Find start of whitespace
-            while (i >= 0 && Char.IsWhiteSpace(text[pos + i]))
+            while (i >= 0 && char.IsWhiteSpace(text[pos + i]))
             {
                 i--;
             }
@@ -221,7 +219,7 @@ namespace Extensions
                 case SiteType.RuTracker:
                     return "rutracker.org";
                 default:
-                    return String.Empty;
+                    return string.Empty;
             }
         }
 
