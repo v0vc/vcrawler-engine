@@ -1,5 +1,4 @@
-﻿[![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)]
-
+﻿![volkswagen status](https://auchenberg.github.io/volkswagen/volkswargen_ci.svg?v=1)
 
 Overview
 =========
