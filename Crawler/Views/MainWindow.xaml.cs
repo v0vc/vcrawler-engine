@@ -617,7 +617,7 @@ namespace Crawler.Views
             }
         }
 
-        private async void MenuItem_OnClick(object sender, RoutedEventArgs e)
+        private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
         {
             var mitem = sender as MenuItem;
             if (mitem == null)

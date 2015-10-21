@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -99,11 +98,12 @@ namespace Crawler.Models
             SelectedCountry = Countries.First();
             IsIdle = true;
 
-            //BaseFactory = Container.Kernel.Get<ICommonFactory>();
+            // BaseFactory = Container.Kernel.Get<ICommonFactory>();
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 BaseFactory = scope.Resolve<ICommonFactory>();
             }
+
             _df = BaseFactory.CreateSqLiteDatabase();
 
             if (_launchParam.Any())
@@ -389,7 +389,7 @@ namespace Crawler.Models
 
         public ObservableCollection<IChannel> ServiceChannels { get; set; }
         public List<ICred> SupportedCreds { get; set; }
-        public ObservableCollection<ITag> Tags { get; set; }
+        public ObservableCollection<ITag> Tags { get; private set; }
         public string Version { get; set; }
 
         public string YouHeader
@@ -424,32 +424,39 @@ namespace Crawler.Models
 
         public async Task AddNewChannel(string inputChannelId, SiteType site)
         {
+            SetStatus(1);
             string parsedId = null;
+
             switch (site)
             {
                 case SiteType.YouTube:
                     parsedId = await _yf.ParseChannelLink(inputChannelId);
-                    if (string.IsNullOrEmpty(parsedId))
-                    {
-                        MessageBox.Show("Can't parse url");
-                        return;
-                    }
-                    if (Channels.Select(x => x.ID).Contains(parsedId))
-                    {
-                        MessageBox.Show("Has already");
-                        return;
-                    }
+
                     break;
 
                 case SiteType.Tapochek:
+
                     // парсим с других площадок
                     parsedId = string.Empty;
                     break;
             }
 
-            if (!string.IsNullOrEmpty(parsedId))
+            if (string.IsNullOrEmpty(parsedId))
             {
-                await AddNewChannelAsync(parsedId, NewChannelTitle, site);
+                Info = "Can't parse url";
+                SetStatus(3);
+            }
+            else
+            {
+                if (Channels.Select(x => x.ID).Contains(parsedId))
+                {
+                    MessageBox.Show("Has already");
+                    SetStatus(0);
+                }
+                else
+                {
+                    await AddNewChannelAsync(parsedId, NewChannelTitle, site);
+                }
             }
         }
 
@@ -472,14 +479,16 @@ namespace Crawler.Models
             channel.IsShowRow = true;
             channel.IsInWork = true;
             SelectedChannel = channel;
+
             IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0); // TODO add site
             foreach (IVideoItem item in lst)
             {
                 channel.AddNewItem(item, false);
             }
-
             await channel.InsertChannelItemsAsync();
+
             IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync(); // TODO add site
+            
             foreach (IPlaylist pl in pls)
             {
                 channel.ChannelPlaylists.Add(pl);
@@ -534,6 +543,7 @@ namespace Crawler.Models
                 }
             }
             channel.ChannelItemsCount = channel.ChannelItems.Count;
+            channel.PlaylistCount = channel.ChannelPlaylists.Count;
             channel.IsInWork = false;
             SetStatus(2);
         }
@@ -612,7 +622,7 @@ namespace Crawler.Models
 
         public async Task FindRelatedChannels(IChannel channel)
         {
-            if (channel == null)
+            if (channel == null || channel.Site != SiteType.YouTube)
             {
                 return;
             }
@@ -798,21 +808,11 @@ namespace Crawler.Models
             Info = "Syncing: " + channel.Title;
             IsIdle = false;
             Stopwatch watch = Stopwatch.StartNew();
-            try
-            {
-                await channel.SyncChannelAsync(true);
-                watch.Stop();
-                Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
-                SetStatus(2);
-                IsIdle = true;
-            }
-            catch (Exception ex)
-            {
-                IsIdle = true;
-                SetStatus(3);
-                Info = ex.Message;
-                MessageBox.Show(ex.Message);
-            }
+            await channel.SyncChannelAsync(true);
+            watch.Stop();
+            Info = string.Format("Time: {0} sec, new: {1}", watch.Elapsed.Seconds, channel.CountNew);
+            SetStatus(2);
+            IsIdle = true;
         }
 
         public async Task SyncData()
@@ -820,7 +820,7 @@ namespace Crawler.Models
             PrValue = 0;
             IsIdle = false;
             SetStatus(1);
-            int i = 0;
+            var i = 0;
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
             ShowAllChannels();
@@ -854,12 +854,11 @@ namespace Crawler.Models
         private void CreateServicesChannels()
         {
             IChannel chpop = _cf.CreateChannel();
-            chpop.Title = "#Popular";
-
-            // chpop.SiteAdress = "youtube.com";
             Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             chpop.Thumbnail = SiteHelper.ReadFully(img);
             chpop.ID = "pop";
+            chpop.Title = "#Popular";
+            chpop.Site = SiteType.YouTube;
             ServiceChannels.Add(chpop);
         }
 
@@ -1136,7 +1135,7 @@ namespace Crawler.Models
             {
                 return;
             }
-            for (int i = 1; i < args.Length; i++)
+            for (var i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
