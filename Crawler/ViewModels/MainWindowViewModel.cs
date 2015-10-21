@@ -156,7 +156,7 @@ namespace Crawler.ViewModels
                 {
                     File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
                     Model.Info = string.Format("{0} channels has been stored", lst.Count);
-                    Model.SetStatus(2);
+                    Model.SetStatus(0);
                 }
                 catch (Exception ex)
                 {
@@ -214,7 +214,6 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                Model.IsWorking = true;
                 int rest = 0;
                 foreach (string s in lst)
                 {
@@ -263,9 +262,7 @@ namespace Crawler.ViewModels
 
                 prog.SetProgressState(TaskbarProgressBarState.NoProgress);
                 Model.PrValue = 0;
-                Model.IsWorking = false;
-                Model.SetStatus(2);
-
+                Model.SetStatus(0);
                 Model.Info = "Total restored: " + rest;
             }
         }

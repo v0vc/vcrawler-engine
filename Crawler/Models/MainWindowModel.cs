@@ -96,7 +96,6 @@ namespace Crawler.Models
             CurrentTags = new ObservableCollection<ITag>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
-            IsWorking = false;
 
             // BaseFactory = Container.Kernel.Get<ICommonFactory>();
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
@@ -545,7 +544,7 @@ namespace Crawler.Models
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
             channel.IsInWork = false;
-            SetStatus(2);
+            SetStatus(0);
         }
 
         public async Task DownloadLink()
@@ -749,7 +748,7 @@ namespace Crawler.Models
                     }
                     SelectedChannel = channel;
                 }
-                SetStatus(2);
+                SetStatus(0);
             }
             catch (Exception ex)
             {
@@ -761,7 +760,6 @@ namespace Crawler.Models
         /// <summary>
         ///     0-Ready
         ///     1-Working..
-        ///     2-Finished!
         ///     3-Error
         ///     4-Saved
         /// </summary>
@@ -772,18 +770,19 @@ namespace Crawler.Models
             {
                 case 0:
                     Result = "Ready";
+                    IsWorking = false;
                     break;
                 case 1:
                     Result = "Working..";
-                    break;
-                case 2:
-                    Result = "Finished!";
+                    IsWorking = true;
                     break;
                 case 3:
                     Result = "Error";
+                    IsWorking = false;
                     break;
                 case 4:
                     Result = "Saved";
+                    IsWorking = false;
                     break;
             }
         }
@@ -805,21 +804,18 @@ namespace Crawler.Models
 
         public async Task SyncChannel(IChannel channel)
         {
+            SetStatus(1);
             Info = "Syncing: " + channel.Title;
-            IsWorking = true;
             Stopwatch watch = Stopwatch.StartNew();
             await channel.SyncChannelAsync(true);
             watch.Stop();
             Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
-            SetStatus(2);
-            IsWorking = false;
+            SetStatus(0);
         }
 
         public async Task SyncData()
         {
             PrValue = 0;
-            IsWorking = true;
-            SetStatus(1);
             var i = 0;
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -837,7 +833,6 @@ namespace Crawler.Models
                 }
                 catch (Exception ex)
                 {
-                    IsWorking = false;
                     SetStatus(3);
                     Info = ex.Message;
                     MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
@@ -846,8 +841,7 @@ namespace Crawler.Models
 
             prog.SetProgressState(TaskbarProgressBarState.NoProgress);
             PrValue = 0;
-            IsWorking = false;
-            SetStatus(2);
+            SetStatus(0);
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
         }
 

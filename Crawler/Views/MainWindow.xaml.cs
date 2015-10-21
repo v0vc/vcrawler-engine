@@ -180,7 +180,7 @@ namespace Crawler.Views
                         ViewModel.Model.SetStatus(3);
                     }
 
-                    ViewModel.Model.SetStatus(2);
+                    ViewModel.Model.SetStatus(0);
 
                     break;
 
@@ -193,7 +193,7 @@ namespace Crawler.Views
                     catch (Exception ex)
                     {
                         MessageBox.Show(ex.Message);
-                        ViewModel.Model.SetStatus(2);
+                        ViewModel.Model.SetStatus(0);
                     }
 
                     break;
@@ -269,7 +269,6 @@ namespace Crawler.Views
                     }
                 }
 
-                ViewModel.Model.IsWorking = true;
                 try
                 {
                     IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
@@ -281,14 +280,12 @@ namespace Crawler.Views
                 }
                 catch (Exception ex)
                 {
-                    ViewModel.Model.IsWorking = false;
                     MessageBox.Show(ex.Message);
                     ViewModel.Model.SetStatus(3);
                 }
-                ViewModel.Model.IsWorking = false;
             }
 
-            ViewModel.Model.SetStatus(2);
+            ViewModel.Model.SetStatus(0);
         }
 
         private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
@@ -857,7 +854,7 @@ namespace Crawler.Views
                 pl.PlaylistItems.Add(vi);
             }
 
-            ViewModel.Model.SetStatus(2);
+            ViewModel.Model.SetStatus(0);
         }
 
         private async void PlaylistsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
