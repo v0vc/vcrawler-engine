@@ -249,7 +249,6 @@ namespace Crawler.Views
             }
 
             ViewModel.Model.SetStatus(1);
-
             if (channel.ID != "pop")
             {
                 await ViewModel.Model.SyncChannel(channel);
@@ -270,6 +269,7 @@ namespace Crawler.Views
                     }
                 }
 
+                channel.IsInWork = true;
                 try
                 {
                     IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
@@ -281,9 +281,11 @@ namespace Crawler.Views
                 }
                 catch (Exception ex)
                 {
+                    channel.IsInWork = false;
                     MessageBox.Show(ex.Message);
                     ViewModel.Model.SetStatus(3);
                 }
+                channel.IsInWork = false;
             }
 
             ViewModel.Model.SetStatus(2);

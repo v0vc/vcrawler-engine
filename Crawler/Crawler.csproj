@@ -73,6 +73,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Controls\BackgroundVisualHost.cs" />
+    <Compile Include="Controls\BusyDecorator.cs" />
+    <Compile Include="Controls\VisualTargetPresentationSource.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="Views\AddLinkView.xaml.cs">

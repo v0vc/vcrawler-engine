@@ -810,7 +810,7 @@ namespace Crawler.Models
             Stopwatch watch = Stopwatch.StartNew();
             await channel.SyncChannelAsync(true);
             watch.Stop();
-            Info = string.Format("Time: {0} sec, new: {1}", watch.Elapsed.Seconds, channel.CountNew);
+            Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
             SetStatus(2);
             IsIdle = true;
         }
