@@ -1,6 +1,7 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:local="clr-namespace:Crawler.Controls">
+                    xmlns:local="clr-namespace:Crawler.Controls"
+                    xmlns:converters="clr-namespace:Crawler.Converters">
 
     <!--<Style TargetType="{x:Type DataGrid}">
         <Setter Property="RowBackground" Value="#badeee"/>
@@ -102,5 +103,6 @@
             </Setter.Value>
         </Setter>
     </Style>
-    
+
+    <converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
 </ResourceDictionary>

@@ -269,7 +269,7 @@ namespace Crawler.Views
                     }
                 }
 
-                channel.IsInWork = true;
+                ViewModel.Model.IsWorking = true;
                 try
                 {
                     IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
@@ -281,11 +281,11 @@ namespace Crawler.Views
                 }
                 catch (Exception ex)
                 {
-                    channel.IsInWork = false;
+                    ViewModel.Model.IsWorking = false;
                     MessageBox.Show(ex.Message);
                     ViewModel.Model.SetStatus(3);
                 }
-                channel.IsInWork = false;
+                ViewModel.Model.IsWorking = false;
             }
 
             ViewModel.Model.SetStatus(2);
@@ -522,7 +522,7 @@ namespace Crawler.Views
             }
         }
 
-        private async void Item_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private async void VideoItem_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             var row = sender as DataGridRow;
             if (row == null)

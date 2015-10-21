@@ -62,7 +62,7 @@ namespace Crawler.Models
         private string _filter;
         private string _info;
         private bool _isExpand;
-        private bool _isIdle;
+        private bool isWorking;
         private string _link;
         private string _mpcPath;
         private string _newChannelLink;
@@ -96,7 +96,7 @@ namespace Crawler.Models
             CurrentTags = new ObservableCollection<ITag>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
-            IsIdle = true;
+            IsWorking = false;
 
             // BaseFactory = Container.Kernel.Get<ICommonFactory>();
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
@@ -190,15 +190,15 @@ namespace Crawler.Models
 
         public bool IsHd { get; set; }
 
-        public bool IsIdle
+        public bool IsWorking
         {
             get
             {
-                return _isIdle;
+                return isWorking;
             }
             set
             {
-                _isIdle = value;
+                isWorking = value;
                 OnPropertyChanged();
             }
         }
@@ -806,19 +806,19 @@ namespace Crawler.Models
         public async Task SyncChannel(IChannel channel)
         {
             Info = "Syncing: " + channel.Title;
-            IsIdle = false;
+            IsWorking = true;
             Stopwatch watch = Stopwatch.StartNew();
             await channel.SyncChannelAsync(true);
             watch.Stop();
             Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
             SetStatus(2);
-            IsIdle = true;
+            IsWorking = false;
         }
 
         public async Task SyncData()
         {
             PrValue = 0;
-            IsIdle = false;
+            IsWorking = true;
             SetStatus(1);
             var i = 0;
             TaskbarManager prog = TaskbarManager.Instance;
@@ -837,7 +837,7 @@ namespace Crawler.Models
                 }
                 catch (Exception ex)
                 {
-                    IsIdle = true;
+                    IsWorking = false;
                     SetStatus(3);
                     Info = ex.Message;
                     MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
@@ -846,7 +846,7 @@ namespace Crawler.Models
 
             prog.SetProgressState(TaskbarProgressBarState.NoProgress);
             PrValue = 0;
-            IsIdle = true;
+            IsWorking = false;
             SetStatus(2);
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
         }

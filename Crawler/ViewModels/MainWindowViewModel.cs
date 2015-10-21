@@ -214,7 +214,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                Model.IsIdle = false;
+                Model.IsWorking = true;
                 int rest = 0;
                 foreach (string s in lst)
                 {
@@ -263,7 +263,7 @@ namespace Crawler.ViewModels
 
                 prog.SetProgressState(TaskbarProgressBarState.NoProgress);
                 Model.PrValue = 0;
-                Model.IsIdle = true;
+                Model.IsWorking = false;
                 Model.SetStatus(2);
 
                 Model.Info = "Total restored: " + rest;

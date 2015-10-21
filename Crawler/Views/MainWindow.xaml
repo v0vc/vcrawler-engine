@@ -397,7 +397,7 @@
                     </Border>
                 </DockPanel>
 
-                <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding Model.IsIdle, Mode=OneWay}">
+                <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding Model.IsWorking, Mode=OneWay, Converter={StaticResource InvertBooleanConverter}}">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <DockPanel LastChildFill="True">
                             <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
@@ -449,7 +449,7 @@
                     <RowDefinition MinHeight="25" Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <controls:BusyDecorator IsBusyIndicatorShowing="{Binding Model.SelectedChannel.IsInWork}">
+                <controls:BusyDecorator IsBusyIndicatorShowing="{Binding Model.IsWorking}">
                     <DataGrid CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
@@ -504,7 +504,7 @@
 
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
-                                <EventSetter Event="MouseDoubleClick" Handler="Item_OnMouseDoubleClick" />
+                                <EventSetter Event="MouseDoubleClick" Handler="VideoItem_OnMouseDoubleClick" />
                                 <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">

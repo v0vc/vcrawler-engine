@@ -99,7 +99,7 @@ namespace Crawler.Views
             ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
                 CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
             ViewModel.Model.PrValue = 0;
-            ViewModel.Model.IsIdle = true;
+            ViewModel.Model.IsWorking = false;
             ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
             var webClient = sender as WebClient;
             if (webClient == null)
@@ -149,7 +149,7 @@ namespace Crawler.Views
                     link.Split('/').Last());
             }
 
-            ViewModel.Model.IsIdle = false;
+            ViewModel.Model.IsWorking = true;
 
             ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
 
@@ -166,7 +166,7 @@ namespace Crawler.Views
             }
             else
             {
-                ViewModel.Model.IsIdle = true;
+                ViewModel.Model.IsWorking = false;
                 MessageBox.Show(link + " is not available");
             }
         }
