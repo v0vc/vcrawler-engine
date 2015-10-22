@@ -55,6 +55,8 @@ namespace Interfaces.Models
 
         Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset);
 
+        Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site);
+
         Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync();
 
         Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult);

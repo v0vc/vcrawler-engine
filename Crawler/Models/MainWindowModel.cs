@@ -62,7 +62,6 @@ namespace Crawler.Models
         private string _filter;
         private string _info;
         private bool _isExpand;
-        private bool isWorking;
         private string _link;
         private string _mpcPath;
         private string _newChannelLink;
@@ -79,6 +78,7 @@ namespace Crawler.Models
         private IVideoItem _selectedVideoItem;
         private string _youHeader;
         private string _youPath;
+        private bool isWorking;
 
         #endregion
 
@@ -487,7 +487,7 @@ namespace Crawler.Models
             await channel.InsertChannelItemsAsync();
 
             IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync(); // TODO add site
-            
+
             foreach (IPlaylist pl in pls)
             {
                 channel.ChannelPlaylists.Add(pl);
@@ -604,6 +604,8 @@ namespace Crawler.Models
         {
             await LoadSettings();
 
+            CreateServicesChannels();
+
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)
             {
@@ -615,13 +617,11 @@ namespace Crawler.Models
             {
                 SelectedChannel = Channels.First();
             }
-
-            CreateServicesChannels();
         }
 
         public async Task FindRelatedChannels(IChannel channel)
         {
-            if (channel == null || channel.Site != SiteType.YouTube)
+            if (channel == null)
             {
                 return;
             }
@@ -630,15 +630,14 @@ namespace Crawler.Models
 
             RelatedChannels.Clear();
 
-            IEnumerable<IChannelPOCO> related = await _yf.GetRelatedChannelsByIdAsync(channel.ID);
+            IEnumerable<IChannel> lst = await channel.GetRelatedChannelNetAsync(channel.ID, channel.Site);
 
-            foreach (IChannel ch in related.Select(poco => _cf.CreateChannel(poco)))
+            foreach (IChannel ch in lst)
             {
                 if (Channels.Select(x => x.ID).Contains(ch.ID))
                 {
                     ch.IsDownloading = true;
                 }
-
                 RelatedChannels.Add(ch);
             }
 
@@ -815,20 +814,21 @@ namespace Crawler.Models
 
         public async Task SyncData()
         {
+            ShowAllChannels();
             PrValue = 0;
             var i = 0;
+            SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
-            ShowAllChannels();
 
             foreach (IChannel channel in Channels)
             {
+                i += 1;
+                PrValue = Math.Round((double)(100 * i) / Channels.Count);
+                prog.SetProgressValue((int)PrValue, 100);
+                Info = "Syncing: " + channel.Title;
                 try
                 {
-                    i += 1;
-                    PrValue = Math.Round((double)(100 * i) / Channels.Count);
-                    prog.SetProgressValue((int)PrValue, 100);
-                    Info = "Syncing: " + channel.Title;
                     await channel.SyncChannelAsync(false);
                 }
                 catch (Exception ex)

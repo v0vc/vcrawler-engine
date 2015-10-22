@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -320,6 +319,23 @@ namespace Models.Factories
             }
         }
 
+        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
+        {
+            IEnumerable<IChannelPOCO> related;
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    related = await _c.CreateYouTubeSite().GetRelatedChannelsByIdAsync(id);
+                    break;
+
+                default:
+                    related = new List<IChannelPOCO>();
+                    break;
+            }
+
+            return related.Select(CreateChannel);
+        }
+
         public async Task InsertChannelAsync(IChannel channel)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
@@ -564,9 +580,9 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
                 ChannelCookies = new CookieContainer()
             };
             return channel;
@@ -576,11 +592,11 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
-                Site = site,
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
+                Site = site, 
                 SiteAdress = CommonExtensions.GetSiteAdress(site)
             };
             return channel;
@@ -590,15 +606,15 @@ namespace Models.Factories
         {
             var channel = new Channel(this)
             {
-                ID = poco.ID,
-                Title = poco.Title,
+                ID = poco.ID, 
+                Title = poco.Title, 
                 SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail,
-                SiteAdress = poco.Site,
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
+                Thumbnail = poco.Thumbnail, 
+                SiteAdress = poco.Site, 
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
                 Site = CommonExtensions.GetSiteType(poco.Site)
             };
             return channel;
@@ -635,9 +651,9 @@ namespace Models.Factories
 
         public async Task<IChannel> GetChannelNetAsync(string channelID, SiteType site)
         {
+            IChannelPOCO poco = null;
             try
             {
-                IChannelPOCO poco = null;
                 switch (site)
                 {
                     case SiteType.YouTube:

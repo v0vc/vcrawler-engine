@@ -245,6 +245,11 @@ namespace Models.BO
             return await _cf.GetChannelItemsDbAsync(ID, count, offset);
         }
 
+        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
+        {
+            return await _cf.GetRelatedChannelNetAsync(id, site);
+        }
+
         public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()
         {
             return await _cf.GetChannelItemsIdsListDbAsync(ID);
