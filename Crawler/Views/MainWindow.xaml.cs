@@ -276,6 +276,10 @@ namespace Crawler.Views
                     {
                         channel.AddNewItem(item, false);
                         item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+                        if (ViewModel.Model.Channels.Select(x => x.ID).Contains(item.ParentID)) // подсветим видео, если канал уже есть в подписке
+                        {
+                            item.IsNewItem = true;
+                        }
                     }
                 }
                 catch (Exception ex)
