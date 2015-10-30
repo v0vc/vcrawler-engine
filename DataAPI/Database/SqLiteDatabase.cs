@@ -1113,9 +1113,46 @@ namespace DataAPI.Database
         {
             await InsertChannelAsync(channel);
 
-            foreach (IVideoItem item in channel.ChannelItems)
+            using (var conn = new SQLiteConnection(dbConnection))
             {
-                await InsertItemAsync(item);
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText =
+                            string.Format(
+                                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
+                                tableitems,
+                                itemId,
+                                parentID,
+                                title,
+                                description,
+                                viewCount,
+                                duration,
+                                comments,
+                                thumbnail,
+                                timestamp);
+
+                        command.CommandType = CommandType.Text;
+
+                        foreach (IVideoItem item in channel.ChannelItems)
+                        {
+                            command.Parameters.AddWithValue("@" + itemId, item.ID);
+                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                            command.Parameters.AddWithValue("@" + title, item.Title);
+                            command.Parameters.AddWithValue("@" + description, item.Description);
+                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                            command.Parameters.AddWithValue("@" + duration, item.Duration);
+                            command.Parameters.AddWithValue("@" + comments, item.Comments);
+                            command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    transaction.Commit();
+                }
             }
         }
 
@@ -1161,8 +1198,19 @@ namespace DataAPI.Database
 
         public async Task InsertItemAsync(IVideoItem item)
         {
-            string zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}')
-                                    VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})", tableitems, itemId, parentID, title, description, viewCount, duration, comments, thumbnail, timestamp);
+            string zap =
+                string.Format(
+                              @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
+                    tableitems,
+                    itemId,
+                    parentID,
+                    title,
+                    description,
+                    viewCount,
+                    duration,
+                    comments,
+                    thumbnail,
+                    timestamp);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
