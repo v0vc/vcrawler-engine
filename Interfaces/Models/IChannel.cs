@@ -30,7 +30,6 @@ namespace Interfaces.Models
         string Title { get; set; }
         int ChannelItemsCount { get; set; }
         SiteType Site { get; set; }
-
         #endregion
 
         #region Methods

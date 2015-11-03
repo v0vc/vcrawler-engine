@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -35,6 +36,7 @@ namespace Crawler.ViewModels
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
+        private RelayCommand fillChannelsCommand;
 
         #endregion
 
@@ -112,6 +114,14 @@ namespace Crawler.ViewModels
             get
             {
                 return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await Model.SyncData()));
+            }
+        }
+
+        public RelayCommand FillChannelsCommand
+        {
+            get
+            {
+                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(async x => await Model.OnStartup()));
             }
         }
 

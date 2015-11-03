@@ -79,6 +79,7 @@ namespace Crawler.Models
         private string _youHeader;
         private string _youPath;
         private bool isWorking;
+        private bool isChannelReady;
 
         #endregion
 
@@ -130,6 +131,19 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
+
+        public bool IsChannelReady
+        {
+            get
+            {
+                return isChannelReady;
+            }
+            set
+            {
+                isChannelReady = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string DirPath
         {
@@ -600,11 +614,54 @@ namespace Crawler.Models
             }
         }
 
-        public async Task FillChannels()
+        public async Task OnStartup()
         {
-            await LoadSettings();
+            SetStatus(1);
+            using (var bgv = new BackgroundWorker())
+            {
+                bgv.DoWork += BgvDoWork;
+                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
+                bgv.RunWorkerAsync();
+            }
+        }
 
-            CreateServicesChannels();
+        private async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message);
+                SetStatus(3);
+            }
+            else
+            {
+                IsChannelReady = true;
+                SetStatus(0);
+                await LoadSettings();
+                CreateServicesChannels();
+
+                // [TODO] focus on first
+                // focus
+                // if (channelsGrid.SelectedIndex >= 0)
+                // {
+                // channelsGrid.UpdateLayout();
+                // var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
+                // if (row != null)
+                // {
+                // row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+                // }
+                // }
+            }
+        }
+
+        private void BgvDoWork(object sender, DoWorkEventArgs e)
+        {
+            Application.Current.Dispatcher.InvokeAsync(new Action(async () => await FillChannels()));
+        }
+
+        private async Task FillChannels()
+        {
+            //await LoadSettings();
+            //CreateServicesChannels();
 
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)

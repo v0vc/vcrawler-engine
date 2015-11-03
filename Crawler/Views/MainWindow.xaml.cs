@@ -112,34 +112,34 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private void BgvDoWork(object sender, DoWorkEventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(async () => await ViewModel.Model.FillChannels()));
-        }
+        //private void BgvDoWork(object sender, DoWorkEventArgs e)
+        //{
+        //    Dispatcher.InvokeAsync(new Action(async () => await ViewModel.Model.FillChannels()));
+        //}
 
-        private void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
-            {
-                MessageBox.Show(e.Error.Message);
-                ViewModel.Model.SetStatus(3);
-            }
-            else
-            {
-                ViewModel.Model.SetStatus(0);
+        //private void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        //{
+        //    if (e.Error != null)
+        //    {
+        //        MessageBox.Show(e.Error.Message);
+        //        ViewModel.Model.SetStatus(3);
+        //    }
+        //    else
+        //    {
+        //        ViewModel.Model.SetStatus(0);
 
-                if (channelsGrid.SelectedIndex >= 0)
-                {
-                    // focus
-                    channelsGrid.UpdateLayout();
-                    var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
-                    if (row != null)
-                    {
-                        row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                    }
-                }
-            }
-        }
+        //        if (channelsGrid.SelectedIndex >= 0)
+        //        {
+        //            // focus
+        //            channelsGrid.UpdateLayout();
+        //            var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
+        //            if (row != null)
+        //            {
+        //                row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        //            }
+        //        }
+        //    }
+        //}
 
         private async void Channel_OnClick(object sender, RoutedEventArgs e)
         {
@@ -609,17 +609,17 @@ namespace Crawler.Views
             }
         }
 
-        private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            // await ViewModel.Model.FillChannels();
-            ViewModel.Model.SetStatus(1);
-            using (var bgv = new BackgroundWorker())
-            {
-                bgv.DoWork += BgvDoWork;
-                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                bgv.RunWorkerAsync();
-            }
-        }
+        //private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
+        //{
+        //    // await ViewModel.Model.FillChannels();
+        //    ViewModel.Model.SetStatus(1);
+        //    using (var bgv = new BackgroundWorker())
+        //    {
+        //        bgv.DoWork += BgvDoWork;
+        //        bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
+        //        bgv.RunWorkerAsync();
+        //    }
+        //}
 
         private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
         {

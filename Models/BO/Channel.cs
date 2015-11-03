@@ -32,6 +32,7 @@ namespace Models.BO
         private string _subTitle;
         private string _title;
         private int channelItemsCount;
+        private bool selected;
 
         #endregion
 

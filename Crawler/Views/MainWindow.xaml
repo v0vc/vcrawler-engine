@@ -3,10 +3,16 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Crawler.Controls"
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         Title="{Binding Model.Version, Mode=OneTime}" Height="450" Width="1200"
-        Loaded="MainWindow_OnLoaded"
         Icon="../Images/gear.ico"
         >
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding FillChannelsCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
     <Grid>
         
         <Grid.RowDefinitions>
@@ -158,7 +164,7 @@
                     </Border>
                 </DockPanel>
 
-                <DataGrid Grid.Row="1"
+                <DataGrid Grid.Row="1" behaviors:FocusExtension.IsFocused="{Binding Model.IsChannelReady}" IsSynchronizedWithCurrentItem = "True"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
@@ -268,7 +274,7 @@
                         </DataGridTemplateColumn>
                         
                     </DataGrid.Columns>
-                    
+
                 </DataGrid>
                 
                 <DockPanel Grid.Row="2" Background="Lavender" Margin="1,1,0,1">
