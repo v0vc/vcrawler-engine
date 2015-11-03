@@ -21,11 +21,11 @@ namespace IoC
             }
         }
 
-        public IChapterFactory CreateChapterFactory()
+        public ISubtitleFactory CreateSubtitleFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IChapterFactory>();
+                return scope.Resolve<ISubtitleFactory>();
             }
         }
 

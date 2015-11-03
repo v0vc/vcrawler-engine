@@ -12,7 +12,7 @@ namespace Interfaces.Factories
 
         IChannelFactory CreateChannelFactory();
 
-        IChapterFactory CreateChapterFactory();
+        ISubtitleFactory CreateSubtitleFactory();
 
         ICredFactory CreateCredFactory();
 

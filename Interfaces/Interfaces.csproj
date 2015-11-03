@@ -47,7 +47,7 @@
     <Compile Include="Enums\ItemState.cs" />
     <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />
-    <Compile Include="Factories\IChapterFactory.cs" />
+    <Compile Include="Factories\ISubtitleFactory.cs" />
     <Compile Include="Factories\ICommonFactory.cs" />
     <Compile Include="Factories\ICredFactory.cs" />
     <Compile Include="Factories\IPlaylistFactory.cs" />
@@ -55,14 +55,14 @@
     <Compile Include="Factories\ITagFactory.cs" />
     <Compile Include="Factories\IVideoItemFactory.cs" />
     <Compile Include="Models\IChannel.cs" />
-    <Compile Include="Models\IChapter.cs" />
+    <Compile Include="Models\ISubtitle.cs" />
     <Compile Include="Models\ICred.cs" />
     <Compile Include="Models\IPlaylist.cs" />
     <Compile Include="Models\ISetting.cs" />
     <Compile Include="Models\ITag.cs" />
     <Compile Include="Models\IVideoItem.cs" />
     <Compile Include="POCO\IChannelPOCO.cs" />
-    <Compile Include="POCO\IChapterPOCO.cs" />
+    <Compile Include="POCO\ISubtitlePOCO.cs" />
     <Compile Include="POCO\ICredPOCO.cs" />
     <Compile Include="POCO\IPlaylistPOCO.cs" />
     <Compile Include="POCO\ISettingPOCO.cs" />

@@ -2,15 +2,13 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using Interfaces.POCO;
-
-namespace DataAPI.POCO
+namespace Interfaces.POCO
 {
-    public class ChapterPOCO : IChapterPOCO
+    public interface ISubtitlePOCO
     {
-        #region IChapterPOCO Members
+        #region Properties
 
-        public string Language { get; set; }
+        string Language { get; set; }
 
         #endregion
     }

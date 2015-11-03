@@ -179,7 +179,7 @@ namespace TestAPI
         public async Task GetVideoSubtitlesByIdAsync()
         {
             IYouTubeSite you = _fabric.CreateYouTubeSite();
-            IEnumerable<IChapterPOCO> res = await you.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
+            IEnumerable<ISubtitlePOCO> res = await you.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
             Assert.IsTrue(res.Any());
         }
 

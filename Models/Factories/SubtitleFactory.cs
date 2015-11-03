@@ -9,19 +9,18 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class ChapterFactory : IChapterFactory
+    public class SubtitleFactory : ISubtitleFactory
     {
-        #region IChapterFactory Members
+        #region ISubtitleFactory Members
 
-        public IChapter CreateChapter()
+        public ISubtitle CreateSubtitle()
         {
-            return new Chapter();
+            return new Subtitle();
         }
 
-        public IChapter CreateChapter(IChapterPOCO poco)
+        public ISubtitle CreateSubtitle(ISubtitlePOCO poco)
         {
-            var chapter = new Chapter { Language = poco.Language, IsEnabled = true };
-            return chapter;
+            return new Subtitle { Language = poco.Language, IsEnabled = true };
         }
 
         #endregion

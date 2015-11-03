@@ -33,7 +33,7 @@ namespace Models.BO.Items
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
-        public ObservableCollection<IChapter> VideoItemChapters { get; set; }
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public long ViewCount { get; set; }
 
         public IVideoItem CreateVideoItem()
@@ -51,7 +51,7 @@ namespace Models.BO.Items
             throw new NotImplementedException();
         }
 
-        public Task FillChapters()
+        public Task FillSubtitles()
         {
             throw new NotImplementedException();
         }

@@ -142,20 +142,20 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IChapter>> GetVideoItemChaptersAsync(string id)
+        public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
             IYouTubeSite fb = c.CreateYouTubeSite();
-            IChapterFactory cf = c.CreateChapterFactory();
-            var res = new List<IChapter>();
+            ISubtitleFactory cf = c.CreateSubtitleFactory();
+            var res = new List<ISubtitle>();
             try
             {
-                IEnumerable<IChapterPOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
-                res.AddRange(poco.Select(cf.CreateChapter));
+                IEnumerable<ISubtitlePOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
+                res.AddRange(poco.Select(sub => cf.CreateSubtitle(sub)));
                 if (res.Any())
                 {
                     return res;
                 }
-                IChapter chap = cf.CreateChapter();
+                ISubtitle chap = cf.CreateSubtitle();
                 chap.IsEnabled = false;
                 chap.Language = "Auto";
                 res.Add(chap);
@@ -182,8 +182,6 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
-
-        
 
         #endregion
 
@@ -220,7 +218,7 @@ namespace Models.Factories
                 Site = poco.Site,
                 DurationString = IntTostrTime(poco.Duration),
                 DateTimeAgo = TimeAgo(poco.Timestamp),
-                VideoItemChapters = new ObservableCollection<IChapter>()
+                Subtitles = new ObservableCollection<ISubtitle>()
             };
             return vi;
         }
@@ -263,22 +261,6 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
-
-        //public async Task<IVideoItem> GetVideoItemNetAsync(string id)
-        //{
-        //    IYouTubeSite fb = c.CreateYouTubeSite();
-        //    IVideoItemFactory vf = c.CreateVideoItemFactory();
-        //    try
-        //    {
-        //        IVideoItemPOCO poco = await fb.GetVideoItemNetAsync(id);
-        //        IVideoItem vi = vf.CreateVideoItem(poco);
-        //        return vi;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
 
         #endregion
     }

@@ -119,7 +119,7 @@ namespace Interfaces.API
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<IEnumerable<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id);
+        Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id);
 
         /// <summary>
         ///     Получить список полных видео по списку id

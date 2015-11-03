@@ -734,7 +734,7 @@ namespace Crawler.Views
                                 item.LocalFilePath = string.Empty;
                                 item.IsHasLocalFile = false;
                                 item.State = ItemState.LocalNo;
-                                item.VideoItemChapters.Clear();
+                                item.Subtitles.Clear();
                             }
                             catch (Exception ex)
                             {
@@ -762,9 +762,9 @@ namespace Crawler.Views
 
         private async void MenuItem_OnSubmenuOpened(object sender, RoutedEventArgs e)
         {
-            if (!ViewModel.Model.SelectedVideoItem.VideoItemChapters.Any())
+            if (!ViewModel.Model.SelectedVideoItem.Subtitles.Any())
             {
-                await ViewModel.Model.SelectedVideoItem.FillChapters();
+                await ViewModel.Model.SelectedVideoItem.FillSubtitles();
             }
         }
 

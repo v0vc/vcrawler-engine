@@ -42,23 +42,18 @@ namespace IoC
         //private static IKernel GetKernel()
         //{
         //    var kern = new StandardKernel();
-
         //    kern.Bind<IChannelFactory>().To<ChannelFactory>().InSingletonScope();
         //    kern.Bind<IVideoItemFactory>().To<VideoItemFactory>().InSingletonScope();
         //    kern.Bind<IPlaylistFactory>().To<PlaylistFactory>().InSingletonScope();
         //    kern.Bind<ITagFactory>().To<TagFactory>().InSingletonScope();
         //    kern.Bind<ICredFactory>().To<CredFactory>().InSingletonScope();
         //    kern.Bind<ISettingFactory>().To<SettingFactory>().InSingletonScope();
-        //    kern.Bind<IChapterFactory>().To<ChapterFactory>().InSingletonScope();
-
+        //    kern.Bind<ISubtitleFactory>().To<SubtitleFactory>().InSingletonScope();
         //    kern.Bind<IYouTubeSite>().To<YouTubeSite>().InSingletonScope();
         //    kern.Bind<ITapochekSite>().To<TapochekSite>().InSingletonScope();
         //    kern.Bind<IRutrackerSite>().To<RutrackerSite>().InSingletonScope();
-
         //    kern.Bind<ISqLiteDatabase>().To<SqLiteDatabase>().InSingletonScope();
-
         //    kern.Bind<ICommonFactory>().ToFactory();
-
         //    return kern;
         //}
 
@@ -88,7 +83,7 @@ namespace IoC
             builder.RegisterType<TagFactory>().As<ITagFactory>().SingleInstance();
             builder.RegisterType<CredFactory>().As<ICredFactory>().SingleInstance();
             builder.RegisterType<SettingFactory>().As<ISettingFactory>().SingleInstance();
-            builder.RegisterType<ChapterFactory>().As<IChapterFactory>().SingleInstance();
+            builder.RegisterType<SubtitleFactory>().As<ISubtitleFactory>().SingleInstance();
 
             builder.RegisterType<CommonFactory>().As<ICommonFactory>().SingleInstance();
 

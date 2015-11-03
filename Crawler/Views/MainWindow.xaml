@@ -481,7 +481,7 @@
 
                                 <MenuItem Header="Subtitles" SubmenuOpened="MenuItem_OnSubmenuOpened"
                                       >
-                                    <ListView ItemsSource="{Binding Path=ViewModel.Model.SelectedVideoItem.VideoItemChapters, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    <ListView ItemsSource="{Binding Path=ViewModel.Model.SelectedVideoItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                           BorderThickness="0" Background="WhiteSmoke"
                                           >
                                         <ListView.ItemTemplate>

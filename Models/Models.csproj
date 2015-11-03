@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BO\Channel.cs" />
-    <Compile Include="BO\Chapter.cs" />
+    <Compile Include="BO\Subtitle.cs" />
     <Compile Include="BO\Cred.cs" />
     <Compile Include="BO\Items\RuTrackerItem.cs" />
     <Compile Include="BO\Items\TapochekItem.cs" />
@@ -54,7 +54,7 @@
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />
     <Compile Include="Factories\ChannelFactory.cs" />
-    <Compile Include="Factories\ChapterFactory.cs" />
+    <Compile Include="Factories\SubtitleFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
     <Compile Include="Factories\SettingFactory.cs" />

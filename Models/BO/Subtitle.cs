@@ -3,17 +3,16 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Interfaces.Models;
-using Interfaces.POCO;
 
-namespace Interfaces.Factories
+namespace Models.BO
 {
-    public interface IChapterFactory
+    public class Subtitle : ISubtitle
     {
-        #region Methods
+        #region ISubtitle Members
 
-        IChapter CreateChapter();
-
-        IChapter CreateChapter(IChapterPOCO poco);
+        public bool IsChecked { get; set; }
+        public bool IsEnabled { get; set; }
+        public string Language { get; set; }
 
         #endregion
     }

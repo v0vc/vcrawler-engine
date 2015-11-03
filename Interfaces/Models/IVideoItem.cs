@@ -30,7 +30,7 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         DateTime Timestamp { get; set; }
         string Title { get; set; }
-        ObservableCollection<IChapter> VideoItemChapters { get; set; }
+        ObservableCollection<ISubtitle> Subtitles { get; set; }
         long ViewCount { get; set; }
         SiteType Site { get; set; }
         ItemState State { get; set; }
@@ -43,7 +43,7 @@ namespace Interfaces.Models
 
         Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio);
 
-        Task FillChapters();
+        Task FillSubtitles();
 
         Task FillDescriptionAsync();
 

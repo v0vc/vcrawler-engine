@@ -881,7 +881,7 @@ namespace DataAPI.Videos
             return lst;
         }
 
-        public async Task<IEnumerable<IChapterPOCO>> GetVideoSubtitlesByIdAsync(string id)
+        public async Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
         {
             string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
                 url, 
@@ -897,7 +897,7 @@ namespace DataAPI.Videos
                 select pair.SelectToken("snippet.language")
                 into lang
                 where lang != null
-                select new ChapterPOCO { Language = lang.Value<string>() }).Cast<IChapterPOCO>().ToList();
+                select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<ISubtitlePOCO>().ToList();
         }
 
         public async Task<string> ParseChannelLink(string inputChannelLink)

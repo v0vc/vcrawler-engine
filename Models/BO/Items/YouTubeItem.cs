@@ -38,7 +38,6 @@ namespace Models.BO.Items
         private bool isAudio;
         private bool isHasLocalFile;
         private bool isShowRow;
-        private string itemState;
         private byte[] largeThumb;
         private string logText;
         private TaskbarManager taskbar;
@@ -272,7 +271,7 @@ namespace Models.BO.Items
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
-        public ObservableCollection<IChapter> VideoItemChapters { get; set; }
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public long ViewCount { get; set; }
 
         public async Task DeleteItemAsync()
@@ -309,12 +308,12 @@ namespace Models.BO.Items
                         options);
             }
 
-            if (VideoItemChapters.Select(x => x.IsChecked).Contains(true))
+            if (Subtitles.Select(x => x.IsChecked).Contains(true))
             {
                 var sb = new StringBuilder();
-                foreach (IChapter chapter in VideoItemChapters.Where(chapter => chapter.IsChecked))
+                foreach (ISubtitle sub in Subtitles.Where(sub => sub.IsChecked))
                 {
-                    sb.Append(chapter.Language).Append(',');
+                    sb.Append(sub.Language).Append(',');
                 }
                 string res = sb.ToString().TrimEnd(',');
 
@@ -353,15 +352,15 @@ namespace Models.BO.Items
             });
         }
 
-        public async Task FillChapters()
+        public async Task FillSubtitles()
         {
-            IEnumerable<IChapter> res = await vf.GetVideoItemChaptersAsync(ID);
+            IEnumerable<ISubtitle> res = await vf.GetVideoItemSubtitlesAsync(ID);
 
-            VideoItemChapters.Clear();
+            Subtitles.Clear();
 
-            foreach (IChapter chapter in res)
+            foreach (ISubtitle sub in res)
             {
-                VideoItemChapters.Add(chapter);
+                Subtitles.Add(sub);
             }
         }
 
