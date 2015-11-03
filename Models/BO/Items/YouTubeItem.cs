@@ -43,6 +43,7 @@ namespace Models.BO.Items
         private string logText;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
+        private ItemState state;
 
         #endregion
 
@@ -112,13 +113,13 @@ namespace Models.BO.Items
                 // в имени нет запретных знаков
                 if (fn.Exists)
                 {
-                    ItemState = "LocalYes";
+                    State = ItemState.LocalYes;
                     IsHasLocalFile = true;
                     LocalFilePath = fn.FullName;
                 }
                 else
                 {
-                    ItemState = "LocalNo";
+                    State = ItemState.LocalNo;
                     IsHasLocalFile = false;
                 }
             }
@@ -133,13 +134,13 @@ namespace Models.BO.Items
                 var fnn = new FileInfo(Path.Combine(fn.DirectoryName, cleartitle + Path.GetExtension(fn.Name)));
                 if (CommonExtensions.RenameFile(fn, fnn))
                 {
-                    ItemState = "LocalYes";
+                    State = ItemState.LocalYes;
                     IsHasLocalFile = true;
                     LocalFilePath = fnn.FullName;
                 }
                 else
                 {
-                    ItemState = "LocalNo";
+                    State = ItemState.LocalNo;
                     IsHasLocalFile = false;
                 }
             }
@@ -212,23 +213,6 @@ namespace Models.BO.Items
             }
         }
 
-        public string ItemState
-        {
-            get
-            {
-                return itemState;
-            }
-            set
-            {
-                if (value == itemState)
-                {
-                    return;
-                }
-                itemState = value;
-                OnPropertyChanged();
-            }
-        }
-
         public byte[] LargeThumb
         {
             get
@@ -267,6 +251,24 @@ namespace Models.BO.Items
 
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
+
+        public ItemState State
+        {
+            get
+            {
+                return state;
+            }
+            set
+            {
+                if (value == state)
+                {
+                    return;
+                }
+                state = value;
+                OnPropertyChanged();
+            }
+        }
+
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
@@ -281,7 +283,7 @@ namespace Models.BO.Items
         public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudiOnly)
         {
             isAudio = isAudiOnly;
-            ItemState = "Downloading";
+            State = ItemState.Downloading;
             DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
             {
@@ -293,15 +295,15 @@ namespace Models.BO.Items
             string param;
             if (isAudio)
             {
-                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s {1} --audio-format mp3 {2}", dir, MakeLink(), options);
+                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s \"{1}\" --audio-format mp3 {2}", dir, MakeLink(), options);
             }
             else
             {
                 param =
                     string.Format(
                                   isHd
-                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s {1} {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s {1} {2}",
+                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
                         dir,
                         MakeLink(),
                         options);
@@ -403,11 +405,11 @@ namespace Models.BO.Items
                 IsHasLocalFile = fnvid.Exists;
                 if (IsHasLocalFile)
                 {
-                    ItemState = "LocalYes";
+                    State = ItemState.LocalYes;
                     LocalFilePath = fnvid.FullName;
                     break;
                 }
-                ItemState = "LocalNo";
+                State = ItemState.LocalNo;
             }
         }
 

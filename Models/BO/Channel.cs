@@ -184,7 +184,7 @@ namespace Models.BO
         {
             item.IsNewItem = isNew;
             item.IsShowRow = true;
-            item.ItemState = "LocalNo";
+            item.State = ItemState.LocalNo;
             item.IsHasLocalFile = false;
             item.Site = Site;
 

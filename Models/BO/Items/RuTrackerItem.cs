@@ -24,12 +24,12 @@ namespace Models.BO.Items
         public bool IsHasLocalFile { get; set; }
         public bool IsNewItem { get; set; }
         public bool IsShowRow { get; set; }
-        public string ItemState { get; set; }
         public byte[] LargeThumb { get; set; }
         public string LocalFilePath { get; set; }
         public string LogText { get; set; }
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
+        public ItemState State { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }

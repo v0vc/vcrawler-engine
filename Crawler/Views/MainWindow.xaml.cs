@@ -15,6 +15,7 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using Crawler.ViewModels;
+using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 
@@ -261,8 +262,8 @@ namespace Crawler.Views
                     for (int i = channel.ChannelItems.Count; i > 0; i--)
                     {
                         if (
-                            !(channel.ChannelItems[i - 1].ItemState == "LocalYes"
-                              || channel.ChannelItems[i - 1].ItemState == "Downloading"))
+                            !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
+                              || channel.ChannelItems[i - 1].State == ItemState.Downloading))
                         {
                             channel.ChannelItems.RemoveAt(i - 1);
                         }
@@ -732,7 +733,8 @@ namespace Crawler.Views
                                 await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
                                 item.LocalFilePath = string.Empty;
                                 item.IsHasLocalFile = false;
-                                item.ItemState = "LocalNo";
+                                item.State = ItemState.LocalNo;
+                                item.VideoItemChapters.Clear();
                             }
                             catch (Exception ex)
                             {

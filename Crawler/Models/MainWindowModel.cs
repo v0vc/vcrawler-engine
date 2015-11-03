@@ -733,8 +733,8 @@ namespace Crawler.Models
                     for (int i = channel.ChannelItems.Count; i > 0; i--)
                     {
                         if (
-                            !(channel.ChannelItems[i - 1].ItemState == "LocalYes"
-                              || channel.ChannelItems[i - 1].ItemState == "Downloading"))
+                            !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
+                              || channel.ChannelItems[i - 1].State == ItemState.Downloading))
                         {
                             channel.ChannelItems.RemoveAt(i - 1);
                         }

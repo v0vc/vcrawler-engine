@@ -23,7 +23,6 @@ namespace Interfaces.Models
         bool IsHasLocalFile { get; set; }
         bool IsNewItem { get; set; }
         bool IsShowRow { get; set; }
-        string ItemState { get; set; }
         byte[] LargeThumb { get; set; }
         string LocalFilePath { get; set; }
         string LogText { get; set; }
@@ -34,6 +33,7 @@ namespace Interfaces.Models
         ObservableCollection<IChapter> VideoItemChapters { get; set; }
         long ViewCount { get; set; }
         SiteType Site { get; set; }
+        ItemState State { get; set; }
 
         #endregion
 
