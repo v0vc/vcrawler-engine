@@ -45,6 +45,7 @@
     <Compile Include="API\ITapochekSite.cs" />
     <Compile Include="API\IYouTubeSite.cs" />
     <Compile Include="Enums\ItemState.cs" />
+    <Compile Include="Enums\KeyboardKey.cs" />
     <Compile Include="Enums\MainMenuItem.cs" />
     <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />

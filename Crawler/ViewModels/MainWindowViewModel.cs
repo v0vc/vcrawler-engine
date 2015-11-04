@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -35,12 +36,13 @@ namespace Crawler.ViewModels
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
+        private RelayCommand mainMenuCommand;
         private RelayCommand openDirCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
-        private RelayCommand mainMenuCommand;
+        private RelayCommand channelKeyDownCommand;
 
         #endregion
 
@@ -55,54 +57,24 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand MainMenuCommand
+        public RelayCommand ChannelKeyDownCommand
         {
             get
             {
-                return mainMenuCommand ?? (mainMenuCommand = new RelayCommand(MainMenuClick));
+                return channelKeyDownCommand ?? (channelKeyDownCommand = new RelayCommand(ChannelKeyDown));
             }
         }
 
-        private async void MainMenuClick(object param)
+        private void ChannelKeyDown(object par)
         {
-            var window = param as Window;
-            if (window != null)
+            var key = (KeyboardKey)par;
+            switch (key)
             {
-                window.Close();
-            }
-            else
-            {
-                var menu = (MainMenuItem)param;
-                switch (menu)
-                {
-                    case MainMenuItem.Backup:
-                        await Backup();
-                        break;
+                case KeyboardKey.Delete:
+                    break;
 
-                    case MainMenuItem.Restore:
-                        await Restore();
-                        break;
-
-                    case MainMenuItem.Settings:
-                        OpenSettings();
-                        break;
-
-                    case MainMenuItem.Vacuum:
-                        await Vacuumdb();
-                        break;
-
-                    case MainMenuItem.ShowAll:
-                        Model.ShowAllChannels();
-                        break;
-
-                    case MainMenuItem.Link:
-                        OpenAddLink();
-                        break;
-
-                    case MainMenuItem.About:
-                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
-                        break;
-                }
+                case KeyboardKey.Enter:
+                    break;
             }
         }
 
@@ -143,6 +115,14 @@ namespace Crawler.ViewModels
             get
             {
                 return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(x => Model.OnStartup()));
+            }
+        }
+
+        public RelayCommand MainMenuCommand
+        {
+            get
+            {
+                return mainMenuCommand ?? (mainMenuCommand = new RelayCommand(MainMenuClick));
             }
         }
 
@@ -378,6 +358,49 @@ namespace Crawler.ViewModels
                 return;
             }
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+        }
+
+        private async void MainMenuClick(object param)
+        {
+            var window = param as Window;
+            if (window != null)
+            {
+                window.Close();
+            }
+            else
+            {
+                var menu = (MainMenuItem)param;
+                switch (menu)
+                {
+                    case MainMenuItem.Backup:
+                        await Backup();
+                        break;
+
+                    case MainMenuItem.Restore:
+                        await Restore();
+                        break;
+
+                    case MainMenuItem.Settings:
+                        OpenSettings();
+                        break;
+
+                    case MainMenuItem.Vacuum:
+                        await Vacuumdb();
+                        break;
+
+                    case MainMenuItem.ShowAll:
+                        Model.ShowAllChannels();
+                        break;
+
+                    case MainMenuItem.Link:
+                        OpenAddLink();
+                        break;
+
+                    case MainMenuItem.About:
+                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
+                }
+            }
         }
 
         private void OpenDir(object obj)

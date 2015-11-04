@@ -4,6 +4,7 @@
         xmlns:controls="clr-namespace:Crawler.Controls"
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         Title="{Binding Model.Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         >
@@ -81,7 +82,6 @@
                                               BorderThickness="1"
                                               ItemsSource="{Binding Model.RelatedChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
-                                              PreviewKeyDown="DataGridPreviewKeyDown"
                                               >
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="SelectionChanged" SourceName="relatedGrid">
@@ -179,9 +179,19 @@
                           HorizontalScrollBarVisibility="Disabled"
                           IsSynchronizedWithCurrentItem="True"
                           ItemsSource="{Binding Model.Channels}"
-                          SelectedItem="{Binding Model.SelectedChannel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          SelectedItem="{Binding Model.SelectedChannel}"
                           PreviewKeyDown="DataGridPreviewKeyDown"
                           >
+                    
+                    <DataGrid.InputBindings>
+                        <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
+                        <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
+                    </DataGrid.InputBindings>
+                    
+                    <i:Interaction.Behaviors>
+                        <behaviors:DataGridSelectedItemsBehavior SelectedItems="{Binding Model.SelectedChannels, Mode=OneWayToSource}" />
+                    </i:Interaction.Behaviors>
+                    
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
                             <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=channelsGrid}"/>

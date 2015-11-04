@@ -79,6 +79,7 @@ namespace Crawler.Models
         private string _youHeader;
         private string _youPath;
         private bool isWorking;
+        private ObservableCollection<IChannel> selectedChannels = new ObservableCollection<IChannel>();
 
         #endregion
 
@@ -130,6 +131,18 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
+
+        public ObservableCollection<IChannel> SelectedChannels
+        {
+            get
+            {
+                return selectedChannels;
+            }
+            set
+            {
+                selectedChannels = value;
+            }
+        }
 
         public string DirPath
         {
