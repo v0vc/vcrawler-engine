@@ -7,11 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Forms;
+using System.Windows.Input;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
@@ -20,6 +21,7 @@ using Interfaces.Enums;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
+using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
 
 namespace Crawler.ViewModels
@@ -30,13 +32,15 @@ namespace Crawler.ViewModels
 
         private RelayCommand addNewItemCommand;
         private RelayCommand addNewTagCommand;
+        private RelayCommand channelSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
+        private RelayCommand fillChannelsCommand;
         private RelayCommand openDirCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
-        private RelayCommand fillChannelsCommand;
+        private RelayCommand mainMenuCommand;
 
         #endregion
 
@@ -51,7 +55,73 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public MainWindowModel Model { get; set; }
+        public RelayCommand MainMenuCommand
+        {
+            get
+            {
+                return mainMenuCommand ?? (mainMenuCommand = new RelayCommand(MainMenuClick));
+            }
+        }
+
+        private async void MainMenuClick(object param)
+        {
+            var par = param as string;
+            if (!string.IsNullOrEmpty(par))
+            {
+                switch (par)
+                {
+                    case "Backup":
+
+                        await Backup();
+
+                        break;
+
+                    case "Restore":
+
+                        await Restore();
+
+                        break;
+
+                    case "Settings":
+
+                        OpenSettings();
+
+                        break;
+
+                    case "Vacuum":
+
+                        await Vacuumdb();
+
+                        break;
+
+                    case "ShowAll":
+
+                        Model.ShowAllChannels();
+
+                        break;
+
+                    case "Link":
+
+                        OpenAddLink();
+
+                        break;
+
+                    case "About":
+
+                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+
+                        break;
+                }
+            }
+            else
+            {
+                var window = param as Window;
+                if (window != null)
+                {
+                    window.Close();
+                }
+            }
+        }
 
         public RelayCommand AddNewItemCommand
         {
@@ -69,6 +139,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand ChannelSelectionChangedCommand
+        {
+            get
+            {
+                return channelSelectionChangedCommand ?? (channelSelectionChangedCommand = new RelayCommand(FocusRow));
+            }
+        }
+
         public RelayCommand DownloadLinkCommand
         {
             get
@@ -76,6 +154,16 @@ namespace Crawler.ViewModels
                 return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink()));
             }
         }
+
+        public RelayCommand FillChannelsCommand
+        {
+            get
+            {
+                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(x => Model.OnStartup()));
+            }
+        }
+
+        public MainWindowModel Model { get; set; }
 
         public RelayCommand OpenDirCommand
         {
@@ -114,14 +202,6 @@ namespace Crawler.ViewModels
             get
             {
                 return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await Model.SyncData()));
-            }
-        }
-
-        public RelayCommand FillChannelsCommand
-        {
-            get
-            {
-                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(async x => await Model.OnStartup()));
             }
         }
 
@@ -296,6 +376,25 @@ namespace Crawler.ViewModels
             };
 
             antv.ShowDialog();
+        }
+
+        private async void FocusRow(object obj)
+        {
+            await Model.SelectChannel();
+
+            // focus
+            var datagrid = obj as DataGrid;
+            if (datagrid == null)
+            {
+                return;
+            }
+            datagrid.UpdateLayout();
+            var selectedRow = (DataGridRow)datagrid.ItemContainerGenerator.ContainerFromIndex(datagrid.SelectedIndex);
+            if (selectedRow == null)
+            {
+                return;
+            }
+            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
         }
 
         private void OpenDir(object obj)

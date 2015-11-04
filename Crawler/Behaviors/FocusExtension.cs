@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -12,9 +13,9 @@ namespace Crawler.Behaviors
     {
         #region Static and Readonly Fields
 
-        public static readonly DependencyProperty IsFocusedProperty = DependencyProperty.RegisterAttached("IsFocused", 
-            typeof(bool), 
-            typeof(FocusExtension), 
+        public static readonly DependencyProperty IsFocusedProperty = DependencyProperty.RegisterAttached("IsFocused",
+            typeof(bool),
+            typeof(FocusExtension),
             new UIPropertyMetadata(false, OnIsFocusedPropertyChanged));
 
         #endregion
@@ -39,8 +40,6 @@ namespace Crawler.Behaviors
                 return;
             }
 
-            // uie.UpdateLayout();
-            // uie.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             var action = new Action(() => uie.Dispatcher.BeginInvoke((Action)(() => uie.Focus())));
             Task.Factory.StartNew(action);
         }

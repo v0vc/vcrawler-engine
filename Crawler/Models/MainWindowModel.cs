@@ -79,7 +79,6 @@ namespace Crawler.Models
         private string _youHeader;
         private string _youPath;
         private bool isWorking;
-        private bool isChannelReady;
 
         #endregion
 
@@ -131,19 +130,6 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
-
-        public bool IsChannelReady
-        {
-            get
-            {
-                return isChannelReady;
-            }
-            set
-            {
-                isChannelReady = value;
-                OnPropertyChanged();
-            }
-        }
 
         public string DirPath
         {
@@ -614,7 +600,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task OnStartup()
+        public void OnStartup()
         {
             SetStatus(1);
             using (var bgv = new BackgroundWorker())
@@ -634,22 +620,9 @@ namespace Crawler.Models
             }
             else
             {
-                IsChannelReady = true;
-                SetStatus(0);
                 await LoadSettings();
                 CreateServicesChannels();
-
-                // [TODO] focus on first
-                // focus
-                // if (channelsGrid.SelectedIndex >= 0)
-                // {
-                // channelsGrid.UpdateLayout();
-                // var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
-                // if (row != null)
-                // {
-                // row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-                // }
-                // }
+                SetStatus(0);
             }
         }
 
@@ -660,20 +633,78 @@ namespace Crawler.Models
 
         private async Task FillChannels()
         {
-            //await LoadSettings();
-            //CreateServicesChannels();
-
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)
             {
                 ch.IsShowRow = true;
                 Channels.Add(ch);
             }
-
             if (Channels.Any())
             {
                 SelectedChannel = Channels.First();
             }
+        }
+
+        public async Task SelectChannel()
+        {
+            Filter = string.Empty;
+            IsExpand = false;
+
+            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
+            {
+                foreach (IChannel channel in RelatedChannels)
+                {
+                    channel.ChannelItems.Clear();
+                }
+
+                RelatedChannels.Clear();
+            }
+
+            foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = true;
+            }
+
+            // есть новые элементы после синхронизации
+            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any() && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
+
+            // заполняем только если либо ничего нет, либо одни новые
+            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
+            {
+                if (isHasNewFromSync)
+                {
+                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
+                    SelectedChannel.ChannelItems.Clear();
+                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
+                    foreach (IVideoItem item in from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
+                    {
+                        item.IsNewItem = true;
+                    }
+                }
+                else
+                {
+                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
+                }
+
+                if (SelectedChannel.ChannelItems.Any())
+                {
+                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
+                }
+                else
+                {
+                    // нет в базе = related channel
+                    SetStatus(1);
+                    SelectedChannel.IsInWork = true;
+                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
+                    foreach (IVideoItem item in lst)
+                    {
+                        SelectedChannel.AddNewItem(item, false);
+                    }
+                    SelectedChannel.IsInWork = false;
+                    SetStatus(0);
+                }
+            }
+            Filterlist.Clear();
         }
 
         public async Task FindRelatedChannels(IChannel channel)

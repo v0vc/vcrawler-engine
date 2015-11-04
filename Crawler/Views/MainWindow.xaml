@@ -1,10 +1,9 @@
-﻿<Window x:Class="Crawler.Views.MainWindow"
+﻿<Window x:Class="Crawler.Views.MainWindow" x:Name="window"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Crawler.Controls"
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-        xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         Title="{Binding Model.Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         >
@@ -30,22 +29,22 @@
             </Menu.ItemsPanel>
 
             <MenuItem Header="File">
-                <MenuItem Header="Backup" Click="MainMenuItem_OnClick" CommandParameter="Backup"/>
-                <MenuItem Header="Restore" Click="MainMenuItem_OnClick" CommandParameter="Restore"/>
+                <MenuItem Header="Backup" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Backup"/>
+                <MenuItem Header="Restore" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Restore"/>
                 <Separator />
-                <MenuItem Header="Exit" Click="MainMenuItem_OnClick" CommandParameter="Exit"/>
+                <MenuItem Header="Exit" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"/>
             </MenuItem>
 
             <MenuItem Header="Tools">
-                <MenuItem Header="Settings" Click="MainMenuItem_OnClick" CommandParameter="Settings"/>
-                <MenuItem Header="Show All" Click="MainMenuItem_OnClick" CommandParameter="ShowAll"/>
-                <MenuItem Header="Vacuum" Click="MainMenuItem_OnClick" CommandParameter="Vacuum"/>
+                <MenuItem Header="Settings" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Settings"/>
+                <MenuItem Header="Show All" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="ShowAll"/>
+                <MenuItem Header="Vacuum" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Vacuum"/>
             </MenuItem>
 
-            <MenuItem Header="Add Link"  Click="MainMenuItem_OnClick" CommandParameter="Link"/>
+            <MenuItem Header="Add Link"  Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Link"/>
 
             <MenuItem Header="Help" HorizontalAlignment="Right">
-                <MenuItem Header="About" Click="MainMenuItem_OnClick" CommandParameter="About"/>
+                <MenuItem Header="About" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="About"/>
             </MenuItem>
             
         </Menu>
@@ -74,17 +73,21 @@
 
                             <Expander.Content>
                                 <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
-                                    <DataGrid CanUserAddRows="False"
+                                    <DataGrid CanUserAddRows="False" x:Name="relatedGrid"
                                               CanUserDeleteRows="False"
                                               AutoGenerateColumns="False"
-                                              ItemsSource="{Binding Model.RelatedChannels}"
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              PreviewKeyDown="DataGridPreviewKeyDown"
+                                              ItemsSource="{Binding Model.RelatedChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
-                                              SelectionChanged="ChannelsGrid_OnSelectionChanged"
+                                              PreviewKeyDown="DataGridPreviewKeyDown"
                                               >
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged" SourceName="relatedGrid">
+                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=relatedGrid}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
                                         <DataGrid.Resources>
                                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                             <ContextMenu x:Key="DataRowContextMenu">
@@ -164,22 +167,27 @@
                     </Border>
                 </DockPanel>
 
-                <DataGrid Grid.Row="1" behaviors:FocusExtension.IsFocused="{Binding Model.IsChannelReady}" IsSynchronizedWithCurrentItem = "True"
+                <DataGrid Grid.Row="1" x:Name="channelsGrid"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
-                          ItemsSource="{Binding Model.Channels}"
                           HeadersVisibility="None"
                           GridLinesVisibility="Horizontal"
                           BorderThickness="1"
-                          PreviewKeyDown="DataGridPreviewKeyDown"
-                          SelectedItem="{Binding Model.SelectedChannel}"
-                          x:Name="channelsGrid"
-                          SelectionChanged="ChannelsGrid_OnSelectionChanged"
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
                           HorizontalScrollBarVisibility="Disabled"
+                          IsSynchronizedWithCurrentItem="True"
+                          ItemsSource="{Binding Model.Channels}"
+                          SelectedItem="{Binding Model.SelectedChannel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                          PreviewKeyDown="DataGridPreviewKeyDown"
                           >
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
+                            <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=channelsGrid}"/>
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
@@ -292,7 +300,6 @@
                                               PreviewKeyDown="DataGridPreviewKeyDown"
                                               ItemsSource="{Binding Model.ServiceChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
-                                              GotFocus="DataGridCellGotFocus"
                                               >
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />

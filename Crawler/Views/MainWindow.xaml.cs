@@ -112,35 +112,6 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        //private void BgvDoWork(object sender, DoWorkEventArgs e)
-        //{
-        //    Dispatcher.InvokeAsync(new Action(async () => await ViewModel.Model.FillChannels()));
-        //}
-
-        //private void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        //{
-        //    if (e.Error != null)
-        //    {
-        //        MessageBox.Show(e.Error.Message);
-        //        ViewModel.Model.SetStatus(3);
-        //    }
-        //    else
-        //    {
-        //        ViewModel.Model.SetStatus(0);
-
-        //        if (channelsGrid.SelectedIndex >= 0)
-        //        {
-        //            // focus
-        //            channelsGrid.UpdateLayout();
-        //            var row = (DataGridRow)channelsGrid.ItemContainerGenerator.ContainerFromIndex(channelsGrid.SelectedIndex);
-        //            if (row != null)
-        //            {
-        //                row.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-        //            }
-        //        }
-        //    }
-        //}
-
         private async void Channel_OnClick(object sender, RoutedEventArgs e)
         {
             var mitem = sender as MenuItem;
@@ -277,7 +248,8 @@ namespace Crawler.Views
                     {
                         channel.AddNewItem(item, false);
                         item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                        if (ViewModel.Model.Channels.Select(x => x.ID).Contains(item.ParentID)) // подсветим видео, если канал уже есть в подписке
+                        if (ViewModel.Model.Channels.Select(x => x.ID).Contains(item.ParentID))
+                            // подсветим видео, если канал уже есть в подписке
                         {
                             item.IsNewItem = true;
                         }
@@ -306,82 +278,6 @@ namespace Crawler.Views
             {
                 await channel.FillChannelDescriptionAsync();
             }
-        }
-
-        private async void ChannelsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count != 1)
-            {
-                return;
-            }
-
-            var ch = e.AddedItems[0] as IChannel;
-
-            if (ch == null)
-            {
-                return;
-            }
-
-            ViewModel.Model.Filter = string.Empty;
-            ViewModel.Model.IsExpand = false;
-
-            if (ViewModel.Model.RelatedChannels.Any() && !ViewModel.Model.RelatedChannels.Contains(ch))
-            {
-                foreach (IChannel channel in ViewModel.Model.RelatedChannels)
-                {
-                    channel.ChannelItems.Clear();
-                }
-
-                ViewModel.Model.RelatedChannels.Clear();
-            }
-
-            foreach (IVideoItem item in ch.ChannelItems)
-            {
-                item.IsShowRow = true;
-            }
-
-            // есть новые элементы после синхронизации
-            bool isHasNewFromSync = ch.ChannelItems.Any() && ch.ChannelItems.Count == ch.ChannelItems.Count(x => x.IsNewItem);
-
-            // заполняем только если либо ничего нет, либо одни новые
-            if ((!ch.ChannelItems.Any() & !ch.IsDownloading) || isHasNewFromSync)
-            {
-                if (isHasNewFromSync)
-                {
-                    List<string> lstnew = ch.ChannelItems.Select(x => x.ID).ToList();
-                    ch.ChannelItems.Clear();
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25, 0);
-                    foreach (IVideoItem item in from item in ch.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
-                    {
-                        item.IsNewItem = true;
-                    }
-                }
-                else
-                {
-                    await ch.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 25, 0);
-                }
-
-                if (ch.ChannelItems.Any())
-                {
-                    ch.PlaylistCount = await ch.GetChannelPlaylistCountDbAsync();
-                }
-                else
-                {
-                    // нет в базе = related channel
-                    ViewModel.Model.SetStatus(1);
-                    ch.IsInWork = true;
-                    IEnumerable<IVideoItem> lst = await ch.GetChannelItemsNetAsync(0);
-                    foreach (IVideoItem item in lst)
-                    {
-                        ch.AddNewItem(item, false);
-                    }
-                    ch.IsInWork = false;
-                    ViewModel.Model.SetStatus(0);
-                }
-            }
-
-            // videoGrid.ScrollIntoView(ch.ChannelItems.First());
-            ViewModel.Model.Filterlist.Clear();
         }
 
         private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
@@ -466,23 +362,6 @@ namespace Crawler.Views
             }
         }
 
-        private void DataGridCellGotFocus(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as DataGrid;
-            if (grid == null)
-            {
-                return;
-            }
-
-            var ch = grid.CurrentItem as IChannel;
-            if (ch == null)
-            {
-                return;
-            }
-
-            ViewModel.Model.SelectedChannel = ch;
-        }
-
         private async void DataGridPreviewKeyDown(object sender, KeyEventArgs e)
         {
             var dataGrid = sender as DataGrid;
@@ -521,242 +400,6 @@ namespace Crawler.Views
             if (grid != null)
             {
                 grid.ColumnDefinitions[1].Width = _rememberWidth;
-            }
-        }
-
-        private async void VideoItem_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var row = sender as DataGridRow;
-            if (row == null)
-            {
-                return;
-            }
-
-            var item = row.Item as IVideoItem;
-            if (item == null)
-            {
-                return;
-            }
-
-            string mpath = ViewModel.Model.MpcPath;
-            if (string.IsNullOrEmpty(mpath))
-            {
-                MessageBox.Show("Please, select MPC");
-            }
-            else
-            {
-                await item.RunItem(ViewModel.Model.MpcPath);
-            }
-        }
-
-        private async void MainMenuItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
-
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Backup":
-
-                    await ViewModel.Backup();
-
-                    break;
-
-                case "Restore":
-
-                    await ViewModel.Restore();
-
-                    break;
-
-                case "Exit":
-
-                    Close();
-
-                    break;
-
-                case "Settings":
-
-                    ViewModel.OpenSettings();
-
-                    break;
-
-                case "Vacuum":
-
-                    await ViewModel.Vacuumdb();
-
-                    break;
-
-                case "ShowAll":
-
-                    ViewModel.Model.ShowAllChannels();
-
-                    break;
-
-                case "Link":
-
-                    ViewModel.OpenAddLink();
-
-                    break;
-
-                case "About":
-
-                    MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    break;
-            }
-        }
-
-        //private void MainWindow_OnLoaded(object sender, RoutedEventArgs e)
-        //{
-        //    // await ViewModel.Model.FillChannels();
-        //    ViewModel.Model.SetStatus(1);
-        //    using (var bgv = new BackgroundWorker())
-        //    {
-        //        bgv.DoWork += BgvDoWork;
-        //        bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-        //        bgv.RunWorkerAsync();
-        //    }
-        //}
-
-        private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
-
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Link":
-                    try
-                    {
-                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
-                    }
-                    catch (Exception ex)
-                    {
-                        ViewModel.Model.Info = ex.Message;
-                    }
-
-                    break;
-
-                case "Edit":
-                    var edv = new EditDescriptionView
-                    {
-                        DataContext = ViewModel.Model.SelectedVideoItem,
-                        Owner = Application.Current.MainWindow,
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    };
-
-                    edv.Show();
-
-                    break;
-
-                case "Audio":
-
-                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-                    {
-                        MessageBox.Show("Please, select youtube-dl");
-                        return;
-                    }
-
-                    ViewModel.Model.SelectedChannel.IsDownloading = true;
-                    await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false, true);
-
-                    break;
-
-                case "HD":
-                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-                    {
-                        MessageBox.Show("Please, select youtube-dl");
-                        return;
-                    }
-
-                    if (IsFfmegExist())
-                    {
-                        ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await
-                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true, false);
-                    }
-                    else
-                    {
-                        var ff = new FfmpegView
-                        {
-                            Owner = Application.Current.MainWindow,
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner
-                        };
-
-                        ff.ShowDialog();
-                    }
-
-                    break;
-
-                case "Delete":
-                    var sb = new StringBuilder();
-
-                    foreach (IVideoItem item in videoGrid.SelectedItems)
-                    {
-                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
-                        {
-                            sb.Append(item.Title).Append(Environment.NewLine);
-                        }
-                    }
-
-                    if (sb.Length == 0)
-                    {
-                        return;
-                    }
-
-                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                        "Confirm",
-                        MessageBoxButton.OKCancel,
-                        MessageBoxImage.Information);
-
-                    if (result == MessageBoxResult.OK)
-                    {
-                        for (int i = videoGrid.SelectedItems.Count; i > 0; i--)
-                        {
-                            var item = videoGrid.SelectedItems[i - 1] as IVideoItem;
-
-                            if (item == null)
-                            {
-                                continue;
-                            }
-
-                            var fn = new FileInfo(item.LocalFilePath);
-                            try
-                            {
-                                fn.Delete();
-                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
-                                item.LocalFilePath = string.Empty;
-                                item.IsHasLocalFile = false;
-                                item.State = ItemState.LocalNo;
-                                item.Subtitles.Clear();
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                            }
-                        }
-                    }
-
-                    break;
-
-                case "Subscribe":
-                    if (ViewModel.Model.SelectedChannel.ID != "pop")
-                    {
-                        // этот канал по-любому есть - даже проверять не будем)
-                        MessageBox.Show("Has already");
-                        return;
-                    }
-
-                    await
-                        ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink(), ViewModel.Model.SelectedChannel.Site);
-
-                    break;
             }
         }
 
@@ -977,6 +620,170 @@ namespace Crawler.Views
                 {
                     MessageBox.Show("Please, select youtube-dl");
                 }
+            }
+        }
+
+        private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
+        {
+            var mitem = sender as MenuItem;
+            if (mitem == null)
+            {
+                return;
+            }
+
+            switch (mitem.CommandParameter.ToString())
+            {
+                case "Link":
+                    try
+                    {
+                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
+                    }
+                    catch (Exception ex)
+                    {
+                        ViewModel.Model.Info = ex.Message;
+                    }
+
+                    break;
+
+                case "Edit":
+                    var edv = new EditDescriptionView
+                    {
+                        DataContext = ViewModel.Model.SelectedVideoItem,
+                        Owner = Application.Current.MainWindow,
+                        WindowStartupLocation = WindowStartupLocation.CenterOwner
+                    };
+
+                    edv.Show();
+
+                    break;
+
+                case "Audio":
+
+                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    {
+                        MessageBox.Show("Please, select youtube-dl");
+                        return;
+                    }
+
+                    ViewModel.Model.SelectedChannel.IsDownloading = true;
+                    await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false, true);
+
+                    break;
+
+                case "HD":
+                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+                    {
+                        MessageBox.Show("Please, select youtube-dl");
+                        return;
+                    }
+
+                    if (IsFfmegExist())
+                    {
+                        ViewModel.Model.SelectedChannel.IsDownloading = true;
+                        await
+                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true, false);
+                    }
+                    else
+                    {
+                        var ff = new FfmpegView
+                        {
+                            Owner = Application.Current.MainWindow,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+
+                        ff.ShowDialog();
+                    }
+
+                    break;
+
+                case "Delete":
+                    var sb = new StringBuilder();
+
+                    foreach (IVideoItem item in videoGrid.SelectedItems)
+                    {
+                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                        {
+                            sb.Append(item.Title).Append(Environment.NewLine);
+                        }
+                    }
+
+                    if (sb.Length == 0)
+                    {
+                        return;
+                    }
+
+                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
+                        "Confirm",
+                        MessageBoxButton.OKCancel,
+                        MessageBoxImage.Information);
+
+                    if (result == MessageBoxResult.OK)
+                    {
+                        for (int i = videoGrid.SelectedItems.Count; i > 0; i--)
+                        {
+                            var item = videoGrid.SelectedItems[i - 1] as IVideoItem;
+
+                            if (item == null)
+                            {
+                                continue;
+                            }
+
+                            var fn = new FileInfo(item.LocalFilePath);
+                            try
+                            {
+                                fn.Delete();
+                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
+                                item.LocalFilePath = string.Empty;
+                                item.IsHasLocalFile = false;
+                                item.State = ItemState.LocalNo;
+                                item.Subtitles.Clear();
+                            }
+                            catch (Exception ex)
+                            {
+                                MessageBox.Show(ex.Message);
+                            }
+                        }
+                    }
+
+                    break;
+
+                case "Subscribe":
+                    if (ViewModel.Model.SelectedChannel.ID != "pop")
+                    {
+                        // этот канал по-любому есть - даже проверять не будем)
+                        MessageBox.Show("Has already");
+                        return;
+                    }
+
+                    await
+                        ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink(), ViewModel.Model.SelectedChannel.Site);
+
+                    break;
+            }
+        }
+
+        private async void VideoItem_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var row = sender as DataGridRow;
+            if (row == null)
+            {
+                return;
+            }
+
+            var item = row.Item as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+
+            string mpath = ViewModel.Model.MpcPath;
+            if (string.IsNullOrEmpty(mpath))
+            {
+                MessageBox.Show("Please, select MPC");
+            }
+            else
+            {
+                await item.RunItem(ViewModel.Model.MpcPath);
             }
         }
 
