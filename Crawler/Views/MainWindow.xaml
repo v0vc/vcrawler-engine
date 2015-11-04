@@ -29,22 +29,22 @@
             </Menu.ItemsPanel>
 
             <MenuItem Header="File">
-                <MenuItem Header="Backup" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Backup"/>
-                <MenuItem Header="Restore" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Restore"/>
+                <MenuItem Header="Backup" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Backup}"/>
+                <MenuItem Header="Restore" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Restore}"/>
                 <Separator />
                 <MenuItem Header="Exit" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"/>
             </MenuItem>
 
             <MenuItem Header="Tools">
-                <MenuItem Header="Settings" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Settings"/>
-                <MenuItem Header="Show All" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="ShowAll"/>
-                <MenuItem Header="Vacuum" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Vacuum"/>
+                <MenuItem Header="Settings" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Settings}"/>
+                <MenuItem Header="Show All" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.ShowAll}"/>
+                <MenuItem Header="Vacuum" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Vacuum}"/>
             </MenuItem>
 
-            <MenuItem Header="Add Link"  Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="Link"/>
+            <MenuItem Header="Add Link"  Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Link}"/>
 
             <MenuItem Header="Help" HorizontalAlignment="Right">
-                <MenuItem Header="About" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="About"/>
+                <MenuItem Header="About" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.About}"/>
             </MenuItem>
             
         </Menu>

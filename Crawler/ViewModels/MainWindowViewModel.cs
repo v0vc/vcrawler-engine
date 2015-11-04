@@ -65,60 +65,43 @@ namespace Crawler.ViewModels
 
         private async void MainMenuClick(object param)
         {
-            var par = param as string;
-            if (!string.IsNullOrEmpty(par))
+            var window = param as Window;
+            if (window != null)
             {
-                switch (par)
-                {
-                    case "Backup":
-
-                        await Backup();
-
-                        break;
-
-                    case "Restore":
-
-                        await Restore();
-
-                        break;
-
-                    case "Settings":
-
-                        OpenSettings();
-
-                        break;
-
-                    case "Vacuum":
-
-                        await Vacuumdb();
-
-                        break;
-
-                    case "ShowAll":
-
-                        Model.ShowAllChannels();
-
-                        break;
-
-                    case "Link":
-
-                        OpenAddLink();
-
-                        break;
-
-                    case "About":
-
-                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                        break;
-                }
+                window.Close();
             }
             else
             {
-                var window = param as Window;
-                if (window != null)
+                var menu = (MainMenuItem)param;
+                switch (menu)
                 {
-                    window.Close();
+                    case MainMenuItem.Backup:
+                        await Backup();
+                        break;
+
+                    case MainMenuItem.Restore:
+                        await Restore();
+                        break;
+
+                    case MainMenuItem.Settings:
+                        OpenSettings();
+                        break;
+
+                    case MainMenuItem.Vacuum:
+                        await Vacuumdb();
+                        break;
+
+                    case MainMenuItem.ShowAll:
+                        Model.ShowAllChannels();
+                        break;
+
+                    case MainMenuItem.Link:
+                        OpenAddLink();
+                        break;
+
+                    case MainMenuItem.About:
+                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+                        break;
                 }
             }
         }
