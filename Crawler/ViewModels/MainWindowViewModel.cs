@@ -49,6 +49,8 @@ namespace Crawler.ViewModels
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
+        private RelayCommand videoClickCommand;
+        private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoItemMenuCommand;
 
         #endregion
@@ -193,6 +195,22 @@ namespace Crawler.ViewModels
             get
             {
                 return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await Model.SyncData()));
+            }
+        }
+
+        public RelayCommand VideoClickCommand
+        {
+            get
+            {
+                return videoClickCommand ?? (videoClickCommand = new RelayCommand(RunItemOneClick));
+            }
+        }
+
+        public RelayCommand VideoDoubleClickCommand
+        {
+            get
+            {
+                return videoDoubleClickCommand ?? (videoItemMenuCommand = new RelayCommand(RunItemDoubleClick));
             }
         }
 
@@ -523,6 +541,16 @@ namespace Crawler.ViewModels
             isHasBeenFocused = true;
         }
 
+        private bool IsMpcExist()
+        {
+            if (!string.IsNullOrEmpty(Model.MpcPath))
+            {
+                return true;
+            }
+            MessageBox.Show("Please, select MPC");
+            return false;
+        }
+
         private bool IsYoutubeExist()
         {
             if (!string.IsNullOrEmpty(Model.YouPath))
@@ -751,6 +779,53 @@ namespace Crawler.ViewModels
                 Model.PrValue = 0;
                 Model.SetStatus(0);
                 Model.Info = "Total restored: " + rest;
+            }
+        }
+
+        private async void RunItemDoubleClick(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+            if (string.IsNullOrEmpty(Model.MpcPath))
+            {
+                MessageBox.Show("Please, select MPC");
+            }
+            else
+            {
+                await item.RunItem(Model.MpcPath);
+            }
+        }
+
+        private async void RunItemOneClick(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+            if (item.IsHasLocalFile)
+            {
+                if (IsMpcExist())
+                {
+                    await item.RunItem(Model.MpcPath);
+                }
+            }
+            else
+            {
+                if (!IsYoutubeExist())
+                {
+                    return;
+                }
+                var fn = new FileInfo(Model.YouPath);
+                if (!fn.Exists)
+                {
+                    return;
+                }
+                Model.SelectedChannel.IsDownloading = true;
+                await item.DownloadItem(fn.FullName, Model.DirPath, false, false);
             }
         }
 
