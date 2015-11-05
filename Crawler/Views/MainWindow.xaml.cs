@@ -67,99 +67,99 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private async void Channel_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
+        //private async void Channel_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    var mitem = sender as MenuItem;
+        //    if (mitem == null)
+        //    {
+        //        return;
+        //    }
 
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Delete":
+        //    switch (mitem.CommandParameter.ToString())
+        //    {
+        //        case "Delete":
 
-                    await ViewModel.ConfirmDelete();
+        //            await ViewModel.ConfirmDelete();
 
-                    break;
+        //            break;
 
-                case "Edit":
+        //        case "Edit":
 
-                    ViewModel.AddNewItem(true);
+        //            ViewModel.AddNewItem(true);
 
-                    break;
+        //            break;
 
-                case "Update":
+        //        case "Update":
 
-                    ViewModel.Model.SetStatus(1);
-                    if (ViewModel.Model.SelectedChannel.IsInWork)
-                    {
-                        return;
-                    }
+        //            ViewModel.Model.SetStatus(1);
+        //            if (ViewModel.Model.SelectedChannel.IsInWork)
+        //            {
+        //                return;
+        //            }
 
-                    try
-                    {
-                        await ViewModel.Model.SelectedChannel.SyncChannelPlaylistsAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                        ViewModel.Model.SetStatus(3);
-                    }
+        //            try
+        //            {
+        //                await ViewModel.Model.SelectedChannel.SyncChannelPlaylistsAsync();
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                MessageBox.Show(ex.Message);
+        //                ViewModel.Model.SetStatus(3);
+        //            }
 
-                    ViewModel.Model.SetStatus(0);
+        //            ViewModel.Model.SetStatus(0);
 
-                    break;
+        //            break;
 
-                case "Related":
+        //        case "Related":
 
-                    try
-                    {
-                        await ViewModel.Model.FindRelatedChannels(ViewModel.Model.SelectedChannel);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(ex.Message);
-                        ViewModel.Model.SetStatus(0);
-                    }
+        //            try
+        //            {
+        //                await ViewModel.Model.FindRelatedChannels(ViewModel.Model.SelectedChannel);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                MessageBox.Show(ex.Message);
+        //                ViewModel.Model.SetStatus(0);
+        //            }
 
-                    break;
+        //            break;
 
-                case "Subscribe":
+        //        case "Subscribe":
 
-                    IChannel channel = ViewModel.Model.SelectedChannel;
-                    if (channel.IsInWork)
-                    {
-                        return;
-                    }
+        //            IChannel channel = ViewModel.Model.SelectedChannel;
+        //            if (channel.IsInWork)
+        //            {
+        //                return;
+        //            }
 
-                    ViewModel.Model.Channels.Add(channel);
-                    await channel.InsertChannelItemsAsync();
+        //            ViewModel.Model.Channels.Add(channel);
+        //            await channel.InsertChannelItemsAsync();
 
-                    break;
+        //            break;
 
-                case "Tags":
+        //        case "Tags":
 
-                    var etvm = new EditTagsViewModel
-                    {
-                        ParentChannel = ViewModel.Model.SelectedChannel, 
-                        CurrentTags = ViewModel.Model.CurrentTags, 
-                        Tags = ViewModel.Model.Tags, 
-                        Channels = ViewModel.Model.Channels
-                    };
+        //            var etvm = new EditTagsViewModel
+        //            {
+        //                ParentChannel = ViewModel.Model.SelectedChannel, 
+        //                CurrentTags = ViewModel.Model.CurrentTags, 
+        //                Tags = ViewModel.Model.Tags, 
+        //                Channels = ViewModel.Model.Channels
+        //            };
 
-                    var etv = new EditTagsView
-                    {
-                        DataContext = etvm, 
-                        Owner = Application.Current.MainWindow, 
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner, 
-                        Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
-                    };
-                    etv.ShowDialog();
+        //            var etv = new EditTagsView
+        //            {
+        //                DataContext = etvm, 
+        //                Owner = Application.Current.MainWindow, 
+        //                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+        //                Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
+        //            };
+        //            etv.ShowDialog();
 
-                    break;
-            }
-        }
+        //            break;
+        //    }
+        //}
 
         private async void Channel_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

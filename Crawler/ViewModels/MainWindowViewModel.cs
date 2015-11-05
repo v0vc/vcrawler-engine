@@ -1,11 +1,9 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -34,18 +32,18 @@ namespace Crawler.ViewModels
 
         private RelayCommand addNewItemCommand;
         private RelayCommand addNewTagCommand;
+        private RelayCommand channelKeyDownCommand;
+        private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
+        private bool isHasBeenFocused;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDirCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
-        private RelayCommand channelKeyDownCommand;
-
-        private bool isHasBeenFocused;
 
         #endregion
 
@@ -60,29 +58,6 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand ChannelKeyDownCommand
-        {
-            get
-            {
-                return channelKeyDownCommand ?? (channelKeyDownCommand = new RelayCommand(ChannelKeyDown));
-            }
-        }
-
-        private async void ChannelKeyDown(object par)
-        {
-            var key = (KeyboardKey)par;
-            switch (key)
-            {
-                case KeyboardKey.Delete:
-                    await ConfirmDelete();
-                    break;
-
-                case KeyboardKey.Enter:
-                    await Model.Search();
-                    break;
-            }
-        }
-
         public RelayCommand AddNewItemCommand
         {
             get
@@ -96,6 +71,22 @@ namespace Crawler.ViewModels
             get
             {
                 return addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
+            }
+        }
+
+        public RelayCommand ChannelKeyDownCommand
+        {
+            get
+            {
+                return channelKeyDownCommand ?? (channelKeyDownCommand = new RelayCommand(ChannelKeyDown));
+            }
+        }
+
+        public RelayCommand ChannelMenuCommand
+        {
+            get
+            {
+                return channelMenuCommand ?? (channelMenuCommand = new RelayCommand(ChannelMenuClick));
             }
         }
 
@@ -122,6 +113,8 @@ namespace Crawler.ViewModels
                 return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(x => Model.OnStartup()));
             }
         }
+
+        public bool IsSearchExpanded { get; set; }
 
         public RelayCommand MainMenuCommand
         {
@@ -173,33 +166,43 @@ namespace Crawler.ViewModels
             }
         }
 
-        public bool IsSearchExpanded { get; set; }
-
         #endregion
 
         #region Methods
 
-        public void AddNewItem(bool isEditMode)
+        private void AddNewItem(bool isEditMode)
         {
             Model.IsEditMode = isEditMode;
 
             var addview = new AddChanelView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
             addview.ShowDialog();
         }
 
-        public async Task Backup()
+        private void AddNewTag()
+        {
+            var antv = new AddNewTagView
+            {
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = this
+            };
+
+            antv.ShowDialog();
+        }
+
+        private async Task Backup()
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(),
-                DefaultExt = ".txt",
-                Filter = @"Text documents (.txt)|*.txt",
+                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
+                DefaultExt = ".txt", 
+                Filter = @"Text documents (.txt)|*.txt", 
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -226,30 +229,53 @@ namespace Crawler.ViewModels
             }
         }
 
-        public void OpenAddLink()
+        private async void ChannelKeyDown(object par)
         {
-            var adl = new AddLinkView
+            var key = (KeyboardKey)par;
+            switch (key)
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            adl.ShowDialog();
+                case KeyboardKey.Delete:
+                    await ConfirmDelete();
+                    break;
+
+                case KeyboardKey.Enter:
+                    await Model.Search();
+                    break;
+            }
         }
 
-        public void OpenSettings()
+        private async void ChannelMenuClick(object param)
         {
-            var set = new SettingsView
+            var menu = (ChannelMenuItem)param;
+            switch (menu)
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+                case ChannelMenuItem.Delete:
+                    await ConfirmDelete();
+                    break;
 
-            set.ShowDialog();
+                case ChannelMenuItem.Edit:
+                    AddNewItem(true);
+                    break;
+
+                case ChannelMenuItem.Related:
+                    await FindRelated();
+                    break;
+
+                case ChannelMenuItem.Subscribe:
+                    await Subscribe();
+                    break;
+
+                case ChannelMenuItem.Tags:
+                    OpenTags();
+                    break;
+
+                case ChannelMenuItem.Update:
+                    await UpdateChannel();
+                    break;
+            }
         }
 
-        public async Task ConfirmDelete()
+        private async Task ConfirmDelete()
         {
             var sb = new StringBuilder();
 
@@ -263,16 +289,16 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
             {
                 for (int i = Model.SelectedChannels.Count(); i > 0; i--)
                 {
-                    var channel = Model.SelectedChannels[i - 1];
+                    IChannel channel = Model.SelectedChannels[i - 1];
                     Model.Channels.Remove(channel);
                     await channel.DeleteChannelAsync();
                 }
@@ -284,103 +310,17 @@ namespace Crawler.ViewModels
             }
         }
 
-        public async Task Restore()
+        private async Task FindRelated()
         {
-            Model.Info = string.Empty;
-
-            var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
-            DialogResult res = opf.ShowDialog();
-
-            if (res == DialogResult.OK)
+            try
             {
-                string[] lst = { };
-
-                try
-                {
-                    lst = File.ReadAllLines(opf.FileName);
-                }
-                catch (Exception ex)
-                {
-                    Model.Info = ex.Message;
-                    Model.SetStatus(3);
-                }
-
-                Model.SetStatus(1);
-                TaskbarManager prog = TaskbarManager.Instance;
-                prog.SetProgressState(TaskbarProgressBarState.Normal);
-                Model.ShowAllChannels();
-                int rest = 0;
-                foreach (string s in lst)
-                {
-                    string[] sp = s.Split('|');
-                    if (sp.Length == 3)
-                    {
-                        if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
-                        {
-                            continue;
-                        }
-
-                        switch (sp[2])
-                        {
-                            case "youtube.com":
-
-                                try
-                                {
-                                    Model.SetStatus(1);
-                                    Model.Info = "Restoring: " + sp[0];
-                                    await Model.AddNewChannelAsync(sp[1], null, SiteType.YouTube);
-                                }
-                                catch (Exception ex)
-                                {
-                                    Model.SetStatus(3);
-                                    Model.Info = "Can't restore: " + sp[0];
-                                    MessageBox.Show(ex.Message);
-                                }
-
-                                rest++;
-                                Model.PrValue = Math.Round((double)(100 * rest) / lst.Count());
-                                prog.SetProgressValue((int)Model.PrValue, 100);
-                                break;
-
-                            default:
-
-                                Model.Info = "Unsupported site: " + sp[2];
-
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        Model.Info = "Check: " + s;
-                    }
-                }
-
-                prog.SetProgressState(TaskbarProgressBarState.NoProgress);
-                Model.PrValue = 0;
-                Model.SetStatus(0);
-                Model.Info = "Total restored: " + rest;
+                await Model.FindRelatedChannels(Model.SelectedChannel);
             }
-        }
-
-        public async Task Vacuumdb()
-        {
-            ISqLiteDatabase db = Model.BaseFactory.CreateSqLiteDatabase();
-            long sizebefore = db.FileBase.Length;
-            await db.VacuumAsync();
-            long sizeafter = new FileInfo(db.FileBase.FullName).Length;
-            Model.Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
-        }
-
-        private void AddNewTag()
-        {
-            var antv = new AddNewTagView
+            catch (Exception ex)
             {
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                DataContext = this
-            };
-
-            antv.ShowDialog();
+                MessageBox.Show(ex.Message);
+                Model.SetStatus(0);
+            }
         }
 
         private async void FocusRow(object obj)
@@ -451,6 +391,17 @@ namespace Crawler.ViewModels
             }
         }
 
+        private void OpenAddLink()
+        {
+            var adl = new AddLinkView
+            {
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            adl.ShowDialog();
+        }
+
         private void OpenDir(object obj)
         {
             switch (obj.ToString())
@@ -482,6 +433,157 @@ namespace Crawler.ViewModels
                     }
                     break;
             }
+        }
+
+        private void OpenSettings()
+        {
+            var set = new SettingsView
+            {
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            set.ShowDialog();
+        }
+
+        private void OpenTags()
+        {
+            var etvm = new EditTagsViewModel
+            {
+                ParentChannel = Model.SelectedChannel, 
+                CurrentTags = Model.CurrentTags, 
+                Tags = Model.Tags, 
+                Channels = Model.Channels
+            };
+
+            var etv = new EditTagsView
+            {
+                DataContext = etvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
+            };
+            etv.ShowDialog();
+        }
+
+        private async Task Restore()
+        {
+            Model.Info = string.Empty;
+
+            var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
+            DialogResult res = opf.ShowDialog();
+
+            if (res == DialogResult.OK)
+            {
+                string[] lst = { };
+
+                try
+                {
+                    lst = File.ReadAllLines(opf.FileName);
+                }
+                catch (Exception ex)
+                {
+                    Model.Info = ex.Message;
+                    Model.SetStatus(3);
+                }
+
+                Model.SetStatus(1);
+                TaskbarManager prog = TaskbarManager.Instance;
+                prog.SetProgressState(TaskbarProgressBarState.Normal);
+                Model.ShowAllChannels();
+                var rest = 0;
+                foreach (string s in lst)
+                {
+                    string[] sp = s.Split('|');
+                    if (sp.Length == 3)
+                    {
+                        if (Model.Channels.Select(x => x.ID).Contains(sp[1]))
+                        {
+                            continue;
+                        }
+
+                        switch (sp[2])
+                        {
+                            case "youtube.com":
+
+                                try
+                                {
+                                    Model.SetStatus(1);
+                                    Model.Info = "Restoring: " + sp[0];
+                                    await Model.AddNewChannelAsync(sp[1], null, SiteType.YouTube);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Model.SetStatus(3);
+                                    Model.Info = "Can't restore: " + sp[0];
+                                    MessageBox.Show(ex.Message);
+                                }
+
+                                rest++;
+                                Model.PrValue = Math.Round((double)(100 * rest) / lst.Count());
+                                prog.SetProgressValue((int)Model.PrValue, 100);
+                                break;
+
+                            default:
+
+                                Model.Info = "Unsupported site: " + sp[2];
+
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        Model.Info = "Check: " + s;
+                    }
+                }
+
+                prog.SetProgressState(TaskbarProgressBarState.NoProgress);
+                Model.PrValue = 0;
+                Model.SetStatus(0);
+                Model.Info = "Total restored: " + rest;
+            }
+        }
+
+        private async Task Subscribe()
+        {
+            if (Model.SelectedChannel.IsInWork)
+            {
+                return;
+            }
+
+            Model.Channels.Add(Model.SelectedChannel);
+            await Model.SelectedChannel.InsertChannelItemsAsync();
+        }
+
+        private async Task UpdateChannel()
+        {
+            Model.SetStatus(1);
+            if (Model.SelectedChannel.IsInWork)
+            {
+                return;
+            }
+
+            try
+            {
+                await Model.SelectedChannel.SyncChannelPlaylistsAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Model.SetStatus(3);
+            }
+
+            Model.SetStatus(0);
+        }
+
+        private async Task Vacuumdb()
+        {
+            ISqLiteDatabase db = Model.BaseFactory.CreateSqLiteDatabase();
+            long sizebefore = db.FileBase.Length;
+            await db.VacuumAsync();
+            long sizeafter = new FileInfo(db.FileBase.FullName).Length;
+            Model.Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
         }
 
         #endregion

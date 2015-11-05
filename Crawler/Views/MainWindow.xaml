@@ -91,7 +91,7 @@
                                         <DataGrid.Resources>
                                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                             <ContextMenu x:Key="DataRowContextMenu">
-                                                <MenuItem Header="Subscribe" Click="Channel_OnClick" CommandParameter="Subscribe" />
+                                                <MenuItem Header="Subscribe" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Subscribe}" />
                                             </ContextMenu>
                                         </DataGrid.Resources>
 
@@ -197,11 +197,11 @@
                     <DataGrid.Resources>
                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                         <ContextMenu x:Key="DataRowContextMenu">
-                            <MenuItem Header="Delete" Click="Channel_OnClick" CommandParameter="Delete" />
-                            <MenuItem Header="Related" Click="Channel_OnClick" CommandParameter="Related" />
-                            <MenuItem Header="Edit" Click="Channel_OnClick" CommandParameter="Edit" />
-                            <MenuItem Header="Tags" Click="Channel_OnClick" CommandParameter="Tags" />
-                            <MenuItem Header="Update PL" Click="Channel_OnClick" CommandParameter="Update" />
+                            <MenuItem Header="Delete" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Delete}" />
+                            <MenuItem Header="Related" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Related}" />
+                            <MenuItem Header="Edit" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Edit}" />
+                            <MenuItem Header="Tags" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Tags}" />
+                            <MenuItem Header="Update PL" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
                         </ContextMenu>
                     </DataGrid.Resources>
                     
