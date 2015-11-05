@@ -19,6 +19,7 @@ using Crawler.Models;
 using Crawler.Views;
 using Interfaces.API;
 using Interfaces.Enums;
+using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
@@ -44,6 +45,8 @@ namespace Crawler.ViewModels
         private RelayCommand syncDataCommand;
         private RelayCommand channelKeyDownCommand;
 
+        private bool isHasBeenFocused;
+
         #endregion
 
         #region Constructors
@@ -65,15 +68,17 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void ChannelKeyDown(object par)
+        private async void ChannelKeyDown(object par)
         {
             var key = (KeyboardKey)par;
             switch (key)
             {
                 case KeyboardKey.Delete:
+                    await ConfirmDelete();
                     break;
 
                 case KeyboardKey.Enter:
+                    await Model.Search();
                     break;
             }
         }
@@ -168,6 +173,8 @@ namespace Crawler.ViewModels
             }
         }
 
+        public bool IsSearchExpanded { get; set; }
+
         #endregion
 
         #region Methods
@@ -240,6 +247,41 @@ namespace Crawler.ViewModels
             };
 
             set.ShowDialog();
+        }
+
+        public async Task ConfirmDelete()
+        {
+            var sb = new StringBuilder();
+
+            foreach (IChannel channel in Model.SelectedChannels)
+            {
+                sb.Append(channel.Title).Append(Environment.NewLine);
+            }
+
+            if (sb.Length == 0)
+            {
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.OK)
+            {
+                for (int i = Model.SelectedChannels.Count(); i > 0; i--)
+                {
+                    var channel = Model.SelectedChannels[i - 1];
+                    Model.Channels.Remove(channel);
+                    await channel.DeleteChannelAsync();
+                }
+
+                if (Model.Channels.Any())
+                {
+                    Model.SelectedChannel = Model.Channels.First();
+                }
+            }
         }
 
         public async Task Restore()
@@ -345,9 +387,14 @@ namespace Crawler.ViewModels
         {
             await Model.SelectChannel();
 
+            if (isHasBeenFocused)
+            {
+                return;
+            }
+
             // focus
             var datagrid = obj as DataGrid;
-            if (datagrid == null)
+            if (datagrid == null || datagrid.SelectedIndex < 0)
             {
                 return;
             }
@@ -358,6 +405,7 @@ namespace Crawler.ViewModels
                 return;
             }
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            isHasBeenFocused = true;
         }
 
         private async void MainMenuClick(object param)

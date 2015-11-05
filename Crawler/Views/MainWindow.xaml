@@ -180,17 +180,13 @@
                           IsSynchronizedWithCurrentItem="True"
                           ItemsSource="{Binding Model.Channels}"
                           SelectedItem="{Binding Model.SelectedChannel}"
-                          PreviewKeyDown="DataGridPreviewKeyDown"
+                          SelectionUnit="FullRow"
+                          SelectionMode="Extended"
                           >
-                    
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
-                        <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
+                        <KeyBinding Modifiers="Control" Key="Delete" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
                     </DataGrid.InputBindings>
-                    
-                    <i:Interaction.Behaviors>
-                        <behaviors:DataGridSelectedItemsBehavior SelectedItems="{Binding Model.SelectedChannels, Mode=OneWayToSource}" />
-                    </i:Interaction.Behaviors>
                     
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
@@ -218,6 +214,7 @@
                     
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
+                            <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
                             <Style.Triggers>
@@ -297,8 +294,9 @@
                 
                 <DockPanel Grid.Row="2" Background="Lavender" Margin="1,1,0,1">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
-                        <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft">
-                            
+                        <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft" 
+                                  IsExpanded="{Binding IsSearchExpanded, Mode=OneWayToSource}"
+                                  >
                             <Expander.Content>
                                 <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
                                     <DataGrid CanUserAddRows="False"
@@ -307,10 +305,13 @@
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              PreviewKeyDown="DataGridPreviewKeyDown"
                                               ItemsSource="{Binding Model.ServiceChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
                                               >
+                                    <DataGrid.InputBindings>
+                                        <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
+                                    </DataGrid.InputBindings>
+                                        
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                     </DataGrid.Resources>
@@ -362,7 +363,7 @@
                                                             <ColumnDefinition />
                                                         </Grid.ColumnDefinitions>
                                                             <StackPanel Width="Auto" Orientation="Horizontal">
-                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" 
+                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                                          VerticalContentAlignment="Bottom" 
                                                                          Text="{Binding DataContext.Model.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                                                     <TextBox.Resources>

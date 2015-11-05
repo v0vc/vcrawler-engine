@@ -122,6 +122,8 @@ namespace Models.BO
             }
         }
 
+        public bool IsSelected { get; set; }
+
         public int PlaylistCount
         {
             get

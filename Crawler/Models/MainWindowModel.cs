@@ -79,7 +79,6 @@ namespace Crawler.Models
         private string _youHeader;
         private string _youPath;
         private bool isWorking;
-        private ObservableCollection<IChannel> selectedChannels = new ObservableCollection<IChannel>();
 
         #endregion
 
@@ -131,18 +130,6 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
-
-        public ObservableCollection<IChannel> SelectedChannels
-        {
-            get
-            {
-                return selectedChannels;
-            }
-            set
-            {
-                selectedChannels = value;
-            }
-        }
 
         public string DirPath
         {
@@ -331,6 +318,14 @@ namespace Crawler.Models
             {
                 _selectedChannel = value;
                 OnPropertyChanged();
+            }
+        }
+
+        public IList<IChannel> SelectedChannels
+        {
+            get
+            {
+                return Channels.Where(x => x.IsSelected).ToList();
             }
         }
 
@@ -613,113 +608,6 @@ namespace Crawler.Models
             }
         }
 
-        public void OnStartup()
-        {
-            SetStatus(1);
-            using (var bgv = new BackgroundWorker())
-            {
-                bgv.DoWork += BgvDoWork;
-                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                bgv.RunWorkerAsync();
-            }
-        }
-
-        private async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
-            {
-                MessageBox.Show(e.Error.Message);
-                SetStatus(3);
-            }
-            else
-            {
-                await LoadSettings();
-                CreateServicesChannels();
-                SetStatus(0);
-            }
-        }
-
-        private void BgvDoWork(object sender, DoWorkEventArgs e)
-        {
-            Application.Current.Dispatcher.InvokeAsync(new Action(async () => await FillChannels()));
-        }
-
-        private async Task FillChannels()
-        {
-            IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
-            foreach (IChannel ch in lst)
-            {
-                ch.IsShowRow = true;
-                Channels.Add(ch);
-            }
-            if (Channels.Any())
-            {
-                SelectedChannel = Channels.First();
-            }
-        }
-
-        public async Task SelectChannel()
-        {
-            Filter = string.Empty;
-            IsExpand = false;
-
-            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
-            {
-                foreach (IChannel channel in RelatedChannels)
-                {
-                    channel.ChannelItems.Clear();
-                }
-
-                RelatedChannels.Clear();
-            }
-
-            foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = true;
-            }
-
-            // есть новые элементы после синхронизации
-            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any() && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
-
-            // заполняем только если либо ничего нет, либо одни новые
-            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
-            {
-                if (isHasNewFromSync)
-                {
-                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
-                    SelectedChannel.ChannelItems.Clear();
-                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
-                    foreach (IVideoItem item in from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
-                    {
-                        item.IsNewItem = true;
-                    }
-                }
-                else
-                {
-                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
-                }
-
-                if (SelectedChannel.ChannelItems.Any())
-                {
-                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
-                }
-                else
-                {
-                    // нет в базе = related channel
-                    SetStatus(1);
-                    SelectedChannel.IsInWork = true;
-                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
-                    foreach (IVideoItem item in lst)
-                    {
-                        SelectedChannel.AddNewItem(item, false);
-                    }
-                    SelectedChannel.IsInWork = false;
-                    SetStatus(0);
-                }
-            }
-            Filterlist.Clear();
-        }
-
         public async Task FindRelatedChannels(IChannel channel)
         {
             if (channel == null)
@@ -743,6 +631,17 @@ namespace Crawler.Models
             }
 
             SetStatus(0);
+        }
+
+        public void OnStartup()
+        {
+            SetStatus(1);
+            using (var bgv = new BackgroundWorker())
+            {
+                bgv.DoWork += BgvDoWork;
+                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
+                bgv.RunWorkerAsync();
+            }
         }
 
         public async Task SaveNewItem()
@@ -847,6 +746,7 @@ namespace Crawler.Models
                         item.IsHasLocalFileFound(DirPath);
                     }
                     SelectedChannel = channel;
+                    SelectedChannel.ChannelItemsCount = channel.ChannelItems.Count;
                 }
                 SetStatus(0);
             }
@@ -855,6 +755,76 @@ namespace Crawler.Models
                 SetStatus(3);
                 Info = ex.Message;
             }
+        }
+
+        public async Task SelectChannel()
+        {
+            if (SelectedChannel == null)
+            {
+                return;
+            }
+
+            Filter = string.Empty;
+            IsExpand = false;
+
+            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
+            {
+                foreach (IChannel channel in RelatedChannels)
+                {
+                    channel.ChannelItems.Clear();
+                }
+
+                RelatedChannels.Clear();
+            }
+
+            foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = true;
+            }
+
+            // есть новые элементы после синхронизации
+            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any()
+                                    && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
+
+            // заполняем только если либо ничего нет, либо одни новые
+            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
+            {
+                if (isHasNewFromSync)
+                {
+                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
+                    SelectedChannel.ChannelItems.Clear();
+                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
+                    foreach (
+                        IVideoItem item in
+                            from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
+                    {
+                        item.IsNewItem = true;
+                    }
+                }
+                else
+                {
+                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
+                }
+
+                if (SelectedChannel.ChannelItems.Any())
+                {
+                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
+                }
+                else
+                {
+                    // нет в базе = related channel
+                    SetStatus(1);
+                    SelectedChannel.IsInWork = true;
+                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
+                    foreach (IVideoItem item in lst)
+                    {
+                        SelectedChannel.AddNewItem(item, false);
+                    }
+                    SelectedChannel.IsInWork = false;
+                    SetStatus(0);
+                }
+            }
+            Filterlist.Clear();
         }
 
         /// <summary>
@@ -961,6 +931,20 @@ namespace Crawler.Models
         {
             SelectedChannel.Title = NewChannelTitle;
             await SelectedChannel.RenameChannelAsync(NewChannelTitle);
+        }
+
+        private async Task FillChannels()
+        {
+            IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
+            foreach (IChannel ch in lst)
+            {
+                ch.IsShowRow = true;
+                Channels.Add(ch);
+            }
+            if (Channels.Any())
+            {
+                SelectedChannel = Channels.First();
+            }
         }
 
         private void FilterVideos()
@@ -1257,6 +1241,30 @@ namespace Crawler.Models
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Event Handling
+
+        private void BgvDoWork(object sender, DoWorkEventArgs e)
+        {
+            Application.Current.Dispatcher.InvokeAsync(new Action(async () => await FillChannels()));
+        }
+
+        private async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Error != null)
+            {
+                MessageBox.Show(e.Error.Message);
+                SetStatus(3);
+            }
+            else
+            {
+                await LoadSettings();
+                CreateServicesChannels();
+                SetStatus(0);
+            }
+        }
 
         #endregion
     }
