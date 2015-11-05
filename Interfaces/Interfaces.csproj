@@ -49,6 +49,7 @@
     <Compile Include="Enums\KeyboardKey.cs" />
     <Compile Include="Enums\MainMenuItem.cs" />
     <Compile Include="Enums\SiteType.cs" />
+    <Compile Include="Enums\VideoMenuItem.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />
     <Compile Include="Factories\ISubtitleFactory.cs" />
     <Compile Include="Factories\ICommonFactory.cs" />

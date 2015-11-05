@@ -88,6 +88,7 @@
                                                 <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=relatedGrid}"/>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
+                                        
                                         <DataGrid.Resources>
                                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                             <ContextMenu x:Key="DataRowContextMenu">
@@ -105,7 +106,7 @@
                                         <DataGrid.RowStyle>
                                             <Style TargetType="{x:Type DataGridRow}">
                                                 <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
-                                                <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                                                <!--<EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />-->
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
                                                         <Setter Property="Background" Value="PaleGreen" />
@@ -509,13 +510,13 @@
                         <DataGrid.Resources>
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                             <ContextMenu x:Key="DataRowContextMenu">
-                                <MenuItem Header="Delete" Click="VideoItem_OnClick" CommandParameter="Delete" />
-                                <MenuItem Header="Copy Link" Click="VideoItem_OnClick" CommandParameter="Link" />
-                                <MenuItem Header="Edit" Click="VideoItem_OnClick" CommandParameter="Edit" />
-                                <MenuItem Header="Download HD" Click="VideoItem_OnClick" CommandParameter="HD" />
-                                <MenuItem Header="Download Audio" Click="VideoItem_OnClick" CommandParameter="Audio" />
-                                <MenuItem Header="Subscribe" Click="VideoItem_OnClick" CommandParameter="Subscribe" />
-                                <Separator></Separator>
+                                <MenuItem Header="Delete" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
+                                <MenuItem Header="Copy Link" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
+                                <MenuItem Header="Edit" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Edit}" />
+                                <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
+                                <MenuItem Header="Download Audio" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
+                                <MenuItem Header="Subscribe" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" />
+                                <Separator />
 
                                 <MenuItem Header="Subtitles" SubmenuOpened="MenuItem_OnSubmenuOpened"
                                       >
@@ -525,13 +526,8 @@
                                         <ListView.ItemTemplate>
                                             <DataTemplate>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <CheckBox IsChecked="{Binding IsChecked}" 
-                                                            Margin="0,1,0,0"
-                                                            />
-                                                    <TextBlock Text="{Binding Language}" 
-                                                            IsEnabled="{Binding IsEnabled}"
-                                                            Margin="10,0,10,0">
-                                                    </TextBlock>
+                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,1,0,0" />
+                                                    <TextBlock Text="{Binding Language}" IsEnabled="{Binding IsEnabled}" Margin="10,0,10,0" />
                                                 </StackPanel>
                                             </DataTemplate>
                                         </ListView.ItemTemplate>
@@ -543,6 +539,7 @@
 
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
+                                <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
                                 <EventSetter Event="MouseDoubleClick" Handler="VideoItem_OnMouseDoubleClick" />
                                 <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                                 <Style.Triggers>
@@ -580,16 +577,23 @@
                                             <StackPanel.OpacityMask>
                                                 <VisualBrush Visual="{Binding ElementName=Mask}" />
                                             </StackPanel.OpacityMask>
-                                            <Image Source="{Binding Thumbnail, IsAsync=True}" ToolTipOpening="VideoItem_OnToolTipOpening" 
-                                               ToolTipService.ShowDuration="120000"
-                                               RenderOptions.BitmapScalingMode="Fant"
-                                               Stretch="Fill"
-                                               Width="48"
-                                               Height="48"
-                                               VerticalAlignment="Top"
-                                               Margin="0"
-                                               HorizontalAlignment="Center"
-                                               MouseLeftButtonUp="VideoImage_OnMouseLeftButtonUp">
+                                            <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                                   ToolTipOpening="VideoItem_OnToolTipOpening" 
+                                                   ToolTipService.ShowDuration="120000"
+                                                   RenderOptions.BitmapScalingMode="Fant"
+                                                   Stretch="Fill"
+                                                   Width="48"
+                                                   Height="48"
+                                                   VerticalAlignment="Top"
+                                                   Margin="0"
+                                                   HorizontalAlignment="Center"
+                                                   >
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                                
                                                 <Image.ToolTip>
                                                     <StackPanel Orientation="Horizontal">
                                                         <Image Source="{Binding Thumbnail, IsAsync=True}" />

@@ -67,64 +67,64 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private async void Channel_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var row = sender as DataGridRow;
-            if (row == null)
-            {
-                return;
-            }
+        //private async void Channel_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
+        //{
+        //    var row = sender as DataGridRow;
+        //    if (row == null)
+        //    {
+        //        return;
+        //    }
 
-            var channel = row.Item as IChannel;
-            if (channel == null || channel.IsInWork)
-            {
-                return;
-            }
+        //    var channel = row.Item as IChannel;
+        //    if (channel == null || channel.IsInWork)
+        //    {
+        //        return;
+        //    }
 
-            ViewModel.Model.SetStatus(1);
-            if (channel.ID != "pop")
-            {
-                await ViewModel.Model.SyncChannel(channel);
-            }
-            else
-            {
-                if (channel.ChannelItems.Any())
-                {
-                    // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                    for (int i = channel.ChannelItems.Count; i > 0; i--)
-                    {
-                        if (
-                            !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
-                              || channel.ChannelItems[i - 1].State == ItemState.Downloading))
-                        {
-                            channel.ChannelItems.RemoveAt(i - 1);
-                        }
-                    }
-                }
+        //    ViewModel.Model.SetStatus(1);
+        //    if (channel.ID != "pop")
+        //    {
+        //        await ViewModel.Model.SyncChannel(channel);
+        //    }
+        //    else
+        //    {
+        //        if (channel.ChannelItems.Any())
+        //        {
+        //            // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+        //            for (int i = channel.ChannelItems.Count; i > 0; i--)
+        //            {
+        //                if (
+        //                    !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
+        //                      || channel.ChannelItems[i - 1].State == ItemState.Downloading))
+        //                {
+        //                    channel.ChannelItems.RemoveAt(i - 1);
+        //                }
+        //            }
+        //        }
 
-                try
-                {
-                    IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
-                    foreach (IVideoItem item in lst)
-                    {
-                        channel.AddNewItem(item, false);
-                        item.IsHasLocalFileFound(ViewModel.Model.DirPath);
-                        if (ViewModel.Model.Channels.Select(x => x.ID).Contains(item.ParentID))
-                        {
-                            // подсветим видео, если канал уже есть в подписке
-                            item.IsNewItem = true;
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                    ViewModel.Model.SetStatus(3);
-                }
-            }
+        //        try
+        //        {
+        //            IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(ViewModel.Model.SelectedCountry, 30);
+        //            foreach (IVideoItem item in lst)
+        //            {
+        //                channel.AddNewItem(item, false);
+        //                item.IsHasLocalFileFound(ViewModel.Model.DirPath);
+        //                if (ViewModel.Model.Channels.Select(x => x.ID).Contains(item.ParentID))
+        //                {
+        //                    // подсветим видео, если канал уже есть в подписке
+        //                    item.IsNewItem = true;
+        //                }
+        //            }
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            MessageBox.Show(ex.Message);
+        //            ViewModel.Model.SetStatus(3);
+        //        }
+        //    }
 
-            ViewModel.Model.SetStatus(0);
-        }
+        //    ViewModel.Model.SetStatus(0);
+        //}
 
         private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
         {
@@ -411,156 +411,144 @@ namespace Crawler.Views
             e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
         }
 
-        private void VideoImage_OnMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            var edv = new EditDescriptionView
-            {
-                DataContext = ViewModel.Model.SelectedVideoItem, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
+        //private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    var mitem = sender as MenuItem;
+        //    if (mitem == null)
+        //    {
+        //        return;
+        //    }
 
-            edv.Show();
-        }
+        //    switch (mitem.CommandParameter.ToString())
+        //    {
+        //        case "Link":
+        //            try
+        //            {
+        //                Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                ViewModel.Model.Info = ex.Message;
+        //            }
 
-        private async void VideoItem_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
+        //            break;
 
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Link":
-                    try
-                    {
-                        Clipboard.SetText(ViewModel.Model.SelectedVideoItem.MakeLink());
-                    }
-                    catch (Exception ex)
-                    {
-                        ViewModel.Model.Info = ex.Message;
-                    }
+        //        case "Edit":
+        //            var edv = new EditDescriptionView
+        //            {
+        //                DataContext = ViewModel.Model.SelectedVideoItem, 
+        //                Owner = Application.Current.MainWindow, 
+        //                WindowStartupLocation = WindowStartupLocation.CenterOwner
+        //            };
 
-                    break;
+        //            edv.Show();
 
-                case "Edit":
-                    var edv = new EditDescriptionView
-                    {
-                        DataContext = ViewModel.Model.SelectedVideoItem, 
-                        Owner = Application.Current.MainWindow, 
-                        WindowStartupLocation = WindowStartupLocation.CenterOwner
-                    };
+        //            break;
 
-                    edv.Show();
+        //        case "Audio":
 
-                    break;
+        //            if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+        //            {
+        //                MessageBox.Show("Please, select youtube-dl");
+        //                return;
+        //            }
 
-                case "Audio":
+        //            ViewModel.Model.SelectedChannel.IsDownloading = true;
+        //            await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false, true);
 
-                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-                    {
-                        MessageBox.Show("Please, select youtube-dl");
-                        return;
-                    }
+        //            break;
 
-                    ViewModel.Model.SelectedChannel.IsDownloading = true;
-                    await ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, false, true);
+        //        case "HD":
+        //            if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+        //            {
+        //                MessageBox.Show("Please, select youtube-dl");
+        //                return;
+        //            }
 
-                    break;
+        //            if (IsFfmegExist())
+        //            {
+        //                ViewModel.Model.SelectedChannel.IsDownloading = true;
+        //                await
+        //                    ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true, false);
+        //            }
+        //            else
+        //            {
+        //                var ff = new FfmpegView
+        //                {
+        //                    Owner = Application.Current.MainWindow, 
+        //                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+        //                };
 
-                case "HD":
-                    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-                    {
-                        MessageBox.Show("Please, select youtube-dl");
-                        return;
-                    }
+        //                ff.ShowDialog();
+        //            }
 
-                    if (IsFfmegExist())
-                    {
-                        ViewModel.Model.SelectedChannel.IsDownloading = true;
-                        await
-                            ViewModel.Model.SelectedVideoItem.DownloadItem(ViewModel.Model.YouPath, ViewModel.Model.DirPath, true, false);
-                    }
-                    else
-                    {
-                        var ff = new FfmpegView
-                        {
-                            Owner = Application.Current.MainWindow, 
-                            WindowStartupLocation = WindowStartupLocation.CenterOwner
-                        };
+        //            break;
 
-                        ff.ShowDialog();
-                    }
+        //        case "Delete":
+        //            var sb = new StringBuilder();
 
-                    break;
+        //            foreach (IVideoItem item in videoGrid.SelectedItems)
+        //            {
+        //                if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+        //                {
+        //                    sb.Append(item.Title).Append(Environment.NewLine);
+        //                }
+        //            }
 
-                case "Delete":
-                    var sb = new StringBuilder();
+        //            if (sb.Length == 0)
+        //            {
+        //                return;
+        //            }
 
-                    foreach (IVideoItem item in videoGrid.SelectedItems)
-                    {
-                        if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
-                        {
-                            sb.Append(item.Title).Append(Environment.NewLine);
-                        }
-                    }
+        //            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+        //                "Confirm", 
+        //                MessageBoxButton.OKCancel, 
+        //                MessageBoxImage.Information);
 
-                    if (sb.Length == 0)
-                    {
-                        return;
-                    }
+        //            if (result == MessageBoxResult.OK)
+        //            {
+        //                for (int i = videoGrid.SelectedItems.Count; i > 0; i--)
+        //                {
+        //                    var item = videoGrid.SelectedItems[i - 1] as IVideoItem;
 
-                    MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
-                        "Confirm", 
-                        MessageBoxButton.OKCancel, 
-                        MessageBoxImage.Information);
+        //                    if (item == null)
+        //                    {
+        //                        continue;
+        //                    }
 
-                    if (result == MessageBoxResult.OK)
-                    {
-                        for (int i = videoGrid.SelectedItems.Count; i > 0; i--)
-                        {
-                            var item = videoGrid.SelectedItems[i - 1] as IVideoItem;
+        //                    var fn = new FileInfo(item.LocalFilePath);
+        //                    try
+        //                    {
+        //                        fn.Delete();
+        //                        await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
+        //                        item.LocalFilePath = string.Empty;
+        //                        item.IsHasLocalFile = false;
+        //                        item.State = ItemState.LocalNo;
+        //                        item.Subtitles.Clear();
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        MessageBox.Show(ex.Message);
+        //                    }
+        //                }
+        //            }
 
-                            if (item == null)
-                            {
-                                continue;
-                            }
+        //            break;
 
-                            var fn = new FileInfo(item.LocalFilePath);
-                            try
-                            {
-                                fn.Delete();
-                                await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
-                                item.LocalFilePath = string.Empty;
-                                item.IsHasLocalFile = false;
-                                item.State = ItemState.LocalNo;
-                                item.Subtitles.Clear();
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                            }
-                        }
-                    }
+        //        case "Subscribe":
+        //            if (ViewModel.Model.SelectedChannel.ID != "pop")
+        //            {
+        //                // этот канал по-любому есть - даже проверять не будем)
+        //                MessageBox.Show("Has already");
+        //                return;
+        //            }
 
-                    break;
+        //            await
+        //                ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink(), ViewModel.Model.SelectedChannel.Site);
 
-                case "Subscribe":
-                    if (ViewModel.Model.SelectedChannel.ID != "pop")
-                    {
-                        // этот канал по-любому есть - даже проверять не будем)
-                        MessageBox.Show("Has already");
-                        return;
-                    }
-
-                    await
-                        ViewModel.Model.AddNewChannel(ViewModel.Model.SelectedVideoItem.MakeLink(), ViewModel.Model.SelectedChannel.Site);
-
-                    break;
-            }
-        }
+        //            break;
+        //    }
+        //}
 
         private async void VideoItem_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
         {

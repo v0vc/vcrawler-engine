@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -21,6 +22,7 @@ using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Application = System.Windows.Application;
+using Clipboard = System.Windows.Clipboard;
 using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
 
@@ -38,14 +40,16 @@ namespace Crawler.ViewModels
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
+        private RelayCommand fillPopularCommand;
         private bool isHasBeenFocused;
         private RelayCommand mainMenuCommand;
+        private RelayCommand openDescriptionCommand;
         private RelayCommand openDirCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
-        private RelayCommand fillPopularCommand;
+        private RelayCommand videoItemMenuCommand;
 
         #endregion
 
@@ -59,59 +63,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Properties
-
-        public RelayCommand FillPopularCommand
-        {
-            get
-            {
-                return fillPopularCommand ?? (fillPopularCommand = new RelayCommand(FillPopular));
-            }
-        }
-
-        private async void FillPopular(object obj)
-        {
-            var channel = obj as IChannel;
-            if (channel == null)
-            {
-                return;
-            }
-
-            if (channel.ChannelItems.Any())
-            {
-                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                for (int i = channel.ChannelItems.Count; i > 0; i--)
-                {
-                    if (
-                        !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
-                          || channel.ChannelItems[i - 1].State == ItemState.Downloading))
-                    {
-                        channel.ChannelItems.RemoveAt(i - 1);
-                    }
-                }
-            }
-
-            try
-            {
-                Model.SetStatus(1);
-                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(Model.SelectedCountry, 30);
-                foreach (IVideoItem item in lst)
-                {
-                    channel.AddNewItem(item, false);
-                    item.IsHasLocalFileFound(Model.DirPath);
-                    if (Model.Channels.Select(x => x.ID).Contains(item.ParentID))
-                    {
-                        // подсветим видео, если канал уже есть в подписке
-                        item.IsNewItem = true;
-                    }
-                }
-                Model.SetStatus(0);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Model.SetStatus(3);
-            }
-        }
 
         public RelayCommand AddNewItemCommand
         {
@@ -177,6 +128,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand FillPopularCommand
+        {
+            get
+            {
+                return fillPopularCommand ?? (fillPopularCommand = new RelayCommand(FillPopular));
+            }
+        }
+
         public bool IsSearchExpanded { get; set; }
 
         public RelayCommand MainMenuCommand
@@ -188,6 +147,14 @@ namespace Crawler.ViewModels
         }
 
         public MainWindowModel Model { get; set; }
+
+        public RelayCommand OpenDescriptionCommand
+        {
+            get
+            {
+                return openDescriptionCommand ?? (openDescriptionCommand = new RelayCommand(x => OpenDescription()));
+            }
+        }
 
         public RelayCommand OpenDirCommand
         {
@@ -229,6 +196,25 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand VideoItemMenuCommand
+        {
+            get
+            {
+                return videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
+            }
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        private static bool IsFfmegExist()
+        {
+            const string ff = "ffmpeg.exe";
+            string values = Environment.GetEnvironmentVariable("PATH");
+            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
+        }
+
         #endregion
 
         #region Methods
@@ -239,8 +225,8 @@ namespace Crawler.ViewModels
 
             var addview = new AddChanelView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -251,8 +237,8 @@ namespace Crawler.ViewModels
         {
             var antv = new AddNewTagView
             {
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 DataContext = this
             };
 
@@ -263,9 +249,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = @"Text documents (.txt)|*.txt", 
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = @"Text documents (.txt)|*.txt",
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -333,7 +319,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Update:
-                    await UpdateChannel();
+                    await SyncChannelPlaylist();
                     break;
             }
         }
@@ -352,9 +338,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -370,6 +356,132 @@ namespace Crawler.ViewModels
                 {
                     Model.SelectedChannel = Model.Channels.First();
                 }
+            }
+        }
+
+        private async Task DeleteItems()
+        {
+            var sb = new StringBuilder();
+
+            foreach (IVideoItem item in Model.SelectedChannel.SelectedItems)
+            {
+                if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                {
+                    sb.Append(item.Title).Append(Environment.NewLine);
+                }
+            }
+
+            if (sb.Length == 0)
+            {
+                return;
+            }
+
+            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
+
+            if (result == MessageBoxResult.OK)
+            {
+                for (int i = Model.SelectedChannel.SelectedItems.Count; i > 0; i--)
+                {
+                    IVideoItem item = Model.SelectedChannel.SelectedItems[i - 1];
+
+                    var fn = new FileInfo(item.LocalFilePath);
+                    try
+                    {
+                        fn.Delete();
+                        await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
+                        item.LocalFilePath = string.Empty;
+                        item.IsHasLocalFile = false;
+                        item.State = ItemState.LocalNo;
+                        item.Subtitles.Clear();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+                }
+            }
+        }
+
+        private async Task DownloadAudio()
+        {
+            if (!IsYoutubeExist())
+            {
+                return;
+            }
+
+            Model.SelectedChannel.IsDownloading = true;
+            await Model.SelectedVideoItem.DownloadItem(Model.YouPath, Model.DirPath, false, true);
+        }
+
+        private async Task DownloadHd()
+        {
+            if (!IsYoutubeExist())
+            {
+                return;
+            }
+
+            if (IsFfmegExist())
+            {
+                Model.SelectedChannel.IsDownloading = true;
+                await Model.SelectedVideoItem.DownloadItem(Model.YouPath, Model.DirPath, true, false);
+            }
+            else
+            {
+                var ff = new FfmpegView
+                {
+                    Owner = Application.Current.MainWindow,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner
+                };
+
+                ff.ShowDialog();
+            }
+        }
+
+        private async void FillPopular(object obj)
+        {
+            var channel = obj as IChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
+            if (channel.ChannelItems.Any())
+            {
+                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+                for (int i = channel.ChannelItems.Count; i > 0; i--)
+                {
+                    if (
+                        !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
+                          || channel.ChannelItems[i - 1].State == ItemState.Downloading))
+                    {
+                        channel.ChannelItems.RemoveAt(i - 1);
+                    }
+                }
+            }
+
+            try
+            {
+                Model.SetStatus(1);
+                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(Model.SelectedCountry, 30);
+                foreach (IVideoItem item in lst)
+                {
+                    channel.AddNewItem(item, false);
+                    item.IsHasLocalFileFound(Model.DirPath);
+                    if (Model.Channels.Select(x => x.ID).Contains(item.ParentID))
+                    {
+                        // подсветим видео, если канал уже есть в подписке
+                        item.IsNewItem = true;
+                    }
+                }
+                Model.SetStatus(0);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Model.SetStatus(3);
             }
         }
 
@@ -409,6 +521,28 @@ namespace Crawler.ViewModels
             }
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
             isHasBeenFocused = true;
+        }
+
+        private bool IsYoutubeExist()
+        {
+            if (!string.IsNullOrEmpty(Model.YouPath))
+            {
+                return true;
+            }
+            MessageBox.Show("Please, select youtube-dl");
+            return false;
+        }
+
+        private void LinkToClipboard()
+        {
+            try
+            {
+                Clipboard.SetText(Model.SelectedVideoItem.MakeLink());
+            }
+            catch (Exception ex)
+            {
+                Model.Info = ex.Message;
+            }
         }
 
         private async void MainMenuClick(object param)
@@ -458,11 +592,23 @@ namespace Crawler.ViewModels
         {
             var adl = new AddLinkView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
+        }
+
+        private void OpenDescription()
+        {
+            var edv = new EditDescriptionView
+            {
+                DataContext = Model.SelectedVideoItem,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            edv.Show();
         }
 
         private void OpenDir(object obj)
@@ -502,8 +648,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = this,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -514,17 +660,17 @@ namespace Crawler.ViewModels
         {
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = Model.SelectedChannel, 
-                CurrentTags = Model.CurrentTags, 
-                Tags = Model.Tags, 
+                ParentChannel = Model.SelectedChannel,
+                CurrentTags = Model.CurrentTags,
+                Tags = Model.Tags,
                 Channels = Model.Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = etvm,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
@@ -555,7 +701,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                var rest = 0;
+                int rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -619,6 +765,18 @@ namespace Crawler.ViewModels
             await Model.SelectedChannel.InsertChannelItemsAsync();
         }
 
+        private async Task SubscribeOn()
+        {
+            if (Model.SelectedChannel.ID != "pop")
+            {
+                // этот канал по-любому есть - даже проверять не будем)
+                MessageBox.Show("Has already");
+                return;
+            }
+
+            await Model.AddNewChannel(Model.SelectedVideoItem.MakeLink(), Model.SelectedChannel.Site);
+        }
+
         private async void SyncChannel(object obj)
         {
             var channel = obj as IChannel;
@@ -628,7 +786,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task UpdateChannel()
+        private async Task SyncChannelPlaylist()
         {
             Model.SetStatus(1);
             if (Model.SelectedChannel.IsInWork)
@@ -656,6 +814,37 @@ namespace Crawler.ViewModels
             await db.VacuumAsync();
             long sizeafter = new FileInfo(db.FileBase.FullName).Length;
             Model.Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
+        }
+
+        private async void VideoItemMenuClick(object param)
+        {
+            var menu = (VideoMenuItem)param;
+            switch (menu)
+            {
+                case VideoMenuItem.Delete:
+                    await DeleteItems();
+                    break;
+
+                case VideoMenuItem.Audio:
+                    await DownloadAudio();
+                    break;
+
+                case VideoMenuItem.Edit:
+                    OpenDescription();
+                    break;
+
+                case VideoMenuItem.HD:
+                    await DownloadHd();
+                    break;
+
+                case VideoMenuItem.Link:
+                    LinkToClipboard();
+                    break;
+
+                case VideoMenuItem.Subscribe:
+                    await SubscribeOn();
+                    break;
+            }
         }
 
         #endregion

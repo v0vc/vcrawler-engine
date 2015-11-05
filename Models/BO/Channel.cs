@@ -5,6 +5,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -181,6 +182,14 @@ namespace Models.BO
         }
 
         public SiteType Site { get; set; }
+
+        public IList<IVideoItem> SelectedItems
+        {
+            get
+            {
+                return ChannelItems.Where(x => x.IsSelected).ToList();
+            }
+        }
 
         public void AddNewItem(IVideoItem item, bool isNew)
         {

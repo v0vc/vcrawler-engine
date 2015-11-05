@@ -212,6 +212,8 @@ namespace Models.BO.Items
             }
         }
 
+        public bool IsSelected { get; set; }
+
         public byte[] LargeThumb
         {
             get
