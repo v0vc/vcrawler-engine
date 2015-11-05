@@ -757,7 +757,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task SelectChannel()
+        public async Task FillChannelItems()
         {
             if (SelectedChannel == null)
             {

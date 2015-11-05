@@ -192,6 +192,9 @@
                         <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
                             <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=channelsGrid}"/>
                         </i:EventTrigger>
+                        <i:EventTrigger EventName="MouseDoubleClick">
+                            <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                        </i:EventTrigger>
                     </i:Interaction.Triggers>
 
                     <DataGrid.Resources>
@@ -216,7 +219,7 @@
                         <Style TargetType="{x:Type DataGridRow}">
                             <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
-                            <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
+                            <!--<EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />-->
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
                                     <Setter Property="Background" Value="PaleGreen" />
@@ -299,7 +302,7 @@
                                   >
                             <Expander.Content>
                                 <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
-                                    <DataGrid CanUserAddRows="False"
+                                    <DataGrid CanUserAddRows="False" x:Name="popGrid"
                                               CanUserDeleteRows="False"
                                               AutoGenerateColumns="False"
                                               HeadersVisibility="None"
@@ -308,26 +311,37 @@
                                               ItemsSource="{Binding Model.ServiceChannels}"
                                               SelectedItem="{Binding Model.SelectedChannel}"
                                               >
-                                    <DataGrid.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
-                                    </DataGrid.InputBindings>
+                                        <DataGrid.InputBindings>
+                                            <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
+                                        </DataGrid.InputBindings>
+
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding FillPopularCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <!--<i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SelectionChanged">
+                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" />
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>-->
                                         
-                                    <DataGrid.Resources>
+                                        <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                     </DataGrid.Resources>
-                                    
-                                    <DataGrid.CellStyle>
-                                        <Style TargetType="DataGridCell">
-                                            <Setter Property="BorderThickness" Value="0" />
-                                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                        </Style>
-                                    </DataGrid.CellStyle>
-                                    
-                                    <DataGrid.RowStyle>
+
+                                        <DataGrid.CellStyle>
+                                            <Style TargetType="DataGridCell">
+                                                <Setter Property="BorderThickness" Value="0" />
+                                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                            </Style>
+                                        </DataGrid.CellStyle>
+
+                                        <!--<DataGrid.RowStyle>
                                         <Style TargetType="{x:Type DataGridRow}">
                                             <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
                                         </Style>
-                                    </DataGrid.RowStyle>
+                                    </DataGrid.RowStyle>-->
 
                                     <DataGrid.Columns>
 

@@ -32,6 +32,7 @@ namespace Crawler.ViewModels
 
         private RelayCommand addNewItemCommand;
         private RelayCommand addNewTagCommand;
+        private RelayCommand channelDoubleClickCommand;
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectionChangedCommand;
@@ -44,6 +45,7 @@ namespace Crawler.ViewModels
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
         private RelayCommand syncDataCommand;
+        private RelayCommand fillPopularCommand;
 
         #endregion
 
@@ -58,6 +60,59 @@ namespace Crawler.ViewModels
 
         #region Properties
 
+        public RelayCommand FillPopularCommand
+        {
+            get
+            {
+                return fillPopularCommand ?? (fillPopularCommand = new RelayCommand(FillPopular));
+            }
+        }
+
+        private async void FillPopular(object obj)
+        {
+            var channel = obj as IChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
+            if (channel.ChannelItems.Any())
+            {
+                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+                for (int i = channel.ChannelItems.Count; i > 0; i--)
+                {
+                    if (
+                        !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
+                          || channel.ChannelItems[i - 1].State == ItemState.Downloading))
+                    {
+                        channel.ChannelItems.RemoveAt(i - 1);
+                    }
+                }
+            }
+
+            try
+            {
+                Model.SetStatus(1);
+                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(Model.SelectedCountry, 30);
+                foreach (IVideoItem item in lst)
+                {
+                    channel.AddNewItem(item, false);
+                    item.IsHasLocalFileFound(Model.DirPath);
+                    if (Model.Channels.Select(x => x.ID).Contains(item.ParentID))
+                    {
+                        // подсветим видео, если канал уже есть в подписке
+                        item.IsNewItem = true;
+                    }
+                }
+                Model.SetStatus(0);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                Model.SetStatus(3);
+            }
+        }
+
         public RelayCommand AddNewItemCommand
         {
             get
@@ -71,6 +126,14 @@ namespace Crawler.ViewModels
             get
             {
                 return addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
+            }
+        }
+
+        public RelayCommand ChannelDoubleClickCommand
+        {
+            get
+            {
+                return channelDoubleClickCommand ?? (channelDoubleClickCommand = new RelayCommand(SyncChannel));
             }
         }
 
@@ -325,7 +388,7 @@ namespace Crawler.ViewModels
 
         private async void FocusRow(object obj)
         {
-            await Model.SelectChannel();
+            await Model.FillChannelItems();
 
             if (isHasBeenFocused)
             {
@@ -554,6 +617,15 @@ namespace Crawler.ViewModels
 
             Model.Channels.Add(Model.SelectedChannel);
             await Model.SelectedChannel.InsertChannelItemsAsync();
+        }
+
+        private async void SyncChannel(object obj)
+        {
+            var channel = obj as IChannel;
+            if (channel != null)
+            {
+                await Model.SyncChannel(channel);
+            }
         }
 
         private async Task UpdateChannel()
