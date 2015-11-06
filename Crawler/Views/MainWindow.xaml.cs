@@ -2,14 +2,10 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using Crawler.ViewModels;
-using Interfaces.Models;
 
 namespace Crawler.Views
 {
@@ -20,7 +16,7 @@ namespace Crawler.Views
     {
         #region Fields
 
-        private GridLength _rememberWidth = GridLength.Auto;
+        private GridLength rememberWidth = GridLength.Auto;
 
         #endregion
 
@@ -51,88 +47,6 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
-        {
-            foreach (IChannel channel in ViewModel.Model.Channels)
-            {
-                channel.IsShowRow = false;
-            }
-
-            if (ViewModel.Model.CurrentTags.Any(x => x.IsChecked))
-            {
-                foreach (ITag tag in ViewModel.Model.CurrentTags.Where(x => x.IsChecked))
-                {
-                    foreach (IChannel channel in ViewModel.Model.Channels)
-                    {
-                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
-                        {
-                            channel.IsShowRow = true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                ViewModel.Model.SelectedTag = null;
-                foreach (IChannel channel in ViewModel.Model.Channels)
-                {
-                    channel.IsShowRow = true;
-                }
-            }
-            ViewModel.Model.SelectedChannel = ViewModel.Model.Channels.First(x => x.IsShowRow);
-        }
-
-        private async void ComboBoxTags_OnDropDownOpened(object sender, EventArgs e)
-        {
-            if (ViewModel.Model.CurrentTags.Any())
-            {
-                return;
-            }
-
-            var tmptags = new List<ITag>();
-            foreach (IChannel ch in ViewModel.Model.Channels)
-            {
-                IEnumerable<ITag> tags = await ch.GetChannelTagsAsync();
-
-                foreach (ITag tag in tags)
-                {
-                    ch.ChannelTags.Add(tag);
-                    if (!tmptags.Select(x => x.Title).Contains(tag.Title))
-                    {
-                        tmptags.Add(tag);
-                    }
-                }
-            }
-            foreach (ITag tag in tmptags.OrderBy(x => x.Title))
-            {
-                ViewModel.Model.CurrentTags.Add(tag);
-            }
-        }
-
-        private void CurrentTag_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ViewModel.Model.SelectedTag == null)
-            {
-                return;
-            }
-
-            foreach (IChannel channel in ViewModel.Model.Channels)
-            {
-                channel.IsShowRow = true;
-                if (!channel.ChannelTags.Select(x => x.Title).Contains(ViewModel.Model.SelectedTag.Title))
-                {
-                    channel.IsShowRow = false;
-                }
-            }
-            foreach (ITag tag in ViewModel.Model.CurrentTags)
-            {
-                if (tag.Title != ViewModel.Model.SelectedTag.Title && tag.IsChecked)
-                {
-                    tag.IsChecked = false;
-                }
-            }
-        }
-
         private void GridCollapsed(object sender, RoutedEventArgs e)
         {
             var grid = sender as Grid;
@@ -140,7 +54,7 @@ namespace Crawler.Views
             {
                 return;
             }
-            _rememberWidth = grid.ColumnDefinitions[1].Width;
+            rememberWidth = grid.ColumnDefinitions[1].Width;
             grid.ColumnDefinitions[1].Width = GridLength.Auto;
         }
 
@@ -149,37 +63,7 @@ namespace Crawler.Views
             var grid = sender as Grid;
             if (grid != null)
             {
-                grid.ColumnDefinitions[1].Width = _rememberWidth;
-            }
-        }
-
-        private async void MenuItem_OnSubmenuOpened(object sender, RoutedEventArgs e)
-        {
-            if (!ViewModel.Model.SelectedVideoItem.Subtitles.Any())
-            {
-                await ViewModel.Model.SelectedVideoItem.FillSubtitles();
-            }
-        }
-
-        private async void PlayListExpander_OnExpanded(object sender, RoutedEventArgs e)
-        {
-            IChannel ch = ViewModel.Model.SelectedChannel;
-            if (ch == null)
-            {
-                return;
-            }
-
-            if (ch.ChannelPlaylists.Any())
-            {
-                return;
-            }
-
-            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
-            {
-                foreach (IPlaylist pl in pls)
-                {
-                    ch.ChannelPlaylists.Add(pl);
-                }
+                grid.ColumnDefinitions[1].Width = rememberWidth;
             }
         }
 

@@ -377,9 +377,9 @@
                                                             <ColumnDefinition />
                                                         </Grid.ColumnDefinitions>
                                                             <StackPanel Width="Auto" Orientation="Horizontal">
-                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding ViewModel.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                                          VerticalContentAlignment="Bottom" 
-                                                                         Text="{Binding DataContext.Model.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                                                                         Text="{Binding ViewModel.Model.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                                                     <TextBox.Resources>
                                                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
                                                                             <VisualBrush.Visual>
@@ -403,7 +403,7 @@
                                                                         </Style>
                                                                     </TextBox.Style>
                                                                 </TextBox>
-                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding ViewModel.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                                             </StackPanel>
                                                             <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
                                                         </Grid>
@@ -451,19 +451,32 @@
                                     <TextBlock Text="Add"></TextBlock>
                                 </Button.ToolTip>
                             </Button>
-                            <ComboBox ItemsSource="{Binding Model.CurrentTags, Mode=OneWay}" 
+                            <ComboBox ItemsSource="{Binding Model.CurrentTags, Mode=OneWay}" x:Name="comboBoxTags"
                                       Margin="0,2,2,2" 
-                                      DropDownOpened="ComboBoxTags_OnDropDownOpened"
                                       VerticalContentAlignment="Center"
-                                      SelectionChanged="CurrentTag_OnSelectionChanged"
                                       SelectedItem="{Binding Path=ViewModel.Model.SelectedTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                       >
+                                <i:Interaction.Triggers>
+                                    <i:EventTrigger EventName="DropDownOpened">
+                                        <i:InvokeCommandAction Command="{Binding TagsDropDownOpenedCommand}" />
+                                    </i:EventTrigger>
+                                    <i:EventTrigger EventName="SelectionChanged">
+                                        <i:InvokeCommandAction Command="{Binding CurrentTagSelectionChangedCommand}" CommandParameter="{Binding ElementName=comboBoxTags, Path=SelectedItem}"/>
+                                    </i:EventTrigger>                                    
+                                </i:Interaction.Triggers>
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
                                             <CheckBox IsChecked="{Binding IsChecked}" Margin="1" 
-                                                      Checked="CheckBoxTag_OnChecked" 
-                                                      Unchecked="CheckBoxTag_OnChecked">
+                                                      >
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="Checked">
+                                                        <i:InvokeCommandAction Command="{Binding Path=ViewModel.CurrentTagCheckedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="Unchecked">
+                                                        <i:InvokeCommandAction Command="{Binding Path=ViewModel.CurrentTagCheckedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}"/>
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
                                                 <CheckBox.LayoutTransform>
                                                     <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
                                                 </CheckBox.LayoutTransform>
@@ -489,7 +502,15 @@
                 </Grid.RowDefinitions>
 
                 <controls:BusyDecorator IsBusyIndicatorShowing="{Binding Model.IsWorking}">
-                    <DataGrid x:Name="videoGrid" 
+                    <!--<ScrollViewer CanContentScroll="True" x:Name="scrollVid">
+                        
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="ScrollChanged">
+                                <i:InvokeCommandAction Command="{Binding ViewModel.ScrollChangedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}" CommandParameter="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type ScrollViewer}}}"/>
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>-->
+                        
+                        <DataGrid x:Name="videoGrid" 
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
                               AutoGenerateColumns="False"
@@ -502,85 +523,92 @@
                               Sorting="VideoGrid_OnSorting"
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
-                              ScrollViewer.ScrollChanged="VideoGrid_OnScrollChanged"
-                              ScrollViewer.CanContentScroll="False"
                               SelectionMode="Extended"
+                              
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
                                 <i:InvokeCommandAction Command="{Binding VideoDoubleClickCommand}" CommandParameter="{Binding ElementName=videoGrid, Path=SelectedItem}"/>
                             </i:EventTrigger>
+                            <behaviors:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
+                                <i:InvokeCommandAction Command="{Binding ViewModel.ScrollChangedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}" CommandParameter="{Binding ElementName=videoGrid}"/>
+                            </behaviors:RoutedEventTrigger> 
                         </i:Interaction.Triggers>
 
-                        <DataGrid.Resources>
-                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                            <ContextMenu x:Key="DataRowContextMenu">
-                                <MenuItem Header="Delete" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
-                                <MenuItem Header="Copy Link" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
-                                <MenuItem Header="Edit" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Edit}" />
-                                <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
-                                <MenuItem Header="Download Audio" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
-                                <MenuItem Header="Subscribe" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" />
-                                <Separator />
+                            <DataGrid.Resources>
+                                <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                <ContextMenu x:Key="DataRowContextMenu">
+                                    <MenuItem Header="Delete" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
+                                    <MenuItem Header="Copy Link" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
+                                    <MenuItem Header="Edit" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Edit}" />
+                                    <MenuItem Header="Download HD" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
+                                    <MenuItem Header="Download Audio" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
+                                    <MenuItem Header="Subscribe" Command="{Binding ViewModel.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" />
+                                    <Separator />
 
-                                <MenuItem Header="Subtitles" SubmenuOpened="MenuItem_OnSubmenuOpened">
-                                    <ListView ItemsSource="{Binding Path=ViewModel.Model.SelectedVideoItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    <MenuItem Header="Subtitles" StaysOpenOnClick="True" >
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="SubmenuOpened">
+                                                <i:InvokeCommandAction Command="{Binding ViewModel.SubmenuOpenedCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
+                                        <ListView ItemsSource="{Binding Path=ViewModel.Model.SelectedVideoItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                           BorderThickness="0" Background="WhiteSmoke"
-                                          >
-                                        <ListView.ItemTemplate>
-                                            <DataTemplate>
-                                                <StackPanel Orientation="Horizontal">
-                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,1,0,0" />
-                                                    <TextBlock Text="{Binding Language}" IsEnabled="{Binding IsEnabled}" Margin="10,0,10,0" />
-                                                </StackPanel>
-                                            </DataTemplate>
-                                        </ListView.ItemTemplate>
-                                    </ListView>
-                                </MenuItem>
+                                              >
+                                            <ListView.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <CheckBox IsChecked="{Binding IsChecked}" Margin="0,1,0,0" />
+                                                        <TextBlock Text="{Binding Language}" IsEnabled="{Binding IsEnabled}" Margin="10,0,10,0" />
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ListView.ItemTemplate>
+                                        </ListView>
+                                    </MenuItem>
 
-                            </ContextMenu>
-                        </DataGrid.Resources>
+                                </ContextMenu>
+                            </DataGrid.Resources>
 
-                        <DataGrid.RowStyle>
-                            <Style TargetType="{x:Type DataGridRow}">
-                                <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
-                                <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
-                                        <Setter Property="Background" Value="PaleGreen" />
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=IsShowRow}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </DataGrid.RowStyle>
+                            <DataGrid.RowStyle>
+                                <Style TargetType="{x:Type DataGridRow}">
+                                    <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
+                                    <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
+                                            <Setter Property="Background" Value="PaleGreen" />
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=IsShowRow}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                        <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </DataGrid.RowStyle>
 
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                            </Style>
-                        </DataGrid.CellStyle>
+                            <DataGrid.CellStyle>
+                                <Style TargetType="DataGridCell">
+                                    <Setter Property="BorderThickness" Value="0" />
+                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+                                </Style>
+                            </DataGrid.CellStyle>
 
-                        <DataGrid.Columns>
+                            <DataGrid.Columns>
 
-                            <DataGridTemplateColumn CanUserResize="False" SortMemberPath="ViewCount">
-                                <DataGridTemplateColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="ToolTip" Value="Most Viewed" />
-                                    </Style>
-                                </DataGridTemplateColumn.HeaderStyle>
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Margin="1">
-                                            <StackPanel.OpacityMask>
-                                                <VisualBrush Visual="{Binding ElementName=Mask}" />
-                                            </StackPanel.OpacityMask>
-                                            <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                <DataGridTemplateColumn CanUserResize="False" SortMemberPath="ViewCount">
+                                    <DataGridTemplateColumn.HeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="ToolTip" Value="Most Viewed" />
+                                        </Style>
+                                    </DataGridTemplateColumn.HeaderStyle>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="1">
+                                                <StackPanel.OpacityMask>
+                                                    <VisualBrush Visual="{Binding ElementName=Mask}" />
+                                                </StackPanel.OpacityMask>
+                                                <Image Source="{Binding Thumbnail, IsAsync=True}" 
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
                                                    Stretch="Fill"
@@ -590,120 +618,122 @@
                                                    Margin="0"
                                                    HorizontalAlignment="Center"
                                                    >
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                    </i:EventTrigger>
-                                                    <i:EventTrigger EventName="ToolTipOpening" >
-                                                        <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
-                                                
-                                                <Image.ToolTip>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                        <TextBlock Margin="10,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                </Image.ToolTip>
-                                            </Image>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                            <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                        </i:EventTrigger>
+                                                        <i:EventTrigger EventName="ToolTipOpening" >
+                                                            <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
 
-                            <DataGridTemplateColumn CanUserResize="True" Width="*" Header="Title" SortMemberPath="Title">
-                                <DataGridTemplateColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="HorizontalContentAlignment" Value="Center" />
-                                    </Style>
-                                </DataGridTemplateColumn.HeaderStyle>
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition />
-                                                <RowDefinition />
-                                            </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
-                                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                                    <Image.ToolTip>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True}" />
+                                                            <TextBlock Margin="10,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Image.ToolTip>
+                                                </Image>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                                                <TextBlock Text="{Binding DurationString}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
+                                <DataGridTemplateColumn CanUserResize="True" Width="*" Header="Title" SortMemberPath="Title">
+                                    <DataGridTemplateColumn.HeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="HorizontalContentAlignment" Value="Center" />
+                                        </Style>
+                                    </DataGridTemplateColumn.HeaderStyle>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Grid>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition />
+                                                    <RowDefinition />
+                                                </Grid.RowDefinitions>
+                                                <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                                <StackPanel Grid.Row="1" Orientation="Horizontal">
 
-                                                <TextBlock Text="{Binding DateTimeAgo}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12">
-                                                    <TextBlock.ToolTip>
-                                                        <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
-                                                    </TextBlock.ToolTip>
+                                                    <TextBlock Text="{Binding DurationString}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
+
+                                                    <TextBlock Text="{Binding DateTimeAgo}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12">
+                                                        <TextBlock.ToolTip>
+                                                            <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
+                                                        </TextBlock.ToolTip>
                                             </TextBlock>
 
-                                                <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
+                                                    <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
 
-                                            </StackPanel>
-                                        </Grid>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                                </StackPanel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn CanUserResize="False" Width="50" SortMemberPath="IsHasLocalFile">
-                                <DataGridTemplateColumn.HeaderStyle>
-                                    <Style TargetType="DataGridColumnHeader">
-                                        <Setter Property="ToolTip" Value="Local File" />
-                                    </Style>
-                                </DataGridTemplateColumn.HeaderStyle>
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Margin="0,0,2,0"
+                                <DataGridTemplateColumn CanUserResize="False" Width="50" SortMemberPath="IsHasLocalFile">
+                                    <DataGridTemplateColumn.HeaderStyle>
+                                        <Style TargetType="DataGridColumnHeader">
+                                            <Setter Property="ToolTip" Value="Local File" />
+                                        </Style>
+                                    </DataGridTemplateColumn.HeaderStyle>
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Margin="0,0,2,0"
                                                 Command="{Binding DataContext.VideoClickCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                 CommandParameter="{Binding ElementName=videoGrid, Path=SelectedItem}"
                                                 >
-                                            <Button.Template>
-                                                <ControlTemplate>
-                                                    <StackPanel Orientation="Vertical">
-                                                        <Image>
-                                                            <Image.Style>
-                                                                <Style TargetType="{x:Type Image}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
-                                                                            <Setter Property="Source" Value="../Images/add_64.png"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
-                                                                            <Setter Property="Source" Value="../Images/tick_64.png"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
-                                                                            <Setter Property="Height" Value="32"/>
-                                                                            <Setter Property="Source" Value="../Images/inbox-32.png"></Setter>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </Image.Style>
-                                                        </Image>
-                                                        <ProgressBar Value="{Binding DownloadPercentage, Mode=OneWay}">
-                                                            <ProgressBar.Style>
-                                                                <Style TargetType="{x:Type ProgressBar}">
-                                                                    <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
-                                                                            <Setter Property="Height" Value="0"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
-                                                                            <Setter Property="Height" Value="0"/>
-                                                                        </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
-                                                                            <Setter Property="Height" Value="16"/>
-                                                                        </DataTrigger>
-                                                                    </Style.Triggers>
-                                                                </Style>
-                                                            </ProgressBar.Style>
-                                                        </ProgressBar>
-                                                    </StackPanel>
-                                                </ControlTemplate>
-                                            </Button.Template>
-                                        </Button>
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
+                                                <Button.Template>
+                                                    <ControlTemplate>
+                                                        <StackPanel Orientation="Vertical">
+                                                            <Image>
+                                                                <Image.Style>
+                                                                    <Style TargetType="{x:Type Image}">
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
+                                                                                <Setter Property="Source" Value="../Images/add_64.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
+                                                                                <Setter Property="Source" Value="../Images/tick_64.png"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
+                                                                                <Setter Property="Height" Value="32"/>
+                                                                                <Setter Property="Source" Value="../Images/inbox-32.png"></Setter>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </Image.Style>
+                                                            </Image>
+                                                            <ProgressBar Value="{Binding DownloadPercentage, Mode=OneWay}">
+                                                                <ProgressBar.Style>
+                                                                    <Style TargetType="{x:Type ProgressBar}">
+                                                                        <Style.Triggers>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
+                                                                                <Setter Property="Height" Value="0"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
+                                                                                <Setter Property="Height" Value="0"/>
+                                                                            </DataTrigger>
+                                                                            <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
+                                                                                <Setter Property="Height" Value="16"/>
+                                                                            </DataTrigger>
+                                                                        </Style.Triggers>
+                                                                    </Style>
+                                                                </ProgressBar.Style>
+                                                            </ProgressBar>
+                                                        </StackPanel>
+                                                    </ControlTemplate>
+                                                </Button.Template>
+                                            </Button>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
 
-                        </DataGrid.Columns>
+                            </DataGrid.Columns>
 
-                    </DataGrid>
+                        </DataGrid>
+                    <!--</ScrollViewer>-->
+                    
                 </controls:BusyDecorator>          
 
                 <Border Grid.Row="1" CornerRadius="4" BorderBrush="Gray" BorderThickness="1" Background="Lavender" DockPanel.Dock="Top" Margin="0,1,0,0">
@@ -778,9 +808,13 @@
                       Background="Lavender"
                       BorderThickness="1" 
                       BorderBrush="Gray" 
-                      Margin="0,0,2,0"
-                      Expanded="PlayListExpander_OnExpanded"
+                      Margin="0,0,2,0"                    
                       >
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Expanded">
+                        <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
                 <Expander.Content>
                     <Grid Expander.Collapsed="GridCollapsed" Expander.Expanded="GridExpanded">
                         <Grid.ColumnDefinitions>

@@ -38,6 +38,8 @@ namespace Crawler.ViewModels
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectionChangedCommand;
+        private RelayCommand currentTagCheckedCommand;
+        private RelayCommand currentTagSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
@@ -47,16 +49,20 @@ namespace Crawler.ViewModels
         private RelayCommand openDescriptionCommand;
         private RelayCommand openDirCommand;
         private RelayCommand playlistDoubleClickCommand;
+        private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
         private RelayCommand popularSelectCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
+        private RelayCommand submenuOpenedCommand;
         private RelayCommand syncDataCommand;
+        private RelayCommand tagsDropDownOpenedCommand;
         private RelayCommand videoClickCommand;
         private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoItemMenuCommand;
+        private RelayCommand scrollChangedCommand;
 
         #endregion
 
@@ -116,6 +122,22 @@ namespace Crawler.ViewModels
             get
             {
                 return channelSelectionChangedCommand ?? (channelSelectionChangedCommand = new RelayCommand(FocusRow));
+            }
+        }
+
+        public RelayCommand CurrentTagCheckedCommand
+        {
+            get
+            {
+                return currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
+            }
+        }
+
+        public RelayCommand CurrentTagSelectionChangedCommand
+        {
+            get
+            {
+                return currentTagSelectionChangedCommand ?? (currentTagSelectionChangedCommand = new RelayCommand(SelectTag));
             }
         }
 
@@ -187,6 +209,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand PlaylistExpandCommand
+        {
+            get
+            {
+                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(PlaylistExpand));
+            }
+        }
+
         public RelayCommand PlaylistMenuCommand
         {
             get
@@ -235,11 +265,27 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand SubmenuOpenedCommand
+        {
+            get
+            {
+                return submenuOpenedCommand ?? (submenuOpenedCommand = new RelayCommand(SubmenuOpened));
+            }
+        }
+
         public RelayCommand SyncDataCommand
         {
             get
             {
                 return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await Model.SyncData()));
+            }
+        }
+
+        public RelayCommand TagsDropDownOpenedCommand
+        {
+            get
+            {
+                return tagsDropDownOpenedCommand ?? (tagsDropDownOpenedCommand = new RelayCommand(x => OpenCurrentTags()));
             }
         }
 
@@ -267,7 +313,37 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand ScrollChangedCommand
+        {
+            get
+            {
+                return scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
+            }
+        }
+
+        private async void ScrollChanged(object obj)
+        {
+            var scroll = obj as ScrollViewer;
+            if (scroll == null)
+            {
+                return;
+            }
+            if (scroll.VerticalOffset <= 0)
+            {
+                return;
+            }
+            if (Model.SelectedChannel.ChannelItemsCount > Model.SelectedChannel.ChannelItems.Count)
+            {
+                await
+                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath,
+                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count,
+                        Model.SelectedChannel.ChannelItems.Count);
+            }
+        }
+
         #endregion
+
+
 
         #region Static Methods
 
@@ -317,6 +393,41 @@ namespace Crawler.ViewModels
             };
 
             edv.Show();
+        }
+
+        private static async void PlaylistExpand(object obj)
+        {
+            var ch = obj as IChannel;
+            if (ch == null)
+            {
+                return;
+            }
+
+            if (ch.ChannelPlaylists.Any())
+            {
+                return;
+            }
+
+            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
+            {
+                foreach (IPlaylist pl in pls)
+                {
+                    ch.ChannelPlaylists.Add(pl);
+                }
+            }
+        }
+
+        private static async void SubmenuOpened(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+            if (!item.Subtitles.Any())
+            {
+                await item.FillSubtitles();
+            }
         }
 
         #endregion
@@ -647,31 +758,6 @@ namespace Crawler.ViewModels
             return false;
         }
 
-        private void PlaylistLinkToClipboard()
-        {
-            try
-            {
-                string link = string.Format("https://www.youtube.com/playlist?list={0}", Model.SelectedPlaylist.ID);
-                Clipboard.SetText(link);
-            }
-            catch (Exception ex)
-            {
-                Model.Info = ex.Message;
-            }
-        }
-
-        private void VideoLinkToClipboard()
-        {
-            try
-            {
-                Clipboard.SetText(Model.SelectedVideoItem.MakeLink());
-            }
-            catch (Exception ex)
-            {
-                Model.Info = ex.Message;
-            }
-        }
-
         private async void MainMenuClick(object param)
         {
             var window = param as Window;
@@ -724,6 +810,33 @@ namespace Crawler.ViewModels
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
+        }
+
+        private async void OpenCurrentTags()
+        {
+            if (Model.CurrentTags.Any())
+            {
+                return;
+            }
+
+            var tmptags = new List<ITag>();
+            foreach (IChannel ch in Model.Channels)
+            {
+                IEnumerable<ITag> tags = await ch.GetChannelTagsAsync();
+
+                foreach (ITag tag in tags)
+                {
+                    ch.ChannelTags.Add(tag);
+                    if (!tmptags.Select(x => x.Title).Contains(tag.Title))
+                    {
+                        tmptags.Add(tag);
+                    }
+                }
+            }
+            foreach (ITag tag in tmptags.OrderBy(x => x.Title))
+            {
+                Model.CurrentTags.Add(tag);
+            }
         }
 
         private void OpenDir(object obj)
@@ -824,6 +937,19 @@ namespace Crawler.ViewModels
             Model.SetStatus(0);
         }
 
+        private void PlaylistLinkToClipboard()
+        {
+            try
+            {
+                string link = string.Format("https://www.youtube.com/playlist?list={0}", Model.SelectedPlaylist.ID);
+                Clipboard.SetText(link);
+            }
+            catch (Exception ex)
+            {
+                Model.Info = ex.Message;
+            }
+        }
+
         private async void PlaylistMenuClick(object param)
         {
             var menu = (PlaylistMenuItem)param;
@@ -842,7 +968,7 @@ namespace Crawler.ViewModels
                     {
                         Model.Info = ex.Message;
                     }
-                    
+
                     break;
             }
         }
@@ -1016,6 +1142,32 @@ namespace Crawler.ViewModels
             Model.SelectedChannel = channel;
         }
 
+        private void SelectTag(object obj)
+        {
+            var tag = obj as ITag;
+            if (tag == null)
+            {
+                return;
+            }
+
+            foreach (IChannel channel in Model.Channels)
+            {
+                channel.IsShowRow = true;
+                if (!channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
+                {
+                    channel.IsShowRow = false;
+                }
+            }
+
+            foreach (ITag item in Model.CurrentTags)
+            {
+                if (item.Title != tag.Title && item.IsChecked)
+                {
+                    item.IsChecked = false;
+                }
+            }
+        }
+
         private async Task Subscribe()
         {
             if (Model.SelectedChannel.IsInWork)
@@ -1069,6 +1221,37 @@ namespace Crawler.ViewModels
             Model.SetStatus(0);
         }
 
+        private void TagCheck()
+        {
+            foreach (IChannel channel in Model.Channels)
+            {
+                channel.IsShowRow = false;
+            }
+
+            if (Model.CurrentTags.Any(x => x.IsChecked))
+            {
+                foreach (ITag tag in Model.CurrentTags.Where(x => x.IsChecked))
+                {
+                    foreach (IChannel channel in Model.Channels)
+                    {
+                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
+                        {
+                            channel.IsShowRow = true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Model.SelectedTag = null;
+                foreach (IChannel channel in Model.Channels)
+                {
+                    channel.IsShowRow = true;
+                }
+            }
+            Model.SelectedChannel = Model.Channels.First(x => x.IsShowRow);
+        }
+
         private async Task Vacuumdb()
         {
             ISqLiteDatabase db = Model.BaseFactory.CreateSqLiteDatabase();
@@ -1106,6 +1289,18 @@ namespace Crawler.ViewModels
                 case VideoMenuItem.Subscribe:
                     await SubscribeOn();
                     break;
+            }
+        }
+
+        private void VideoLinkToClipboard()
+        {
+            try
+            {
+                Clipboard.SetText(Model.SelectedVideoItem.MakeLink());
+            }
+            catch (Exception ex)
+            {
+                Model.Info = ex.Message;
             }
         }
 
