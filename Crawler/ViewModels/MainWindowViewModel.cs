@@ -12,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Media;
 using Crawler.Common;
 using Crawler.Models;
 using Crawler.Views;
@@ -55,6 +56,7 @@ namespace Crawler.ViewModels
         private RelayCommand popularSelectCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
+        private RelayCommand scrollChangedCommand;
         private RelayCommand searchCommand;
         private RelayCommand submenuOpenedCommand;
         private RelayCommand syncDataCommand;
@@ -62,7 +64,6 @@ namespace Crawler.ViewModels
         private RelayCommand videoClickCommand;
         private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoItemMenuCommand;
-        private RelayCommand scrollChangedCommand;
 
         #endregion
 
@@ -257,6 +258,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand ScrollChangedCommand
+        {
+            get
+            {
+                return scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
+            }
+        }
+
         public RelayCommand SearchCommand
         {
             get
@@ -313,37 +322,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand ScrollChangedCommand
-        {
-            get
-            {
-                return scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
-            }
-        }
-
-        private async void ScrollChanged(object obj)
-        {
-            var scroll = obj as ScrollViewer;
-            if (scroll == null)
-            {
-                return;
-            }
-            if (scroll.VerticalOffset <= 0)
-            {
-                return;
-            }
-            if (Model.SelectedChannel.ChannelItemsCount > Model.SelectedChannel.ChannelItems.Count)
-            {
-                await
-                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath,
-                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count,
-                        Model.SelectedChannel.ChannelItems.Count);
-            }
-        }
-
         #endregion
-
-
 
         #region Static Methods
 
@@ -369,6 +348,24 @@ namespace Crawler.ViewModels
                     await channel.FillChannelDescriptionAsync();
                 }
             }
+        }
+
+        private static ScrollViewer GetScrollbar(DependencyObject dep)
+        {
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(dep, i);
+                if (child is ScrollViewer)
+                {
+                    return child as ScrollViewer;
+                }
+                ScrollViewer sub = GetScrollbar(child);
+                if (sub != null)
+                {
+                    return sub;
+                }
+            }
+            return null;
         }
 
         private static bool IsFfmegExist()
@@ -1091,6 +1088,31 @@ namespace Crawler.ViewModels
                 }
                 Model.SelectedChannel.IsDownloading = true;
                 await item.DownloadItem(fn.FullName, Model.DirPath, false, false);
+            }
+        }
+
+        private async void ScrollChanged(object obj)
+        {
+            var grid = obj as DataGrid;
+            if (grid == null)
+            {
+                return;
+            }
+            ScrollViewer scroll = GetScrollbar(grid);
+            if (scroll == null)
+            {
+                return;
+            }
+            if (scroll.VerticalOffset <= 0)
+            {
+                return;
+            }
+            if (Model.SelectedChannel.ChannelItemsCount > Model.SelectedChannel.ChannelItems.Count)
+            {
+                await
+                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath, 
+                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count, 
+                        Model.SelectedChannel.ChannelItems.Count);
             }
         }
 

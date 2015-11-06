@@ -67,21 +67,6 @@ namespace Crawler.Views
             }
         }
 
-        private async void VideoGrid_OnScrollChanged(object sender, ScrollChangedEventArgs e)
-        {
-            if (e.VerticalChange <= 0)
-            {
-                return;
-            }
-            if (ViewModel.Model.SelectedChannel.ChannelItemsCount > ViewModel.Model.SelectedChannel.ChannelItems.Count)
-            {
-                await
-                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 
-                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count, 
-                        ViewModel.Model.SelectedChannel.ChannelItems.Count);
-            }
-        }
-
         private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
         {
             e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
