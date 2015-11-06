@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -18,6 +17,7 @@ using Crawler.Models;
 using Crawler.Views;
 using Interfaces.API;
 using Interfaces.Enums;
+using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -40,11 +40,15 @@ namespace Crawler.ViewModels
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
+        private RelayCommand fillDescriptionCommand;
         private RelayCommand fillPopularCommand;
         private bool isHasBeenFocused;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
         private RelayCommand openDirCommand;
+        private RelayCommand playlistDoubleClickCommand;
+        private RelayCommand playlistSelectCommand;
+        private RelayCommand popularSelectCommand;
         private RelayCommand saveCommand;
         private RelayCommand saveNewItemCommand;
         private RelayCommand searchCommand;
@@ -130,6 +134,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand FillDescriptionCommand
+        {
+            get
+            {
+                return fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
+            }
+        }
+
         public RelayCommand FillPopularCommand
         {
             get
@@ -154,7 +166,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return openDescriptionCommand ?? (openDescriptionCommand = new RelayCommand(x => OpenDescription()));
+                return openDescriptionCommand ?? (openDescriptionCommand = new RelayCommand(OpenDescription));
             }
         }
 
@@ -163,6 +175,30 @@ namespace Crawler.ViewModels
             get
             {
                 return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
+            }
+        }
+
+        public RelayCommand PlaylistDoubleClickCommand
+        {
+            get
+            {
+                return playlistDoubleClickCommand ?? (playlistDoubleClickCommand = new RelayCommand(PlaylistDoubleClick));
+            }
+        }
+
+        public RelayCommand PlaylistSelectCommand
+        {
+            get
+            {
+                return playlistSelectCommand ?? (playlistSelectCommand = new RelayCommand(SelectPlaylist));
+            }
+        }
+
+        public RelayCommand PopularSelectCommand
+        {
+            get
+            {
+                return popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
             }
         }
 
@@ -210,7 +246,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return videoDoubleClickCommand ?? (videoItemMenuCommand = new RelayCommand(RunItemDoubleClick));
+                return videoDoubleClickCommand ?? (videoDoubleClickCommand = new RelayCommand(RunItemDoubleClick));
             }
         }
 
@@ -226,11 +262,52 @@ namespace Crawler.ViewModels
 
         #region Static Methods
 
+        private static async void FillDescription(object obj)
+        {
+            var video = obj as IVideoItem;
+            if (video != null)
+            {
+                if (string.IsNullOrEmpty(video.Description))
+                {
+                    await video.FillDescriptionAsync();
+                }
+            }
+            else
+            {
+                var channel = obj as IChannel;
+                if (channel == null)
+                {
+                    return;
+                }
+                if (string.IsNullOrEmpty(channel.SubTitle))
+                {
+                    await channel.FillChannelDescriptionAsync();
+                }
+            }
+        }
+
         private static bool IsFfmegExist()
         {
             const string ff = "ffmpeg.exe";
             string values = Environment.GetEnvironmentVariable("PATH");
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
+        }
+
+        private static void OpenDescription(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+            var edv = new EditDescriptionView
+            {
+                DataContext = item, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            edv.Show();
         }
 
         #endregion
@@ -243,8 +320,8 @@ namespace Crawler.ViewModels
 
             var addview = new AddChanelView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -255,8 +332,8 @@ namespace Crawler.ViewModels
         {
             var antv = new AddNewTagView
             {
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                 DataContext = this
             };
 
@@ -267,9 +344,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(),
-                DefaultExt = ".txt",
-                Filter = @"Text documents (.txt)|*.txt",
+                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
+                DefaultExt = ".txt", 
+                Filter = @"Text documents (.txt)|*.txt", 
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -356,9 +433,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -394,9 +471,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -450,7 +527,7 @@ namespace Crawler.ViewModels
             {
                 var ff = new FfmpegView
                 {
-                    Owner = Application.Current.MainWindow,
+                    Owner = Application.Current.MainWindow, 
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
@@ -620,23 +697,11 @@ namespace Crawler.ViewModels
         {
             var adl = new AddLinkView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
-        }
-
-        private void OpenDescription()
-        {
-            var edv = new EditDescriptionView
-            {
-                DataContext = Model.SelectedVideoItem,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            edv.Show();
         }
 
         private void OpenDir(object obj)
@@ -676,8 +741,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -688,20 +753,53 @@ namespace Crawler.ViewModels
         {
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = Model.SelectedChannel,
-                CurrentTags = Model.CurrentTags,
-                Tags = Model.Tags,
+                ParentChannel = Model.SelectedChannel, 
+                CurrentTags = Model.CurrentTags, 
+                Tags = Model.Tags, 
                 Channels = Model.Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                DataContext = etvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
+        }
+
+        private async void PlaylistDoubleClick(object obj)
+        {
+            var pl = obj as IPlaylist;
+            if (pl == null)
+            {
+                return;
+            }
+
+            Model.SetStatus(1);
+
+            IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
+
+            IVideoItemFactory vf = Model.BaseFactory.CreateVideoItemFactory();
+
+            pl.PlaylistItems.Clear();
+
+            foreach (IVideoItem item in Model.SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = false;
+            }
+
+            foreach (string id in pls.Where(id => !pl.PlaylistItems.Select(x => x.ID).Contains(id)))
+            {
+                IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
+
+                Model.SelectedChannel.AddNewItem(vi, false);
+
+                pl.PlaylistItems.Add(vi);
+            }
+
+            Model.SetStatus(0);
         }
 
         private async Task Restore()
@@ -729,7 +827,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                int rest = 0;
+                var rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -829,6 +927,54 @@ namespace Crawler.ViewModels
             }
         }
 
+        private async void SelectPlaylist(object obj)
+        {
+            var pl = obj as IPlaylist;
+            if (pl == null)
+            {
+                return;
+            }
+
+            IEnumerable<string> lstv = (await pl.GetPlaylistItemsIdsListDbAsync()).ToList();
+            if (!lstv.Any())
+            {
+                foreach (IVideoItem item in Model.SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = false;
+                }
+
+                foreach (IVideoItem item in Model.SelectedChannel.ChannelItems)
+                {
+                    item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
+                }
+
+                return;
+            }
+
+            pl.PlaylistItems.Clear();
+
+            foreach (IVideoItem item in Model.SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = lstv.Contains(item.ID);
+                if (item.IsShowRow)
+                {
+                    pl.PlaylistItems.Add(item);
+                }
+            }
+
+            Model.Filterlist.Clear();
+        }
+
+        private void SelectPopular(object obj)
+        {
+            var channel = obj as IChannel;
+            if (channel == null)
+            {
+                return;
+            }
+            Model.SelectedChannel = channel;
+        }
+
         private async Task Subscribe()
         {
             if (Model.SelectedChannel.IsInWork)
@@ -905,7 +1051,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Edit:
-                    OpenDescription();
+                    OpenDescription(Model.SelectedVideoItem);
                     break;
 
                 case VideoMenuItem.HD:

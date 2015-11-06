@@ -178,7 +178,6 @@
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
                           HorizontalScrollBarVisibility="Disabled"
-                          IsSynchronizedWithCurrentItem="True"
                           ItemsSource="{Binding Model.Channels}"
                           SelectedItem="{Binding Model.SelectedChannel}"
                           SelectionUnit="FullRow"
@@ -244,7 +243,6 @@
                                             <VisualBrush Visual="{Binding ElementName=Mask}" />
                                         </StackPanel.OpacityMask>
                                         <Image Source="{Binding Thumbnail, IsAsync=True}" 
-                                               ToolTipOpening="Channel_OnToolTipOpening"
                                                RenderOptions.BitmapScalingMode="Fant"
                                                ToolTipService.ShowDuration="120000"
                                                Stretch="Fill"
@@ -252,7 +250,16 @@
                                                Height="48"
                                                VerticalAlignment="Top"
                                                Margin="0"
-                                               HorizontalAlignment="Center">
+                                               HorizontalAlignment="Center"
+                                               >
+                                            <i:Interaction.Triggers>
+                                                <i:EventTrigger EventName="ToolTipOpening" >
+                                                    <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
+                                                                           CommandParameter="{Binding}"
+                                                                           />
+                                                </i:EventTrigger>
+                                            </i:Interaction.Triggers>
+                                            
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
                                                     <Image Source="{Binding Thumbnail, IsAsync=True}" />
@@ -320,12 +327,10 @@
                                             <i:EventTrigger EventName="MouseDoubleClick">
                                                 <i:InvokeCommandAction Command="{Binding FillPopularCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
                                             </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                        <!--<i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="SelectionChanged">
-                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" />
+                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
                                             </i:EventTrigger>
-                                        </i:Interaction.Triggers>-->
+                                        </i:Interaction.Triggers>
                                         
                                         <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
@@ -337,12 +342,6 @@
                                                 <Setter Property="FocusVisualStyle" Value="{x:Null}" />
                                             </Style>
                                         </DataGrid.CellStyle>
-
-                                        <!--<DataGrid.RowStyle>
-                                        <Style TargetType="{x:Type DataGridRow}">
-                                            <EventSetter Event="MouseDoubleClick" Handler="Channel_OnMouseDoubleClick" />
-                                        </Style>
-                                    </DataGrid.RowStyle>-->
 
                                     <DataGrid.Columns>
 
@@ -582,7 +581,6 @@
                                                 <VisualBrush Visual="{Binding ElementName=Mask}" />
                                             </StackPanel.OpacityMask>
                                             <Image Source="{Binding Thumbnail, IsAsync=True}" 
-                                                   ToolTipOpening="VideoItem_OnToolTipOpening" 
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
                                                    Stretch="Fill"
@@ -594,7 +592,10 @@
                                                    >
                                                 <i:Interaction.Triggers>
                                                     <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
+                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="ToolTipOpening" >
+                                                        <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
                                                     </i:EventTrigger>
                                                 </i:Interaction.Triggers>
                                                 
@@ -789,7 +790,8 @@
                         
                         <GridSplitter Width="3"/>
                         
-                        <DataGrid Grid.Column="1" CanUserAddRows="False"
+                        <DataGrid Grid.Column="1" x:Name="plGrid"
+                                  CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   AutoGenerateColumns="False"
                                   ItemsSource="{Binding Model.SelectedChannel.ChannelPlaylists}"
@@ -797,9 +799,19 @@
                                   GridLinesVisibility="Horizontal"
                                   BorderThickness="1"
                                   SelectedItem="{Binding Model.SelectedPlaylist}"
-                                  SelectionChanged="PlaylistsGrid_OnSelectionChanged"
                                   MinWidth="400"
                                   >
+
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="SelectionChanged" SourceName="plGrid">
+                                    <i:InvokeCommandAction Command="{Binding PlaylistSelectCommand}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                                <i:EventTrigger EventName="MouseDoubleClick">
+                                    <i:InvokeCommandAction Command="{Binding PlaylistDoubleClickCommand}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+                            
+
                             <DataGrid.Resources>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                 <ContextMenu x:Key="DataRowContextMenu">
@@ -817,7 +829,6 @@
                             
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
-                                    <EventSetter Event="MouseDoubleClick" Handler="Playlist_OnMouseDoubleClick" />
                                     <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                                 </Style>
                             </DataGrid.RowStyle>

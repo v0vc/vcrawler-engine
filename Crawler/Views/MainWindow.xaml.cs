@@ -54,21 +54,6 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private async void Channel_OnToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            var image = e.Source as Image;
-            if (image == null)
-            {
-                return;
-            }
-
-            var channel = image.DataContext as IChannel;
-            if (channel != null && string.IsNullOrEmpty(channel.SubTitle))
-            {
-                await channel.FillChannelDescriptionAsync();
-            }
-        }
-
         private void CheckBoxTag_OnChecked(object sender, RoutedEventArgs e)
         {
             foreach (IChannel channel in ViewModel.Model.Channels)
@@ -234,91 +219,6 @@ namespace Crawler.Views
             }
         }
 
-        private async void Playlist_OnMouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var row = sender as DataGridRow;
-            if (row == null)
-            {
-                return;
-            }
-
-            var pl = row.Item as IPlaylist;
-
-            if (pl == null)
-            {
-                return;
-            }
-
-            ViewModel.Model.SetStatus(1);
-
-            IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
-
-            IVideoItemFactory vf = ViewModel.Model.BaseFactory.CreateVideoItemFactory();
-
-            pl.PlaylistItems.Clear();
-
-            foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = false;
-            }
-
-            foreach (string id in pls.Where(id => !pl.PlaylistItems.Select(x => x.ID).Contains(id)))
-            {
-                IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
-
-                ViewModel.Model.SelectedChannel.AddNewItem(vi, false);
-
-                pl.PlaylistItems.Add(vi);
-            }
-
-            ViewModel.Model.SetStatus(0);
-        }
-
-        private async void PlaylistsGrid_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (e.AddedItems.Count != 1)
-            {
-                return;
-            }
-
-            var pl = e.AddedItems[0] as IPlaylist;
-            if (pl == null)
-            {
-                return;
-            }
-
-            IEnumerable<string> lstv = (await pl.GetPlaylistItemsIdsListDbAsync()).ToList();
-            if (!lstv.Any())
-            {
-                foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = false;
-                }
-
-                foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
-                }
-
-                return;
-            }
-
-            pl.PlaylistItems.Clear();
-
-            foreach (IVideoItem item in ViewModel.Model.SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = lstv.Contains(item.ID);
-                if (item.IsShowRow)
-                {
-                    pl.PlaylistItems.Add(item);
-                }
-            }
-
-            ViewModel.Model.Filterlist.Clear();
-
-            // VideoGrid.UpdateLayout();
-        }
-
         private async void VideoGrid_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.VerticalChange <= 0)
@@ -337,20 +237,6 @@ namespace Crawler.Views
         private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
         {
             e.Column.SortDirection = e.Column.SortDirection ?? ListSortDirection.Ascending;
-        }
-
-        private async void VideoItem_OnToolTipOpening(object sender, ToolTipEventArgs e)
-        {
-            var image = e.Source as Image;
-            if (image == null)
-            {
-                return;
-            }
-            var item = image.DataContext as IVideoItem;
-            if (item != null && string.IsNullOrEmpty(item.Description))
-            {
-                await item.FillDescriptionAsync();
-            }
         }
 
         #endregion
