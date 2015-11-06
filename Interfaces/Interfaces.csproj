@@ -48,6 +48,7 @@
     <Compile Include="Enums\ItemState.cs" />
     <Compile Include="Enums\KeyboardKey.cs" />
     <Compile Include="Enums\MainMenuItem.cs" />
+    <Compile Include="Enums\PlaylistMenuItem.cs" />
     <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Enums\VideoMenuItem.cs" />
     <Compile Include="Factories\IChannelFactory.cs" />

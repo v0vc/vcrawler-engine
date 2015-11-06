@@ -77,6 +77,11 @@ namespace Models.BO
             await _pf.UpdatePlaylistAsync(ID, videoId, ChannelId);
         }
 
+        public Task DownloadPlaylist()
+        {
+            throw new System.NotImplementedException();
+        }
+
         #endregion
     }
 }

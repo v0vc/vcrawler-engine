@@ -38,6 +38,8 @@ namespace Interfaces.Models
 
         Task UpdatePlaylistAsync(string videoId);
 
+        Task DownloadPlaylist();
+
         #endregion
     }
 }

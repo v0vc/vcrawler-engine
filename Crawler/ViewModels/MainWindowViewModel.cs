@@ -47,6 +47,7 @@ namespace Crawler.ViewModels
         private RelayCommand openDescriptionCommand;
         private RelayCommand openDirCommand;
         private RelayCommand playlistDoubleClickCommand;
+        private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
         private RelayCommand popularSelectCommand;
         private RelayCommand saveCommand;
@@ -183,6 +184,14 @@ namespace Crawler.ViewModels
             get
             {
                 return playlistDoubleClickCommand ?? (playlistDoubleClickCommand = new RelayCommand(PlaylistDoubleClick));
+            }
+        }
+
+        public RelayCommand PlaylistMenuCommand
+        {
+            get
+            {
+                return playlistMenuCommand ?? (playlistMenuCommand = new RelayCommand(PlaylistMenuClick));
             }
         }
 
@@ -638,7 +647,20 @@ namespace Crawler.ViewModels
             return false;
         }
 
-        private void LinkToClipboard()
+        private void PlaylistLinkToClipboard()
+        {
+            try
+            {
+                string link = string.Format("https://www.youtube.com/playlist?list={0}", Model.SelectedPlaylist.ID);
+                Clipboard.SetText(link);
+            }
+            catch (Exception ex)
+            {
+                Model.Info = ex.Message;
+            }
+        }
+
+        private void VideoLinkToClipboard()
         {
             try
             {
@@ -802,6 +824,29 @@ namespace Crawler.ViewModels
             Model.SetStatus(0);
         }
 
+        private async void PlaylistMenuClick(object param)
+        {
+            var menu = (PlaylistMenuItem)param;
+            switch (menu)
+            {
+                case PlaylistMenuItem.Link:
+                    PlaylistLinkToClipboard();
+                    break;
+
+                case PlaylistMenuItem.Download:
+                    try
+                    {
+                        await Model.SelectedPlaylist.DownloadPlaylist();
+                    }
+                    catch (Exception ex)
+                    {
+                        Model.Info = ex.Message;
+                    }
+                    
+                    break;
+            }
+        }
+
         private async Task Restore()
         {
             Model.Info = string.Empty;
@@ -887,11 +932,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            if (string.IsNullOrEmpty(Model.MpcPath))
-            {
-                MessageBox.Show("Please, select MPC");
-            }
-            else
+            if (IsMpcExist())
             {
                 await item.RunItem(Model.MpcPath);
             }
@@ -1059,7 +1100,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Link:
-                    LinkToClipboard();
+                    VideoLinkToClipboard();
                     break;
 
                 case VideoMenuItem.Subscribe:

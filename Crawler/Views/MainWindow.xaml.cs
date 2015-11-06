@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -9,9 +8,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using Crawler.ViewModels;
-using Interfaces.Factories;
 using Interfaces.Models;
 
 namespace Crawler.Views
@@ -186,39 +183,6 @@ namespace Crawler.Views
             }
         }
 
-        private void Playlist_OnClick(object sender, RoutedEventArgs e)
-        {
-            var mitem = sender as MenuItem;
-            if (mitem == null)
-            {
-                return;
-            }
-            switch (mitem.CommandParameter.ToString())
-            {
-                case "Link":
-
-                    IPlaylist pl = ViewModel.Model.SelectedPlaylist;
-                    if (pl != null)
-                    {
-                        try
-                        {
-                            string link = string.Format("https://www.youtube.com/playlist?list={0}", pl.ID);
-                            Clipboard.SetText(link);
-                        }
-                        catch (Exception ex)
-                        {
-                            ViewModel.Model.Info = ex.Message;
-                        }
-                    }
-
-                    break;
-
-                case "Download":
-
-                    break;
-            }
-        }
-
         private async void VideoGrid_OnScrollChanged(object sender, ScrollChangedEventArgs e)
         {
             if (e.VerticalChange <= 0)
@@ -228,8 +192,8 @@ namespace Crawler.Views
             if (ViewModel.Model.SelectedChannel.ChannelItemsCount > ViewModel.Model.SelectedChannel.ChannelItems.Count)
             {
                 await
-                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath,
-                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count,
+                    ViewModel.Model.SelectedChannel.FillChannelItemsDbAsync(ViewModel.Model.DirPath, 
+                        ViewModel.Model.SelectedChannel.ChannelItemsCount - ViewModel.Model.SelectedChannel.ChannelItems.Count, 
                         ViewModel.Model.SelectedChannel.ChannelItems.Count);
             }
         }
