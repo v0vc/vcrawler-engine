@@ -29,21 +29,21 @@ namespace Crawler.Views
 
         #endregion
 
-        #region Properties
+        //#region Properties
 
-        public MainWindowViewModel ViewModel
-        {
-            get
-            {
-                return DataContext as MainWindowViewModel;
-            }
-            set
-            {
-                DataContext = value;
-            }
-        }
+        //public MainWindowViewModel ViewModel
+        //{
+        //    get
+        //    {
+        //        return DataContext as MainWindowViewModel;
+        //    }
+        //    set
+        //    {
+        //        DataContext = value;
+        //    }
+        //}
 
-        #endregion
+        //#endregion
 
         #region Event Handling
 

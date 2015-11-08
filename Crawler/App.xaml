@@ -5,7 +5,7 @@
              >
     <Application.Resources>
          <ResourceDictionary>
-            <!--<crawler:ViewModelLocator x:Key="ViewModelLocator"></crawler:ViewModelLocator>-->
+            <local:VmLocator xmlns:local="clr-namespace:Crawler" x:Key="VmLocator"/>
              <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ItemStyles.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>

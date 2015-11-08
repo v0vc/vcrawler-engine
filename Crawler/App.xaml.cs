@@ -53,7 +53,7 @@ namespace Crawler
             #endregion
 
             var mainWindow = new MainWindow();
-            mainWindow.DataContext = new MainWindowViewModel(new MainWindowModel());
+            //mainWindow.DataContext = new MainWindowViewModel(new MainWindowModel());
             mainWindow.Show();
         }
     }
