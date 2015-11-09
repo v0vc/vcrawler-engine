@@ -43,6 +43,7 @@ namespace Models.BO.Items
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
         private ItemState state;
+        private string description;
 
         #endregion
 
@@ -157,7 +158,19 @@ namespace Models.BO.Items
 
         public int Comments { get; set; }
         public string DateTimeAgo { get; set; }
-        public string Description { get; set; }
+
+        public string Description
+        {
+            get
+            {
+                return description;
+            }
+            set
+            {
+                description = value;
+                OnPropertyChanged();
+            }
+        }
 
         public double DownloadPercentage
         {
