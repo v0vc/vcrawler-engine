@@ -80,6 +80,7 @@
     <Compile Include="Behaviors\DataGridSelectedItemsBehavior.cs" />
     <Compile Include="Behaviors\FocusExtension.cs" />
     <Compile Include="Behaviors\RoutedEventTrigger.cs" />
+    <Compile Include="Behaviors\TextBoxBehavior.cs" />
     <Compile Include="Controls\BackgroundVisualHost.cs" />
     <Compile Include="Controls\BusyDecorator.cs" />
     <Compile Include="Controls\CustomDataGrid.cs" />

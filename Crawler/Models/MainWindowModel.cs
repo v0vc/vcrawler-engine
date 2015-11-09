@@ -64,15 +64,12 @@ namespace Crawler.Models
         private bool _isExpand;
         private string _link;
         private string _mpcPath;
-        private string _newChannelLink;
-        private string _newChannelTitle;
         private string _newTag;
         private double _prValue;
         private string _result;
         private string _searchKey;
         private IChannel _selectedChannel;
         private string _selectedCountry;
-        private ICred _selectedCred;
         private IPlaylist _selectedPlaylist;
         private ITag _selectedTag;
         private IVideoItem _selectedVideoItem;
@@ -173,8 +170,6 @@ namespace Crawler.Models
 
         public bool IsAudio { get; set; }
 
-        public bool IsEditMode { get; set; }
-
         public bool IsExpand
         {
             get
@@ -225,32 +220,6 @@ namespace Crawler.Models
             set
             {
                 _mpcPath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string NewChannelLink
-        {
-            get
-            {
-                return _newChannelLink;
-            }
-            set
-            {
-                _newChannelLink = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string NewChannelTitle
-        {
-            get
-            {
-                return _newChannelTitle;
-            }
-            set
-            {
-                _newChannelTitle = value;
                 OnPropertyChanged();
             }
         }
@@ -343,19 +312,6 @@ namespace Crawler.Models
             }
         }
 
-        public ICred SelectedCred
-        {
-            get
-            {
-                return _selectedCred;
-            }
-            set
-            {
-                _selectedCred = value;
-                OnPropertyChanged();
-            }
-        }
-
         public IPlaylist SelectedPlaylist
         {
             get
@@ -398,7 +354,7 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> ServiceChannels { get; set; }
         public List<ICred> SupportedCreds { get; set; }
         public ObservableCollection<ITag> Tags { get; private set; }
-        public string Version { get; set; }
+        public string Version { get; private set; }
 
         public string YouHeader
         {
@@ -430,7 +386,7 @@ namespace Crawler.Models
 
         #region Methods
 
-        public async Task AddNewChannel(string inputChannelId, SiteType site)
+        public async Task AddNewChannel(string channelId, string channelTitle, SiteType site)
         {
             SetStatus(1);
             string parsedId = null;
@@ -438,7 +394,7 @@ namespace Crawler.Models
             switch (site)
             {
                 case SiteType.YouTube:
-                    parsedId = await _yf.ParseChannelLink(inputChannelId);
+                    parsedId = await _yf.ParseChannelLink(channelId);
 
                     break;
 
@@ -463,7 +419,7 @@ namespace Crawler.Models
                 }
                 else
                 {
-                    await AddNewChannelAsync(parsedId, NewChannelTitle, site);
+                    await AddNewChannelAsync(parsedId, channelTitle, site);
                 }
             }
         }
@@ -642,35 +598,6 @@ namespace Crawler.Models
                 bgv.DoWork += BgvDoWork;
                 bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
                 bgv.RunWorkerAsync();
-            }
-        }
-
-        public async Task SaveNewItem()
-        {
-            if (IsEditMode)
-            {
-                if (string.IsNullOrEmpty(NewChannelTitle))
-                {
-                    MessageBox.Show("Fill channel title");
-                    return;
-                }
-                await EditChannel();
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(NewChannelLink))
-                {
-                    MessageBox.Show("Fill channel link");
-                    return;
-                }
-                try
-                {
-                    await AddNewChannel(NewChannelLink, SelectedCred.Site);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
             }
         }
 
@@ -928,12 +855,6 @@ namespace Crawler.Models
             ServiceChannels.Add(chpop);
         }
 
-        private async Task EditChannel()
-        {
-            SelectedChannel.Title = NewChannelTitle;
-            await SelectedChannel.RenameChannelAsync(NewChannelTitle);
-        }
-
         private async Task FillChannels()
         {
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
@@ -1179,11 +1100,6 @@ namespace Crawler.Models
 
                             break;
                     }
-                }
-
-                if (SupportedCreds.Any())
-                {
-                    SelectedCred = SupportedCreds.First();
                 }
 
                 IEnumerable<ITag> lsttags = await GetAllTagsAsync();
