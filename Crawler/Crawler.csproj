@@ -85,8 +85,10 @@
     <Compile Include="Controls\CustomDataGrid.cs" />
     <Compile Include="Controls\VisualTargetPresentationSource.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
+    <Compile Include="ViewModels\AddChannelViewModel.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
+    <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\AddLinkView.xaml.cs">
       <DependentUpon>AddLinkView.xaml</DependentUpon>
     </Compile>

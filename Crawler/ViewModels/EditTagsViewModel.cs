@@ -6,7 +6,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Windows;
 using Crawler.Common;
+using Crawler.Views;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
@@ -15,7 +17,10 @@ namespace Crawler.ViewModels
     {
         #region Fields
 
+        private RelayCommand deleteTagCommand;
+        private RelayCommand fillTagsCommand;
         private RelayCommand saveCommand;
+        private RelayCommand addCommand;
 
         #endregion
 
@@ -23,13 +28,58 @@ namespace Crawler.ViewModels
 
         public ObservableCollection<IChannel> Channels { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; set; }
+
+        public RelayCommand AddCommand
+        {
+            get
+            {
+                return addCommand ?? (addCommand = new RelayCommand(Add));
+            }
+        }
+
+        private void Add(object obj)
+        {
+            var window = obj as Window;
+            if (window == null)
+            {
+                return;
+            }
+            var atvm = new AddTagViewModel { ParentChannel = ParentChannel };
+            foreach (ITag tag in Tags)
+            {
+                atvm.Tags.Add(tag);
+            }
+
+            atvm.SelectedTag = atvm.Tags.First();
+
+            var atv = new AddTagView { DataContext = atvm, Owner = window, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+
+            atv.ShowDialog();
+        }
+
+        public RelayCommand DeleteTagCommand
+        {
+            get
+            {
+                return deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
+            }
+        }
+
+        public RelayCommand FillTagsCommand
+        {
+            get
+            {
+                return fillTagsCommand ?? (fillTagsCommand = new RelayCommand(x => FillTags()));
+            }
+        }
+
         public IChannel ParentChannel { get; set; }
 
         public RelayCommand SaveCommand
         {
             get
             {
-                return saveCommand ?? (saveCommand = new RelayCommand(x => Save()));
+                return saveCommand ?? (saveCommand = new RelayCommand(Save));
             }
         }
 
@@ -40,8 +90,49 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        private async void Save()
+        private async void DeleteTag(object obj)
         {
+            var tag = obj as ITag;
+            if (tag == null)
+            {
+                return;
+            }
+
+            ParentChannel.ChannelTags.Remove(tag);
+
+            await ParentChannel.DeleteChannelTagAsync(tag.Title);
+            if (!Channels.Any(x => x.ChannelTags.Select(y => y.Title).Contains(tag.Title)))
+            {
+                ITag ctag = CurrentTags.FirstOrDefault(x => x.Title == tag.Title);
+                if (ctag != null)
+                {
+                    CurrentTags.Remove(ctag);
+                }
+            }
+        }
+
+        private async void FillTags()
+        {
+            if (ParentChannel.ChannelTags.Any())
+            {
+                ParentChannel.ChannelTags.Clear();
+            }
+
+            IEnumerable<ITag> lst = await ParentChannel.GetChannelTagsAsync();
+            foreach (ITag tag in lst)
+            {
+                ParentChannel.ChannelTags.Add(tag);
+            }
+        }
+
+        private async void Save(object obj)
+        {
+            var window = obj as Window;
+            if (window == null)
+            {
+                return;
+            }
+
             if (!CurrentTags.Any())
             {
                 foreach (IChannel ch in Channels)
@@ -67,6 +158,8 @@ namespace Crawler.ViewModels
                     CurrentTags.Add(tag);
                 }
             }
+
+            window.Close();
         }
 
         #endregion

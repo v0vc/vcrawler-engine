@@ -1,23 +1,31 @@
-﻿<Window x:Class="Crawler.Views.EditTagsView"
+﻿<Window x:Class="Crawler.Views.EditTagsView" x:Name="window"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Height="300" Width="250" MinWidth="250" 
         WindowStyle="ToolWindow" 
-        Loaded="EditTagsView_OnLoaded"
+        DataContext="{Binding Path=EditTagViewModel, Source={StaticResource VmLocator}}"
         >
+    
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding FillTagsCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition></RowDefinition>
-            <RowDefinition Height="40"></RowDefinition>
+            <RowDefinition />
+            <RowDefinition Height="40" />
         </Grid.RowDefinitions>
-        <DataGrid CanUserAddRows="False" 
+        <DataGrid x:Name="dataGridTags"
+                  CanUserAddRows="False" 
                   AutoGenerateColumns="False" 
                   CanUserDeleteRows="True"
                   HeadersVisibility="None"
                   RowHeaderWidth="0"
                   ItemsSource="{Binding ParentChannel.ChannelTags}"
                   SelectedItem="{Binding SelectedTag}"
-                  Name="DataGridTags"
                   >
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Title}" Width="*" FontSize="16">
@@ -30,7 +38,8 @@
                 <DataGridTemplateColumn Width="24">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Click="ButtonDeleteTag_OnClick" Height="20" Width="20">
+                            <Button Command="{Binding DataContext.DeleteTagCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"
+                                    Height="20" Width="20">
                                 <Image Source="../Images/delete-16.png"></Image>
                             </Button>
                         </DataTemplate>
@@ -40,20 +49,20 @@
         </DataGrid>
         <DockPanel Grid.Row="1">
             <Button Style="{StaticResource RoundButtonTemplate}" 
-                HorizontalAlignment="Left" 
-                Width="100" Margin="5,3,3,5" 
-                Click="AddButton_OnClick">
+                    HorizontalAlignment="Left" 
+                    Width="100" Margin="5,3,3,5" 
+                    Command="{Binding AddCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"
+                    >
                 <StackPanel Orientation="Horizontal">
-                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">ADD</Label>
+                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="ADD" />
                     <Image Source="../Images/add-48.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource RoundButtonTemplate}" 
                     HorizontalAlignment="Right" 
                     Width="100" Margin="5,3,3,5"
-                    Command="{Binding SaveCommand}"
-                    Click="ButtonSave_OnClick"
-                    Name="ButtonSave"
+                    Command="{Binding SaveCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"
+                    x:Name="buttonSave"
                     >
                 <StackPanel Orientation="Horizontal">
                     <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">SAVE</Label>

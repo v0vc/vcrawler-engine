@@ -172,6 +172,7 @@ namespace Crawler.Models
         }
 
         public bool IsAudio { get; set; }
+
         public bool IsEditMode { get; set; }
 
         public bool IsExpand
