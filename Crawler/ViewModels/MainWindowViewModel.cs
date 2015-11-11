@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -344,7 +343,7 @@ namespace Crawler.ViewModels
 
         private static ScrollViewer GetScrollbar(DependencyObject dep)
         {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(dep, i);
                 if (child is ScrollViewer)
@@ -376,8 +375,8 @@ namespace Crawler.ViewModels
             }
             var edv = new EditDescriptionView
             {
-                DataContext = item,
-                Owner = Application.Current.MainWindow,
+                DataContext = item, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -428,8 +427,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(false, Model);
             var addview = new AddChanelView
             {
-                DataContext = edvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -438,11 +437,12 @@ namespace Crawler.ViewModels
 
         private void AddNewTag()
         {
+            var advm = new AddNewTagViewModel { Tag = Model.BaseFactory.CreateTagFactory().CreateTag(), Tags = Model.Tags };
             var antv = new AddNewTagView
             {
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                DataContext = this
+                DataContext = advm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
             antv.ShowDialog();
@@ -452,9 +452,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(),
-                DefaultExt = ".txt",
-                Filter = @"Text documents (.txt)|*.txt",
+                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
+                DefaultExt = ".txt", 
+                Filter = @"Text documents (.txt)|*.txt", 
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -541,9 +541,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -579,9 +579,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -635,7 +635,7 @@ namespace Crawler.ViewModels
             {
                 var ff = new FfmpegView
                 {
-                    Owner = Application.Current.MainWindow,
+                    Owner = Application.Current.MainWindow, 
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
@@ -648,8 +648,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(true, Model);
             var addview = new AddChanelView
             {
-                DataContext = edvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -806,8 +806,8 @@ namespace Crawler.ViewModels
         {
             var adl = new AddLinkView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -877,8 +877,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = this,
-                Owner = Application.Current.MainWindow,
+                DataContext = this, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -889,17 +889,17 @@ namespace Crawler.ViewModels
         {
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = Model.SelectedChannel,
-                CurrentTags = Model.CurrentTags,
-                Tags = Model.Tags,
+                ParentChannel = Model.SelectedChannel, 
+                CurrentTags = Model.CurrentTags, 
+                Tags = Model.Tags, 
                 Channels = Model.Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                DataContext = etvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
@@ -999,7 +999,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                int rest = 0;
+                var rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -1114,8 +1114,8 @@ namespace Crawler.ViewModels
             if (Model.SelectedChannel.ChannelItemsCount > Model.SelectedChannel.ChannelItems.Count)
             {
                 await
-                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath,
-                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count,
+                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath, 
+                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count, 
                         Model.SelectedChannel.ChannelItems.Count);
             }
         }

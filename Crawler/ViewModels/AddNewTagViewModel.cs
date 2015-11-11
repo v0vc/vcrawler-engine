@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.ObjectModel;
@@ -11,54 +10,49 @@ using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
-    public class AddTagViewModel
+    public class AddNewTagViewModel
     {
         #region Fields
 
-        private RelayCommand saveCommand;
-
-        #endregion
-
-        #region Constructors
-
-        public AddTagViewModel()
-        {
-            Tags = new ObservableCollection<ITag>();
-        }
+        private RelayCommand addTagCommand;
 
         #endregion
 
         #region Properties
 
-        public IChannel ParentChannel { get; set; }
-
-        public RelayCommand SaveCommand
+        public RelayCommand AddTagCommand
         {
             get
             {
-                return saveCommand ?? (saveCommand = new RelayCommand(Save));
+                return addTagCommand ?? (addTagCommand = new RelayCommand(AddTag));
             }
         }
 
-        public ITag SelectedTag { get; set; }
-        public ObservableCollection<ITag> Tags { get; set; }
+        public ITag Tag { get; set; }
+        public ObservableCollection<ITag> Tags { private get; set; }
 
         #endregion
 
         #region Methods
 
-        private void Save(object obj)
+        private async void AddTag(object obj)
         {
             var window = obj as Window;
             if (window == null)
             {
                 return;
             }
-            if (!ParentChannel.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title))
+            if (string.IsNullOrEmpty(Tag.Title))
             {
-                ParentChannel.ChannelTags.Add(SelectedTag);
+                return;
             }
-
+            if (Tags.Select(x => x.Title).Contains(Tag.Title))
+            {
+                return;
+            }
+            Tags.Add(Tag);
+            await Tag.InsertTagAsync();
+            Tag.Title = string.Empty;
             window.Close();
         }
 

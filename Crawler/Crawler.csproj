@@ -87,6 +87,7 @@
     <Compile Include="Controls\VisualTargetPresentationSource.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
     <Compile Include="ViewModels\AddChannelViewModel.cs" />
+    <Compile Include="ViewModels\AddNewTagViewModel.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />

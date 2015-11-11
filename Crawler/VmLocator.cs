@@ -22,11 +22,12 @@ namespace Crawler
         public VmLocator()
         {
             var containerBuilder = new ContainerBuilder();
-            containerBuilder.RegisterType<MainWindowViewModel>();
-            containerBuilder.RegisterType<MainWindowModel>();
+            containerBuilder.RegisterType<MainWindowViewModel>().SingleInstance();
+            containerBuilder.RegisterType<MainWindowModel>().SingleInstance();
             containerBuilder.RegisterType<EditTagsViewModel>();
             containerBuilder.RegisterType<AddTagViewModel>();
             containerBuilder.RegisterType<AddChannelViewModel>();
+            containerBuilder.RegisterType<AddNewTagViewModel>();
             container = containerBuilder.Build();
         }
 
@@ -74,6 +75,17 @@ namespace Crawler
                 using (ILifetimeScope scope = container.BeginLifetimeScope())
                 {
                     return scope.Resolve<AddChannelViewModel>();
+                }
+            }
+        }
+
+        public AddNewTagViewModel AddNewTagViewModel
+        {
+            get
+            {
+                using (ILifetimeScope scope = container.BeginLifetimeScope())
+                {
+                    return scope.Resolve<AddNewTagViewModel>();
                 }
             }
         }
