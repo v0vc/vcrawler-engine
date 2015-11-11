@@ -33,9 +33,9 @@ namespace Crawler.ViewModels
             IsEditMode = isEditMode;
             MvModel = mvModel;
 
-            if (MvModel.SupportedCreds.Any())
+            if (MvModel.SettingsViewModel.SupportedCreds.Any())
             {
-                SelectedCred = MvModel.SupportedCreds.First();
+                SelectedCred = MvModel.SettingsViewModel.SupportedCreds.First();
             }
 
             if (IsEditMode)

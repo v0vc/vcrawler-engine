@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -11,10 +12,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Autofac;
+using Crawler.ViewModels;
 using DataAPI;
 using Extensions;
 using Interfaces.API;
@@ -32,13 +33,6 @@ namespace Crawler.Models
         #region Constants
 
         private const string dbLaunchParam = "db";
-        private const string dirLaunchParam = "dir";
-        private const string mpcLaunchParam = "mpc";
-        private const string pathToDownload = "pathToDownload";
-        private const string pathToMpc = "pathToMpc";
-        private const string pathToYoudl = "pathToYoudl";
-        private const string youLaunchParam = "you";
-        private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
 
@@ -48,23 +42,19 @@ namespace Crawler.Models
         private readonly IChannelFactory _cf;
         private readonly ICredFactory _crf;
         private readonly ISqLiteDatabase _df;
-        private readonly Dictionary<string, string> _launchParam = new Dictionary<string, string>();
         private readonly ISettingFactory _sf;
         private readonly ITapochekSite _tf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
+        private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
 
         #endregion
 
         #region Fields
 
-        private string _dirPath;
         private string _filter;
         private string _info;
         private bool _isExpand;
-        private string _link;
-        private string _mpcPath;
-        private string _newTag;
         private double _prValue;
         private string _result;
         private string _searchKey;
@@ -73,8 +63,6 @@ namespace Crawler.Models
         private IPlaylist _selectedPlaylist;
         private ITag _selectedTag;
         private IVideoItem _selectedVideoItem;
-        private string _youHeader;
-        private string _youPath;
         private bool isWorking;
 
         #endregion
@@ -88,25 +76,22 @@ namespace Crawler.Models
             Channels = new ObservableCollection<IChannel>();
             ServiceChannels = new ObservableCollection<IChannel>();
             RelatedChannels = new ObservableCollection<IChannel>();
-            SupportedCreds = new List<ICred>();
-            Tags = new ObservableCollection<ITag>();
             CurrentTags = new ObservableCollection<ITag>();
             Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             SelectedCountry = Countries.First();
-
-            // BaseFactory = Container.Kernel.Get<ICommonFactory>();
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 BaseFactory = scope.Resolve<ICommonFactory>();
             }
 
+            SettingsViewModel = new SettingsViewModel(BaseFactory);
             _df = BaseFactory.CreateSqLiteDatabase();
 
-            if (_launchParam.Any())
+            if (launchParam.Any())
             {
                 // через параметры запуска указали путь к своей базе
                 string dbpath;
-                if (_launchParam.TryGetValue(dbLaunchParam, out dbpath))
+                if (launchParam.TryGetValue(dbLaunchParam, out dbpath))
                 {
                     _df.FileBase = new FileInfo(dbpath);
                 }
@@ -127,19 +112,6 @@ namespace Crawler.Models
         public ObservableCollection<IChannel> Channels { get; private set; }
         public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
-
-        public string DirPath
-        {
-            get
-            {
-                return _dirPath;
-            }
-            set
-            {
-                _dirPath = value;
-                OnPropertyChanged();
-            }
-        }
 
         public string Filter
         {
@@ -168,8 +140,6 @@ namespace Crawler.Models
             }
         }
 
-        public bool IsAudio { get; set; }
-
         public bool IsExpand
         {
             get
@@ -183,8 +153,6 @@ namespace Crawler.Models
             }
         }
 
-        public bool IsHd { get; set; }
-
         public bool IsWorking
         {
             get
@@ -194,45 +162,6 @@ namespace Crawler.Models
             set
             {
                 isWorking = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string Link
-        {
-            get
-            {
-                return _link;
-            }
-            set
-            {
-                _link = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string MpcPath
-        {
-            get
-            {
-                return _mpcPath;
-            }
-            set
-            {
-                _mpcPath = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string NewTag
-        {
-            get
-            {
-                return _newTag;
-            }
-            set
-            {
-                _newTag = value;
                 OnPropertyChanged();
             }
         }
@@ -258,7 +187,7 @@ namespace Crawler.Models
             {
                 return _result;
             }
-            set
+            private set
             {
                 _result = value;
                 OnPropertyChanged();
@@ -352,35 +281,9 @@ namespace Crawler.Models
         }
 
         public ObservableCollection<IChannel> ServiceChannels { get; set; }
-        //public List<ICred> SupportedCreds { get; set; }
-        //public ObservableCollection<ITag> Tags { get; private set; }
+        public SettingsViewModel SettingsViewModel { get; private set; }
+
         public string Version { get; private set; }
-
-        public string YouHeader
-        {
-            get
-            {
-                return _youHeader;
-            }
-            set
-            {
-                _youHeader = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string YouPath
-        {
-            get
-            {
-                return _youPath;
-            }
-            set
-            {
-                _youPath = value;
-                OnPropertyChanged();
-            }
-        }
 
         #endregion
 
@@ -512,58 +415,74 @@ namespace Crawler.Models
             SetStatus(0);
         }
 
-        //public async Task DownloadLink()
-        //{
-        //    if (string.IsNullOrEmpty(Link))
-        //    {
-        //        return;
-        //    }
+        public async Task FillChannelItems()
+        {
+            if (SelectedChannel == null)
+            {
+                return;
+            }
 
-        //    if (!CommonExtensions.IsValidUrl(Link))
-        //    {
-        //        MessageBox.Show("Can't parse URL");
-        //        return;
-        //    }
+            Filter = string.Empty;
+            IsExpand = false;
 
-        //    if (string.IsNullOrEmpty(_youPath))
-        //    {
-        //        MessageBox.Show("Please, select youtube-dl");
-        //        return;
-        //    }
+            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
+            {
+                foreach (IChannel channel in RelatedChannels)
+                {
+                    channel.ChannelItems.Clear();
+                }
 
-        //    if (string.IsNullOrEmpty(DirPath))
-        //    {
-        //        MessageBox.Show("Please, set download directory");
-        //        return;
-        //    }
+                RelatedChannels.Clear();
+            }
 
-        //    var regex = new Regex(CommonExtensions.YouRegex);
-        //    Match match = regex.Match(Link);
-        //    if (match.Success)
-        //    {
-        //        string id = match.Groups[1].Value;
-        //        IVideoItem vi = await _vf.GetVideoItemNetAsync(id, SiteType.YouTube);
-        //        vi.ParentID = null;
-        //        SelectedVideoItem = vi;
+            foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            {
+                item.IsShowRow = true;
+            }
 
-        //        SelectedChannel = ServiceChannels.First();
-        //        ServiceChannels.First().AddNewItem(vi, true);
-        //        await vi.DownloadItem(_youPath, DirPath, IsHd, IsAudio);
-        //        vi.IsNewItem = true;
-        //    }
-        //    else
-        //    {
-        //        string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", DirPath, Link);
-        //        await Task.Run(() =>
-        //        {
-        //            Process process = Process.Start(_youPath, param);
-        //            if (process != null)
-        //            {
-        //                process.Close();
-        //            }
-        //        });
-        //    }
-        //}
+            // есть новые элементы после синхронизации
+            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any()
+                                    && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
+
+            // заполняем только если либо ничего нет, либо одни новые
+            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
+            {
+                if (isHasNewFromSync)
+                {
+                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
+                    SelectedChannel.ChannelItems.Clear();
+                    await SelectedChannel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+                    foreach (IVideoItem item in
+                        from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
+                    {
+                        item.IsNewItem = true;
+                    }
+                }
+                else
+                {
+                    await SelectedChannel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+                }
+
+                if (SelectedChannel.ChannelItems.Any())
+                {
+                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
+                }
+                else
+                {
+                    // нет в базе = related channel
+                    SetStatus(1);
+                    SelectedChannel.IsInWork = true;
+                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
+                    foreach (IVideoItem item in lst)
+                    {
+                        SelectedChannel.AddNewItem(item, false);
+                    }
+                    SelectedChannel.IsInWork = false;
+                    SetStatus(0);
+                }
+            }
+            Filterlist.Clear();
+        }
 
         public async Task FindRelatedChannels(IChannel channel)
         {
@@ -601,49 +520,6 @@ namespace Crawler.Models
             }
         }
 
-        public async Task SaveSettings()
-        {
-            try
-            {
-                SetStatus(1);
-                ISetting savedir = await _sf.GetSettingDbAsync(pathToDownload);
-                if (savedir.Value != DirPath)
-                {
-                    await savedir.UpdateSettingAsync(DirPath);
-                }
-
-                ISetting mpcdir = await _sf.GetSettingDbAsync(pathToMpc);
-                if (mpcdir.Value != MpcPath)
-                {
-                    await mpcdir.UpdateSettingAsync(MpcPath);
-                }
-
-                ISetting youpath = await _sf.GetSettingDbAsync(pathToYoudl);
-                if (youpath.Value != YouPath)
-                {
-                    await youpath.UpdateSettingAsync(YouPath);
-                }
-
-                foreach (ICred cred in SupportedCreds)
-                {
-                    await cred.UpdateLoginAsync(cred.Login);
-                    await cred.UpdatePasswordAsync(cred.Pass);
-                }
-
-                foreach (ITag tag in Tags)
-                {
-                    await tag.InsertTagAsync();
-                }
-
-                SetStatus(4);
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-                SetStatus(3);
-            }
-        }
-
         public async Task Search()
         {
             if (string.IsNullOrEmpty(SearchKey))
@@ -671,7 +547,7 @@ namespace Crawler.Models
                     {
                         IVideoItem item = _vf.CreateVideoItem(poco);
                         channel.AddNewItem(item, false);
-                        item.IsHasLocalFileFound(DirPath);
+                        item.IsHasLocalFileFound(SettingsViewModel.DirPath);
                     }
                     SelectedChannel = channel;
                     SelectedChannel.ChannelItemsCount = channel.ChannelItems.Count;
@@ -683,76 +559,6 @@ namespace Crawler.Models
                 SetStatus(3);
                 Info = ex.Message;
             }
-        }
-
-        public async Task FillChannelItems()
-        {
-            if (SelectedChannel == null)
-            {
-                return;
-            }
-
-            Filter = string.Empty;
-            IsExpand = false;
-
-            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
-            {
-                foreach (IChannel channel in RelatedChannels)
-                {
-                    channel.ChannelItems.Clear();
-                }
-
-                RelatedChannels.Clear();
-            }
-
-            foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = true;
-            }
-
-            // есть новые элементы после синхронизации
-            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any()
-                                    && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
-
-            // заполняем только если либо ничего нет, либо одни новые
-            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
-            {
-                if (isHasNewFromSync)
-                {
-                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
-                    SelectedChannel.ChannelItems.Clear();
-                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
-                    foreach (
-                        IVideoItem item in
-                            from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
-                    {
-                        item.IsNewItem = true;
-                    }
-                }
-                else
-                {
-                    await SelectedChannel.FillChannelItemsDbAsync(DirPath, 25, 0);
-                }
-
-                if (SelectedChannel.ChannelItems.Any())
-                {
-                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
-                }
-                else
-                {
-                    // нет в базе = related channel
-                    SetStatus(1);
-                    SelectedChannel.IsInWork = true;
-                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
-                    foreach (IVideoItem item in lst)
-                    {
-                        SelectedChannel.AddNewItem(item, false);
-                    }
-                    SelectedChannel.IsInWork = false;
-                    SetStatus(0);
-                }
-            }
-            Filterlist.Clear();
         }
 
         /// <summary>
@@ -815,7 +621,7 @@ namespace Crawler.Models
         {
             ShowAllChannels();
             PrValue = 0;
-            var i = 0;
+            int i = 0;
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -929,22 +735,6 @@ namespace Crawler.Models
             }
         }
 
-        private async Task<IEnumerable<ITag>> GetAllTagsAsync()
-        {
-            var lst = new List<ITag>();
-
-            try
-            {
-                IEnumerable<ITagPOCO> fbres = await _df.GetAllTagsAsync();
-                lst.AddRange(fbres.Select(poco => BaseFactory.CreateTagFactory().CreateTag(poco)));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         private async Task<IEnumerable<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
@@ -957,161 +747,6 @@ namespace Crawler.Models
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
-            }
-        }
-
-        private async Task<IEnumerable<ICred>> GetCredListAsync()
-        {
-            var lst = new List<ICred>();
-            try
-            {
-                IEnumerable<ICredPOCO> fbres = await _df.GetCredListAsync();
-                lst.AddRange(fbres.Select(poco => _crf.CreateCred(poco)));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        private async Task LoadSettings()
-        {
-            try
-            {
-                string param;
-                if (_launchParam.TryGetValue(dirLaunchParam, out param))
-                {
-                    var di = new DirectoryInfo(param);
-                    if (di.Exists)
-                    {
-                        DirPath = di.FullName;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Check download path");
-                        DirPath = string.Empty;
-                    }
-                }
-                else
-                {
-                    ISetting savedir = await _sf.GetSettingDbAsync(pathToDownload);
-                    DirPath = savedir.Value;
-
-                    if (string.IsNullOrEmpty(DirPath))
-                    {
-                        DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                        await savedir.UpdateSettingAsync(DirPath);
-                    }
-                    else
-                    {
-                        var di = new DirectoryInfo(DirPath);
-                        if (!di.Exists)
-                        {
-                            DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                            await savedir.UpdateSettingAsync(DirPath);
-                        }
-                    }
-                }
-
-                if (_launchParam.TryGetValue(mpcLaunchParam, out param))
-                {
-                    var fn = new FileInfo(param);
-                    if (fn.Exists)
-                    {
-                        MpcPath = fn.FullName;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Check MPC-BE path");
-                        MpcPath = string.Empty;
-                    }
-                }
-                else
-                {
-                    ISetting mpcdir = await _sf.GetSettingDbAsync(pathToMpc);
-                    MpcPath = mpcdir.Value;
-                    if (!string.IsNullOrEmpty(MpcPath))
-                    {
-                        var fn = new FileInfo(MpcPath);
-                        if (!fn.Exists)
-                        {
-                            MessageBox.Show("Check MPC-BE path");
-                            MpcPath = string.Empty;
-                        }
-                    }
-                }
-
-                if (_launchParam.TryGetValue(youLaunchParam, out param))
-                {
-                    var fn = new FileInfo(param);
-                    if (fn.Exists)
-                    {
-                        YouPath = fn.FullName;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Check youtube-dl path");
-                        YouPath = string.Empty;
-                    }
-                }
-                else
-                {
-                    ISetting youpath = await _sf.GetSettingDbAsync(pathToYoudl);
-                    YouPath = youpath.Value;
-
-                    if (string.IsNullOrEmpty(YouPath))
-                    {
-                        string path = AppDomain.CurrentDomain.BaseDirectory;
-                        string res = Path.Combine(path, youtubeDl);
-                        var fn = new FileInfo(res);
-                        if (fn.Exists)
-                        {
-                            YouPath = fn.FullName;
-                            await youpath.UpdateSettingAsync(fn.FullName);
-                        }
-                    }
-                    else
-                    {
-                        var fn = new FileInfo(YouPath);
-                        if (!fn.Exists)
-                        {
-                            MessageBox.Show("Check youtube-dl path");
-                            YouPath = string.Empty;
-                        }
-                    }
-                }
-
-                IEnumerable<ICred> creds = await GetCredListAsync();
-                foreach (ICred cred in creds)
-                {
-                    SupportedCreds.Add(cred);
-                    switch (cred.Site)
-                    {
-                        case SiteType.Tapochek:
-                            _tf.Cred = cred;
-                            break;
-
-                        case SiteType.YouTube:
-                            _yf.Cred = cred;
-                            break;
-
-                        case SiteType.RuTracker:
-
-                            break;
-                    }
-                }
-
-                IEnumerable<ITag> lsttags = await GetAllTagsAsync();
-                foreach (ITag tag in lsttags)
-                {
-                    Tags.Add(tag);
-                }
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-                SetStatus(3);
             }
         }
 
@@ -1131,7 +766,7 @@ namespace Crawler.Models
             {
                 return;
             }
-            for (var i = 1; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
@@ -1140,14 +775,14 @@ namespace Crawler.Models
                 }
                 if (Directory.Exists(param[1]))
                 {
-                    _launchParam.Add(param[0].TrimStart('/'), param[1]);
+                    launchParam.Add(param[0].TrimStart('/'), param[1]);
                 }
                 else
                 {
                     var fn = new FileInfo(param[1]);
                     if (fn.Exists)
                     {
-                        _launchParam.Add(param[0].TrimStart('/'), fn.FullName);
+                        launchParam.Add(param[0].TrimStart('/'), fn.FullName);
                     }
                 }
             }
@@ -1177,7 +812,34 @@ namespace Crawler.Models
             }
             else
             {
-                await LoadSettings();
+                if (launchParam.Any())
+                {
+                    SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
+                }
+                else
+                {
+                    await SettingsViewModel.LoadSettingsFromDb();
+                }
+
+                await SettingsViewModel.LoadTagsFromDb();
+                await SettingsViewModel.LoadCredsFromDb();
+                foreach (ICred cred in SettingsViewModel.SupportedCreds)
+                {
+                    switch (cred.Site)
+                    {
+                        case SiteType.Tapochek:
+                            _tf.Cred = cred;
+                            break;
+
+                        case SiteType.YouTube:
+                            _yf.Cred = cred;
+                            break;
+
+                        case SiteType.RuTracker:
+
+                            break;
+                    }
+                }
                 CreateServicesChannels();
                 SetStatus(0);
             }

@@ -14,7 +14,7 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly TagFactory _tf;
+        private readonly TagFactory tf;
 
         #endregion
 
@@ -28,7 +28,7 @@ namespace Models.BO
 
         public Tag(TagFactory tf)
         {
-            _tf = tf;
+            this.tf = tf;
         }
 
         private Tag()
@@ -76,12 +76,12 @@ namespace Models.BO
         public async Task DeleteTagAsync()
         {
             // return ServiceLocator.TagFactory.DeleteTagAsync(Title);
-            await _tf.DeleteTagAsync(Title);
+            await tf.DeleteTagAsync(Title);
         }
 
         public async Task InsertTagAsync()
         {
-            await _tf.InsertTagAsync(this);
+            await tf.InsertTagAsync(this);
         }
 
         #endregion

@@ -150,7 +150,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<ISubtitlePOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
-                res.AddRange(poco.Select(sub => cf.CreateSubtitle(sub)));
+                res.AddRange(poco.Select(cf.CreateSubtitle));
                 if (res.Any())
                 {
                     return res;

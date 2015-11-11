@@ -2,12 +2,18 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Height="280" Width="380" ResizeMode="NoResize"
         WindowStyle="ToolWindow"
         Title="Settings"
-        Loaded="SettingsView_OnLoaded"
         DataContext="{Binding Path=SettingsViewModel, Source={StaticResource VmLocator}}"
         >
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding FillYouHeaderCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition />
@@ -134,34 +140,37 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="25" />
                     </Grid.ColumnDefinitions>
-                    <DataGrid CanUserAddRows="False" 
+                    <DataGrid CanUserAddRows="False" x:Name="grid"
                               AutoGenerateColumns="False" 
                               CanUserDeleteRows="True"
                               HeadersVisibility="None"
                               RowHeaderWidth="0"
-                              ItemsSource="{Binding Tags}"
+                              ItemsSource="{Binding SupportedTags}"
                               >
                         <DataGrid.Columns>
                             <DataGridTextColumn Binding="{Binding Title}" Width="*" FontSize="16">
                                 <DataGridTextColumn.ElementStyle>
                                     <Style TargetType="TextBlock">
                                         <Setter Property="TextAlignment" Value="Left" />
-                                        <Setter Property="Margin" Value="5,0,0,0"></Setter>
+                                        <Setter Property="Margin" Value="5,0,0,0" />
                                     </Style>
                                 </DataGridTextColumn.ElementStyle>
                             </DataGridTextColumn>
                             <DataGridTemplateColumn Width="24">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Button Click="ButtonDeleteTag_OnClick" Height="20" Width="20">
-                                            <Image Source="../Images/delete-16.png"></Image>
+                                        <Button Command="{Binding DataContext.DeleteTagCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                CommandParameter="{Binding ElementName=grid, Path=SelectedItem}"
+                                                Height="20" Width="20"
+                                                >
+                                            <Image Source="../Images/delete-16.png" />
                                         </Button>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button Grid.Column="1" Content="ADD TAG" Command="{Binding AddNewTagCommand}">
+                    <Button Grid.Column="1" Content="ADD TAG" Command="{Binding AddNewTagCommand, Mode=OneTime}">
                         <Button.LayoutTransform>
                             <TransformGroup>
                                 <RotateTransform Angle="-90" />
@@ -173,8 +182,7 @@
             </TabItem>
         </TabControl>
         <Button Grid.Row="1" Content="Save" Width="362" Margin="2,2,2,3"
-                             Command="{Binding SaveCommand}"
-                             Name="ButtonSave"
+                             Command="{Binding SaveSettingsCommand, Mode=OneTime}"
                              HorizontalAlignment="Right"
                              />
     </Grid>

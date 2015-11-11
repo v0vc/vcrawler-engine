@@ -9,17 +9,31 @@ using System.Windows;
 using Crawler.Common;
 using Extensions;
 using Interfaces.Enums;
+using Interfaces.Factories;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
     public class DownloadLinkViewModel
     {
+        private readonly MainWindowViewModel mv;
+
         #region Fields
 
         private RelayCommand downloadLinkCommand;
 
         #endregion
+
+        public DownloadLinkViewModel()
+        {
+            // for xaml
+        }
+
+
+        public DownloadLinkViewModel(MainWindowViewModel mv)
+        {
+            this.mv = mv;
+        }
 
         #region Properties
 
@@ -57,44 +71,40 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            //if (string.IsNullOrEmpty(_youPath))
-            //{
-            //    MessageBox.Show("Please, select youtube-dl");
-            //    return;
-            //}
+            if (string.IsNullOrEmpty(mv.Model.SettingsViewModel.YouPath))
+            {
+                MessageBox.Show("Please, select youtube-dl");
+                return;
+            }
 
-            //if (string.IsNullOrEmpty(DirPath))
-            //{
-            //    MessageBox.Show("Please, set download directory");
-            //    return;
-            //}
+            var regex = new Regex(CommonExtensions.YouRegex);
+            Match match = regex.Match(Link);
+            if (match.Success)
+            {
+                string id = match.Groups[1].Value;
+                IVideoItem vi = await mv.Model.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(id, SiteType.YouTube);
+                vi.ParentID = null;
+                mv.Model.SelectedVideoItem = vi;
+                mv.Model.SelectedChannel.AddNewItem(vi, true);
 
-            //var regex = new Regex(CommonExtensions.YouRegex);
-            //Match match = regex.Match(Link);
-            //if (match.Success)
-            //{
-            //    string id = match.Groups[1].Value;
-            //    IVideoItem vi = await _vf.GetVideoItemNetAsync(id, SiteType.YouTube);
-            //    vi.ParentID = null;
-            //    SelectedVideoItem = vi;
+                await vi.DownloadItem(mv.Model.SettingsViewModel.YouPath, mv.Model.SettingsViewModel.DirPath, IsHd, IsAudio);
+                vi.IsNewItem = true;
+            }
+            else
+            {
+                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title",
+                    mv.Model.SettingsViewModel.DirPath,
+                    Link);
 
-            //    SelectedChannel = ServiceChannels.First();
-            //    ServiceChannels.First().AddNewItem(vi, true);
-            //    await vi.DownloadItem(_youPath, DirPath, IsHd, IsAudio);
-            //    vi.IsNewItem = true;
-            //}
-            //else
-            //{
-            //    string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", DirPath, Link);
-            //    await Task.Run(() =>
-            //    {
-            //        Process process = Process.Start(_youPath, param);
-            //        if (process != null)
-            //        {
-            //            process.Close();
-            //        }
-            //    });
-            //}
+                await Task.Run(() =>
+                {
+                    Process process = Process.Start(mv.Model.SettingsViewModel.YouPath, param);
+                    if (process != null)
+                    {
+                        process.Close();
+                    }
+                });
+            }
 
             window.Close();
         }

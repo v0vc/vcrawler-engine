@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -34,29 +35,23 @@ namespace Crawler.ViewModels
         #region Fields
 
         private RelayCommand addNewItemCommand;
-        //private RelayCommand addNewTagCommand;
         private RelayCommand channelDoubleClickCommand;
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand currentTagSelectionChangedCommand;
-
-        // private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
         private RelayCommand fillPopularCommand;
         private bool isHasBeenFocused;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
-
-        // private RelayCommand openDirCommand;
         private RelayCommand playlistDoubleClickCommand;
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
         private RelayCommand popularSelectCommand;
-        private RelayCommand saveCommand;
         private RelayCommand scrollChangedCommand;
         private RelayCommand searchCommand;
         private RelayCommand submenuOpenedCommand;
@@ -86,7 +81,6 @@ namespace Crawler.ViewModels
                 return addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem()));
             }
         }
-
 
         public RelayCommand ChannelDoubleClickCommand
         {
@@ -136,13 +130,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        // public RelayCommand DownloadLinkCommand
-        // {
-        // get
-        // {
-        // return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink()));
-        // }
-        // }
         public RelayCommand FillChannelsCommand
         {
             get
@@ -187,13 +174,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        // public RelayCommand OpenDirCommand
-        // {
-        // get
-        // {
-        // return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
-        // }
-        // }
         public RelayCommand PlaylistDoubleClickCommand
         {
             get
@@ -231,14 +211,6 @@ namespace Crawler.ViewModels
             get
             {
                 return popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
-            }
-        }
-
-        public RelayCommand SaveCommand
-        {
-            get
-            {
-                return saveCommand ?? (saveCommand = new RelayCommand(async x => await Model.SaveSettings()));
             }
         }
 
@@ -336,7 +308,7 @@ namespace Crawler.ViewModels
 
         private static ScrollViewer GetScrollbar(DependencyObject dep)
         {
-            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(dep, i);
                 if (child is ScrollViewer)
@@ -359,18 +331,6 @@ namespace Crawler.ViewModels
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
 
-        private static void OpenAddLink()
-        {
-            var dlvm = new DownloadLinkViewModel();
-            var adl = new DownloadLinkView
-            {
-                DataContext = dlvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            adl.ShowDialog();
-        }
-
         private static void OpenDescription(object obj)
         {
             var item = obj as IVideoItem;
@@ -380,57 +340,12 @@ namespace Crawler.ViewModels
             }
             var edv = new EditDescriptionView
             {
-                DataContext = item, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = item,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
             edv.Show();
-        }
-
-        // private void OpenDir(object obj)
-        // {
-        // switch (obj.ToString())
-        // {
-        // case "DirPath":
-        // var dlg = new FolderBrowserDialog();
-        // DialogResult res = dlg.ShowDialog();
-        // if (res == DialogResult.OK)
-        // {
-        // Model.DirPath = dlg.SelectedPath;
-        // }
-        // break;
-
-        // case "MpcPath":
-        // var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-        // DialogResult resm = dlgm.ShowDialog();
-        // if (resm == DialogResult.OK)
-        // {
-        // Model.MpcPath = dlgm.FileName;
-        // }
-        // break;
-
-        // case "YouPath":
-        // var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-        // DialogResult resy = dlgy.ShowDialog();
-        // if (resy == DialogResult.OK)
-        // {
-        // Model.YouPath = dlgy.FileName;
-        // }
-        // break;
-        // }
-        // }
-        private void OpenSettings()
-        {
-            var stvm = new SettingsViewModel(this);
-            var set = new SettingsView
-            {
-                DataContext = stvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            set.ShowDialog();
         }
 
         private static async void PlaylistExpand(object obj)
@@ -477,23 +392,21 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(false, Model);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
             addview.ShowDialog();
         }
 
-
-
         private async Task Backup()
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = @"Text documents (.txt)|*.txt", 
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = @"Text documents (.txt)|*.txt",
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -580,9 +493,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -618,9 +531,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (result == MessageBoxResult.OK)
@@ -655,7 +568,7 @@ namespace Crawler.ViewModels
             }
 
             Model.SelectedChannel.IsDownloading = true;
-            await Model.SelectedVideoItem.DownloadItem(Model.YouPath, Model.DirPath, false, true);
+            await Model.SelectedVideoItem.DownloadItem(Model.SettingsViewModel.YouPath, Model.SettingsViewModel.DirPath, false, true);
         }
 
         private async Task DownloadHd()
@@ -668,13 +581,13 @@ namespace Crawler.ViewModels
             if (IsFfmegExist())
             {
                 Model.SelectedChannel.IsDownloading = true;
-                await Model.SelectedVideoItem.DownloadItem(Model.YouPath, Model.DirPath, true, false);
+                await Model.SelectedVideoItem.DownloadItem(Model.SettingsViewModel.YouPath, Model.SettingsViewModel.DirPath, true, false);
             }
             else
             {
                 var ff = new FfmpegView
                 {
-                    Owner = Application.Current.MainWindow, 
+                    Owner = Application.Current.MainWindow,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
@@ -687,8 +600,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(true, Model);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -724,7 +637,7 @@ namespace Crawler.ViewModels
                 foreach (IVideoItem item in lst)
                 {
                     channel.AddNewItem(item, false);
-                    item.IsHasLocalFileFound(Model.DirPath);
+                    item.IsHasLocalFileFound(Model.SettingsViewModel.DirPath);
                     if (Model.Channels.Select(x => x.ID).Contains(item.ParentID))
                     {
                         // подсветим видео, если канал уже есть в подписке
@@ -780,7 +693,7 @@ namespace Crawler.ViewModels
 
         private bool IsMpcExist()
         {
-            if (!string.IsNullOrEmpty(Model.MpcPath))
+            if (!string.IsNullOrEmpty(Model.SettingsViewModel.MpcPath))
             {
                 return true;
             }
@@ -790,7 +703,7 @@ namespace Crawler.ViewModels
 
         private bool IsYoutubeExist()
         {
-            if (!string.IsNullOrEmpty(Model.YouPath))
+            if (!string.IsNullOrEmpty(Model.SettingsViewModel.YouPath))
             {
                 return true;
             }
@@ -841,6 +754,19 @@ namespace Crawler.ViewModels
             }
         }
 
+        private void OpenAddLink()
+        {
+            var dlvm = new DownloadLinkViewModel(this);
+
+            var adl = new DownloadLinkView
+            {
+                DataContext = dlvm,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            adl.ShowDialog();
+        }
+
         private async void OpenCurrentTags()
         {
             if (Model.CurrentTags.Any())
@@ -868,21 +794,33 @@ namespace Crawler.ViewModels
             }
         }
 
+        private void OpenSettings()
+        {
+            var set = new SettingsView
+            {
+                DataContext = Model.SettingsViewModel,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            set.ShowDialog();
+        }
+
         private void OpenTags()
         {
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = Model.SelectedChannel, 
-                CurrentTags = Model.CurrentTags, 
-                Tags = Model.Tags, 
+                ParentChannel = Model.SelectedChannel,
+                CurrentTags = Model.CurrentTags,
+                Tags = Model.SettingsViewModel.SupportedTags,
                 Channels = Model.Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = etvm,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
@@ -982,7 +920,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 Model.ShowAllChannels();
-                var rest = 0;
+                int rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -1044,7 +982,7 @@ namespace Crawler.ViewModels
             }
             if (IsMpcExist())
             {
-                await item.RunItem(Model.MpcPath);
+                await item.RunItem(Model.SettingsViewModel.MpcPath);
             }
         }
 
@@ -1059,7 +997,7 @@ namespace Crawler.ViewModels
             {
                 if (IsMpcExist())
                 {
-                    await item.RunItem(Model.MpcPath);
+                    await item.RunItem(Model.SettingsViewModel.MpcPath);
                 }
             }
             else
@@ -1068,13 +1006,13 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                var fn = new FileInfo(Model.YouPath);
+                var fn = new FileInfo(Model.SettingsViewModel.YouPath);
                 if (!fn.Exists)
                 {
                     return;
                 }
                 Model.SelectedChannel.IsDownloading = true;
-                await item.DownloadItem(fn.FullName, Model.DirPath, false, false);
+                await item.DownloadItem(fn.FullName, Model.SettingsViewModel.DirPath, false, false);
             }
         }
 
@@ -1097,8 +1035,8 @@ namespace Crawler.ViewModels
             if (Model.SelectedChannel.ChannelItemsCount > Model.SelectedChannel.ChannelItems.Count)
             {
                 await
-                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.DirPath, 
-                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count, 
+                    Model.SelectedChannel.FillChannelItemsDbAsync(Model.SettingsViewModel.DirPath,
+                        Model.SelectedChannel.ChannelItemsCount - Model.SelectedChannel.ChannelItems.Count,
                         Model.SelectedChannel.ChannelItems.Count);
             }
         }

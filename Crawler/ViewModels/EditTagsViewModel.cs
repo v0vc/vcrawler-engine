@@ -84,7 +84,7 @@ namespace Crawler.ViewModels
         }
 
         public ITag SelectedTag { get; set; }
-        public ObservableCollection<ITag> Tags { get; set; }
+        public IList<ITag> Tags { get; set; }
 
         #endregion
 

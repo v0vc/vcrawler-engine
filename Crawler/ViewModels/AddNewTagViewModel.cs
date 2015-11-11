@@ -1,8 +1,8 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using Crawler.Common;
@@ -12,9 +12,29 @@ namespace Crawler.ViewModels
 {
     public class AddNewTagViewModel
     {
+        #region Static and Readonly Fields
+
+        private readonly SettingsViewModel smModel;
+
+        #endregion
+
         #region Fields
 
         private RelayCommand addTagCommand;
+
+        #endregion
+
+        #region Constructors
+
+        public AddNewTagViewModel()
+        {
+            // for xaml
+        }
+
+        public AddNewTagViewModel(SettingsViewModel smModel)
+        {
+            this.smModel = smModel;
+        }
 
         #endregion
 
@@ -29,7 +49,6 @@ namespace Crawler.ViewModels
         }
 
         public ITag Tag { get; set; }
-        public ObservableCollection<ITag> Tags { private get; set; }
 
         #endregion
 
@@ -42,17 +61,18 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+
             if (string.IsNullOrEmpty(Tag.Title))
             {
                 return;
             }
-            if (Tags.Select(x => x.Title).Contains(Tag.Title))
+            if (smModel.SupportedTags.Select(x => x.Title).Contains(Tag.Title))
             {
                 return;
             }
-            Tags.Add(Tag);
+            smModel.SupportedTags.Add(Tag);
             await Tag.InsertTagAsync();
-            Tag.Title = string.Empty;
+
             window.Close();
         }
 
