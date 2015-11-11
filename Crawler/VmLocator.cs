@@ -24,10 +24,12 @@ namespace Crawler
             var containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterType<MainWindowViewModel>().SingleInstance();
             containerBuilder.RegisterType<MainWindowModel>().SingleInstance();
-            containerBuilder.RegisterType<EditTagsViewModel>();
-            containerBuilder.RegisterType<AddTagViewModel>();
-            containerBuilder.RegisterType<AddChannelViewModel>();
-            containerBuilder.RegisterType<AddNewTagViewModel>();
+            containerBuilder.RegisterType<EditTagsViewModel>().SingleInstance();
+            containerBuilder.RegisterType<AddTagViewModel>().SingleInstance();
+            containerBuilder.RegisterType<AddChannelViewModel>().SingleInstance();
+            containerBuilder.RegisterType<AddNewTagViewModel>().SingleInstance();
+            containerBuilder.RegisterType<DownloadLinkViewModel>().SingleInstance();
+            containerBuilder.RegisterType<SettingsViewModel>().SingleInstance();
             container = containerBuilder.Build();
         }
 
@@ -86,6 +88,28 @@ namespace Crawler
                 using (ILifetimeScope scope = container.BeginLifetimeScope())
                 {
                     return scope.Resolve<AddNewTagViewModel>();
+                }
+            }
+        }
+
+        public DownloadLinkViewModel DownloadLinkViewModel
+        {
+            get
+            {
+                using (ILifetimeScope scope = container.BeginLifetimeScope())
+                {
+                    return scope.Resolve<DownloadLinkViewModel>();
+                }
+            }
+        }
+
+        public SettingsViewModel SettingsViewModel
+        {
+            get
+            {
+                using (ILifetimeScope scope = container.BeginLifetimeScope())
+                {
+                    return scope.Resolve<SettingsViewModel>();
                 }
             }
         }

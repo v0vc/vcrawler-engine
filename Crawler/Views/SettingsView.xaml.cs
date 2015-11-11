@@ -94,28 +94,28 @@ namespace Crawler.Views
             await tag.DeleteTagAsync();
         }
 
-        private void ClientDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
-        {
-            ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
-                CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
-            ViewModel.Model.PrValue = 0;
-            ViewModel.Model.IsWorking = false;
-            ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
-            var webClient = sender as WebClient;
-            if (webClient == null)
-            {
-                return;
-            }
-            webClient.DownloadFileCompleted -= ClientDownloadFileCompleted;
-            webClient.DownloadProgressChanged -= ClientDownloadProgressChanged;
-        }
+        //private void ClientDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
+        //{
+        //    ViewModel.Model.YouHeader = string.Format("Youtube-dl ({0})", 
+        //        CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--version", true).Trim());
+        //    ViewModel.Model.PrValue = 0;
+        //    ViewModel.Model.IsWorking = false;
+        //    ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
+        //    var webClient = sender as WebClient;
+        //    if (webClient == null)
+        //    {
+        //        return;
+        //    }
+        //    webClient.DownloadFileCompleted -= ClientDownloadFileCompleted;
+        //    webClient.DownloadProgressChanged -= ClientDownloadProgressChanged;
+        //}
 
-        private void ClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
-        {
-            double bytesIn = double.Parse(e.BytesReceived.ToString(CultureInfo.InvariantCulture));
-            double totalBytes = double.Parse(e.TotalBytesToReceive.ToString(CultureInfo.InvariantCulture));
-            ViewModel.Model.PrValue = bytesIn / totalBytes * 100;
-        }
+        //private void ClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        //{
+        //    double bytesIn = double.Parse(e.BytesReceived.ToString(CultureInfo.InvariantCulture));
+        //    double totalBytes = double.Parse(e.TotalBytesToReceive.ToString(CultureInfo.InvariantCulture));
+        //    ViewModel.Model.PrValue = bytesIn / totalBytes * 100;
+        //}
 
         private void SettingsView_OnLoaded(object sender, RoutedEventArgs e)
         {
@@ -139,37 +139,37 @@ namespace Crawler.Views
             }
         }
 
-        private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
-        {
-            var link = (string)Settings.Default["pathToYoudl"];
+        //private void UpdateButton_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    var link = (string)Settings.Default["pathToYoudl"];
 
-            if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
-            {
-                ViewModel.Model.YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
-                    link.Split('/').Last());
-            }
+        //    if (string.IsNullOrEmpty(ViewModel.Model.YouPath))
+        //    {
+        //        ViewModel.Model.YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), 
+        //            link.Split('/').Last());
+        //    }
 
-            ViewModel.Model.IsWorking = true;
+        //    ViewModel.Model.IsWorking = true;
 
-            ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
+        //    ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
 
-            if (CheckForInternetConnection(link))
-            {
-                ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
+        //    if (CheckForInternetConnection(link))
+        //    {
+        //        ViewModel.Model.YouHeader = "Youtube-dl (update in progress..)";
 
-                using (var client = new WebClient())
-                {
-                    client.DownloadProgressChanged += ClientDownloadProgressChanged;
-                    client.DownloadFileCompleted += ClientDownloadFileCompleted;
-                    client.DownloadFileAsync(new Uri(link), ViewModel.Model.YouPath);
-                }
-            }
-            else
-            {
-                ViewModel.Model.IsWorking = false;
-                MessageBox.Show(link + " is not available");
-            }
-        }
+        //        using (var client = new WebClient())
+        //        {
+        //            client.DownloadProgressChanged += ClientDownloadProgressChanged;
+        //            client.DownloadFileCompleted += ClientDownloadFileCompleted;
+        //            client.DownloadFileAsync(new Uri(link), ViewModel.Model.YouPath);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        ViewModel.Model.IsWorking = false;
+        //        MessageBox.Show(link + " is not available");
+        //    }
+        //}
 
         #endregion
     }

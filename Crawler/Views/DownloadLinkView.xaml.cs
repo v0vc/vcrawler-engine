@@ -12,13 +12,13 @@ using System.Windows.Input;
 namespace Crawler.Views
 {
     /// <summary>
-    ///     Interaction logic for AddLinkView.xaml
+    ///     Interaction logic for DownloadLinkView.xaml
     /// </summary>
-    public partial class AddLinkView : Window
+    public partial class DownloadLinkView : Window
     {
         #region Constructors
 
-        public AddLinkView()
+        public DownloadLinkView()
         {
             InitializeComponent();
             KeyDown += AddLinkViewKeyDown;
@@ -38,7 +38,7 @@ namespace Crawler.Views
             if (e.Key == Key.Enter)
             {
                 // нажмем кнопку программно
-                var peer = new ButtonAutomationPeer(ButtonGo);
+                var peer = new ButtonAutomationPeer(buttonGo);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
                 if (invokeProv != null)
                 {
@@ -47,17 +47,17 @@ namespace Crawler.Views
             }
         }
 
-        private void AddLinkView_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            var text = Clipboard.GetData(DataFormats.Text) as string;
-            if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
-            {
-                return;
-            }
-            TextBoxLink.Text = text;
-            TextBoxLink.Focus();
-            TextBoxLink.SelectAll();
-        }
+        //private void AddLinkView_OnLoaded(object sender, RoutedEventArgs e)
+        //{
+        //    var text = Clipboard.GetData(DataFormats.Text) as string;
+        //    if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+        //    {
+        //        return;
+        //    }
+        //    TextBoxLink.Text = text;
+        //    TextBoxLink.Focus();
+        //    TextBoxLink.SelectAll();
+        //}
 
         private void AddLink_OnAudioMouseEnter(object sender, MouseButtonEventArgs e)
         {
@@ -69,10 +69,10 @@ namespace Crawler.Views
             checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
         }
 
-        private void ButtonGo_OnClick(object sender, RoutedEventArgs e)
-        {
-            Close();
-        }
+        //private void ButtonGo_OnClick(object sender, RoutedEventArgs e)
+        //{
+        //    Close();
+        //}
 
         #endregion
     }

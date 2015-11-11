@@ -34,21 +34,23 @@ namespace Crawler.ViewModels
         #region Fields
 
         private RelayCommand addNewItemCommand;
-        private RelayCommand addNewTagCommand;
+        //private RelayCommand addNewTagCommand;
         private RelayCommand channelDoubleClickCommand;
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectionChangedCommand;
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand currentTagSelectionChangedCommand;
-        private RelayCommand downloadLinkCommand;
+
+        // private RelayCommand downloadLinkCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
         private RelayCommand fillPopularCommand;
         private bool isHasBeenFocused;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
-        private RelayCommand openDirCommand;
+
+        // private RelayCommand openDirCommand;
         private RelayCommand playlistDoubleClickCommand;
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
@@ -85,13 +87,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand AddNewTagCommand
-        {
-            get
-            {
-                return addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
-            }
-        }
 
         public RelayCommand ChannelDoubleClickCommand
         {
@@ -141,14 +136,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand DownloadLinkCommand
-        {
-            get
-            {
-                return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink()));
-            }
-        }
-
+        // public RelayCommand DownloadLinkCommand
+        // {
+        // get
+        // {
+        // return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(async x => await Model.DownloadLink()));
+        // }
+        // }
         public RelayCommand FillChannelsCommand
         {
             get
@@ -193,14 +187,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand OpenDirCommand
-        {
-            get
-            {
-                return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
-            }
-        }
-
+        // public RelayCommand OpenDirCommand
+        // {
+        // get
+        // {
+        // return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
+        // }
+        // }
         public RelayCommand PlaylistDoubleClickCommand
         {
             get
@@ -366,6 +359,18 @@ namespace Crawler.ViewModels
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
 
+        private static void OpenAddLink()
+        {
+            var dlvm = new DownloadLinkViewModel();
+            var adl = new DownloadLinkView
+            {
+                DataContext = dlvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+            adl.ShowDialog();
+        }
+
         private static void OpenDescription(object obj)
         {
             var item = obj as IVideoItem;
@@ -381,6 +386,51 @@ namespace Crawler.ViewModels
             };
 
             edv.Show();
+        }
+
+        // private void OpenDir(object obj)
+        // {
+        // switch (obj.ToString())
+        // {
+        // case "DirPath":
+        // var dlg = new FolderBrowserDialog();
+        // DialogResult res = dlg.ShowDialog();
+        // if (res == DialogResult.OK)
+        // {
+        // Model.DirPath = dlg.SelectedPath;
+        // }
+        // break;
+
+        // case "MpcPath":
+        // var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
+        // DialogResult resm = dlgm.ShowDialog();
+        // if (resm == DialogResult.OK)
+        // {
+        // Model.MpcPath = dlgm.FileName;
+        // }
+        // break;
+
+        // case "YouPath":
+        // var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
+        // DialogResult resy = dlgy.ShowDialog();
+        // if (resy == DialogResult.OK)
+        // {
+        // Model.YouPath = dlgy.FileName;
+        // }
+        // break;
+        // }
+        // }
+        private void OpenSettings()
+        {
+            var stvm = new SettingsViewModel(this);
+            var set = new SettingsView
+            {
+                DataContext = stvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            set.ShowDialog();
         }
 
         private static async void PlaylistExpand(object obj)
@@ -435,18 +485,7 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
-        private void AddNewTag()
-        {
-            var advm = new AddNewTagViewModel { Tag = Model.BaseFactory.CreateTagFactory().CreateTag(), Tags = Model.Tags };
-            var antv = new AddNewTagView
-            {
-                DataContext = advm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
 
-            antv.ShowDialog();
-        }
 
         private async Task Backup()
         {
@@ -802,17 +841,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void OpenAddLink()
-        {
-            var adl = new AddLinkView
-            {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-            adl.ShowDialog();
-        }
-
         private async void OpenCurrentTags()
         {
             if (Model.CurrentTags.Any())
@@ -838,51 +866,6 @@ namespace Crawler.ViewModels
             {
                 Model.CurrentTags.Add(tag);
             }
-        }
-
-        private void OpenDir(object obj)
-        {
-            switch (obj.ToString())
-            {
-                case "DirPath":
-                    var dlg = new FolderBrowserDialog();
-                    DialogResult res = dlg.ShowDialog();
-                    if (res == DialogResult.OK)
-                    {
-                        Model.DirPath = dlg.SelectedPath;
-                    }
-                    break;
-
-                case "MpcPath":
-                    var dlgm = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-                    DialogResult resm = dlgm.ShowDialog();
-                    if (resm == DialogResult.OK)
-                    {
-                        Model.MpcPath = dlgm.FileName;
-                    }
-                    break;
-
-                case "YouPath":
-                    var dlgy = new OpenFileDialog { Filter = @"EXE files (*.exe)|*.exe" };
-                    DialogResult resy = dlgy.ShowDialog();
-                    if (resy == DialogResult.OK)
-                    {
-                        Model.YouPath = dlgy.FileName;
-                    }
-                    break;
-            }
-        }
-
-        private void OpenSettings()
-        {
-            var set = new SettingsView
-            {
-                DataContext = this, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            set.ShowDialog();
         }
 
         private void OpenTags()

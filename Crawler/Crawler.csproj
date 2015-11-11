@@ -89,10 +89,11 @@
     <Compile Include="ViewModels\AddChannelViewModel.cs" />
     <Compile Include="ViewModels\AddNewTagViewModel.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />
+    <Compile Include="ViewModels\DownloadLinkViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
-    <Compile Include="Views\AddLinkView.xaml.cs">
-      <DependentUpon>AddLinkView.xaml</DependentUpon>
+    <Compile Include="Views\DownloadLinkView.xaml.cs">
+      <DependentUpon>DownloadLinkView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\AddNewTagView.xaml.cs">
       <DependentUpon>AddNewTagView.xaml</DependentUpon>
@@ -118,7 +119,7 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="Views\AddLinkView.xaml">
+    <Page Include="Views\DownloadLinkView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
