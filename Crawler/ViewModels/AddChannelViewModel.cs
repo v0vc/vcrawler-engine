@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Crawler.Common;
-using Crawler.Models;
+//using Crawler.Models;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
@@ -28,7 +28,7 @@ namespace Crawler.ViewModels
             // for xaml
         }
 
-        public AddChannelViewModel(bool isEditMode, MainWindowModel mvModel)
+        public AddChannelViewModel(bool isEditMode, MainWindowViewModel mvModel)
         {
             IsEditMode = isEditMode;
             MvModel = mvModel;
@@ -97,7 +97,7 @@ namespace Crawler.ViewModels
         public bool IsLinkReadonly { get; set; }
         public bool IsSitiesEnabled { get; set; }
 
-        public MainWindowModel MvModel { get; set; }
+        public MainWindowViewModel MvModel { get; set; }
 
         public RelayCommand SaveNewItemCommand
         {

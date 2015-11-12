@@ -4,7 +4,6 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Autofac;
-using Crawler.Models;
 using Crawler.ViewModels;
 
 namespace Crawler
@@ -23,7 +22,6 @@ namespace Crawler
         {
             var containerBuilder = new ContainerBuilder();
             containerBuilder.RegisterType<MainWindowViewModel>().SingleInstance();
-            containerBuilder.RegisterType<MainWindowModel>().SingleInstance();
             containerBuilder.RegisterType<EditTagsViewModel>().SingleInstance();
             containerBuilder.RegisterType<AddTagViewModel>().SingleInstance();
             containerBuilder.RegisterType<AddChannelViewModel>().SingleInstance();

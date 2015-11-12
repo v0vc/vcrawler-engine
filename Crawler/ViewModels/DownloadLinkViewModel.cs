@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Diagnostics;
@@ -9,14 +10,17 @@ using System.Windows;
 using Crawler.Common;
 using Extensions;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
     public class DownloadLinkViewModel
     {
+        #region Static and Readonly Fields
+
         private readonly MainWindowViewModel mv;
+
+        #endregion
 
         #region Fields
 
@@ -24,16 +28,19 @@ namespace Crawler.ViewModels
 
         #endregion
 
+        #region Constructors
+
         public DownloadLinkViewModel()
         {
             // for xaml
         }
 
-
         public DownloadLinkViewModel(MainWindowViewModel mv)
         {
             this.mv = mv;
         }
+
+        #endregion
 
         #region Properties
 
@@ -71,7 +78,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (string.IsNullOrEmpty(mv.Model.SettingsViewModel.YouPath))
+            if (string.IsNullOrEmpty(mv.SettingsViewModel.YouPath))
             {
                 MessageBox.Show("Please, select youtube-dl");
                 return;
@@ -82,23 +89,23 @@ namespace Crawler.ViewModels
             if (match.Success)
             {
                 string id = match.Groups[1].Value;
-                IVideoItem vi = await mv.Model.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(id, SiteType.YouTube);
+                IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(id, SiteType.YouTube);
                 vi.ParentID = null;
-                mv.Model.SelectedVideoItem = vi;
-                mv.Model.SelectedChannel.AddNewItem(vi, true);
+                mv.SelectedVideoItem = vi;
+                mv.SelectedChannel.AddNewItem(vi, true);
 
-                await vi.DownloadItem(mv.Model.SettingsViewModel.YouPath, mv.Model.SettingsViewModel.DirPath, IsHd, IsAudio);
+                await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
                 vi.IsNewItem = true;
             }
             else
             {
                 string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title",
-                    mv.Model.SettingsViewModel.DirPath,
+                    mv.SettingsViewModel.DirPath,
                     Link);
 
                 await Task.Run(() =>
                 {
-                    Process process = Process.Start(mv.Model.SettingsViewModel.YouPath, param);
+                    Process process = Process.Start(mv.SettingsViewModel.YouPath, param);
                     if (process != null)
                     {
                         process.Close();

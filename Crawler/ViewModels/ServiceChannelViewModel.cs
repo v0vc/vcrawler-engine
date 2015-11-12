@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Crawler.Common;
-using Crawler.Models;
 using DataAPI;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -19,27 +19,15 @@ namespace Crawler.ViewModels
 {
     public class ServiceChannelViewModel
     {
-        #region Static and Readonly Fields
-
-        private MainWindowModel mainWindowModel;
-
-        #endregion
-
         #region Fields
 
         private RelayCommand fillPopularCommand;
+        private MainWindowViewModel mainVm;
         private RelayCommand searchCommand;
 
         #endregion
 
         #region Constructors
-
-        //public ServiceChannelViewModel(MainWindowModel mainWindowModel)
-        //{
-        //    this.mainWindowModel = mainWindowModel;
-            
-        //    FillCredImages();
-        //}
 
         public ServiceChannelViewModel()
         {
@@ -50,11 +38,6 @@ namespace Crawler.ViewModels
             ChannelItems = new ObservableCollection<IVideoItem>();
         }
 
-        public void Init(MainWindowModel mainWindowModel)
-        {
-            this.mainWindowModel = mainWindowModel;
-            FillCredImages();
-        }
         #endregion
 
         #region Properties
@@ -106,6 +89,51 @@ namespace Crawler.ViewModels
             }
         }
 
+        public async Task FillPopular()
+        {
+            if (ChannelItems.Any())
+            {
+                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+                for (int i = ChannelItems.Count; i > 0; i--)
+                {
+                    if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
+                    {
+                        ChannelItems.RemoveAt(i - 1);
+                    }
+                }
+            }
+
+            mainVm.SetStatus(1);
+            switch (SelectedCredImage.Cred.Site)
+            {
+                case SiteType.YouTube:
+
+                    IEnumerable<IVideoItemPOCO> lst =
+                        await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
+                    foreach (IVideoItemPOCO poco in lst)
+                    {
+                        IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
+                        AddNewItem(item, false);
+                        item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
+                        if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
+                        {
+                            // подсветим видео, если канал уже есть в подписке
+                            item.IsNewItem = true;
+                        }
+                    }
+
+                    break;
+            }
+
+            mainVm.SetStatus(0);
+        }
+
+        public void Init(MainWindowViewModel mainWindowModel)
+        {
+            mainVm = mainWindowModel;
+            FillCredImages();
+        }
+
         public async Task Search()
         {
             if (string.IsNullOrEmpty(SearchKey))
@@ -113,14 +141,14 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            mainWindowModel.SetStatus(1);
+            mainVm.SetStatus(1);
 
             switch (SelectedCredImage.Cred.Site)
             {
                 case SiteType.YouTube:
 
                     List<IVideoItemPOCO> lst =
-                        (await mainWindowModel.BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
+                        (await mainVm.BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
                     if (lst.Any())
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)
@@ -132,22 +160,22 @@ namespace Crawler.ViewModels
                         }
                         foreach (IVideoItemPOCO poco in lst)
                         {
-                            IVideoItem item = mainWindowModel.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
+                            IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
                             AddNewItem(item, false);
-                            item.IsHasLocalFileFound(mainWindowModel.SettingsViewModel.DirPath);
+                            item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         }
                     }
                     break;
             }
 
             // SelectedChannel = channel;
-            mainWindowModel.SelectedChannel.ChannelItemsCount = ChannelItems.Count;
-            mainWindowModel.SetStatus(0);
+            mainVm.SelectedChannel.ChannelItemsCount = ChannelItems.Count;
+            mainVm.SetStatus(0);
         }
 
         private void FillCredImages()
         {
-            foreach (ICred cred in mainWindowModel.SettingsViewModel.SupportedCreds.Where(x => x.Site != SiteType.NotSet))
+            foreach (ICred cred in mainVm.SettingsViewModel.SupportedCreds.Where(x => x.Site != SiteType.NotSet))
             {
                 switch (cred.Site)
                 {
@@ -167,45 +195,6 @@ namespace Crawler.ViewModels
                 }
             }
             SelectedCredImage = SupportedCreds.First();
-        }
-
-        public async Task FillPopular()
-        {
-            if (ChannelItems.Any())
-            {
-                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                for (int i = ChannelItems.Count; i > 0; i--)
-                {
-                    if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
-                    {
-                        ChannelItems.RemoveAt(i - 1);
-                    }
-                }
-            }
-
-            mainWindowModel.SetStatus(1);
-            switch (SelectedCredImage.Cred.Site)
-            {
-                case SiteType.YouTube:
-
-                    IEnumerable<IVideoItemPOCO> lst =
-                        await mainWindowModel.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
-                    foreach (IVideoItemPOCO poco in lst)
-                    {
-                        IVideoItem item = mainWindowModel.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
-                        AddNewItem(item, false);
-                        item.IsHasLocalFileFound(mainWindowModel.SettingsViewModel.DirPath);
-                        if (mainWindowModel.Channels.Select(x => x.ID).Contains(item.ParentID))
-                        {
-                            // подсветим видео, если канал уже есть в подписке
-                            item.IsNewItem = true;
-                        }
-                    }
-
-                    break;
-            }
-
-            mainWindowModel.SetStatus(0);
         }
 
         #endregion
