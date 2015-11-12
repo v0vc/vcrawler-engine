@@ -92,6 +92,14 @@ namespace Models.BO.Items
             }
         }
 
+        private void ErrorOccured()
+        {
+            DownloadPercentage = 0;
+            taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
+            State = ItemState.LocalNo;
+            IsHasLocalFile = false;
+        }
+
         private void ProcessExited()
         {
             DownloadPercentage = 100;
@@ -99,6 +107,7 @@ namespace Models.BO.Items
 
             if (tempname == string.Empty)
             {
+                ErrorOccured();
                 return;
             }
 
@@ -528,7 +537,8 @@ namespace Models.BO.Items
 
         private async void EncodeOnProcessExited(object sender, EventArgs e)
         {
-            await Log("FINISHED!");
+            string logdata = IsHasLocalFile ? string.Format("{0} DOWNLOADED!", Title) : string.Format("ERROR DOWNLOADING: {0}", ID);
+            await Log(logdata);
             var proc = sender as Process;
             if (proc == null)
             {

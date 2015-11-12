@@ -33,11 +33,6 @@ namespace Crawler.ViewModels
             IsEditMode = isEditMode;
             MvModel = mvModel;
 
-            if (MvModel.SettingsViewModel.SupportedCreds.Any())
-            {
-                SelectedCred = MvModel.SettingsViewModel.SupportedCreds.First();
-            }
-
             if (IsEditMode)
             {
                 ChannelLink = mvModel.SelectedChannel.ID;
@@ -45,6 +40,10 @@ namespace Crawler.ViewModels
                 IsLinkEnabled = true;
                 IsLinkReadonly = true;
                 IsSitiesEnabled = false;
+                if (MvModel.SettingsViewModel.SupportedCreds.Any())
+                {
+                    SelectedCred = MvModel.SettingsViewModel.SupportedCreds.FirstOrDefault(x => x.Site == MvModel.SelectedChannel.Site);
+                }
             }
             else
             {
@@ -62,6 +61,11 @@ namespace Crawler.ViewModels
                 IsLinkEnabled = true;
                 IsLinkReadonly = false;
                 IsSitiesEnabled = true;
+
+                if (MvModel.SettingsViewModel.SupportedCreds.Any())
+                {
+                    SelectedCred = MvModel.SettingsViewModel.SupportedCreds.First();
+                }
             }
         }
 
@@ -77,9 +81,17 @@ namespace Crawler.ViewModels
             }
         }
 
+        public string TitleContent
+        {
+            get
+            {
+                return IsEditMode ? "Edit" : "Add";
+            }
+        }
+
         public string ChannelLink { get; set; }
         public string ChannelTitle { get; set; }
-        public bool IsEditMode { get; set; }
+        public bool IsEditMode { get; private set; }
         public bool IsLinkEnabled { get; set; }
 
         public bool IsLinkReadonly { get; set; }
@@ -103,7 +115,7 @@ namespace Crawler.ViewModels
 
         private static string RemoveSpecialCharacters(string str)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", "", RegexOptions.Compiled);
+            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", string.Empty, RegexOptions.Compiled);
         }
 
         #endregion
