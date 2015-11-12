@@ -27,9 +27,9 @@ namespace Crawler.Views
 
         private void SettingsViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= SettingsViewKeyDown;
             if (e.Key == Key.Escape)
             {
+                KeyDown -= SettingsViewKeyDown;
                 Close();
             }
         }

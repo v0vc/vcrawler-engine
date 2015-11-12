@@ -29,13 +29,14 @@ namespace Crawler.Views
 
         private void AddChanelViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= AddChanelViewKeyDown;
             if (e.Key == Key.Escape)
             {
+                KeyDown -= AddChanelViewKeyDown;
                 Close();
             }
             if (e.Key == Key.Enter)
             {
+                KeyDown -= AddChanelViewKeyDown;
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;

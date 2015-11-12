@@ -29,13 +29,14 @@ namespace Crawler.Views
 
         private void AddTagKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= AddTagKeyDown;
             if (e.Key == Key.Escape)
             {
+                KeyDown -= AddTagKeyDown;
                 Close();
             }
             if (e.Key == Key.Enter)
             {
+                KeyDown -= AddTagKeyDown;
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;

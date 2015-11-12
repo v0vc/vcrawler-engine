@@ -90,6 +90,7 @@
     <Compile Include="ViewModels\AddNewTagViewModel.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />
     <Compile Include="ViewModels\DownloadLinkViewModel.cs" />
+    <Compile Include="ViewModels\EditDescriptionViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="ViewModels\ServiceChannelViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />

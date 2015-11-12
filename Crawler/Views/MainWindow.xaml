@@ -5,13 +5,13 @@
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
-        Title="{Binding Model.Version, Mode=OneTime}" Height="450" Width="1200"
+        Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         DataContext="{Binding Path=MvViewModel, Source={StaticResource VmLocator}}"
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding FillChannelsCommand}" />
+            <i:InvokeCommandAction Command="{Binding FillChannelsCommand, Mode=OneTime}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
     
@@ -82,12 +82,12 @@
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              ItemsSource="{Binding Model.RelatedChannels}"
-                                              SelectedItem="{Binding Model.SelectedChannel}"
+                                              ItemsSource="{Binding RelatedChannels}"
+                                              SelectedItem="{Binding SelectedChannel}"
                                               >
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="SelectionChanged" SourceName="relatedGrid">
-                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=relatedGrid}"/>
+                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=relatedGrid}"/>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                         
@@ -124,7 +124,7 @@
                                                             <StackPanel.OpacityMask>
                                                                 <VisualBrush Visual="{Binding ElementName=mask}" />
                                                             </StackPanel.OpacityMask>
-                                                            <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                                     RenderOptions.BitmapScalingMode="Fant"
                                                                     ToolTipService.ShowDuration="120000"
                                                                     Stretch="Fill"
@@ -135,8 +135,8 @@
                                                                     HorizontalAlignment="Center">
                                                                 <Image.ToolTip>
                                                                     <StackPanel Orientation="Horizontal">
-                                                                        <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                                        <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" TextWrapping="Wrap"/>
+                                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                                        <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle, Mode=OneWay}" TextWrapping="Wrap"/>
                                                                     </StackPanel>
                                                                 </Image.ToolTip>
                                                             </Image>
@@ -162,7 +162,7 @@
                             </Expander.Content>
 
                             <Expander.Header>
-                                <TextBlock FontSize="10" Text="{Binding Model.RelatedChannels.Count, StringFormat=Related: {0}}" IsEnabled="False"/>
+                                <TextBlock FontSize="10" Text="{Binding RelatedChannels.Count, StringFormat=Related: {0}, Mode=OneWay}" IsEnabled="False"/>
                             </Expander.Header>
 
                         </Expander>
@@ -179,22 +179,22 @@
                           EnableColumnVirtualization="True"
                           EnableRowVirtualization="True"
                           HorizontalScrollBarVisibility="Disabled"
-                          ItemsSource="{Binding Model.Channels}"
-                          SelectedItem="{Binding Model.SelectedChannel}"
+                          ItemsSource="{Binding Channels}"
+                          SelectedItem="{Binding SelectedChannel}"
                           SelectionUnit="FullRow"
                           SelectionMode="Extended"
                           >
                     <DataGrid.InputBindings>
-                        <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
-                        <KeyBinding Modifiers="Control" Key="Delete" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
+                        <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
+                        <KeyBinding Modifiers="Control" Key="Delete" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
                     </DataGrid.InputBindings>
                     
                     <i:Interaction.Triggers>
                         <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
-                            <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand}" CommandParameter="{Binding ElementName=channelsGrid}"/>
+                            <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid}"/>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="MouseDoubleClick">
-                            <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                            <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                         </i:EventTrigger>
                     </i:Interaction.Triggers>
 
@@ -242,7 +242,7 @@
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=mask}" />
                                         </StackPanel.OpacityMask>
-                                        <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" 
                                                RenderOptions.BitmapScalingMode="Fant"
                                                ToolTipService.ShowDuration="120000"
                                                Stretch="Fill"
@@ -262,8 +262,8 @@
                                             
                                             <Image.ToolTip>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                    <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" TextWrapping="Wrap"/>
+                                                    <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                    <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle, Mode=OneWay}" TextWrapping="Wrap"/>
                                                 </StackPanel>
                                             </Image.ToolTip>
                                         </Image>
@@ -316,8 +316,8 @@
                                               HeadersVisibility="None"
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
-                                              ItemsSource="{Binding Model.ServiceChannels}"
-                                              SelectedItem="{Binding Model.ServiceChannel}"
+                                              ItemsSource="{Binding ServiceChannels}"
+                                              SelectedItem="{Binding ServiceChannel}"
                                               >
                                         <DataGrid.InputBindings>
                                             <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
@@ -325,14 +325,14 @@
 
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseDoubleClick">
-                                                <i:InvokeCommandAction Command="{Binding Model.ServiceChannel.FillPopularCommand, Mode=OneTime}" />
+                                                <i:InvokeCommandAction Command="{Binding ServiceChannel.FillPopularCommand, Mode=OneTime}" />
                                             </i:EventTrigger>
                                             <!--<i:EventTrigger EventName="MouseDoubleClick">
                                                 <i:InvokeCommandAction Command="{Binding DataContext.Model.ServiceChannel.FillPopularCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
                                             </i:EventTrigger>-->
-                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                            <!--<i:EventTrigger EventName="MouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
-                                            </i:EventTrigger>
+                                            </i:EventTrigger>-->
                                         </i:Interaction.Triggers>
                                         
                                         <DataGrid.Resources>
@@ -355,7 +355,7 @@
                                                         <StackPanel.OpacityMask>
                                                             <VisualBrush Visual="{Binding ElementName=mask}" />
                                                         </StackPanel.OpacityMask>
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                                RenderOptions.BitmapScalingMode="Fant"
                                                                ToolTipService.ShowDuration="120000"
                                                                Stretch="Fill"
@@ -382,7 +382,7 @@
                                                             <StackPanel Width="Auto" Orientation="Horizontal">
                                                                 <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                                          VerticalContentAlignment="Bottom" 
-                                                                         Text="{Binding DataContext.Model.ServiceChannel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                                                                         Text="{Binding DataContext.ServiceChannel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                                                     <TextBox.Resources>
                                                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
                                                                             <VisualBrush.Visual>
@@ -406,9 +406,9 @@
                                                                         </Style>
                                                                     </TextBox.Style>
                                                                 </TextBox>
-                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.Model.ServiceChannel.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.ServiceChannel.SearchCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                                             </StackPanel>
-                                                            <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="1" Text="{Binding Title, Mode=OneTime}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
                                                         </Grid>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -418,8 +418,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
-                                                              ItemsSource="{Binding Path=DataContext.Model.ServiceChannel.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                              SelectedItem="{Binding Path=DataContext.Model.ServiceChannel.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                              ItemsSource="{Binding Path=DataContext.ServiceChannel.Countries, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                              SelectedItem="{Binding Path=DataContext.ServiceChannel.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                     />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -439,32 +439,32 @@
                     </Border>
                 </DockPanel>
 
-                <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding Model.IsWorking, Mode=OneWay, Converter={StaticResource InvertBooleanConverter}}">
+                <DockPanel Grid.Row="3" Background="Gainsboro" IsEnabled="{Binding IsWorking, Mode=OneWay, Converter={StaticResource InvertBooleanConverter}}">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <DockPanel LastChildFill="True">
-                            <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
+                            <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand, Mode=OneTime}">
                                 <Image Source="../Images/sync-48.png" StretchDirection="Both" />
                                 <Button.ToolTip>
                                     <TextBlock Text="Sync" />
                                 </Button.ToolTip>
                             </Button>
-                            <Button Width="50" Margin="0,2,2,2" Command="{Binding AddNewItemCommand}">
+                            <Button Width="50" Margin="0,2,2,2" Command="{Binding AddNewItemCommand, Mode=OneTime}">
                                 <Image Source="../Images/add-48.png" StretchDirection="Both" />
                                 <Button.ToolTip>
-                                    <TextBlock Text="Add"></TextBlock>
+                                    <TextBlock Text="Add" />
                                 </Button.ToolTip>
                             </Button>
-                            <ComboBox ItemsSource="{Binding Model.CurrentTags, Mode=OneWay}" x:Name="comboBoxTags"
+                            <ComboBox ItemsSource="{Binding CurrentTags, Mode=OneWay}" x:Name="comboBoxTags"
                                       Margin="0,2,2,2" 
                                       VerticalContentAlignment="Center"
-                                      SelectedItem="{Binding Path=DataContext.Model.SelectedTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                      SelectedItem="{Binding Path=DataContext.SelectedTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                       >
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="DropDownOpened">
-                                        <i:InvokeCommandAction Command="{Binding TagsDropDownOpenedCommand}" />
+                                        <i:InvokeCommandAction Command="{Binding TagsDropDownOpenedCommand, Mode=OneTime}" />
                                     </i:EventTrigger>
                                     <i:EventTrigger EventName="SelectionChanged">
-                                        <i:InvokeCommandAction Command="{Binding CurrentTagSelectionChangedCommand}" CommandParameter="{Binding ElementName=comboBoxTags, Path=SelectedItem}"/>
+                                        <i:InvokeCommandAction Command="{Binding CurrentTagSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=comboBoxTags, Path=SelectedItem}"/>
                                     </i:EventTrigger>                                    
                                 </i:Interaction.Triggers>
                                 <ComboBox.ItemTemplate>
@@ -504,7 +504,7 @@
                     <RowDefinition MinHeight="25" Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <controls:BusyDecorator IsBusyIndicatorShowing="{Binding Model.IsWorking}">
+                <controls:BusyDecorator IsBusyIndicatorShowing="{Binding IsWorking}">
                     <DataGrid x:Name="videoGrid" 
                             CanUserAddRows="False"
                             CanUserDeleteRows="False"
@@ -513,8 +513,8 @@
                             RowHeaderWidth="0"
                             GridLinesVisibility="Horizontal"
                             BorderThickness="1"
-                            ItemsSource="{Binding Model.SelectedChannel.ChannelItems}"
-                            SelectedItem="{Binding Model.SelectedVideoItem}"                          
+                            ItemsSource="{Binding SelectedChannel.ChannelItems}"
+                            SelectedItem="{Binding SelectedVideoItem}"                          
                             Sorting="VideoGrid_OnSorting"
                             EnableColumnVirtualization="True"
                             EnableRowVirtualization="True"
@@ -522,10 +522,10 @@
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
-                                <i:InvokeCommandAction Command="{Binding VideoDoubleClickCommand}" CommandParameter="{Binding ElementName=videoGrid, Path=SelectedItem}"/>
+                                <i:InvokeCommandAction Command="{Binding VideoDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=videoGrid, Path=SelectedItem}"/>
                             </i:EventTrigger>
                             <behaviors:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
-                                <i:InvokeCommandAction Command="{Binding DataContext.ScrollChangedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}" CommandParameter="{Binding ElementName=videoGrid}"/>
+                                <i:InvokeCommandAction Command="{Binding DataContext.ScrollChangedCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" CommandParameter="{Binding ElementName=videoGrid}"/>
                             </behaviors:RoutedEventTrigger>
                         </i:Interaction.Triggers>
 
@@ -543,11 +543,11 @@
                                 <MenuItem Header="Subtitles" StaysOpenOnClick="True" >
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SubmenuOpened">
-                                            <i:InvokeCommandAction Command="{Binding DataContext.SubmenuOpenedCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
+                                            <i:InvokeCommandAction Command="{Binding DataContext.SubmenuOpenedCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
 
-                                    <ListView ItemsSource="{Binding Path=DataContext.Model.SelectedVideoItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                    <ListView ItemsSource="{Binding Path=DataContext.SelectedVideoItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                           BorderThickness="0" Background="WhiteSmoke"
                                               >
                                         <ListView.ItemTemplate>
@@ -603,7 +603,7 @@
                                             <StackPanel.OpacityMask>
                                                 <VisualBrush Visual="{Binding ElementName=mask}" />
                                             </StackPanel.OpacityMask>
-                                            <Image Source="{Binding Thumbnail, IsAsync=True}" 
+                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" 
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
                                                    Stretch="Fill"
@@ -624,8 +624,8 @@
 
                                                 <Image.ToolTip>
                                                     <StackPanel Orientation="Horizontal">
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                        <TextBlock Margin="10,0,0,0" Text="{Binding Description}" TextWrapping="Wrap"/>
+                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                        <TextBlock Margin="10,0,0,0" Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
                                                     </StackPanel>
                                                 </Image.ToolTip>
                                             </Image>
@@ -733,7 +733,7 @@
                                FlowDirection="RightToLeft" 
                                Background="Lavender" 
                                BorderThickness="1"
-                               IsExpanded="{Binding Model.IsExpand}"
+                               IsExpanded="{Binding IsExpand}"
                                >
                         <Expander.Content>
                             <Grid FlowDirection="LeftToRight">
@@ -743,13 +743,13 @@
                                 </Grid.ColumnDefinitions>
 
                                 <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" Height="150" >
-                                    <TextBox Text="{Binding Model.SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    <TextBox Text="{Binding SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 </ScrollViewer>
 
                                 <TextBox Grid.Column="1" 
                                          BorderBrush="Lavender" 
                                          Width="Auto" 
-                                         Text="{Binding Path = Model.Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         Text="{Binding Path = Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                          Height="24" 
                                          VerticalAlignment="Bottom" 
                                          Margin="1,0,1,0"
@@ -803,7 +803,7 @@
                       >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Expanded">
-                        <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                        <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 <Expander.Content>
@@ -819,20 +819,20 @@
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
                                   AutoGenerateColumns="False"
-                                  ItemsSource="{Binding Model.SelectedChannel.ChannelPlaylists}"
+                                  ItemsSource="{Binding SelectedChannel.ChannelPlaylists}"
                                   HeadersVisibility="None"
                                   GridLinesVisibility="Horizontal"
                                   BorderThickness="1"
-                                  SelectedItem="{Binding Model.SelectedPlaylist}"
+                                  SelectedItem="{Binding SelectedPlaylist}"
                                   MinWidth="400"
                                   >
 
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="SelectionChanged" SourceName="plGrid">
-                                    <i:InvokeCommandAction Command="{Binding PlaylistSelectCommand}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
+                                    <i:InvokeCommandAction Command="{Binding PlaylistSelectCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                                 <i:EventTrigger EventName="MouseDoubleClick">
-                                    <i:InvokeCommandAction Command="{Binding PlaylistDoubleClickCommand}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
+                                    <i:InvokeCommandAction Command="{Binding PlaylistDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             
@@ -867,7 +867,7 @@
                                                 <StackPanel.OpacityMask>
                                                     <VisualBrush Visual="{Binding ElementName=mask}" />
                                                 </StackPanel.OpacityMask>
-                                                <Image Source="{Binding Thumbnail, IsAsync=True}"
+                                                <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                         RenderOptions.BitmapScalingMode="Fant"
                                                         ToolTipService.ShowDuration="120000"
                                                         Stretch="Fill"
@@ -878,8 +878,8 @@
                                                         HorizontalAlignment="Center">
                                                     <Image.ToolTip>
                                                         <StackPanel Orientation="Horizontal">
-                                                            <Image Source="{Binding Thumbnail, IsAsync=True}" />
-                                                            <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle}" />
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                            <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle, Mode=OneWay}" />
                                                         </StackPanel>
                                                     </Image.ToolTip>
                                                 </Image>
@@ -914,7 +914,7 @@
                         <TextBlock Text="T" HorizontalAlignment="Center"/>
                         <TextBlock Text="S" HorizontalAlignment="Center"/>
                         <TextBlock Text=". ." HorizontalAlignment="Center"/>
-                        <TextBlock Text="{Binding Model.SelectedChannel.PlaylistCount}" HorizontalAlignment="Center"/>
+                        <TextBlock Text="{Binding SelectedChannel.PlaylistCount, Mode=OneWay}" HorizontalAlignment="Center"/>
                     </StackPanel>
                 </Expander.Header>
             </Expander>
@@ -938,17 +938,17 @@
                 </ItemsPanelTemplate>
             </StatusBar.ItemsPanel>
             <StatusBarItem HorizontalContentAlignment="Center">
-                <TextBlock Text="{Binding Model.Result, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="{Binding Result, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
             </StatusBarItem>
             <Separator Grid.Column="1" />
             <StatusBarItem Grid.Column="2">
-                <TextBlock Text="{Binding Model.Info, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
+                <TextBlock Text="{Binding Info, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" />
             </StatusBarItem>
             <!--<Separator Grid.Column="3" />-->
-            <StatusBarItem Grid.Column="4" Content="{Binding Model.SelectedChannel.ChannelItemsCount}" HorizontalContentAlignment="Right" />
+            <StatusBarItem Grid.Column="4" Content="{Binding SelectedChannel.ChannelItemsCount, Mode=OneWay}" HorizontalContentAlignment="Right" />
             <Separator Grid.Column="5" />
             <StatusBarItem Grid.Column="6">
-                <ProgressBar Width="90" Height="16" Value="{Binding Model.PrValue, Mode=OneWay}"/>
+                <ProgressBar Width="90" Height="16" Value="{Binding PrValue, Mode=OneWay}"/>
             </StatusBarItem>
         </StatusBar>
         

@@ -26,9 +26,9 @@ namespace Crawler.Views
 
         private void FfmpegViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= FfmpegViewKeyDown;
             if (e.Key == Key.Escape)
             {
+                KeyDown -= FfmpegViewKeyDown;
                 Close();
             }
         }

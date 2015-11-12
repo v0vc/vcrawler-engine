@@ -30,13 +30,14 @@ namespace Crawler.Views
 
         private void AddLinkViewKeyDown(object sender, KeyEventArgs e)
         {
-            KeyDown -= AddLinkViewKeyDown;
             if (e.Key == Key.Escape)
             {
+                KeyDown -= AddLinkViewKeyDown;
                 Close();
             }
             if (e.Key == Key.Enter)
             {
+                KeyDown -= AddLinkViewKeyDown;
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonGo);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;

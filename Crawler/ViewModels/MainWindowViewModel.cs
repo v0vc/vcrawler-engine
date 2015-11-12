@@ -559,9 +559,10 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+            var edvm = new EditDescriptionViewModel(item);
             var edv = new EditDescriptionView
             {
-                DataContext = item,
+                DataContext = edvm,
                 Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
