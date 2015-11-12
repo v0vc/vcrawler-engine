@@ -40,9 +40,7 @@ namespace Crawler.Models
 
         public readonly List<IVideoItem> Filterlist = new List<IVideoItem>();
         private readonly IChannelFactory _cf;
-        private readonly ICredFactory _crf;
         private readonly ISqLiteDatabase _df;
-        private readonly ISettingFactory _sf;
         private readonly ITapochekSite _tf;
         private readonly IVideoItemFactory _vf;
         private readonly IYouTubeSite _yf;
@@ -57,9 +55,9 @@ namespace Crawler.Models
         private bool _isExpand;
         private double _prValue;
         private string _result;
-        private string _searchKey;
+        //private string _searchKey;
         private IChannel _selectedChannel;
-        private string _selectedCountry;
+        //private string _selectedCountry;
         private IPlaylist _selectedPlaylist;
         private ITag _selectedTag;
         private IVideoItem _selectedVideoItem;
@@ -71,22 +69,12 @@ namespace Crawler.Models
 
         public MainWindowModel()
         {
-            ParseCommandLineArguments();
-            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
-            Channels = new ObservableCollection<IChannel>();
-            ServiceChannels = new ObservableCollection<IChannel>();
-            RelatedChannels = new ObservableCollection<IChannel>();
-            CurrentTags = new ObservableCollection<ITag>();
-            Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
-            SelectedCountry = Countries.First();
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 BaseFactory = scope.Resolve<ICommonFactory>();
             }
-
-            SettingsViewModel = new SettingsViewModel(BaseFactory);
+            ParseCommandLineArguments();
             _df = BaseFactory.CreateSqLiteDatabase();
-
             if (launchParam.Any())
             {
                 // через параметры запуска указали путь к своей базе
@@ -96,11 +84,21 @@ namespace Crawler.Models
                     _df.FileBase = new FileInfo(dbpath);
                 }
             }
-            _sf = BaseFactory.CreateSettingFactory();
+
+            SettingsViewModel = new SettingsViewModel(BaseFactory);
+
+            Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
+            Channels = new ObservableCollection<IChannel>();
+            ServiceChannel = new ServiceChannelViewModel();
+            ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
+            RelatedChannels = new ObservableCollection<IChannel>();
+            CurrentTags = new ObservableCollection<ITag>();
+            //Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
+            //SelectedCountry = Countries.First();
+
             _cf = BaseFactory.CreateChannelFactory();
             _vf = BaseFactory.CreateVideoItemFactory();
             _yf = BaseFactory.CreateYouTubeSite();
-            _crf = BaseFactory.CreateCredFactory();
             _tf = BaseFactory.CreateTapochekSite();
         }
 
@@ -110,8 +108,8 @@ namespace Crawler.Models
 
         public ICommonFactory BaseFactory { get; private set; }
         public ObservableCollection<IChannel> Channels { get; private set; }
-        public IEnumerable<string> Countries { get; set; }
         public ObservableCollection<ITag> CurrentTags { get; private set; }
+        public ServiceChannelViewModel ServiceChannel { get; set; }
 
         public string Filter
         {
@@ -194,18 +192,18 @@ namespace Crawler.Models
             }
         }
 
-        public string SearchKey
-        {
-            get
-            {
-                return _searchKey;
-            }
-            set
-            {
-                _searchKey = value;
-                OnPropertyChanged();
-            }
-        }
+        //public string SearchKey
+        //{
+        //    get
+        //    {
+        //        return _searchKey;
+        //    }
+        //    set
+        //    {
+        //        _searchKey = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         public IChannel SelectedChannel
         {
@@ -228,18 +226,18 @@ namespace Crawler.Models
             }
         }
 
-        public string SelectedCountry
-        {
-            get
-            {
-                return _selectedCountry;
-            }
-            set
-            {
-                _selectedCountry = value;
-                OnPropertyChanged();
-            }
-        }
+        //public string SelectedCountry
+        //{
+        //    get
+        //    {
+        //        return _selectedCountry;
+        //    }
+        //    set
+        //    {
+        //        _selectedCountry = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         public IPlaylist SelectedPlaylist
         {
@@ -280,7 +278,8 @@ namespace Crawler.Models
             }
         }
 
-        public ObservableCollection<IChannel> ServiceChannels { get; set; }
+        public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
+
         public SettingsViewModel SettingsViewModel { get; private set; }
 
         public string Version { get; private set; }
@@ -520,46 +519,7 @@ namespace Crawler.Models
             }
         }
 
-        public async Task Search()
-        {
-            if (string.IsNullOrEmpty(SearchKey))
-            {
-                return;
-            }
 
-            SetStatus(1);
-            try
-            {
-                IEnumerable<IVideoItemPOCO> lst = (await _yf.SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
-                if (lst.Any())
-                {
-                    IChannel channel = ServiceChannels.First();
-                    for (int i = channel.ChannelItems.Count; i > 0; i--)
-                    {
-                        if (
-                            !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
-                              || channel.ChannelItems[i - 1].State == ItemState.Downloading))
-                        {
-                            channel.ChannelItems.RemoveAt(i - 1);
-                        }
-                    }
-                    foreach (IVideoItemPOCO poco in lst)
-                    {
-                        IVideoItem item = _vf.CreateVideoItem(poco);
-                        channel.AddNewItem(item, false);
-                        item.IsHasLocalFileFound(SettingsViewModel.DirPath);
-                    }
-                    SelectedChannel = channel;
-                    SelectedChannel.ChannelItemsCount = channel.ChannelItems.Count;
-                }
-                SetStatus(0);
-            }
-            catch (Exception ex)
-            {
-                SetStatus(3);
-                Info = ex.Message;
-            }
-        }
 
         /// <summary>
         ///     0-Ready
@@ -650,16 +610,16 @@ namespace Crawler.Models
             Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
         }
 
-        private void CreateServicesChannels()
-        {
-            IChannel chpop = _cf.CreateChannel();
-            Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
-            chpop.Thumbnail = SiteHelper.ReadFully(img);
-            chpop.ID = "pop";
-            chpop.Title = "#Popular";
-            chpop.Site = SiteType.YouTube;
-            ServiceChannels.Add(chpop);
-        }
+        //private void CreateServicesChannels()
+        //{
+        //    IChannel chpop = _cf.CreateChannel();
+        //    Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
+        //    chpop.Thumbnail = SiteHelper.ReadFully(img);
+        //    chpop.ID = "pop";
+        //    chpop.Title = "#Popular";
+        //    chpop.Site = SiteType.YouTube;
+        //    ServiceChannels.Add(chpop);
+        //}
 
         private async Task FillChannels()
         {
@@ -840,7 +800,10 @@ namespace Crawler.Models
                             break;
                     }
                 }
-                CreateServicesChannels();
+                ServiceChannel.Init(this);
+                //ServiceChannel = new ServiceChannelViewModel(this);
+                ServiceChannels.Add(ServiceChannel);
+                //CreateServicesChannels();
                 SetStatus(0);
             }
         }

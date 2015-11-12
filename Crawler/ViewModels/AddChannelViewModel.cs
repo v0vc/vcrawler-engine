@@ -129,6 +129,8 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+            window.Close();
+
             if (IsEditMode)
             {
                 MvModel.SelectedChannel.Title = ChannelTitle;
@@ -150,8 +152,6 @@ namespace Crawler.ViewModels
                     MessageBox.Show(ex.Message);
                 }
             }
-
-            window.Close();
         }
 
         #endregion

@@ -317,16 +317,19 @@
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
                                               ItemsSource="{Binding Model.ServiceChannels}"
-                                              SelectedItem="{Binding Model.SelectedChannel}"
+                                              SelectedItem="{Binding Model.ServiceChannel}"
                                               >
                                         <DataGrid.InputBindings>
-                                            <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
+                                            <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
                                         </DataGrid.InputBindings>
 
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseDoubleClick">
-                                                <i:InvokeCommandAction Command="{Binding FillPopularCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
+                                                <i:InvokeCommandAction Command="{Binding Model.ServiceChannel.FillPopularCommand, Mode=OneTime}" />
                                             </i:EventTrigger>
+                                            <!--<i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding DataContext.Model.ServiceChannel.FillPopularCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
+                                            </i:EventTrigger>-->
                                             <i:EventTrigger EventName="MouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
                                             </i:EventTrigger>
@@ -379,7 +382,7 @@
                                                             <StackPanel Width="Auto" Orientation="Horizontal">
                                                                 <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                                          VerticalContentAlignment="Bottom" 
-                                                                         Text="{Binding DataContext.Model.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
+                                                                         Text="{Binding DataContext.Model.ServiceChannel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                                                     <TextBox.Resources>
                                                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
                                                                             <VisualBrush.Visual>
@@ -403,7 +406,7 @@
                                                                         </Style>
                                                                     </TextBox.Style>
                                                                 </TextBox>
-                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.Model.ServiceChannel.SearchCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                                             </StackPanel>
                                                             <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
                                                         </Grid>
@@ -415,8 +418,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
-                                                              ItemsSource="{Binding Path=DataContext.Model.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                              SelectedItem="{Binding Path=DataContext.Model.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                              ItemsSource="{Binding Path=DataContext.Model.ServiceChannel.Countries, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                                              SelectedItem="{Binding Path=DataContext.Model.ServiceChannel.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                     />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -442,7 +445,7 @@
                             <Button Width="50" Margin="1,2,2,2" Command="{Binding SyncDataCommand}">
                                 <Image Source="../Images/sync-48.png" StretchDirection="Both" />
                                 <Button.ToolTip>
-                                    <TextBlock Text="Sync"></TextBlock>
+                                    <TextBlock Text="Sync" />
                                 </Button.ToolTip>
                             </Button>
                             <Button Width="50" Margin="0,2,2,2" Command="{Binding AddNewItemCommand}">

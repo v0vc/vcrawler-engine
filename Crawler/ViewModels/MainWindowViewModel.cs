@@ -51,9 +51,9 @@ namespace Crawler.ViewModels
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
-        private RelayCommand popularSelectCommand;
+        //private RelayCommand popularSelectCommand;
         private RelayCommand scrollChangedCommand;
-        private RelayCommand searchCommand;
+        //private RelayCommand searchCommand;
         private RelayCommand submenuOpenedCommand;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
@@ -146,13 +146,14 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand FillPopularCommand
-        {
-            get
-            {
-                return fillPopularCommand ?? (fillPopularCommand = new RelayCommand(FillPopular));
-            }
-        }
+        //public RelayCommand FillPopularCommand
+        //{
+        //    get
+        //    {
+        //        return fillPopularCommand ?? (fillPopularCommand = new RelayCommand(async x => await FillPopular()));
+        //    }
+        //}
+
 
         public bool IsSearchExpanded { get; set; }
 
@@ -206,13 +207,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand PopularSelectCommand
-        {
-            get
-            {
-                return popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
-            }
-        }
+        //public RelayCommand PopularSelectCommand
+        //{
+        //    get
+        //    {
+        //        return popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
+        //    }
+        //}
 
         public RelayCommand ScrollChangedCommand
         {
@@ -222,13 +223,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand SearchCommand
-        {
-            get
-            {
-                return searchCommand ?? (searchCommand = new RelayCommand(async x => await Model.Search()));
-            }
-        }
+        //public RelayCommand SearchCommand
+        //{
+        //    get
+        //    {
+        //        return searchCommand ?? (searchCommand = new RelayCommand(async x => await Model.Search()));
+        //    }
+        //}
 
         public RelayCommand SubmenuOpenedCommand
         {
@@ -435,6 +436,11 @@ namespace Crawler.ViewModels
 
         private async void ChannelKeyDown(object par)
         {
+            if (par == null)
+            {
+                return;
+            }
+
             var key = (KeyboardKey)par;
             switch (key)
             {
@@ -443,7 +449,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case KeyboardKey.Enter:
-                    await Model.Search();
+                    await Model.ServiceChannel.Search();
                     break;
             }
         }
@@ -606,51 +612,6 @@ namespace Crawler.ViewModels
             };
 
             addview.ShowDialog();
-        }
-
-        private async void FillPopular(object obj)
-        {
-            var channel = obj as IChannel;
-            if (channel == null)
-            {
-                return;
-            }
-
-            if (channel.ChannelItems.Any())
-            {
-                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                for (int i = channel.ChannelItems.Count; i > 0; i--)
-                {
-                    if (
-                        !(channel.ChannelItems[i - 1].State == ItemState.LocalYes
-                          || channel.ChannelItems[i - 1].State == ItemState.Downloading))
-                    {
-                        channel.ChannelItems.RemoveAt(i - 1);
-                    }
-                }
-            }
-
-            try
-            {
-                Model.SetStatus(1);
-                IEnumerable<IVideoItem> lst = await channel.GetPopularItemsNetAsync(Model.SelectedCountry, 30);
-                foreach (IVideoItem item in lst)
-                {
-                    channel.AddNewItem(item, false);
-                    item.IsHasLocalFileFound(Model.SettingsViewModel.DirPath);
-                    if (Model.Channels.Select(x => x.ID).Contains(item.ParentID))
-                    {
-                        // подсветим видео, если канал уже есть в подписке
-                        item.IsNewItem = true;
-                    }
-                }
-                Model.SetStatus(0);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                Model.SetStatus(3);
-            }
         }
 
         private async Task FindRelated()
@@ -1079,15 +1040,15 @@ namespace Crawler.ViewModels
             Model.Filterlist.Clear();
         }
 
-        private void SelectPopular(object obj)
-        {
-            var channel = obj as IChannel;
-            if (channel == null)
-            {
-                return;
-            }
-            Model.SelectedChannel = channel;
-        }
+        //private void SelectPopular(object obj)
+        //{
+        //    var channel = obj as IChannel;
+        //    if (channel == null)
+        //    {
+        //        return;
+        //    }
+        //    Model.SelectedChannel = channel;
+        //}
 
         private void SelectTag(object obj)
         {

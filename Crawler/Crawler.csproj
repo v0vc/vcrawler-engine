@@ -91,6 +91,7 @@
     <Compile Include="ViewModels\AddTagViewModel.cs" />
     <Compile Include="ViewModels\DownloadLinkViewModel.cs" />
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
+    <Compile Include="ViewModels\ServiceChannelViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
     <Compile Include="Views\DownloadLinkView.xaml.cs">
       <DependentUpon>DownloadLinkView.xaml</DependentUpon>
