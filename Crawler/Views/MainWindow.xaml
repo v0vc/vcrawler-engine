@@ -5,6 +5,7 @@
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         DataContext="{Binding Path=MvViewModel, Source={StaticResource VmLocator}}"
@@ -346,32 +347,43 @@
                                             </Style>
                                         </DataGrid.CellStyle>
 
-                                    <DataGrid.Columns>
+                                        <DataGrid.Columns>
+                                            <DataGridTemplateColumn CanUserResize="False">
+                                                <DataGridTemplateColumn.CellTemplate>
+                                                    <DataTemplate>
+                                                        <ComboBox ItemsSource="{Binding SupportedCreds, Mode=OneWay}" 
+                                                                  SelectedItem="{Binding SelectedCredImage, Mode=OneWay}"
+                                                                  Margin="0.5"
+                                                                  >
+                                                            <ComboBox.Resources>
+                                                                <system:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">0</system:Double>
+                                                            </ComboBox.Resources>
+                                                            
+                                                            <ComboBox.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <StackPanel Margin="0.5">
+                                                                        <StackPanel.OpacityMask>
+                                                                            <VisualBrush Visual="{Binding ElementName=mask}" />
+                                                                        </StackPanel.OpacityMask>
+                                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
+                                                                               RenderOptions.BitmapScalingMode="Fant"
+                                                                               ToolTipService.ShowDuration="120000"
+                                                                               Stretch="Fill"
+                                                                               Width="45"
+                                                                               Height="45"
+                                                                               VerticalAlignment="Top"
+                                                                               Margin="0"
+                                                                               HorizontalAlignment="Center" 
+                                                                               />
+                                                                    </StackPanel>
+                                                                </DataTemplate>
+                                                            </ComboBox.ItemTemplate>
+                                                        </ComboBox>
+                                                    </DataTemplate>
+                                                </DataGridTemplateColumn.CellTemplate>
+                                            </DataGridTemplateColumn>
 
-                                        <DataGridTemplateColumn CanUserResize="False">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Margin="1">
-                                                        <StackPanel.OpacityMask>
-                                                            <VisualBrush Visual="{Binding ElementName=mask}" />
-                                                        </StackPanel.OpacityMask>
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
-                                                               RenderOptions.BitmapScalingMode="Fant"
-                                                               ToolTipService.ShowDuration="120000"
-                                                               Stretch="Fill"
-                                                               Width="48"
-                                                               Height="48"
-                                                               VerticalAlignment="Top"
-                                                               Margin="0"
-                                                               HorizontalAlignment="Center"
-                                                        >
-                                                        </Image>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
-
-                                        <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                            <DataGridTemplateColumn CanUserResize="True" Width="*">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
                                                     <Grid>
@@ -380,7 +392,7 @@
                                                             <ColumnDefinition />
                                                         </Grid.ColumnDefinitions>
                                                             <StackPanel Width="Auto" Orientation="Horizontal">
-                                                                <TextBox Width="80" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                                                <TextBox Width="75" Height="25" Margin="10,0,1,0" behaviors:FocusExtension.IsFocused="{Binding DataContext.IsSearchExpanded, Mode=OneWay, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
                                                                          VerticalContentAlignment="Bottom" 
                                                                          Text="{Binding DataContext.ServiceChannel.SearchKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}">
                                                                     <TextBox.Resources>

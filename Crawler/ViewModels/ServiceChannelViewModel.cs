@@ -185,12 +185,12 @@ namespace Crawler.ViewModels
 
                     case SiteType.RuTracker:
 
-                        // SupportedCreds.Add(new CredImage(cred, "Crawler.Images.rt.png"));
+                        SupportedCreds.Add(new CredImage(cred, "Crawler.Images.rt.png"));
                         break;
 
                     case SiteType.Tapochek:
 
-                        // SupportedCreds.Add(new CredImage(cred, "Crawler.Images.tap.png"));
+                        SupportedCreds.Add(new CredImage(cred, "Crawler.Images.tap.png"));
                         break;
                 }
             }

@@ -247,6 +247,8 @@
   <ItemGroup>
     <Content Include="DLL\Microsoft.WindowsAPICodePack.dll" />
     <Content Include="DLL\Microsoft.WindowsAPICodePack.Shell.dll" />
+    <EmbeddedResource Include="Images\tap.png" />
+    <EmbeddedResource Include="Images\rt.png" />
     <Resource Include="Images\delete-16.png" />
   </ItemGroup>
   <ItemGroup />
