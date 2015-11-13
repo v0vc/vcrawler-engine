@@ -318,7 +318,7 @@
                                               GridLinesVisibility="Horizontal"
                                               BorderThickness="1"
                                               ItemsSource="{Binding ServiceChannels}"
-                                              SelectedItem="{Binding ServiceChannel}"
+                                              SelectedItem="{Binding SelectedChannel}"
                                               >
                                         <DataGrid.InputBindings>
                                             <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
@@ -328,12 +328,9 @@
                                             <i:EventTrigger EventName="MouseDoubleClick">
                                                 <i:InvokeCommandAction Command="{Binding ServiceChannel.FillPopularCommand, Mode=OneTime}" />
                                             </i:EventTrigger>
-                                            <!--<i:EventTrigger EventName="MouseDoubleClick">
-                                                <i:InvokeCommandAction Command="{Binding DataContext.Model.ServiceChannel.FillPopularCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" />
-                                            </i:EventTrigger>-->
-                                            <!--<i:EventTrigger EventName="MouseLeftButtonUp">
+                                            <i:EventTrigger EventName="MouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
-                                            </i:EventTrigger>-->
+                                            </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                         
                                         <DataGrid.Resources>
@@ -351,10 +348,17 @@
                                             <DataGridTemplateColumn CanUserResize="False">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <ComboBox ItemsSource="{Binding SupportedCreds, Mode=OneWay}" 
-                                                                  SelectedItem="{Binding SelectedCredImage, Mode=OneWay}"
+                                                        <ComboBox ItemsSource="{Binding SupportedSites, Mode=OneWay}"
+                                                                  SelectedItem="{Binding SelectedSite, Mode=OneWay}"
                                                                   Margin="0.5"
                                                                   >
+
+                                                            <i:Interaction.Triggers>
+                                                                <i:EventTrigger EventName="SelectionChanged">
+                                                                    <i:InvokeCommandAction Command="{Binding SiteChangedCommand, Mode=OneTime}" />
+                                                                </i:EventTrigger>
+                                                            </i:Interaction.Triggers>
+
                                                             <ComboBox.Resources>
                                                                 <system:Double x:Key="{x:Static SystemParameters.VerticalScrollBarWidthKey}">0</system:Double>
                                                             </ComboBox.Resources>
@@ -378,6 +382,7 @@
                                                                     </StackPanel>
                                                                 </DataTemplate>
                                                             </ComboBox.ItemTemplate>
+                                                            
                                                         </ComboBox>
                                                     </DataTemplate>
                                                 </DataGridTemplateColumn.CellTemplate>

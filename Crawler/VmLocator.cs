@@ -29,6 +29,7 @@ namespace Crawler
             containerBuilder.RegisterType<DownloadLinkViewModel>().SingleInstance();
             containerBuilder.RegisterType<SettingsViewModel>().SingleInstance();
             containerBuilder.RegisterType<EditDescriptionViewModel>().SingleInstance();
+            containerBuilder.RegisterType<ServiceChannelViewModel>().SingleInstance();
             container = containerBuilder.Build();
         }
 
@@ -120,6 +121,17 @@ namespace Crawler
                 using (ILifetimeScope scope = container.BeginLifetimeScope())
                 {
                     return scope.Resolve<EditDescriptionViewModel>();
+                }
+            }
+        }
+
+        public ServiceChannelViewModel ServiceChannelViewModel
+        {
+            get
+            {
+                using (ILifetimeScope scope = container.BeginLifetimeScope())
+                {
+                    return scope.Resolve<ServiceChannelViewModel>();
                 }
             }
         }
