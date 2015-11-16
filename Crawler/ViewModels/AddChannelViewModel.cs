@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Crawler.Common;
-//using Crawler.Models;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels

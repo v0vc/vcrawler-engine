@@ -664,7 +664,11 @@
                                                 <RowDefinition />
                                                 <RowDefinition />
                                             </Grid.RowDefinitions>
-                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center">
+                                                <TextBlock.ToolTip>
+                                                    <TextBlock Text="{Binding Title}"/>
+                                                </TextBlock.ToolTip>
+                                            </TextBlock>
                                             <StackPanel Grid.Row="1" Orientation="Horizontal">
 
                                                 <TextBlock Text="{Binding DurationString}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
