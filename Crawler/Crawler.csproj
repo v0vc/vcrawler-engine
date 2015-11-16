@@ -215,6 +215,10 @@
       <Project>{6a0b7942-8c56-448f-a8e7-615a06aae3af}</Project>
       <Name>IoC</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Models\Models.csproj">
+      <Project>{2DA3980E-45CD-4567-9981-25161ECB889B}</Project>
+      <Name>Models</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\add-48.png" />

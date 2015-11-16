@@ -10,6 +10,7 @@ using System.Windows;
 using Crawler.Common;
 using Crawler.Views;
 using Interfaces.Models;
+using Models.BO;
 
 namespace Crawler.ViewModels
 {
@@ -73,7 +74,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public IChannel ParentChannel { get; set; }
+        public Channel ParentChannel { get; set; }
 
         public RelayCommand SaveCommand
         {
@@ -135,12 +136,12 @@ namespace Crawler.ViewModels
 
             if (!CurrentTags.Any())
             {
-                foreach (IChannel ch in Channels)
+                foreach (Channel channel in Channels.OfType<Channel>())
                 {
-                    IEnumerable<ITag> tags = await ch.GetChannelTagsAsync();
+                    IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
                     foreach (ITag tag in tags)
                     {
-                        ch.ChannelTags.Add(tag);
+                        channel.ChannelTags.Add(tag);
                         if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
                         {
                             CurrentTags.Add(tag);

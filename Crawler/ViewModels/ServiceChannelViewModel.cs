@@ -1,8 +1,8 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -166,9 +166,8 @@ namespace Crawler.ViewModels
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
-                        foreach (IVideoItemPOCO poco in lst)
+                        foreach (IVideoItem item in lst.Select(poco => mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
                         {
-                            IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
                             AddNewItem(item, false);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         }
@@ -226,6 +225,7 @@ namespace Crawler.ViewModels
         public bool IsSelected { get; set; }
         public bool IsShowRow { get; set; }
         public int PlaylistCount { get; set; }
+
         public IList<IVideoItem> SelectedItems
         {
             get
@@ -233,6 +233,7 @@ namespace Crawler.ViewModels
                 return ChannelItems.Where(x => x.IsSelected).ToList();
             }
         }
+
         public SiteType Site { get; set; }
         public string SiteAdress { get; set; }
         public string SubTitle { get; set; }
@@ -254,141 +255,6 @@ namespace Crawler.ViewModels
             {
                 ChannelItems.Add(item);
             }
-        }
-
-        public Task DeleteChannelAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DeleteChannelTagAsync(string tag)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void FillChannelCookieDb()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FillChannelCookieNetAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FillChannelDescriptionAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FillChannelItemsDbAsync(string dir, int count, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<ICred> GetChannelCredentialsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> GetChannelItemsCountDbAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> GetChannelItemsCountNetAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<int> GetChannelPlaylistCountDbAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<ITag>> GetChannelTagsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InsertChannelAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InsertChannelItemsAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task InsertChannelTagAsync(string tag)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task RenameChannelAsync(string newName)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StoreCookies()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SyncChannelAsync(bool isSyncPls)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task SyncChannelPlaylistsAsync()
-        {
-            throw new NotImplementedException();
         }
 
         #endregion

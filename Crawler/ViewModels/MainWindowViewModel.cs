@@ -28,6 +28,7 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
+using Models.BO;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
 using Container = IoC.Container;
@@ -491,7 +492,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                var channel = obj as IChannel;
+                var channel = obj as Channel;
                 if (channel == null)
                 {
                     return;
@@ -548,7 +549,7 @@ namespace Crawler.ViewModels
 
         private static async void PlaylistExpand(object obj)
         {
-            var ch = obj as IChannel;
+            var ch = obj as Channel;
             if (ch == null)
             {
                 return;
@@ -625,7 +626,12 @@ namespace Crawler.ViewModels
 
         public async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
-            IChannel channel = await _cf.GetChannelNetAsync(channelid, site);
+            Channel channel = (await _cf.GetChannelNetAsync(channelid, site)) as Channel;
+            if (channel == null)
+            {
+                return;
+            }
+
             if (string.IsNullOrEmpty(channel.Title))
             {
                 throw new Exception("Can't get channel: " + channel.ID);
@@ -711,9 +717,15 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        public async Task FillChannelItems()
+        private async Task FillChannelItems()
         {
             if (SelectedChannel == null)
+            {
+                return;
+            }
+
+            var channel = SelectedChannel as Channel;
+            if (channel == null)
             {
                 return;
             }
@@ -721,66 +733,66 @@ namespace Crawler.ViewModels
             Filter = string.Empty;
             IsExpand = false;
 
-            if (RelatedChannels.Any() && !RelatedChannels.Contains(SelectedChannel))
+            if (RelatedChannels.Any() && !RelatedChannels.Contains(channel))
             {
-                foreach (IChannel channel in RelatedChannels)
+                foreach (IChannel ch in RelatedChannels)
                 {
-                    channel.ChannelItems.Clear();
+                    ch.ChannelItems.Clear();
                 }
 
                 RelatedChannels.Clear();
             }
 
-            foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            foreach (IVideoItem item in channel.ChannelItems)
             {
                 item.IsShowRow = true;
             }
 
             // есть новые элементы после синхронизации
-            bool isHasNewFromSync = SelectedChannel.ChannelItems.Any()
-                                    && SelectedChannel.ChannelItems.Count == SelectedChannel.ChannelItems.Count(x => x.IsNewItem);
+            bool isHasNewFromSync = channel.ChannelItems.Any()
+                                    && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.IsNewItem);
 
             // заполняем только если либо ничего нет, либо одни новые
-            if ((!SelectedChannel.ChannelItems.Any() & !SelectedChannel.IsDownloading) || isHasNewFromSync)
+            if ((!channel.ChannelItems.Any() & !channel.IsDownloading) || isHasNewFromSync)
             {
                 if (isHasNewFromSync)
                 {
-                    List<string> lstnew = SelectedChannel.ChannelItems.Select(x => x.ID).ToList();
-                    SelectedChannel.ChannelItems.Clear();
-                    await SelectedChannel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+                    List<string> lstnew = channel.ChannelItems.Select(x => x.ID).ToList();
+                    channel.ChannelItems.Clear();
+                    await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
                     foreach (IVideoItem item in
-                        from item in SelectedChannel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
+                        from item in channel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
                     {
                         item.IsNewItem = true;
                     }
                 }
                 else
                 {
-                    await SelectedChannel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+                    await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
                 }
 
-                if (SelectedChannel.ChannelItems.Any())
+                if (channel.ChannelItems.Any())
                 {
-                    SelectedChannel.PlaylistCount = await SelectedChannel.GetChannelPlaylistCountDbAsync();
+                    channel.PlaylistCount = await channel.GetChannelPlaylistCountDbAsync();
                 }
                 else
                 {
                     // нет в базе = related channel
                     SetStatus(1);
-                    SelectedChannel.IsInWork = true;
-                    IEnumerable<IVideoItem> lst = await SelectedChannel.GetChannelItemsNetAsync(0);
+                    channel.IsInWork = true;
+                    IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0);
                     foreach (IVideoItem item in lst)
                     {
-                        SelectedChannel.AddNewItem(item, false);
+                        channel.AddNewItem(item, false);
                     }
-                    SelectedChannel.IsInWork = false;
+                    channel.IsInWork = false;
                     SetStatus(0);
                 }
             }
             Filterlist.Clear();
         }
 
-        public async Task FindRelatedChannels(IChannel channel)
+        private async Task FindRelatedChannels(Channel channel)
         {
             if (channel == null)
             {
@@ -861,7 +873,7 @@ namespace Crawler.ViewModels
             SelectedTag = null;
         }
 
-        public async Task SyncChannel(IChannel channel)
+        private async Task SyncChannel(Channel channel)
         {
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
@@ -872,7 +884,7 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        public async Task SyncData()
+        private async Task SyncData()
         {
             ShowAllChannels();
             PrValue = 0;
@@ -881,7 +893,7 @@ namespace Crawler.ViewModels
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
 
-            foreach (IChannel channel in Channels)
+            foreach (var channel in Channels.OfType<Channel>())
             {
                 i += 1;
                 PrValue = Math.Round((double)(100 * i) / Channels.Count);
@@ -1034,7 +1046,11 @@ namespace Crawler.ViewModels
             {
                 for (int i = SelectedChannels.Count(); i > 0; i--)
                 {
-                    IChannel channel = SelectedChannels[i - 1];
+                    Channel channel = SelectedChannels[i - 1] as Channel;
+                    if (channel == null)
+                    {
+                        continue;
+                    }
                     Channels.Remove(channel);
                     await channel.DeleteChannelAsync();
                 }
@@ -1218,7 +1234,11 @@ namespace Crawler.ViewModels
         {
             try
             {
-                await FindRelatedChannels(SelectedChannel);
+                var channel = SelectedChannel as Channel;
+                if (channel != null)
+                {
+                    await FindRelatedChannels(channel);
+                }
             }
             catch (Exception ex)
             {
@@ -1351,13 +1371,13 @@ namespace Crawler.ViewModels
             }
 
             var tmptags = new List<ITag>();
-            foreach (IChannel ch in Channels)
+            foreach (Channel channel in Channels.OfType<Channel>())
             {
-                IEnumerable<ITag> tags = await ch.GetChannelTagsAsync();
+                IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
 
                 foreach (ITag tag in tags)
                 {
-                    ch.ChannelTags.Add(tag);
+                    channel.ChannelTags.Add(tag);
                     if (!tmptags.Select(x => x.Title).Contains(tag.Title))
                     {
                         tmptags.Add(tag);
@@ -1384,9 +1404,14 @@ namespace Crawler.ViewModels
 
         private void OpenTags()
         {
+            var channel = SelectedChannel as Channel;
+            if (channel == null)
+            {
+                return;
+            }
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = SelectedChannel, 
+                ParentChannel = channel, 
                 CurrentTags = CurrentTags, 
                 Tags = SettingsViewModel.SupportedTags, 
                 Channels = Channels
@@ -1637,12 +1662,17 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            if (SelectedChannel.ChannelItemsCount > SelectedChannel.ChannelItems.Count)
+            var channel = SelectedChannel as Channel;
+            if (channel == null)
+            {
+                return;
+            }
+            if (channel.ChannelItemsCount > channel.ChannelItems.Count)
             {
                 await
-                    SelectedChannel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
-                        SelectedChannel.ChannelItemsCount - SelectedChannel.ChannelItems.Count, 
-                        SelectedChannel.ChannelItems.Count);
+                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath,
+                        channel.ChannelItemsCount - channel.ChannelItems.Count,
+                        channel.ChannelItems.Count);
             }
         }
 
@@ -1725,9 +1755,13 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-
-            Channels.Add(SelectedChannel);
-            await SelectedChannel.InsertChannelItemsAsync();
+            var channel = SelectedChannel as Channel;
+            if (channel == null)
+            {
+                return;
+            }
+            Channels.Add(channel);
+            await channel.InsertChannelItemsAsync();
         }
 
         private async Task SubscribeOn()
@@ -1744,7 +1778,7 @@ namespace Crawler.ViewModels
 
         private async void SyncChannel(object obj)
         {
-            var channel = obj as IChannel;
+            var channel = obj as Channel;
             if (channel != null)
             {
                 await SyncChannel(channel);
@@ -1759,9 +1793,15 @@ namespace Crawler.ViewModels
                 return;
             }
 
+            var channel = SelectedChannel as Channel;
+            if (channel == null)
+            {
+                return;
+            }
+
             try
             {
-                await SelectedChannel.SyncChannelPlaylistsAsync();
+                await channel.SyncChannelPlaylistsAsync();
             }
             catch (Exception ex)
             {

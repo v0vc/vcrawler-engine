@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using Crawler.Common;
 using Interfaces.Models;
+using Models.BO;
 
 namespace Crawler.ViewModels
 {
@@ -133,7 +134,11 @@ namespace Crawler.ViewModels
             if (IsEditMode)
             {
                 MvModel.SelectedChannel.Title = ChannelTitle;
-                await MvModel.SelectedChannel.RenameChannelAsync(ChannelTitle);
+                var channel = MvModel.SelectedChannel as Channel;
+                if (channel != null)
+                {
+                    await channel.RenameChannelAsync(ChannelTitle);
+                }
             }
             else
             {

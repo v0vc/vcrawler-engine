@@ -419,7 +419,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task SyncChannelAsync(IChannel channel, bool isSyncPls)
+        public async Task SyncChannelAsync(Channel channel, bool isSyncPls)
         {
             channel.IsInWork = true;
 

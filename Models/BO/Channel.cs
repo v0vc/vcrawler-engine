@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -19,20 +20,21 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly ChannelFactory _cf;
+        private readonly ChannelFactory cf;
 
         #endregion
 
         #region Fields
 
-        private int _countNew;
-        private bool _isDownloading;
-        private bool _isInWork;
-        private bool _isShowRow;
-        private int _playlistCount;
-        private string _subTitle;
-        private string _title;
         private int channelItemsCount;
+
+        private int countNew;
+        private bool isDownloading;
+        private bool isInWork;
+        private bool isShowRow;
+        private int playlistCount;
+        private string subTitle;
+        private string title;
 
         #endregion
 
@@ -40,7 +42,7 @@ namespace Models.BO
 
         public Channel(ChannelFactory cf)
         {
-            _cf = cf;
+            this.cf = cf;
         }
 
         private Channel()
@@ -50,6 +52,122 @@ namespace Models.BO
         #endregion
 
         #region Methods
+
+        public async Task DeleteChannelAsync()
+        {
+            await cf.DeleteChannelAsync(ID);
+        }
+
+        public async Task DeleteChannelTagAsync(string tag)
+        {
+            await cf.DeleteChannelTagAsync(ID, tag);
+        }
+
+        public void FillChannelCookieDb()
+        {
+            cf.FillChannelCookieDb(this);
+        }
+
+        public async Task FillChannelCookieNetAsync()
+        {
+            await cf.FillChannelCookieNetAsync(this);
+        }
+
+        public async Task FillChannelDescriptionAsync()
+        {
+            await cf.FillChannelDescriptionAsync(this);
+        }
+
+        public async Task FillChannelItemsDbAsync(string dir, int count, int offset)
+        {
+            await cf.FillChannelItemsFromDbAsync(this, dir, count, offset);
+        }
+
+        public async Task<ICred> GetChannelCredentialsAsync()
+        {
+            return await cf.GetChannelCredentialsAsync(this);
+        }
+
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset)
+        {
+            // return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
+            return await cf.GetChannelItemsDbAsync(ID, count, offset);
+        }
+
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()
+        {
+            return await cf.GetChannelItemsIdsListDbAsync(ID);
+        }
+
+        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
+        {
+            return await cf.GetChannelItemsIdsListNetAsync(ID, maxresult);
+        }
+
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
+        {
+            return await cf.GetChannelItemsNetAsync(this, maxresult);
+        }
+
+        public async Task<int> GetChannelPlaylistCountDbAsync()
+        {
+            return await cf.GetChannelPlaylistCountDbAsync(ID);
+        }
+
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
+        {
+            return await cf.GetChannelPlaylistsAsync(ID);
+        }
+
+        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
+        {
+            return await cf.GetChannelPlaylistsNetAsync(ID);
+        }
+
+        public async Task<IEnumerable<ITag>> GetChannelTagsAsync()
+        {
+            return await cf.GetChannelTagsAsync(ID);
+        }
+
+        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
+        {
+            return await cf.GetRelatedChannelNetAsync(id, site);
+        }
+
+        public async Task InsertChannelAsync()
+        {
+            await cf.InsertChannelAsync(this);
+        }
+
+        public async Task InsertChannelItemsAsync()
+        {
+            await cf.InsertChannelItemsAsync(this);
+        }
+
+        public async Task InsertChannelTagAsync(string tag)
+        {
+            await cf.InsertChannelTagAsync(ID, tag);
+        }
+
+        public async Task RenameChannelAsync(string newName)
+        {
+            await cf.RenameChannelAsync(ID, newName);
+        }
+
+        public void StoreCookies()
+        {
+            cf.StoreCookies(SiteAdress, ChannelCookies);
+        }
+
+        public async Task SyncChannelAsync(bool isSyncPls)
+        {
+            await cf.SyncChannelAsync(this, isSyncPls);
+        }
+
+        public async Task SyncChannelPlaylistsAsync()
+        {
+            await cf.SyncChannelPlaylistsAsync(this);
+        }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
@@ -66,107 +184,6 @@ namespace Models.BO
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
-        public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
-        public ObservableCollection<ITag> ChannelTags { get; set; }
-
-        public int CountNew
-        {
-            get
-            {
-                return _countNew;
-            }
-            set
-            {
-                _countNew = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string ID { get; set; }
-
-        public bool IsDownloading
-        {
-            get
-            {
-                return _isDownloading;
-            }
-            set
-            {
-                _isDownloading = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsInWork
-        {
-            get
-            {
-                return _isInWork;
-            }
-            set
-            {
-                _isInWork = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsShowRow
-        {
-            get
-            {
-                return _isShowRow;
-            }
-            set
-            {
-                _isShowRow = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsSelected { get; set; }
-
-        public int PlaylistCount
-        {
-            get
-            {
-                return _playlistCount;
-            }
-            set
-            {
-                _playlistCount = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string SiteAdress { get; set; }
-
-        public string SubTitle
-        {
-            get
-            {
-                return _subTitle;
-            }
-            set
-            {
-                _subTitle = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public byte[] Thumbnail { get; set; }
-
-        public string Title
-        {
-            get
-            {
-                return _title;
-            }
-            set
-            {
-                _title = value;
-                OnPropertyChanged();
-            }
-        }
 
         public int ChannelItemsCount
         {
@@ -181,13 +198,114 @@ namespace Models.BO
             }
         }
 
-        public SiteType Site { get; set; }
+        public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
+        public ObservableCollection<ITag> ChannelTags { get; set; }
+
+        public int CountNew
+        {
+            get
+            {
+                return countNew;
+            }
+            set
+            {
+                countNew = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ID { get; set; }
+
+        public bool IsDownloading
+        {
+            get
+            {
+                return isDownloading;
+            }
+            set
+            {
+                isDownloading = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsInWork
+        {
+            get
+            {
+                return isInWork;
+            }
+            set
+            {
+                isInWork = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsSelected { get; set; }
+
+        public bool IsShowRow
+        {
+            get
+            {
+                return isShowRow;
+            }
+            set
+            {
+                isShowRow = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public int PlaylistCount
+        {
+            get
+            {
+                return playlistCount;
+            }
+            set
+            {
+                playlistCount = value;
+                OnPropertyChanged();
+            }
+        }
 
         public IList<IVideoItem> SelectedItems
         {
             get
             {
                 return ChannelItems.Where(x => x.IsSelected).ToList();
+            }
+        }
+
+        public SiteType Site { get; set; }
+        public string SiteAdress { get; set; }
+
+        public string SubTitle
+        {
+            get
+            {
+                return subTitle;
+            }
+            set
+            {
+                subTitle = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public byte[] Thumbnail { get; set; }
+
+        public string Title
+        {
+            get
+            {
+                return title;
+            }
+            set
+            {
+                title = value;
+                OnPropertyChanged();
             }
         }
 
@@ -208,142 +326,6 @@ namespace Models.BO
             {
                 ChannelItems.Add(item);
             }
-        }
-
-        public async Task DeleteChannelAsync()
-        {
-            await _cf.DeleteChannelAsync(ID);
-        }
-
-        public async Task DeleteChannelTagAsync(string tag)
-        {
-            await _cf.DeleteChannelTagAsync(ID, tag);
-        }
-
-        public void FillChannelCookieDb()
-        {
-            _cf.FillChannelCookieDb(this);
-        }
-
-        public async Task FillChannelCookieNetAsync()
-        {
-            await _cf.FillChannelCookieNetAsync(this);
-        }
-
-        public async Task FillChannelDescriptionAsync()
-        {
-            await _cf.FillChannelDescriptionAsync(this);
-        }
-
-        public async Task FillChannelItemsDbAsync(string dir, int count, int offset)
-        {
-            await _cf.FillChannelItemsFromDbAsync(this, dir, count, offset);
-        }
-
-        public async Task<int> GetChannelItemsCountDbAsync()
-        {
-            return await _cf.GetChannelItemsCountDbAsync(ID);
-        }
-
-        public async Task<int> GetChannelItemsCountNetAsync()
-        {
-            return await _cf.GetChannelItemsCountNetAsync(ID);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(int count, int offset)
-        {
-            // return await ((ChannelFactory) ServiceLocator.ChannelFactory).GetChannelItemsDbAsync(ID);
-            return await _cf.GetChannelItemsDbAsync(ID, count, offset);
-        }
-
-        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
-        {
-            return await _cf.GetRelatedChannelNetAsync(id, site);
-        }
-
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync()
-        {
-            return await _cf.GetChannelItemsIdsListDbAsync(ID);
-        }
-
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
-        {
-            return await _cf.GetChannelItemsIdsListNetAsync(ID, maxresult);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
-        {
-            return await _cf.GetChannelItemsNetAsync(this, maxresult);
-        }
-
-        public async Task<int> GetChannelPlaylistCountDbAsync()
-        {
-            return await _cf.GetChannelPlaylistCountDbAsync(ID);
-        }
-
-        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
-        {
-            return await _cf.GetChannelPlaylistsAsync(ID);
-        }
-
-        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
-        {
-            return await _cf.GetChannelPlaylistsNetAsync(ID);
-        }
-
-        public async Task<IEnumerable<ITag>> GetChannelTagsAsync()
-        {
-            return await _cf.GetChannelTagsAsync(ID);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
-        {
-            return await _cf.GetPopularItemsNetAsync(regionID, maxresult);
-        }
-
-        public async Task InsertChannelAsync()
-        {
-            await _cf.InsertChannelAsync(this);
-        }
-
-        public async Task InsertChannelItemsAsync()
-        {
-            await _cf.InsertChannelItemsAsync(this);
-        }
-
-        public async Task InsertChannelTagAsync(string tag)
-        {
-            await _cf.InsertChannelTagAsync(ID, tag);
-        }
-
-        public async Task RenameChannelAsync(string newName)
-        {
-            await _cf.RenameChannelAsync(ID, newName);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string region, int maxresult)
-        {
-            return await _cf.SearchItemsNetAsync(key, region, maxresult);
-        }
-
-        public void StoreCookies()
-        {
-            _cf.StoreCookies(SiteAdress, ChannelCookies);
-        }
-
-        public async Task SyncChannelAsync(bool isSyncPls)
-        {
-            await _cf.SyncChannelAsync(this, isSyncPls);
-        }
-
-        public async Task SyncChannelPlaylistsAsync()
-        {
-            await _cf.SyncChannelPlaylistsAsync(this);
-        }
-
-        public async Task<ICred> GetChannelCredentialsAsync()
-        {
-            return await _cf.GetChannelCredentialsAsync(this);
         }
 
         #endregion

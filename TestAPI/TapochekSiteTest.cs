@@ -16,6 +16,7 @@ using Interfaces.Models;
 using Interfaces.POCO;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Models.BO;
 
 namespace TestAPI
 {
@@ -54,7 +55,11 @@ namespace TestAPI
         public void FillChannelCookieDbAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            IChannel ch = chf.CreateChannel(SiteType.Tapochek);
+            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            if (ch == null)
+            {
+                return;
+            }
             ch.FillChannelCookieDb();
             Assert.IsTrue(ch.ChannelCookies.Count > 0);
         }
@@ -63,11 +68,16 @@ namespace TestAPI
         public async Task FillChannelNetAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            IChannel ch = chf.CreateChannel(SiteType.Tapochek);
+            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            if (ch == null)
+            {
+                return;
+            }
             ch.ID = "27253";
             ch.FillChannelCookieDb();
             await _tf.FillChannelNetAsync(ch);
             Assert.IsTrue(ch.ChannelItems.Any());
+            
         }
 
         [TestMethod]
@@ -83,7 +93,11 @@ namespace TestAPI
         public async Task GetChannelItemsAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            IChannel ch = chf.CreateChannel(SiteType.Tapochek);
+            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            if (ch == null)
+            {
+                return;
+            }
             ch.ID = "27253";
             ch.FillChannelCookieDb();
             if (ch.ChannelCookies == null)
@@ -105,7 +119,11 @@ namespace TestAPI
         public async Task StoreCookiesAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            IChannel ch = chf.CreateChannel(SiteType.Tapochek);
+            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            if (ch == null)
+            {
+                return;
+            }
             CookieContainer cookie = await _tf.GetCookieNetAsync(ch);
             ch.ChannelCookies = cookie;
 
