@@ -17,7 +17,7 @@
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <i:InvokeCommandAction Command="{Binding FillChannelsCommand, Mode=OneTime}" />
+            <i:InvokeCommandAction Command="{Binding FillChannelsCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid}"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
     
@@ -196,8 +196,11 @@
                     </DataGrid.InputBindings>
                     
                     <i:Interaction.Triggers>
-                        <i:EventTrigger EventName="SelectionChanged" SourceName="channelsGrid">
-                            <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid}"/>
+                        <i:EventTrigger EventName="MouseLeftButtonUp">
+                            <i:InvokeCommandAction Command="{Binding ChannelGridFocusCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding ChannelSelectCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="MouseDoubleClick">
                             <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>

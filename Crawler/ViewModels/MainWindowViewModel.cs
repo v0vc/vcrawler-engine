@@ -37,7 +37,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Crawler.ViewModels
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public sealed class MainWindowViewModel : INotifyPropertyChanged
     {
         #region Constants
 
@@ -61,9 +61,11 @@ namespace Crawler.ViewModels
 
         private RelayCommand addNewItemCommand;
         private RelayCommand channelDoubleClickCommand;
+        private DataGrid channelGrid;
+        private RelayCommand channelGridFocusCommand;
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
-        private RelayCommand channelSelectionChangedCommand;
+        private RelayCommand channelSelectCommand;
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand currentTagSelectionChangedCommand;
         private RelayCommand fillChannelsCommand;
@@ -71,7 +73,6 @@ namespace Crawler.ViewModels
         private string filter;
         private string info;
         private bool isExpand;
-        private bool isHasBeenFocused;
         private bool isWorking;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
@@ -155,6 +156,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand ChannelGridFocusCommand
+        {
+            get
+            {
+                return channelGridFocusCommand ?? (channelGridFocusCommand = new RelayCommand(FocusRow));
+            }
+        }
+
         public RelayCommand ChannelKeyDownCommand
         {
             get
@@ -173,11 +182,11 @@ namespace Crawler.ViewModels
 
         public ObservableCollection<IChannel> Channels { get; private set; }
 
-        public RelayCommand ChannelSelectionChangedCommand
+        public RelayCommand ChannelSelectCommand
         {
             get
             {
-                return channelSelectionChangedCommand ?? (channelSelectionChangedCommand = new RelayCommand(FocusRow));
+                return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(FillChannelItems));
             }
         }
 
@@ -203,7 +212,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(x => OnStartup()));
+                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(OnStartup));
             }
         }
 
@@ -375,14 +384,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public IList<IChannel> SelectedChannels
-        {
-            get
-            {
-                return Channels.Where(x => x.IsSelected).ToList();
-            }
-        }
-
         public IPlaylist SelectedPlaylist
         {
             get
@@ -473,6 +474,14 @@ namespace Crawler.ViewModels
             get
             {
                 return videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
+            }
+        }
+
+        private IList<IChannel> SelectedChannels
+        {
+            get
+            {
+                return Channels.Where(x => x.IsSelected).ToList();
             }
         }
 
@@ -717,17 +726,6 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        public void OnStartup()
-        {
-            SetStatus(1);
-            using (var bgv = new BackgroundWorker())
-            {
-                bgv.DoWork += BgvDoWork;
-                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                bgv.RunWorkerAsync();
-            }
-        }
-
         /// <summary>
         ///     0-Ready
         ///     1-Working..
@@ -771,15 +769,6 @@ namespace Crawler.ViewModels
             }
 
             SelectedTag = null;
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
 
         private void AddNewItem()
@@ -1012,14 +1001,9 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
-        private async Task FillChannelItems()
+        private async void FillChannelItems(object obj)
         {
-            if (SelectedChannel == null)
-            {
-                return;
-            }
-
-            var channel = SelectedChannel as Channel;
+            var channel = obj as Channel;
             if (channel == null)
             {
                 return;
@@ -1099,6 +1083,23 @@ namespace Crawler.ViewModels
             {
                 SelectedChannel = Channels.First();
             }
+
+            FillChannelItems(SelectedChannel);
+
+            // focus
+            if (channelGrid == null || channelGrid.SelectedIndex < 0)
+            {
+                return;
+            }
+            channelGrid.UpdateLayout();
+            var selectedRow = (DataGridRow)channelGrid.ItemContainerGenerator.ContainerFromIndex(channelGrid.SelectedIndex);
+            if (selectedRow == null)
+            {
+                return;
+            }
+            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+
+            channelGrid = null;
         }
 
         private void FilterVideos()
@@ -1203,29 +1204,13 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async void FocusRow(object obj)
+        private void FocusRow(object obj)
         {
-            await FillChannelItems();
-
-            if (isHasBeenFocused)
+            var channel = obj as Channel;
+            if (channel != null)
             {
-                return;
+                SelectedChannel = channel;
             }
-
-            // focus
-            var datagrid = obj as DataGrid;
-            if (datagrid == null || datagrid.SelectedIndex < 0)
-            {
-                return;
-            }
-            datagrid.UpdateLayout();
-            var selectedRow = (DataGridRow)datagrid.ItemContainerGenerator.ContainerFromIndex(datagrid.SelectedIndex);
-            if (selectedRow == null)
-            {
-                return;
-            }
-            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-            isHasBeenFocused = true;
         }
 
         private async Task<IEnumerable<IChannel>> GetChannelsListAsync()
@@ -1303,6 +1288,27 @@ namespace Crawler.ViewModels
                         MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
                         break;
                 }
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void OnStartup(object obj)
+        {
+            channelGrid = obj as DataGrid;
+            SetStatus(1);
+            using (var bgv = new BackgroundWorker())
+            {
+                bgv.DoWork += BgvDoWork;
+                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
+                bgv.RunWorkerAsync();
             }
         }
 

@@ -5,7 +5,6 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
-using Crawler.ViewModels;
 
 namespace Crawler.Views
 {
@@ -28,22 +27,6 @@ namespace Crawler.Views
         }
 
         #endregion
-
-        //#region Properties
-
-        //public MainWindowViewModel ViewModel
-        //{
-        //    get
-        //    {
-        //        return DataContext as MainWindowViewModel;
-        //    }
-        //    set
-        //    {
-        //        DataContext = value;
-        //    }
-        //}
-
-        //#endregion
 
         #region Event Handling
 
