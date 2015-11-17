@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Diagnostics;
@@ -29,11 +28,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Constructors
-
-        public DownloadLinkViewModel()
-        {
-            // for xaml
-        }
 
         public DownloadLinkViewModel(MainWindowViewModel mv)
         {
@@ -99,8 +93,8 @@ namespace Crawler.ViewModels
             }
             else
             {
-                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title",
-                    mv.SettingsViewModel.DirPath,
+                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", 
+                    mv.SettingsViewModel.DirPath, 
                     Link);
 
                 await Task.Run(() =>

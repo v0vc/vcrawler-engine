@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -22,11 +21,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Constructors
-
-        public AddChannelViewModel()
-        {
-            // for xaml
-        }
 
         public AddChannelViewModel(bool isEditMode, MainWindowViewModel mvModel)
         {
@@ -81,22 +75,12 @@ namespace Crawler.ViewModels
             }
         }
 
-        public string TitleContent
-        {
-            get
-            {
-                return IsEditMode ? "Edit" : "Add";
-            }
-        }
-
         public string ChannelLink { get; set; }
         public string ChannelTitle { get; set; }
         public bool IsEditMode { get; private set; }
         public bool IsLinkEnabled { get; set; }
-
         public bool IsLinkReadonly { get; set; }
         public bool IsSitiesEnabled { get; set; }
-
         public MainWindowViewModel MvModel { get; set; }
 
         public RelayCommand SaveNewItemCommand
@@ -108,6 +92,14 @@ namespace Crawler.ViewModels
         }
 
         public ICred SelectedCred { get; set; }
+
+        public string TitleContent
+        {
+            get
+            {
+                return IsEditMode ? "Edit" : "Add";
+            }
+        }
 
         #endregion
 

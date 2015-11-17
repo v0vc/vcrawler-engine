@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -38,8 +37,8 @@ namespace Crawler.ViewModels
         private const string pathToDownload = "pathToDownload";
         private const string pathToMpc = "pathToMpc";
         private const string pathToYoudl = "pathToYoudl";
-        private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
+        private const string youLaunchParam = "you";
         private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
@@ -66,11 +65,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Constructors
-
-        public SettingsViewModel()
-        {
-            // for xaml
-        }
 
         public SettingsViewModel(ICommonFactory baseFactory)
         {
@@ -299,8 +293,8 @@ namespace Crawler.ViewModels
             var advm = new AddNewTagViewModel(this) { Tag = baseFactory.CreateTagFactory().CreateTag() };
             var antv = new AddNewTagView
             {
-                DataContext = advm,
-                Owner = Application.Current.MainWindow,
+                DataContext = advm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -315,9 +309,9 @@ namespace Crawler.ViewModels
                 return;
             }
             MessageBoxResult result =
-                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title),
-                    "Confirm",
-                    MessageBoxButton.OKCancel,
+                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title), 
+                    "Confirm", 
+                    MessageBoxButton.OKCancel, 
                     MessageBoxImage.Information);
 
             if (result != MessageBoxResult.OK)

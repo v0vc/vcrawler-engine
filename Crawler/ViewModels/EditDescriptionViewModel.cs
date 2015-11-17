@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
@@ -31,11 +30,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Constructors
-
-        public EditDescriptionViewModel()
-        {
-            // for xaml
-        }
 
         public EditDescriptionViewModel(IVideoItem item)
         {
