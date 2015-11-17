@@ -1,9 +1,12 @@
-﻿<Window x:Class="Crawler.Views.AddTagView"
+﻿<Window x:Class="Crawler.Views.AddTagView" x:Name="window"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        xmlns:viewModels="clr-namespace:Crawler.ViewModels"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Tag" Height="60" Width="300" WindowStyle="ToolWindow"
-        DataContext="{Binding Path=AddTagViewModel, Source={StaticResource VmLocator}}"
-        x:Name="window"
+        d:DataContext="{d:DesignInstance viewModels:AddTagViewModel}"
         >
     <StackPanel Orientation="Horizontal">
         <ComboBox ItemsSource="{Binding Tags}" 

@@ -1,4 +1,8 @@
 ﻿<Window x:Class="Crawler.Views.MainWindow" x:Name="window"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:viewModels="clr-namespace:Crawler.ViewModels"
+        mc:Ignorable="d"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="clr-namespace:Crawler.Controls"
@@ -6,9 +10,10 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
+        
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
-        DataContext="{Binding Path=MvViewModel, Source={StaticResource VmLocator}}"
+        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

@@ -1,11 +1,11 @@
 ﻿<Application x:Class="Crawler.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="Views/MainWindow.xaml"
+             Startup="App_OnStartup"
              >
     <Application.Resources>
          <ResourceDictionary>
-            <local:VmLocator xmlns:local="clr-namespace:Crawler" x:Key="VmLocator"/>
+            <!--<local:VmLocator xmlns:local="clr-namespace:Crawler" x:Key="VmLocator"/>-->
              <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="ItemStyles.xaml"></ResourceDictionary>
             </ResourceDictionary.MergedDictionaries>

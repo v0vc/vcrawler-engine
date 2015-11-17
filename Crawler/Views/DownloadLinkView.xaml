@@ -1,9 +1,13 @@
 ﻿<Window x:Class="Crawler.Views.DownloadLinkView" x:Name="window"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        mc:Ignorable="d"
+        xmlns:viewModels="clr-namespace:Crawler.ViewModels"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         Title="Add" Height="105" Width="380" ResizeMode="NoResize"
-        DataContext="{Binding Path=DownloadLinkViewModel, Source={StaticResource VmLocator}}"
+        d:DataContext="{d:DesignInstance viewModels:DownloadLinkViewModel}"
         >
     <Grid>
         <Grid.ColumnDefinitions>
