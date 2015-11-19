@@ -326,7 +326,7 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="2" FlowDirection="LeftToRight" Width="102" HorizontalAlignment="Left"
+                                    <TextBox Grid.Column="2" FlowDirection="LeftToRight" Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
                                              Text="{Binding FilterChannelKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
                                         <TextBox.Resources>
                                             <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
@@ -810,9 +810,9 @@
                                 </ScrollViewer>
 
                                 <TextBox Grid.Column="1" 
-                                         BorderBrush="Lavender" 
+                                         BorderBrush="Lavender"
                                          Width="Auto" 
-                                         Text="{Binding Path = Filter, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                                         Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                          Height="24" 
                                          VerticalAlignment="Bottom" 
                                          Margin="1,0,1,0"

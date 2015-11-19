@@ -1,14 +1,18 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using Crawler.Common;
 using DataAPI;
 using Interfaces.Enums;
@@ -17,11 +21,12 @@ using Interfaces.POCO;
 
 namespace Crawler.ViewModels
 {
-    public class ServiceChannelViewModel : IChannel
+    public class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
     {
         #region Fields
 
         private RelayCommand fillPopularCommand;
+        private string filterVideoKey;
         private MainWindowViewModel mainVm;
         private RelayCommand searchCommand;
         private CredImage selectedSite;
@@ -39,6 +44,7 @@ namespace Crawler.ViewModels
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             Site = SiteType.NotSet;
+            ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
         }
 
         #endregion
@@ -140,6 +146,15 @@ namespace Crawler.ViewModels
             mainVm.SetStatus(0);
         }
 
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
         private void FillCredImages()
         {
             foreach (ICred cred in mainVm.SettingsViewModel.SupportedCreds.Where(x => x.Site != SiteType.NotSet))
@@ -214,10 +229,31 @@ namespace Crawler.ViewModels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        public ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
         public int CountNew { get; set; }
+
+        public string FilterVideoKey
+        {
+            get
+            {
+                return filterVideoKey;
+            }
+            set
+            {
+                if (value == filterVideoKey)
+                {
+                    return;
+                }
+
+                filterVideoKey = value;
+                ChannelItemsCollectionView.Filter = FilterVideo;
+                OnPropertyChanged();
+            }
+        }
+
         public string ID { get; set; }
         public bool IsDownloading { get; set; }
         public bool IsInWork { get; set; }
@@ -255,6 +291,23 @@ namespace Crawler.ViewModels
                 ChannelItems.Add(item);
             }
         }
+
+        public bool FilterVideo(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
 

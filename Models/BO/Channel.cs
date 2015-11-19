@@ -27,8 +27,8 @@ namespace Models.BO
         #region Fields
 
         private int channelItemsCount;
-
         private int countNew;
+        private string filterVideoKey;
         private bool isDownloading;
         private bool isInWork;
         private bool isShowRow;
@@ -184,6 +184,7 @@ namespace Models.BO
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         public int ChannelItemsCount
         {
@@ -210,6 +211,25 @@ namespace Models.BO
             set
             {
                 countNew = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string FilterVideoKey
+        {
+            get
+            {
+                return filterVideoKey;
+            }
+            set
+            {
+                if (value == filterVideoKey)
+                {
+                    return;
+                }
+
+                filterVideoKey = value;
+                ChannelItemsCollectionView.Filter = FilterVideo;
                 OnPropertyChanged();
             }
         }
@@ -326,6 +346,17 @@ namespace Models.BO
             {
                 ChannelItems.Add(item);
             }
+        }
+
+        public bool FilterVideo(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
         }
 
         #endregion

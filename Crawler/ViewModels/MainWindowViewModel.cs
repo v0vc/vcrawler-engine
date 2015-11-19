@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -73,7 +74,6 @@ namespace Crawler.ViewModels
         private RelayCommand currentTagSelectionChangedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
-        private string filter;
         private string filterChannelKey;
         private string info;
         private bool isExpand;
@@ -131,8 +131,6 @@ namespace Crawler.ViewModels
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
 
-            // Countries = new List<string> { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
-            // SelectedCountry = Countries.First();
             cf = BaseFactory.CreateChannelFactory();
             vf = BaseFactory.CreateVideoItemFactory();
             yf = BaseFactory.CreateYouTubeSite();
@@ -185,8 +183,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<IChannel> Channels { get; private set; }
-
         public RelayCommand ChannelSelectCommand
         {
             get
@@ -194,6 +190,8 @@ namespace Crawler.ViewModels
                 return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(FillChannelItems));
             }
         }
+
+        public ObservableCollection<IChannel> Channels { get; private set; }
 
         public RelayCommand CurrentTagCheckedCommand
         {
@@ -203,8 +201,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<ITag> CurrentTags { get; private set; }
-
         public RelayCommand CurrentTagSelectionChangedCommand
         {
             get
@@ -212,6 +208,8 @@ namespace Crawler.ViewModels
                 return currentTagSelectionChangedCommand ?? (currentTagSelectionChangedCommand = new RelayCommand(SelectTag));
             }
         }
+
+        public ObservableCollection<ITag> CurrentTags { get; private set; }
 
         public RelayCommand FillChannelsCommand
         {
@@ -226,20 +224,6 @@ namespace Crawler.ViewModels
             get
             {
                 return fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
-            }
-        }
-
-        public string Filter
-        {
-            get
-            {
-                return filter;
-            }
-            set
-            {
-                filter = value;
-                OnPropertyChanged();
-                FilterVideos();
             }
         }
 
@@ -538,7 +522,7 @@ namespace Crawler.ViewModels
 
         private static ScrollViewer GetScrollbar(DependencyObject dep)
         {
-            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(dep, i);
                 if (child is ScrollViewer)
@@ -571,8 +555,8 @@ namespace Crawler.ViewModels
             var edvm = new EditDescriptionViewModel(item);
             var edv = new EditDescriptionView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -785,8 +769,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(false, this);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -797,9 +781,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = txtfilter, 
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = txtfilter,
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -891,9 +875,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (boxResult == MessageBoxResult.OK)
@@ -933,9 +917,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (boxResult == MessageBoxResult.OK)
@@ -989,7 +973,7 @@ namespace Crawler.ViewModels
             {
                 var ff = new FfmpegView
                 {
-                    Owner = Application.Current.MainWindow, 
+                    Owner = Application.Current.MainWindow,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
@@ -1002,8 +986,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(true, this);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1018,7 +1002,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            Filter = string.Empty;
+            channel.FilterVideoKey = string.Empty;
             IsExpand = false;
 
             if (RelatedChannels.Any() && !RelatedChannels.Contains(channel))
@@ -1119,67 +1103,7 @@ namespace Crawler.ViewModels
                 return false;
             }
 
-            return value.Title.Contains(FilterChannelKey);
-        }
-
-        private void FilterVideos()
-        {
-            if (SelectedChannel == null)
-            {
-                return;
-            }
-
-            if (string.IsNullOrEmpty(Filter))
-            {
-                if (!filterlist.Any())
-                {
-                    return;
-                }
-
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = false;
-                }
-
-                foreach (IVideoItem item in filterlist)
-                {
-                    IVideoItem vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
-                    if (vid != null)
-                    {
-                        vid.IsShowRow = true;
-                    }
-                }
-
-                filterlist.Clear();
-            }
-            else
-            {
-                if (!filterlist.Any())
-                {
-                    foreach (IVideoItem item in SelectedChannel.ChannelItems.Where(item => item.IsShowRow))
-                    {
-                        filterlist.Add(item);
-                    }
-                }
-
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = false;
-                }
-
-                foreach (IVideoItem item in filterlist)
-                {
-                    if (!item.Title.ToLower().Contains(Filter.ToLower()))
-                    {
-                        continue;
-                    }
-                    IVideoItem vid = SelectedChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID);
-                    if (vid != null)
-                    {
-                        vid.IsShowRow = true;
-                    }
-                }
-            }
+            return value.Title.ToLower().Contains(FilterChannelKey.ToLower());
         }
 
         private async Task FindRelated()
@@ -1338,8 +1262,8 @@ namespace Crawler.ViewModels
 
             var adl = new DownloadLinkView
             {
-                DataContext = dlvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = dlvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -1376,8 +1300,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = SettingsViewModel, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = SettingsViewModel,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1393,17 +1317,17 @@ namespace Crawler.ViewModels
             }
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = channel, 
-                CurrentTags = CurrentTags, 
-                Tags = SettingsViewModel.SupportedTags, 
+                ParentChannel = channel,
+                CurrentTags = CurrentTags,
+                Tags = SettingsViewModel.SupportedTags,
                 Channels = Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = etvm,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
@@ -1416,7 +1340,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            for (var i = 1; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
@@ -1530,7 +1454,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 ShowAllChannels();
-                var rest = 0;
+                int rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -1650,8 +1574,8 @@ namespace Crawler.ViewModels
             if (channel.ChannelItemsCount > channel.ChannelItems.Count)
             {
                 await
-                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
-                        channel.ChannelItemsCount - channel.ChannelItems.Count, 
+                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath,
+                        channel.ChannelItemsCount - channel.ChannelItems.Count,
                         channel.ChannelItems.Count);
             }
         }
@@ -1818,7 +1742,7 @@ namespace Crawler.ViewModels
         {
             ShowAllChannels();
             PrValue = 0;
-            var i = 0;
+            int i = 0;
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);

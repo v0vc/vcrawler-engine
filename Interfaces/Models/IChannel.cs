@@ -5,6 +5,7 @@
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Net;
 using Interfaces.Enums;
 
@@ -32,11 +33,13 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
-
+        string FilterVideoKey { get; set; }
+        ICollectionView ChannelItemsCollectionView { get; set; }
         #endregion
 
         #region Methods
 
+        bool FilterVideo(object item);
         void AddNewItem(IVideoItem item, bool isNew);
 
         #endregion
