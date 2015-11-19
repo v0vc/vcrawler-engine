@@ -42,6 +42,7 @@ namespace Crawler.ViewModels
         #region Constants
 
         private const string dbLaunchParam = "db";
+        private const string txtfilter = "Text documents (.txt)|*.txt";
 
         #endregion
 
@@ -244,7 +245,7 @@ namespace Crawler.ViewModels
             {
                 return info;
             }
-            set
+            private set
             {
                 info = value;
                 OnPropertyChanged();
@@ -341,7 +342,7 @@ namespace Crawler.ViewModels
             {
                 return prValue;
             }
-            set
+            private set
             {
                 prValue = value;
                 OnPropertyChanged();
@@ -633,7 +634,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
+        private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
             var channel = (await cf.GetChannelNetAsync(channelid, site)) as Channel;
             if (channel == null)
@@ -744,6 +745,7 @@ namespace Crawler.ViewModels
                 case 1:
                     Result = "Working..";
                     IsWorking = true;
+                    Info = string.Empty;
                     break;
                 case 3:
                     Result = "Error";
@@ -756,7 +758,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public void ShowAllChannels()
+        private void ShowAllChannels()
         {
             foreach (IChannel channel in Channels)
             {
@@ -789,8 +791,8 @@ namespace Crawler.ViewModels
             var dlg = new SaveFileDialog
             {
                 FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = @"Text documents (.txt)|*.txt", 
+                DefaultExt = ".txt",
+                Filter = txtfilter, 
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -882,12 +884,12 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
                 "Confirm", 
                 MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
-            if (result == MessageBoxResult.OK)
+            if (boxResult == MessageBoxResult.OK)
             {
                 for (int i = SelectedChannels.Count(); i > 0; i--)
                 {
@@ -924,12 +926,12 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult result = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
                 "Confirm", 
                 MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
-            if (result == MessageBoxResult.OK)
+            if (boxResult == MessageBoxResult.OK)
             {
                 for (int i = SelectedChannel.SelectedItems.Count; i > 0; i--)
                 {
@@ -1430,8 +1432,6 @@ namespace Crawler.ViewModels
 
             IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
 
-            IVideoItemFactory vf = BaseFactory.CreateVideoItemFactory();
-
             pl.PlaylistItems.Clear();
 
             foreach (IVideoItem item in SelectedChannel.ChannelItems)
@@ -1491,7 +1491,7 @@ namespace Crawler.ViewModels
         {
             Info = string.Empty;
 
-            var opf = new OpenFileDialog { Filter = @"Text documents (.txt)|*.txt" };
+            var opf = new OpenFileDialog { Filter = txtfilter };
             DialogResult res = opf.ShowDialog();
 
             if (res == DialogResult.OK)
@@ -1728,14 +1728,7 @@ namespace Crawler.ViewModels
 
         private async Task SubscribeOn()
         {
-            if (SelectedChannel.ID != "pop")
-            {
-                // этот канал по-любому есть - даже проверять не будем)
-                MessageBox.Show("Has already");
-                return;
-            }
-
-            await AddNewChannel(SelectedVideoItem.MakeLink(), string.Empty, SelectedChannel.Site);
+            await AddNewChannel(SelectedVideoItem.MakeLink(), string.Empty, SelectedVideoItem.Site);
         }
 
         private async Task SyncChannel(Channel channel)

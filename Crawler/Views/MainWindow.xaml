@@ -531,19 +531,19 @@
 
                 <controls:BusyDecorator IsBusyIndicatorShowing="{Binding IsWorking}">
                     <DataGrid x:Name="videoGrid" 
-                            CanUserAddRows="False"
-                            CanUserDeleteRows="False"
-                            AutoGenerateColumns="False"
-                            HeadersVisibility="Column"
-                            RowHeaderWidth="0"
-                            GridLinesVisibility="Horizontal"
-                            BorderThickness="1"
-                            ItemsSource="{Binding SelectedChannel.ChannelItems}"
-                            SelectedItem="{Binding SelectedVideoItem}"                          
-                            Sorting="VideoGrid_OnSorting"
-                            EnableColumnVirtualization="True"
-                            EnableRowVirtualization="True"
-                            SelectionMode="Extended"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              AutoGenerateColumns="False"
+                              HeadersVisibility="Column"
+                              RowHeaderWidth="0"
+                              GridLinesVisibility="Horizontal"
+                              BorderThickness="1"
+                              ItemsSource="{Binding SelectedChannel.ChannelItems}"
+                              SelectedItem="{Binding SelectedVideoItem}"                          
+                              Sorting="VideoGrid_OnSorting"
+                              EnableColumnVirtualization="True"
+                              EnableRowVirtualization="True"
+                              SelectionMode="Extended"
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">

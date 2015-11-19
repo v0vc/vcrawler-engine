@@ -97,7 +97,7 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public async Task FillPopular()
+        private async Task FillPopular()
         {
             if (ChannelItems.Any())
             {
