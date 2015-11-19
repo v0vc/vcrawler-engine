@@ -22,7 +22,7 @@ namespace Interfaces.Models
         string ID { get; set; }
         bool IsHasLocalFile { get; set; }
         bool IsNewItem { get; set; }
-        bool IsShowRow { get; set; }
+        //bool IsShowRow { get; set; }
         bool IsSelected { get; set; }
         byte[] LargeThumb { get; set; }
         string LocalFilePath { get; set; }

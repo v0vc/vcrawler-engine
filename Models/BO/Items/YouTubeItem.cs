@@ -37,7 +37,6 @@ namespace Models.BO.Items
 
         private bool isAudio;
         private bool isHasLocalFile;
-        private bool isShowRow;
         private byte[] largeThumb;
         private string logText;
         private TaskbarManager taskbar;
@@ -216,23 +215,6 @@ namespace Models.BO.Items
         }
 
         public bool IsNewItem { get; set; }
-
-        public bool IsShowRow
-        {
-            get
-            {
-                return isShowRow;
-            }
-            set
-            {
-                if (value == isShowRow)
-                {
-                    return;
-                }
-                isShowRow = value;
-                OnPropertyChanged();
-            }
-        }
 
         public bool IsSelected { get; set; }
 

@@ -1015,11 +1015,6 @@ namespace Crawler.ViewModels
                 RelatedChannels.Clear();
             }
 
-            foreach (IVideoItem item in channel.ChannelItems)
-            {
-                item.IsShowRow = true;
-            }
-
             // есть новые элементы после синхронизации
             bool isHasNewFromSync = channel.ChannelItems.Any()
                                     && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.IsNewItem);
@@ -1376,11 +1371,6 @@ namespace Crawler.ViewModels
 
             pl.PlaylistItems.Clear();
 
-            foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = false;
-            }
-
             foreach (string id in pls.Where(id => !pl.PlaylistItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
@@ -1589,33 +1579,33 @@ namespace Crawler.ViewModels
             }
 
             IEnumerable<string> lstv = (await pl.GetPlaylistItemsIdsListDbAsync()).ToList();
-            if (!lstv.Any())
-            {
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = false;
-                }
+            //if (!lstv.Any())
+            //{
+            //    foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            //    {
+            //        item.IsShowRow = false;
+            //    }
 
-                foreach (IVideoItem item in SelectedChannel.ChannelItems)
-                {
-                    item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
-                }
+            //    foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            //    {
+            //        item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
+            //    }
 
-                return;
-            }
+            //    return;
+            //}
 
-            pl.PlaylistItems.Clear();
+            //pl.PlaylistItems.Clear();
 
-            foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            {
-                item.IsShowRow = lstv.Contains(item.ID);
-                if (item.IsShowRow)
-                {
-                    pl.PlaylistItems.Add(item);
-                }
-            }
+            //foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            //{
+            //    item.IsShowRow = lstv.Contains(item.ID);
+            //    if (item.IsShowRow)
+            //    {
+            //        pl.PlaylistItems.Add(item);
+            //    }
+            //}
 
-            filterlist.Clear();
+            //filterlist.Clear();
         }
 
         private void SelectPopular(object obj)

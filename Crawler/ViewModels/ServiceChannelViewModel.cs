@@ -278,7 +278,6 @@ namespace Crawler.ViewModels
         public void AddNewItem(IVideoItem item, bool isNew)
         {
             item.IsNewItem = isNew;
-            item.IsShowRow = true;
             item.State = ItemState.LocalNo;
             item.IsHasLocalFile = false;
 

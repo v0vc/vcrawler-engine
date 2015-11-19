@@ -233,13 +233,7 @@
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
                                     <Setter Property="Background" Value="PaleGreen" />
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=IsShowRow}" Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                                <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </DataTrigger>                         
+                                </DataTrigger>                    
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
@@ -326,8 +320,11 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBox Grid.Column="2" FlowDirection="LeftToRight" Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
-                                             Text="{Binding FilterChannelKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
+                                    <TextBox Grid.Column="2" FlowDirection="LeftToRight" 
+                                             Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
+                                             Text="{Binding FilterChannelKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalContentAlignment="Center"
+                                             >
                                         <TextBox.Resources>
                                             <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
                                                 <VisualBrush.Visual>
@@ -631,12 +628,6 @@
                                     <DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
                                         <Setter Property="Background" Value="PaleGreen" />
                                     </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=IsShowRow}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible"/>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Path=IsShowRow}" Value="False">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                    </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>
@@ -809,14 +800,10 @@
                                     <TextBox Text="{Binding SelectedVideoItem.LogText, Mode=OneWay}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 </ScrollViewer>
 
-                                <TextBox Grid.Column="1" 
-                                         BorderBrush="Lavender"
-                                         Width="Auto" 
+                                <TextBox Grid.Column="1" BorderBrush="Lavender" Width="Auto" Height="24" Margin="1,0,1,0"
                                          Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                         Height="24" 
                                          VerticalAlignment="Bottom" 
-                                         Margin="1,0,1,0"
-                                         VerticalContentAlignment="Bottom"
+                                         VerticalContentAlignment="Center"
                                          >
                                     <TextBox.Resources>
                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">

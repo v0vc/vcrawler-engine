@@ -23,7 +23,6 @@ namespace Models.BO.Items
         public string ID { get; set; }
         public bool IsHasLocalFile { get; set; }
         public bool IsNewItem { get; set; }
-        public bool IsShowRow { get; set; }
         public bool IsSelected { get; set; }
         public byte[] LargeThumb { get; set; }
         public string LocalFilePath { get; set; }
