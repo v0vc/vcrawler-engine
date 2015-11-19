@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -97,45 +96,6 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        private async Task FillPopular()
-        {
-            if (ChannelItems.Any())
-            {
-                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                for (int i = ChannelItems.Count; i > 0; i--)
-                {
-                    if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
-                    {
-                        ChannelItems.RemoveAt(i - 1);
-                    }
-                }
-            }
-
-            mainVm.SetStatus(1);
-            switch (SelectedSite.Cred.Site)
-            {
-                case SiteType.YouTube:
-
-                    IEnumerable<IVideoItemPOCO> lst =
-                        await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
-                    foreach (IVideoItemPOCO poco in lst)
-                    {
-                        IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
-                        AddNewItem(item, false);
-                        item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
-                        if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
-                        {
-                            // подсветим видео, если канал уже есть в подписке
-                            item.IsNewItem = true;
-                        }
-                    }
-
-                    break;
-            }
-
-            mainVm.SetStatus(0);
-        }
-
         public void Init(MainWindowViewModel mainWindowModel)
         {
             mainVm = mainWindowModel;
@@ -202,6 +162,45 @@ namespace Crawler.ViewModels
                 }
             }
             SelectedSite = SupportedSites.First();
+        }
+
+        private async Task FillPopular()
+        {
+            if (ChannelItems.Any())
+            {
+                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
+                for (int i = ChannelItems.Count; i > 0; i--)
+                {
+                    if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
+                    {
+                        ChannelItems.RemoveAt(i - 1);
+                    }
+                }
+            }
+
+            mainVm.SetStatus(1);
+            switch (SelectedSite.Cred.Site)
+            {
+                case SiteType.YouTube:
+
+                    IEnumerable<IVideoItemPOCO> lst =
+                        await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
+                    foreach (IVideoItemPOCO poco in lst)
+                    {
+                        IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
+                        AddNewItem(item, false);
+                        item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
+                        if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
+                        {
+                            // подсветим видео, если канал уже есть в подписке
+                            item.IsNewItem = true;
+                        }
+                    }
+
+                    break;
+            }
+
+            mainVm.SetStatus(0);
         }
 
         private void SiteChanged()

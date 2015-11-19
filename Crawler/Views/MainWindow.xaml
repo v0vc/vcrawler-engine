@@ -189,6 +189,7 @@
                           SelectedItem="{Binding SelectedChannel}"
                           SelectionUnit="FullRow"
                           SelectionMode="Extended"
+                          IsSynchronizedWithCurrentItem="True"
                           >
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
@@ -312,11 +313,48 @@
 
                 </DataGrid>
                 
-                <DockPanel Grid.Row="2" Background="Lavender" Margin="1,1,0,1">
+                <DockPanel Grid.Row="2" Background="Lavender" Margin="0">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft" 
                                   IsExpanded="{Binding IsSearchExpanded, Mode=OneWayToSource}"
                                   >
+                            
+                            <Expander.Header>
+                                <Grid HorizontalAlignment="{Binding Path=HorizontalAlignment, RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Mode=OneWayToSource}">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBox Grid.Column="2" FlowDirection="LeftToRight" Width="102" HorizontalAlignment="Left"
+                                             Text="{Binding FilterChannelKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}">
+                                        <TextBox.Resources>
+                                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
+                                                <VisualBrush.Visual>
+                                                    <TextBlock FontStyle="Normal" Text="Filter" FontSize="16"/>
+                                                </VisualBrush.Visual>
+                                                <VisualBrush.Transform>
+                                                    <ScaleTransform CenterX="20" CenterY="-5" ScaleX="0.8" ScaleY="0.8"/>
+                                                </VisualBrush.Transform>
+                                            </VisualBrush>
+                                        </TextBox.Resources>
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Triggers>
+                                                    <Trigger Property="Text" Value="{x:Null}">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    <Label Grid.Column="0" FontSize="10" Content="Search"/>
+                                </Grid>
+                            </Expander.Header>
+                            
                             <Expander.Content>
                                 <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
                                     <DataGrid CanUserAddRows="False" x:Name="popGrid"
@@ -455,10 +493,6 @@
                                 </DataGrid>
                                 </DockPanel>
                             </Expander.Content>
-                            
-                            <Expander.Header>
-                                <Label FontSize="10" Content="Search"/>
-                            </Expander.Header>
                             
                         </Expander>
                     </Border>

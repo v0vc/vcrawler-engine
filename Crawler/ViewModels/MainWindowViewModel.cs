@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -49,6 +50,7 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly IChannelFactory cf;
+        private readonly ICollectionView channelCollectionView;
         private readonly ISqLiteDatabase df;
         private readonly List<IVideoItem> filterlist = new List<IVideoItem>();
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
@@ -72,6 +74,7 @@ namespace Crawler.ViewModels
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
         private string filter;
+        private string filterChannelKey;
         private string info;
         private bool isExpand;
         private bool isWorking;
@@ -122,6 +125,7 @@ namespace Crawler.ViewModels
 
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
+            channelCollectionView = CollectionViewSource.GetDefaultView(Channels);
             ServiceChannel = new ServiceChannelViewModel();
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
@@ -236,6 +240,24 @@ namespace Crawler.ViewModels
                 filter = value;
                 OnPropertyChanged();
                 FilterVideos();
+            }
+        }
+
+        public string FilterChannelKey
+        {
+            get
+            {
+                return filterChannelKey;
+            }
+            set
+            {
+                if (value == filterChannelKey)
+                {
+                    return;
+                }
+                filterChannelKey = value;
+                channelCollectionView.Filter = FilterChannel;
+                OnPropertyChanged();
             }
         }
 
@@ -634,6 +656,37 @@ namespace Crawler.ViewModels
             }
         }
 
+        /// <summary>
+        ///     0-Ready
+        ///     1-Working..
+        ///     3-Error
+        ///     4-Saved
+        /// </summary>
+        /// <param name="res"></param>
+        public void SetStatus(int res)
+        {
+            switch (res)
+            {
+                case 0:
+                    Result = "Ready";
+                    IsWorking = false;
+                    break;
+                case 1:
+                    Result = "Working..";
+                    IsWorking = true;
+                    Info = string.Empty;
+                    break;
+                case 3:
+                    Result = "Error";
+                    IsWorking = false;
+                    break;
+                case 4:
+                    Result = "Saved";
+                    IsWorking = false;
+                    break;
+            }
+        }
+
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
             var channel = (await cf.GetChannelNetAsync(channelid, site)) as Channel;
@@ -727,52 +780,6 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        /// <summary>
-        ///     0-Ready
-        ///     1-Working..
-        ///     3-Error
-        ///     4-Saved
-        /// </summary>
-        /// <param name="res"></param>
-        public void SetStatus(int res)
-        {
-            switch (res)
-            {
-                case 0:
-                    Result = "Ready";
-                    IsWorking = false;
-                    break;
-                case 1:
-                    Result = "Working..";
-                    IsWorking = true;
-                    Info = string.Empty;
-                    break;
-                case 3:
-                    Result = "Error";
-                    IsWorking = false;
-                    break;
-                case 4:
-                    Result = "Saved";
-                    IsWorking = false;
-                    break;
-            }
-        }
-
-        private void ShowAllChannels()
-        {
-            foreach (IChannel channel in Channels)
-            {
-                channel.IsShowRow = true;
-            }
-
-            foreach (ITag tag in CurrentTags)
-            {
-                tag.IsChecked = false;
-            }
-
-            SelectedTag = null;
-        }
-
         private void AddNewItem()
         {
             var edvm = new AddChannelViewModel(false, this);
@@ -791,7 +798,7 @@ namespace Crawler.ViewModels
             var dlg = new SaveFileDialog
             {
                 FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt",
+                DefaultExt = ".txt", 
                 Filter = txtfilter, 
                 OverwritePrompt = true
             };
@@ -1102,6 +1109,17 @@ namespace Crawler.ViewModels
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
             channelGrid = null;
+        }
+
+        private bool FilterChannel(object item)
+        {
+            var value = (IChannel)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.Contains(FilterChannelKey);
         }
 
         private void FilterVideos()
@@ -1711,6 +1729,21 @@ namespace Crawler.ViewModels
             }
         }
 
+        private void ShowAllChannels()
+        {
+            foreach (IChannel channel in Channels)
+            {
+                channel.IsShowRow = true;
+            }
+
+            foreach (ITag tag in CurrentTags)
+            {
+                tag.IsChecked = false;
+            }
+
+            SelectedTag = null;
+        }
+
         private async Task Subscribe()
         {
             if (SelectedChannel.IsInWork)
@@ -1728,7 +1761,10 @@ namespace Crawler.ViewModels
 
         private async Task SubscribeOn()
         {
-            await AddNewChannel(SelectedVideoItem.MakeLink(), string.Empty, SelectedVideoItem.Site);
+            if (SelectedChannel is ServiceChannelViewModel)
+            {
+                await AddNewChannel(SelectedVideoItem.MakeLink(), string.Empty, SelectedVideoItem.Site);
+            }
         }
 
         private async Task SyncChannel(Channel channel)
