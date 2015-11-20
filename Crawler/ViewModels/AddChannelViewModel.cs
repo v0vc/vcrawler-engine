@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Windows;
 using Crawler.Common;
+using Extensions;
 using Interfaces.Models;
 using Models.BO;
 
@@ -44,7 +45,7 @@ namespace Crawler.ViewModels
                 var text = Clipboard.GetData(DataFormats.Text) as string;
                 if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
                 {
-                    ChannelLink = RemoveSpecialCharacters(text);
+                    ChannelLink = CommonExtensions.RemoveSpecialCharacters(text);
                 }
                 else
                 {
@@ -99,15 +100,6 @@ namespace Crawler.ViewModels
             {
                 return IsEditMode ? "Edit" : "Add";
             }
-        }
-
-        #endregion
-
-        #region Static Methods
-
-        private static string RemoveSpecialCharacters(string str)
-        {
-            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", string.Empty, RegexOptions.Compiled);
         }
 
         #endregion

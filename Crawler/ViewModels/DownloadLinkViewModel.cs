@@ -2,6 +2,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -32,6 +33,15 @@ namespace Crawler.ViewModels
         public DownloadLinkViewModel(MainWindowViewModel mv)
         {
             this.mv = mv;
+            var text = Clipboard.GetData(DataFormats.Text) as string;
+            if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
+            {
+                Link = CommonExtensions.RemoveSpecialCharacters(text);
+            }
+            else
+            {
+                Link = text;
+            }
         }
 
         #endregion
@@ -61,6 +71,8 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+            window.Close();
+
             if (string.IsNullOrEmpty(Link))
             {
                 return;
@@ -72,9 +84,8 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (string.IsNullOrEmpty(mv.SettingsViewModel.YouPath))
+            if (!mv.IsYoutubeExist())
             {
-                MessageBox.Show("Please, select youtube-dl");
                 return;
             }
 
@@ -86,6 +97,7 @@ namespace Crawler.ViewModels
                 IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(id, SiteType.YouTube);
                 vi.ParentID = null;
                 mv.SelectedVideoItem = vi;
+                mv.SelectedChannel = mv.ServiceChannel;
                 mv.SelectedChannel.AddNewItem(vi, true);
 
                 await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
@@ -106,8 +118,6 @@ namespace Crawler.ViewModels
                     }
                 });
             }
-
-            window.Close();
         }
 
         #endregion

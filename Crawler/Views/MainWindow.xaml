@@ -519,9 +519,9 @@
                                     <i:EventTrigger EventName="DropDownOpened">
                                         <i:InvokeCommandAction Command="{Binding TagsDropDownOpenedCommand, Mode=OneTime}" />
                                     </i:EventTrigger>
-                                    <i:EventTrigger EventName="SelectionChanged">
+                                    <!--<i:EventTrigger EventName="SelectionChanged">
                                         <i:InvokeCommandAction Command="{Binding CurrentTagSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=comboBoxTags, Path=SelectedItem}"/>
-                                    </i:EventTrigger>                                    
+                                    </i:EventTrigger>-->                                    
                                 </i:Interaction.Triggers>
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>

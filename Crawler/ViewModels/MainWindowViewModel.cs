@@ -201,13 +201,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand CurrentTagSelectionChangedCommand
-        {
-            get
-            {
-                return currentTagSelectionChangedCommand ?? (currentTagSelectionChangedCommand = new RelayCommand(SelectTag));
-            }
-        }
+        //public RelayCommand CurrentTagSelectionChangedCommand
+        //{
+        //    get
+        //    {
+        //        return currentTagSelectionChangedCommand ?? (currentTagSelectionChangedCommand = new RelayCommand(SelectTag));
+        //    }
+        //}
 
         public ObservableCollection<ITag> CurrentTags { get; private set; }
 
@@ -413,8 +413,19 @@ namespace Crawler.ViewModels
             set
             {
                 selectedTag = value;
+                channelCollectionView.Filter = FilterChannelsByTag;
                 OnPropertyChanged();
             }
+        }
+
+        private bool FilterChannelsByTag(object item)
+        {
+            var value = (IChannel)item;
+            if (value == null || value.ChannelTags == null)
+            {
+                return false;
+            }
+            return value.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
         }
 
         public IVideoItem SelectedVideoItem
@@ -1177,7 +1188,7 @@ namespace Crawler.ViewModels
             return false;
         }
 
-        private bool IsYoutubeExist()
+        public bool IsYoutubeExist()
         {
             if (!string.IsNullOrEmpty(SettingsViewModel.YouPath))
             {
@@ -1617,31 +1628,31 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void SelectTag(object obj)
-        {
-            var tag = obj as ITag;
-            if (tag == null)
-            {
-                return;
-            }
+        //private void SelectTag(object obj)
+        //{
+        //    var tag = obj as ITag;
+        //    if (tag == null)
+        //    {
+        //        return;
+        //    }
 
-            foreach (IChannel channel in Channels)
-            {
-                channel.IsShowRow = true;
-                if (!channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
-                {
-                    channel.IsShowRow = false;
-                }
-            }
+        //    foreach (IChannel channel in Channels)
+        //    {
+        //        channel.IsShowRow = true;
+        //        if (!channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
+        //        {
+        //            channel.IsShowRow = false;
+        //        }
+        //    }
 
-            foreach (ITag item in CurrentTags)
-            {
-                if (item.Title != tag.Title && item.IsChecked)
-                {
-                    item.IsChecked = false;
-                }
-            }
-        }
+        //    foreach (ITag item in CurrentTags)
+        //    {
+        //        if (item.Title != tag.Title && item.IsChecked)
+        //        {
+        //            item.IsChecked = false;
+        //        }
+        //    }
+        //}
 
         private void ShowAllChannels()
         {

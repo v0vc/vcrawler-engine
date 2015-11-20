@@ -20,7 +20,6 @@ namespace Extensions
         #region Constants
 
         public const string YouRegex = @"youtu(?:\.be|be\.com)/(?:.*v(?:/|=)|(?:.*/)?)([a-zA-Z0-9-_]+)";
-
         private const string newLine = "\r\n";
 
         #endregion
@@ -65,6 +64,36 @@ namespace Extensions
             return "Crawler v" + fvi.FileVersion;
         }
 
+        public static string GetSiteAdress(SiteType site)
+        {
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    return "youtube.com";
+                case SiteType.Tapochek:
+                    return "tapochek.net";
+                case SiteType.RuTracker:
+                    return "rutracker.org";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        public static SiteType GetSiteType(string site)
+        {
+            switch (site)
+            {
+                case "youtube.com":
+                    return SiteType.YouTube;
+                case "tapochek.net":
+                    return SiteType.Tapochek;
+                case "rutracker.org":
+                    return SiteType.RuTracker;
+                default:
+                    return SiteType.NotSet;
+            }
+        }
+
         public static bool IsValidUrl(string url)
         {
             if (string.IsNullOrEmpty(url))
@@ -82,6 +111,11 @@ namespace Extensions
             string s = r.Replace(name, string.Empty);
             s = Regex.Replace(s, @"\s{2,}", " ");
             return s;
+        }
+
+        public static string RemoveSpecialCharacters(string str)
+        {
+            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", string.Empty, RegexOptions.Compiled);
         }
 
         public static bool RenameFile(FileInfo oldFile, FileInfo newFile)
@@ -208,35 +242,6 @@ namespace Extensions
             return i + 1;
         }
 
-        public static string GetSiteAdress(SiteType site)
-        {
-            switch (site)
-            {
-                case SiteType.YouTube:
-                    return "youtube.com";
-                case SiteType.Tapochek:
-                    return "tapochek.net";
-                case SiteType.RuTracker:
-                    return "rutracker.org";
-                default:
-                    return string.Empty;
-            }
-        }
-
-        public static SiteType GetSiteType(string site)
-        {
-            switch (site)
-            {
-                case "youtube.com":
-                    return SiteType.YouTube;
-                case "tapochek.net":
-                    return SiteType.Tapochek;
-                case "rutracker.org":
-                    return SiteType.RuTracker;
-                default:
-                    return SiteType.NotSet;
-            }
-        }
         #endregion
     }
 }
