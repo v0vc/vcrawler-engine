@@ -425,6 +425,10 @@ namespace Crawler.ViewModels
             {
                 return false;
             }
+            if (SelectedTag == null || string.IsNullOrEmpty(SelectedTag.Title))
+            {
+                return true;
+            }
             return value.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
         }
 
@@ -1300,6 +1304,7 @@ namespace Crawler.ViewModels
             {
                 CurrentTags.Add(tag);
             }
+            CurrentTags.Add(BaseFactory.CreateTagFactory().CreateTag()); // empty tag
         }
 
         private void OpenSettings()

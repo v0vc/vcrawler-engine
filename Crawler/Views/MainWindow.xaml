@@ -509,11 +509,12 @@
                                     <TextBlock Text="Add" />
                                 </Button.ToolTip>
                             </Button>
-                            <ComboBox ItemsSource="{Binding CurrentTags, Mode=OneWay}" x:Name="comboBoxTags"
+                            <ComboBox ItemsSource="{Binding CurrentTags, Mode=OneWay}"
                                       Margin="0,2,2,2" 
                                       VerticalContentAlignment="Center"
                                       SelectedItem="{Binding Path=DataContext.SelectedTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                       >
+                                
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="DropDownOpened">
                                         <i:InvokeCommandAction Command="{Binding TagsDropDownOpenedCommand, Mode=OneTime}" />
@@ -522,10 +523,11 @@
                                         <i:InvokeCommandAction Command="{Binding CurrentTagSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=comboBoxTags, Path=SelectedItem}"/>
                                     </i:EventTrigger>-->                                    
                                 </i:Interaction.Triggers>
+                                
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <StackPanel Orientation="Horizontal">
-                                            <CheckBox IsChecked="{Binding IsChecked}" Margin="1" 
+                                            <CheckBox IsChecked="{Binding IsChecked}" Margin="1"
                                                       >
                                                 <i:Interaction.Triggers>
                                                     <i:EventTrigger EventName="Checked">
@@ -538,8 +540,27 @@
                                                 <CheckBox.LayoutTransform>
                                                     <ScaleTransform ScaleX="1.5" ScaleY="1.5" />
                                                 </CheckBox.LayoutTransform>
+                                                <CheckBox.Style>
+                                                    <Style TargetType="CheckBox">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding ElementName=tagTextBox, Path=Text}" Value="">
+                                                                <Setter Property="Visibility" Value="Hidden"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </CheckBox.Style>
                                             </CheckBox>
-                                            <TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0"/>
+                                            <TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" x:Name="tagTextBox">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <Trigger Property="Text" Value="">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                            </Trigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                         </StackPanel>
                                     </DataTemplate>
                              </ComboBox.ItemTemplate>
