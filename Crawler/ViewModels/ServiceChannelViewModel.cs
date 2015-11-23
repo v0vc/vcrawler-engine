@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -23,12 +22,19 @@ namespace Crawler.ViewModels
 {
     public class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
     {
+        #region Static and Readonly Fields
+
+        private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
+
+        #endregion
+
         #region Fields
 
         private RelayCommand fillPopularCommand;
         private string filterVideoKey;
         private MainWindowViewModel mainVm;
         private RelayCommand searchCommand;
+        private string selectedCountry;
         private CredImage selectedSite;
         private RelayCommand siteChangedCommand;
 
@@ -40,6 +46,7 @@ namespace Crawler.ViewModels
         {
             Title = "#Popular";
             Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
+            popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
             SelectedCountry = Countries.First();
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
@@ -70,7 +77,37 @@ namespace Crawler.ViewModels
         }
 
         public string SearchKey { get; set; }
-        public string SelectedCountry { get; set; }
+
+        public string SelectedCountry
+        {
+            get
+            {
+                return selectedCountry;
+            }
+            set
+            {
+                if (value == selectedCountry)
+                {
+                    return;
+                }
+                selectedCountry = value;
+                OnPropertyChanged();
+                List<IVideoItem> lst;
+                if (!popCountriesDictionary.TryGetValue(selectedCountry, out lst))
+                {
+                    return;
+                }
+                if (!lst.Any())
+                {
+                    return;
+                }
+                ChannelItems.Clear();
+                foreach (IVideoItem item in lst)
+                {
+                    AddNewItem(item, false);
+                }
+            }
+        }
 
         public CredImage SelectedSite
         {
@@ -200,6 +237,7 @@ namespace Crawler.ViewModels
 
                     IEnumerable<IVideoItemPOCO> lst =
                         await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
+                    var lstemp = new List<IVideoItem>();
                     foreach (IVideoItemPOCO poco in lst)
                     {
                         IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
@@ -210,8 +248,13 @@ namespace Crawler.ViewModels
                             // подсветим видео, если канал уже есть в подписке
                             item.IsNewItem = true;
                         }
+                        lstemp.Add(item);
                     }
-
+                    if (popCountriesDictionary.ContainsKey(SelectedCountry))
+                    {
+                        popCountriesDictionary.Remove(SelectedCountry);
+                    }
+                    popCountriesDictionary.Add(SelectedCountry, lstemp);
                     break;
             }
 

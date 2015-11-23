@@ -9,8 +9,7 @@
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"
-        
+        xmlns:system="clr-namespace:System;assembly=mscorlib"        
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
@@ -388,7 +387,7 @@
                                         </DataGrid.CellStyle>
 
                                         <DataGrid.Columns>
-                                            <DataGridTemplateColumn CanUserResize="False">
+                                            <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:ServiceChannelViewModel}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <ComboBox ItemsSource="{Binding SupportedSites, Mode=OneWay}"
