@@ -31,7 +31,6 @@ namespace Models.BO
         private string filterVideoKey;
         private bool isDownloading;
         private bool isInWork;
-        private bool isShowRow;
         private int playlistCount;
         private string subTitle;
         private string title;
@@ -263,19 +262,6 @@ namespace Models.BO
         }
 
         public bool IsSelected { get; set; }
-
-        public bool IsShowRow
-        {
-            get
-            {
-                return isShowRow;
-            }
-            set
-            {
-                isShowRow = value;
-                OnPropertyChanged();
-            }
-        }
 
         public int PlaylistCount
         {

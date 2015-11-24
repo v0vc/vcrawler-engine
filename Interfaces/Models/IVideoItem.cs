@@ -22,7 +22,6 @@ namespace Interfaces.Models
         string ID { get; set; }
         bool IsHasLocalFile { get; set; }
         bool IsNewItem { get; set; }
-        //bool IsShowRow { get; set; }
         bool IsSelected { get; set; }
         byte[] LargeThumb { get; set; }
         string LocalFilePath { get; set; }
@@ -40,19 +39,11 @@ namespace Interfaces.Models
 
         #region Methods
 
-        Task DeleteItemAsync();
-
         Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio);
 
         Task FillSubtitles();
 
         Task FillDescriptionAsync();
-
-        Task<IChannel> GetParentChannelAsync();
-
-        Task<IVideoItem> GetVideoItemDbAsync();
-
-        Task<IVideoItem> GetVideoItemNetAsync();
 
         Task InsertItemAsync();
 

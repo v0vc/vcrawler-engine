@@ -46,7 +46,7 @@
                     </Style>
                 </TextBox.Style>
             </TextBox>
-            <StackPanel Grid.Row="1" Orientation="Horizontal">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" IsEnabled="{Binding IsYouTube, Mode=OneWay}">
                 
                 <CheckBox IsChecked="{Binding IsHd, Mode=OneWayToSource}" x:Name="checkBoxHd"
                           Margin="5,0,0,0" VerticalAlignment="Center" 

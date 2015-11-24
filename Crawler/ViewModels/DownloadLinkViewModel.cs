@@ -3,7 +3,9 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -14,7 +16,7 @@ using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
-    public class DownloadLinkViewModel
+    public class DownloadLinkViewModel : INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -25,6 +27,9 @@ namespace Crawler.ViewModels
         #region Fields
 
         private RelayCommand downloadLinkCommand;
+        private bool isYouTube;
+        private string link;
+        private string youId;
 
         #endregion
 
@@ -36,12 +41,9 @@ namespace Crawler.ViewModels
             var text = Clipboard.GetData(DataFormats.Text) as string;
             if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
             {
-                Link = CommonExtensions.RemoveSpecialCharacters(text);
+                text = CommonExtensions.RemoveSpecialCharacters(text);
             }
-            else
-            {
-                Link = text;
-            }
+            ParseYou(text);
         }
 
         #endregion
@@ -58,11 +60,71 @@ namespace Crawler.ViewModels
 
         public bool IsAudio { get; set; }
         public bool IsHd { get; set; }
-        public string Link { get; set; }
+
+        public bool IsYouTube
+        {
+            get
+            {
+                return isYouTube;
+            }
+            private set
+            {
+                if (value == isYouTube)
+                {
+                    return;
+                }
+                isYouTube = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public string Link
+        {
+            get
+            {
+                return link;
+            }
+            set
+            {
+                if (value == link)
+                {
+                    return;
+                }
+                link = value;
+                ParseYou(link);
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        private static bool IsLinkYoutube(string text, out string videoId)
+        {
+            videoId = string.Empty;
+            var regex = new Regex(CommonExtensions.YouRegex);
+            Match match = regex.Match(text);
+            if (match.Success)
+            {
+                videoId = match.Groups[1].Value;
+                return true;
+            }
+            return false;
+        }
 
         #endregion
 
         #region Methods
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
 
         private async void DownloadLink(object obj)
         {
@@ -89,12 +151,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var regex = new Regex(CommonExtensions.YouRegex);
-            Match match = regex.Match(Link);
-            if (match.Success)
+            if (IsYouTube)
             {
-                string id = match.Groups[1].Value;
-                IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(id, SiteType.YouTube);
+                IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
                 vi.ParentID = null;
                 mv.SelectedVideoItem = vi;
                 mv.SelectedChannel = mv.ServiceChannel;
@@ -119,6 +178,26 @@ namespace Crawler.ViewModels
                 });
             }
         }
+
+        private void ParseYou(string text)
+        {
+            string id;
+            if (IsLinkYoutube(text, out id))
+            {
+                IsYouTube = true;
+                youId = id;
+            }
+            else
+            {
+                IsYouTube = false;
+            }
+        }
+
+        #endregion
+
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         #endregion
     }

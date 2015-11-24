@@ -692,7 +692,6 @@ namespace Crawler.ViewModels
             await channel.DeleteChannelAsync();
             Channels.Add(channel);
             channel.IsDownloading = true;
-            channel.IsShowRow = true;
             channel.IsInWork = true;
             SelectedChannel = channel;
 
@@ -1056,7 +1055,6 @@ namespace Crawler.ViewModels
                     SetStatus(0);
                 }
             }
-            filterlist.Clear();
         }
 
         private async Task FillChannels()
