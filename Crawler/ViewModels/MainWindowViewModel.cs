@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -53,7 +52,6 @@ namespace Crawler.ViewModels
         private readonly IChannelFactory cf;
         private readonly ICollectionView channelCollectionView;
         private readonly ISqLiteDatabase df;
-        private readonly List<IVideoItem> filterlist = new List<IVideoItem>();
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
         private readonly ITapochekSite tf;
         private readonly IVideoItemFactory vf;
@@ -71,7 +69,6 @@ namespace Crawler.ViewModels
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectCommand;
         private RelayCommand currentTagCheckedCommand;
-        private RelayCommand currentTagSelectionChangedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
         private string filterChannelKey;
@@ -183,6 +180,8 @@ namespace Crawler.ViewModels
             }
         }
 
+        public ObservableCollection<IChannel> Channels { get; private set; }
+
         public RelayCommand ChannelSelectCommand
         {
             get
@@ -191,8 +190,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<IChannel> Channels { get; private set; }
-
         public RelayCommand CurrentTagCheckedCommand
         {
             get
@@ -200,14 +197,6 @@ namespace Crawler.ViewModels
                 return currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
             }
         }
-
-        //public RelayCommand CurrentTagSelectionChangedCommand
-        //{
-        //    get
-        //    {
-        //        return currentTagSelectionChangedCommand ?? (currentTagSelectionChangedCommand = new RelayCommand(SelectTag));
-        //    }
-        //}
 
         public ObservableCollection<ITag> CurrentTags { get; private set; }
 
@@ -418,20 +407,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private bool FilterChannelsByTag(object item)
-        {
-            var value = (IChannel)item;
-            if (value == null || value.ChannelTags == null)
-            {
-                return false;
-            }
-            if (SelectedTag == null || string.IsNullOrEmpty(SelectedTag.Title))
-            {
-                return true;
-            }
-            return value.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
-        }
-
         public IVideoItem SelectedVideoItem
         {
             get
@@ -537,7 +512,7 @@ namespace Crawler.ViewModels
 
         private static ScrollViewer GetScrollbar(DependencyObject dep)
         {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
             {
                 DependencyObject child = VisualTreeHelper.GetChild(dep, i);
                 if (child is ScrollViewer)
@@ -570,8 +545,8 @@ namespace Crawler.ViewModels
             var edvm = new EditDescriptionViewModel(item);
             var edv = new EditDescriptionView
             {
-                DataContext = edvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -653,6 +628,16 @@ namespace Crawler.ViewModels
                     await AddNewChannelAsync(parsedId, channelTitle, site);
                 }
             }
+        }
+
+        public bool IsYoutubeExist()
+        {
+            if (!string.IsNullOrEmpty(SettingsViewModel.YouPath))
+            {
+                return true;
+            }
+            MessageBox.Show("Please, select youtube-dl");
+            return false;
         }
 
         /// <summary>
@@ -784,8 +769,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(false, this);
             var addview = new AddChanelView
             {
-                DataContext = edvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -796,9 +781,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(),
-                DefaultExt = ".txt",
-                Filter = txtfilter,
+                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
+                DefaultExt = ".txt", 
+                Filter = txtfilter, 
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -890,9 +875,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (boxResult == MessageBoxResult.OK)
@@ -932,9 +917,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
+            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?", 
+                "Confirm", 
+                MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
             if (boxResult == MessageBoxResult.OK)
@@ -988,7 +973,7 @@ namespace Crawler.ViewModels
             {
                 var ff = new FfmpegView
                 {
-                    Owner = Application.Current.MainWindow,
+                    Owner = Application.Current.MainWindow, 
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 };
 
@@ -1001,8 +986,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(true, this);
             var addview = new AddChanelView
             {
-                DataContext = edvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1079,7 +1064,6 @@ namespace Crawler.ViewModels
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)
             {
-                ch.IsShowRow = true;
                 Channels.Add(ch);
             }
             if (Channels.Any())
@@ -1105,6 +1089,21 @@ namespace Crawler.ViewModels
             channelGrid = null;
         }
 
+        private bool FilterByCheckedTag(object item)
+        {
+            var channel = (IChannel)item;
+            if (channel == null || channel.ChannelTags == null)
+            {
+                return false;
+            }
+            if (!CurrentTags.Any(x => x.IsChecked))
+            {
+                return true;
+            }
+            bool res = channel.ChannelTags.Any(x => x.IsChecked);
+            return res;
+        }
+
         private bool FilterChannel(object item)
         {
             var value = (IChannel)item;
@@ -1114,6 +1113,28 @@ namespace Crawler.ViewModels
             }
 
             return value.Title.ToLower().Contains(FilterChannelKey.ToLower());
+        }
+
+        private bool FilterChannelsByTag(object item)
+        {
+            var channel = (IChannel)item;
+            if (channel == null || channel.ChannelTags == null)
+            {
+                return false;
+            }
+            if (SelectedTag == null || string.IsNullOrEmpty(SelectedTag.Title))
+            {
+                foreach (ITag tag in CurrentTags.Where(tag => tag.IsChecked))
+                {
+                    tag.IsChecked = false;
+                }
+                return true;
+            }
+            if (CurrentTags.Any(x => x.IsChecked))
+            {
+                return true;
+            }
+            return channel.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
         }
 
         private async Task FindRelated()
@@ -1192,16 +1213,6 @@ namespace Crawler.ViewModels
             return false;
         }
 
-        public bool IsYoutubeExist()
-        {
-            if (!string.IsNullOrEmpty(SettingsViewModel.YouPath))
-            {
-                return true;
-            }
-            MessageBox.Show("Please, select youtube-dl");
-            return false;
-        }
-
         private async void MainMenuClick(object param)
         {
             var window = param as Window;
@@ -1228,10 +1239,6 @@ namespace Crawler.ViewModels
 
                     case MainMenuItem.Vacuum:
                         await Vacuumdb();
-                        break;
-
-                    case MainMenuItem.ShowAll:
-                        ShowAllChannels();
                         break;
 
                     case MainMenuItem.Link:
@@ -1272,8 +1279,8 @@ namespace Crawler.ViewModels
 
             var adl = new DownloadLinkView
             {
-                DataContext = dlvm,
-                Owner = Application.Current.MainWindow,
+                DataContext = dlvm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -1311,8 +1318,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = SettingsViewModel,
-                Owner = Application.Current.MainWindow,
+                DataContext = SettingsViewModel, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1328,17 +1335,17 @@ namespace Crawler.ViewModels
             }
             var etvm = new EditTagsViewModel
             {
-                ParentChannel = channel,
-                CurrentTags = CurrentTags,
-                Tags = SettingsViewModel.SupportedTags,
+                ParentChannel = channel, 
+                CurrentTags = CurrentTags, 
+                Tags = SettingsViewModel.SupportedTags, 
                 Channels = Channels
             };
 
             var etv = new EditTagsView
             {
-                DataContext = etvm,
-                Owner = Application.Current.MainWindow,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                DataContext = etvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
                 Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
             };
             etv.ShowDialog();
@@ -1351,7 +1358,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            for (int i = 1; i < args.Length; i++)
+            for (var i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
@@ -1459,8 +1466,7 @@ namespace Crawler.ViewModels
                 SetStatus(1);
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
-                ShowAllChannels();
-                int rest = 0;
+                var rest = 0;
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -1580,8 +1586,8 @@ namespace Crawler.ViewModels
             if (channel.ChannelItemsCount > channel.ChannelItems.Count)
             {
                 await
-                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath,
-                        channel.ChannelItemsCount - channel.ChannelItems.Count,
+                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
+                        channel.ChannelItemsCount - channel.ChannelItems.Count, 
                         channel.ChannelItems.Count);
             }
         }
@@ -1595,33 +1601,34 @@ namespace Crawler.ViewModels
             }
 
             IEnumerable<string> lstv = (await pl.GetPlaylistItemsIdsListDbAsync()).ToList();
-            //if (!lstv.Any())
-            //{
-            //    foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            //    {
-            //        item.IsShowRow = false;
-            //    }
 
-            //    foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            //    {
-            //        item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
-            //    }
+            // if (!lstv.Any())
+            // {
+            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            // {
+            // item.IsShowRow = false;
+            // }
 
-            //    return;
-            //}
+            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            // {
+            // item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
+            // }
 
-            //pl.PlaylistItems.Clear();
+            // return;
+            // }
 
-            //foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            //{
-            //    item.IsShowRow = lstv.Contains(item.ID);
-            //    if (item.IsShowRow)
-            //    {
-            //        pl.PlaylistItems.Add(item);
-            //    }
-            //}
+            // pl.PlaylistItems.Clear();
 
-            //filterlist.Clear();
+            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
+            // {
+            // item.IsShowRow = lstv.Contains(item.ID);
+            // if (item.IsShowRow)
+            // {
+            // pl.PlaylistItems.Add(item);
+            // }
+            // }
+
+            // filterlist.Clear();
         }
 
         private void SelectPopular(object obj)
@@ -1631,47 +1638,6 @@ namespace Crawler.ViewModels
             {
                 SelectedChannel = item;
             }
-        }
-
-        //private void SelectTag(object obj)
-        //{
-        //    var tag = obj as ITag;
-        //    if (tag == null)
-        //    {
-        //        return;
-        //    }
-
-        //    foreach (IChannel channel in Channels)
-        //    {
-        //        channel.IsShowRow = true;
-        //        if (!channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
-        //        {
-        //            channel.IsShowRow = false;
-        //        }
-        //    }
-
-        //    foreach (ITag item in CurrentTags)
-        //    {
-        //        if (item.Title != tag.Title && item.IsChecked)
-        //        {
-        //            item.IsChecked = false;
-        //        }
-        //    }
-        //}
-
-        private void ShowAllChannels()
-        {
-            foreach (IChannel channel in Channels)
-            {
-                channel.IsShowRow = true;
-            }
-
-            foreach (ITag tag in CurrentTags)
-            {
-                tag.IsChecked = false;
-            }
-
-            SelectedTag = null;
         }
 
         private async Task Subscribe()
@@ -1746,9 +1712,8 @@ namespace Crawler.ViewModels
 
         private async Task SyncData()
         {
-            ShowAllChannels();
             PrValue = 0;
-            int i = 0;
+            var i = 0;
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -1779,33 +1744,7 @@ namespace Crawler.ViewModels
 
         private void TagCheck()
         {
-            foreach (IChannel channel in Channels)
-            {
-                channel.IsShowRow = false;
-            }
-
-            if (CurrentTags.Any(x => x.IsChecked))
-            {
-                foreach (ITag tag in CurrentTags.Where(x => x.IsChecked))
-                {
-                    foreach (IChannel channel in Channels)
-                    {
-                        if (channel.ChannelTags.Select(x => x.Title).Contains(tag.Title))
-                        {
-                            channel.IsShowRow = true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                SelectedTag = null;
-                foreach (IChannel channel in Channels)
-                {
-                    channel.IsShowRow = true;
-                }
-            }
-            SelectedChannel = Channels.First(x => x.IsShowRow);
+            channelCollectionView.Filter = FilterByCheckedTag;
         }
 
         private async Task Vacuumdb()

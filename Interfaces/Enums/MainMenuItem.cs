@@ -11,7 +11,6 @@ namespace Interfaces.Enums
         Restore,
         Settings,
         Vacuum,
-        ShowAll,
         Link,
         About
     }

@@ -25,7 +25,7 @@ namespace Interfaces.Models
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }
         bool IsSelected { get; set; }
-        bool IsShowRow { get; set; }
+        //bool IsShowRow { get; set; }
         int PlaylistCount { get; set; }
         IList<IVideoItem> SelectedItems { get; }
         SiteType Site { get; set; }
