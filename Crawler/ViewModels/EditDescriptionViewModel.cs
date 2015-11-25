@@ -5,8 +5,8 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Crawler.Common;
 using DataAPI;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 

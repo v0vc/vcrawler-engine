@@ -36,7 +36,6 @@ namespace Interfaces.Models
 
         #region Methods
 
-        bool FilterVideo(object item);
         void AddNewItem(IVideoItem item, bool isNew);
 
         #endregion

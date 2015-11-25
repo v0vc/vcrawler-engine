@@ -21,9 +21,9 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using Autofac;
-using Crawler.Common;
 using Crawler.Views;
 using Extensions;
+using Interfaces;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
@@ -91,7 +91,6 @@ namespace Crawler.ViewModels
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
         private IVideoItem selectedVideoItem;
-        private RelayCommand submenuOpenedCommand;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
         private RelayCommand videoClickCommand;
@@ -439,14 +438,6 @@ namespace Crawler.ViewModels
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
         public SettingsViewModel SettingsViewModel { get; private set; }
 
-        public RelayCommand SubmenuOpenedCommand
-        {
-            get
-            {
-                return submenuOpenedCommand ?? (submenuOpenedCommand = new RelayCommand(SubmenuOpened));
-            }
-        }
-
         public RelayCommand SyncDataCommand
         {
             get
@@ -582,18 +573,18 @@ namespace Crawler.ViewModels
             }
         }
 
-        private static async void SubmenuOpened(object obj)
-        {
-            var item = obj as IVideoItem;
-            if (item == null)
-            {
-                return;
-            }
-            if (!item.Subtitles.Any())
-            {
-                await item.FillSubtitles();
-            }
-        }
+        //private static async void SubmenuOpened(object obj)
+        //{
+        //    var item = obj as IVideoItem;
+        //    if (item == null)
+        //    {
+        //        return;
+        //    }
+        //    if (!item.Subtitles.Any())
+        //    {
+        //        await item.FillSubtitles();
+        //    }
+        //}
 
         #endregion
 

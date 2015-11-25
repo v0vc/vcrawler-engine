@@ -15,6 +15,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -43,6 +44,7 @@ namespace Models.BO.Items
         private string tempname = string.Empty;
         private ItemState state;
         private string description;
+        private RelayCommand fillSubitlesCommand;
 
         #endregion
 
@@ -360,6 +362,11 @@ namespace Models.BO.Items
 
         public async Task FillSubtitles()
         {
+            if (Subtitles.Any())
+            {
+                return;
+            }
+
             IEnumerable<ISubtitle> res = await vf.GetVideoItemSubtitlesAsync(ID);
 
             Subtitles.Clear();
@@ -448,6 +455,14 @@ namespace Models.BO.Items
             {
                 string param = string.Format("\"{0}\" /play", MakeLink());
                 await Task.Run(() => Process.Start(mpcpath, param));
+            }
+        }
+
+        public RelayCommand FillSubitlesCommand
+        {
+            get
+            {
+                return fillSubitlesCommand ?? (fillSubitlesCommand = new RelayCommand(x => FillSubtitles()));
             }
         }
 

@@ -55,6 +55,8 @@ namespace Interfaces.Models
 
         Task RunItem(string mpcpath);
 
+        RelayCommand FillSubitlesCommand { get; }
+
         #endregion
     }
 }

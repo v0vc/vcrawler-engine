@@ -12,8 +12,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using Crawler.Common;
 using DataAPI;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -134,6 +134,7 @@ namespace Crawler.ViewModels
         }
 
         public List<CredImage> SupportedSites { get; set; }
+        private ICollectionView ChannelItemsCollectionView { get; set; }
 
         #endregion
 
@@ -272,7 +273,6 @@ namespace Crawler.ViewModels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
-        private ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }

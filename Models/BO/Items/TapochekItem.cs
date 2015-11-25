@@ -5,6 +5,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 
@@ -100,6 +101,8 @@ namespace Models.BO.Items
         {
             throw new NotImplementedException();
         }
+
+        public RelayCommand FillSubitlesCommand { get; private set; }
 
         #endregion
     }
