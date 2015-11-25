@@ -24,8 +24,6 @@ namespace Interfaces.Models
         string ID { get; set; }
         bool IsDownloading { get; set; }
         bool IsInWork { get; set; }
-        bool IsSelected { get; set; }
-        //bool IsShowRow { get; set; }
         int PlaylistCount { get; set; }
         IList<IVideoItem> SelectedItems { get; }
         SiteType Site { get; set; }
@@ -34,7 +32,6 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
         string FilterVideoKey { get; set; }
-        ICollectionView ChannelItemsCollectionView { get; set; }
         #endregion
 
         #region Methods

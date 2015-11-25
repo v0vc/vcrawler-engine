@@ -272,7 +272,7 @@ namespace Crawler.ViewModels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
-        public ICollectionView ChannelItemsCollectionView { get; set; }
+        private ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
@@ -300,7 +300,6 @@ namespace Crawler.ViewModels
         public string ID { get; set; }
         public bool IsDownloading { get; set; }
         public bool IsInWork { get; set; }
-        public bool IsSelected { get; set; }
         public int PlaylistCount { get; set; }
 
         public IList<IVideoItem> SelectedItems

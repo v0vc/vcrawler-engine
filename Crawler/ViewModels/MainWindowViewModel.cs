@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -86,6 +87,7 @@ namespace Crawler.ViewModels
         private string result;
         private RelayCommand scrollChangedCommand;
         private IChannel selectedChannel;
+        private IList selectedChannels = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
         private IVideoItem selectedVideoItem;
@@ -380,6 +382,19 @@ namespace Crawler.ViewModels
             }
         }
 
+        public IList SelectedChannels
+        {
+            get
+            {
+                return selectedChannels;
+            }
+            set
+            {
+                selectedChannels = value;
+                OnPropertyChanged();
+            }
+        }
+
         public IPlaylist SelectedPlaylist
         {
             get
@@ -471,14 +486,6 @@ namespace Crawler.ViewModels
             get
             {
                 return videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
-            }
-        }
-
-        private IList<IChannel> SelectedChannels
-        {
-            get
-            {
-                return Channels.Where(x => x.IsSelected).ToList();
             }
         }
 
@@ -881,7 +888,7 @@ namespace Crawler.ViewModels
 
             if (boxResult == MessageBoxResult.OK)
             {
-                for (int i = SelectedChannels.Count(); i > 0; i--)
+                for (int i = SelectedChannels.Count; i > 0; i--)
                 {
                     var channel = SelectedChannels[i - 1] as Channel;
                     if (channel == null)

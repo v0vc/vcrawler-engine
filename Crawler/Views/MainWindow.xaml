@@ -173,7 +173,7 @@
                     </Border>
                 </DockPanel>
 
-                <DataGrid Grid.Row="1" x:Name="channelsGrid"
+                <controls:CustomDataGrid Grid.Row="1" x:Name="channelsGrid"
                           CanUserAddRows="False"
                           CanUserDeleteRows="False"
                           AutoGenerateColumns="False"
@@ -185,6 +185,7 @@
                           HorizontalScrollBarVisibility="Disabled"
                           ItemsSource="{Binding Channels}"
                           SelectedItem="{Binding SelectedChannel}"
+                          SelectedItemsList="{Binding SelectedChannels, Mode=OneWayToSource}"
                           SelectionUnit="FullRow"
                           SelectionMode="Extended"
                           IsSynchronizedWithCurrentItem="True"
@@ -226,7 +227,7 @@
                     
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
-                            <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
+                            <!--<Setter Property="IsSelected" Value="{Binding Path=IsSelected}"/>-->
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
@@ -303,7 +304,7 @@
                         
                     </DataGrid.Columns>
 
-                </DataGrid>
+                </controls:CustomDataGrid>
                 
                 <DockPanel Grid.Row="2" Background="Lavender" Margin="0">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
