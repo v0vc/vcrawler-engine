@@ -31,6 +31,7 @@ using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO;
+using Models.BO.Channels;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
 using Container = IoC.Container;
@@ -496,7 +497,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                var channel = obj as Channel;
+                var channel = obj as YouChannel;
                 if (channel == null)
                 {
                     return;
@@ -553,7 +554,7 @@ namespace Crawler.ViewModels
 
         private static async void PlaylistExpand(object obj)
         {
-            var ch = obj as Channel;
+            var ch = obj as YouChannel;
             if (ch == null)
             {
                 return;
@@ -671,7 +672,7 @@ namespace Crawler.ViewModels
 
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
-            var channel = (await cf.GetChannelNetAsync(channelid, site)) as Channel;
+            var channel = (await cf.GetChannelNetAsync(channelid, site)) as YouChannel;
             if (channel == null)
             {
                 return;
@@ -679,7 +680,7 @@ namespace Crawler.ViewModels
 
             if (string.IsNullOrEmpty(channel.Title))
             {
-                throw new Exception("Can't get channel: " + channel.ID);
+                throw new Exception("Can't get YouChannel: " + channel.ID);
             }
 
             if (!string.IsNullOrEmpty(channeltitle))
@@ -881,7 +882,7 @@ namespace Crawler.ViewModels
             {
                 for (int i = SelectedChannels.Count; i > 0; i--)
                 {
-                    var channel = SelectedChannels[i - 1] as Channel;
+                    var channel = SelectedChannels[i - 1] as YouChannel;
                     if (channel == null)
                     {
                         continue;
@@ -993,7 +994,7 @@ namespace Crawler.ViewModels
 
         private async void FillChannelItems(object obj)
         {
-            var channel = obj as Channel;
+            var channel = obj as YouChannel;
             if (channel == null)
             {
                 return;
@@ -1041,7 +1042,7 @@ namespace Crawler.ViewModels
                 }
                 else
                 {
-                    // нет в базе = related channel
+                    // нет в базе = related YouChannel
                     SetStatus(1);
                     channel.IsInWork = true;
                     IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0);
@@ -1137,7 +1138,7 @@ namespace Crawler.ViewModels
         {
             try
             {
-                var channel = SelectedChannel as Channel;
+                var channel = SelectedChannel as YouChannel;
                 if (channel != null)
                 {
                     await FindRelatedChannels(channel);
@@ -1150,7 +1151,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task FindRelatedChannels(Channel channel)
+        private async Task FindRelatedChannels(YouChannel channel)
         {
             if (channel == null)
             {
@@ -1177,7 +1178,7 @@ namespace Crawler.ViewModels
 
         private void FocusRow(object obj)
         {
-            var channel = obj as Channel;
+            var channel = obj as YouChannel;
             if (channel != null)
             {
                 SelectedChannel = channel;
@@ -1290,7 +1291,7 @@ namespace Crawler.ViewModels
             }
 
             var tmptags = new List<ITag>();
-            foreach (Channel channel in Channels.OfType<Channel>())
+            foreach (YouChannel channel in Channels.OfType<YouChannel>())
             {
                 IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
 
@@ -1324,7 +1325,7 @@ namespace Crawler.ViewModels
 
         private void OpenTags()
         {
-            var channel = SelectedChannel as Channel;
+            var channel = SelectedChannel as YouChannel;
             if (channel == null)
             {
                 return;
@@ -1574,7 +1575,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var channel = SelectedChannel as Channel;
+            var channel = SelectedChannel as YouChannel;
             if (channel == null)
             {
                 return;
@@ -1642,7 +1643,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var channel = SelectedChannel as Channel;
+            var channel = SelectedChannel as YouChannel;
             if (channel == null)
             {
                 return;
@@ -1659,7 +1660,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task SyncChannel(Channel channel)
+        private async Task SyncChannel(YouChannel channel)
         {
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
@@ -1672,7 +1673,7 @@ namespace Crawler.ViewModels
 
         private async void SyncChannel(object obj)
         {
-            var channel = obj as Channel;
+            var channel = obj as YouChannel;
             if (channel != null)
             {
                 await SyncChannel(channel);
@@ -1687,7 +1688,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var channel = SelectedChannel as Channel;
+            var channel = SelectedChannel as YouChannel;
             if (channel == null)
             {
                 return;
@@ -1714,7 +1715,7 @@ namespace Crawler.ViewModels
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
 
-            foreach (Channel channel in Channels.OfType<Channel>())
+            foreach (YouChannel channel in Channels.OfType<YouChannel>())
             {
                 i += 1;
                 PrValue = Math.Round((double)(100 * i) / Channels.Count);

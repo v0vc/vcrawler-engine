@@ -11,6 +11,7 @@ using Crawler.Views;
 using Interfaces;
 using Interfaces.Models;
 using Models.BO;
+using Models.BO.Channels;
 
 namespace Crawler.ViewModels
 {
@@ -74,7 +75,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public Channel ParentChannel { get; set; }
+        public YouChannel ParentChannel { get; set; }
 
         public RelayCommand SaveCommand
         {
@@ -136,7 +137,7 @@ namespace Crawler.ViewModels
 
             if (!CurrentTags.Any())
             {
-                foreach (Channel channel in Channels.OfType<Channel>())
+                foreach (YouChannel channel in Channels.OfType<YouChannel>())
                 {
                     IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
                     foreach (ITag tag in tags)

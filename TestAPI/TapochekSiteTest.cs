@@ -17,6 +17,7 @@ using Interfaces.POCO;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Models.BO;
+using Models.BO.Channels;
 
 namespace TestAPI
 {
@@ -55,7 +56,7 @@ namespace TestAPI
         public void FillChannelCookieDbAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -68,7 +69,7 @@ namespace TestAPI
         public async Task FillChannelNetAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -93,7 +94,7 @@ namespace TestAPI
         public async Task GetChannelItemsAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -119,7 +120,7 @@ namespace TestAPI
         public async Task StoreCookiesAsync()
         {
             IChannelFactory chf = _fabric.CreateChannelFactory();
-            Channel ch = chf.CreateChannel(SiteType.Tapochek) as Channel;
+            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;

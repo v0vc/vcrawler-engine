@@ -9,6 +9,7 @@ using Extensions;
 using Interfaces;
 using Interfaces.Models;
 using Models.BO;
+using Models.BO.Channels;
 
 namespace Crawler.ViewModels
 {
@@ -117,7 +118,7 @@ namespace Crawler.ViewModels
             if (IsEditMode)
             {
                 MvModel.SelectedChannel.Title = ChannelTitle;
-                var channel = MvModel.SelectedChannel as Channel;
+                var channel = MvModel.SelectedChannel as YouChannel;
                 if (channel != null)
                 {
                     await channel.RenameChannelAsync(ChannelTitle);

@@ -17,6 +17,7 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
+using Models.BO.Channels;
 
 namespace Models.Factories
 {
@@ -79,7 +80,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task FillChannelCookieNetAsync(Channel channel)
+        public async Task FillChannelCookieNetAsync(YouChannel channel)
         {
             switch (channel.Site)
             {
@@ -210,7 +211,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(Channel channel, int maxresult)
+        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(YouChannel channel, int maxresult)
         {
             IVideoItemFactory vf = _c.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
@@ -421,16 +422,16 @@ namespace Models.Factories
             }
         }
 
-        public async Task SyncChannelAsync(Channel channel, bool isSyncPls)
+        public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)
         {
             channel.IsInWork = true;
 
             // получаем количество записей в базе
-            // var dbCount = await GetChannelItemsCountDbAsync(channel.ID);
+            // var dbCount = await GetChannelItemsCountDbAsync(YouChannel.ID);
             List<string> idsdb = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
 
             // получаем количество записей на канале
-            // var lsids = await channel.GetChannelItemsIdsListNetAsync(0);
+            // var lsids = await YouChannel.GetChannelItemsIdsListNetAsync(0);
             // var netCount = lsids.Count;
             int netCount = await GetChannelItemsCountNetAsync(channel.ID);
 
@@ -530,7 +531,7 @@ namespace Models.Factories
             channel.IsInWork = false;
         }
 
-        public async Task SyncChannelPlaylistsAsync(Channel channel)
+        public async Task SyncChannelPlaylistsAsync(YouChannel channel)
         {
             List<IPlaylist> pls = (await channel.GetChannelPlaylistsNetAsync()).ToList();
 
@@ -580,7 +581,7 @@ namespace Models.Factories
 
         public IChannel CreateChannel()
         {
-            var channel = new Channel(this)
+            var channel = new YouChannel(this)
             {
                 ChannelItems = new ObservableCollection<IVideoItem>(),
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(),
@@ -593,7 +594,7 @@ namespace Models.Factories
 
         public IChannel CreateChannel(SiteType site)
         {
-            var channel = new Channel(this)
+            var channel = new YouChannel(this)
             {
                 ChannelItems = new ObservableCollection<IVideoItem>(),
                 ChannelPlaylists = new ObservableCollection<IPlaylist>(),
@@ -608,7 +609,7 @@ namespace Models.Factories
 
         public IChannel CreateChannel(IChannelPOCO poco)
         {
-            var channel = new Channel(this)
+            var channel = new YouChannel(this)
             {
                 ID = poco.ID,
                 Title = poco.Title,

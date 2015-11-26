@@ -10,14 +10,13 @@ using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
 
-namespace Models.BO
+namespace Models.BO.Channels
 {
-    public sealed class Channel : IChannel, INotifyPropertyChanged
+    public sealed class YouChannel : IChannel, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -40,12 +39,12 @@ namespace Models.BO
 
         #region Constructors
 
-        public Channel(ChannelFactory cf)
+        public YouChannel(ChannelFactory cf)
         {
             this.cf = cf;
         }
 
-        private Channel()
+        private YouChannel()
         {
         }
 
