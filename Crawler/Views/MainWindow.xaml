@@ -607,13 +607,20 @@
                             <ContextMenu x:Key="DataRowContextMenu">
                                 <MenuItem Header="Delete" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
                                 <MenuItem Header="Copy Link" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
-                                <MenuItem Header="Edit" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Edit}" />
-                                <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
-                                <MenuItem Header="Download Audio" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
-                                <MenuItem Header="Subscribe" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" />
-                                <Separator />
-
-                                <MenuItem Header="Subtitles" StaysOpenOnClick="True" >
+                                <MenuItem Header="Edit" Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
+                                <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
+                                          CommandParameter="{x:Static enums:VideoMenuItem.HD}" 
+                                          Visibility="{Binding Site, Converter={StaticResource SiteTypeToVisibilityConverter}}"
+                                          />
+                                <MenuItem Header="Download Audio" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
+                                          CommandParameter="{x:Static enums:VideoMenuItem.Audio}" 
+                                          Visibility="{Binding Site, Converter={StaticResource SiteTypeToVisibilityConverter}}"
+                                          />
+                                <MenuItem Header="Subscribe" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
+                                          CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" 
+                                          Visibility="{Binding Site, Converter={StaticResource SiteTypeToVisibilityConverter}}"
+                                          />
+                                <MenuItem Header="Subtitles" StaysOpenOnClick="True" Visibility="{Binding Site, Converter={StaticResource SiteTypeToVisibilityConverter}}">
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SubmenuOpened">
                                             <i:InvokeCommandAction Command="{Binding DataContext.FillSubitlesCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>

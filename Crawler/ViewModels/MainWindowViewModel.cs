@@ -1758,10 +1758,6 @@ namespace Crawler.ViewModels
                     await DownloadAudio();
                     break;
 
-                case VideoMenuItem.Edit:
-                    OpenDescription(SelectedChannel.SelectedItem);
-                    break;
-
                 case VideoMenuItem.HD:
                     await DownloadHd();
                     break;
