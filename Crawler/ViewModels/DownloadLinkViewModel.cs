@@ -155,10 +155,9 @@ namespace Crawler.ViewModels
             {
                 IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
                 vi.ParentID = null;
-                mv.SelectedVideoItem = vi;
                 mv.SelectedChannel = mv.ServiceChannel;
+                mv.SelectedChannel.SelectedItem = vi;
                 mv.SelectedChannel.AddNewItem(vi, true);
-
                 await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
                 vi.IsNewItem = true;
             }

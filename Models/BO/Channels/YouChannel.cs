@@ -274,6 +274,8 @@ namespace Models.BO.Channels
             }
         }
 
+        public IVideoItem SelectedItem { get; set; }
+
         public IList<IVideoItem> SelectedItems
         {
             get

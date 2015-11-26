@@ -301,6 +301,7 @@ namespace Crawler.ViewModels
         public bool IsDownloading { get; set; }
         public bool IsInWork { get; set; }
         public int PlaylistCount { get; set; }
+        public IVideoItem SelectedItem { get; set; }
 
         public IList<IVideoItem> SelectedItems
         {

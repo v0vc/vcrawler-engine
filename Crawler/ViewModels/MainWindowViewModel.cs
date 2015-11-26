@@ -422,18 +422,18 @@ namespace Crawler.ViewModels
             }
         }
 
-        public IVideoItem SelectedVideoItem
-        {
-            get
-            {
-                return selectedVideoItem;
-            }
-            set
-            {
-                selectedVideoItem = value;
-                OnPropertyChanged();
-            }
-        }
+        //public IVideoItem SelectedVideoItem
+        //{
+        //    get
+        //    {
+        //        return selectedVideoItem;
+        //    }
+        //    set
+        //    {
+        //        selectedVideoItem = value;
+        //        OnPropertyChanged();
+        //    }
+        //}
 
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
@@ -952,7 +952,7 @@ namespace Crawler.ViewModels
             }
 
             SelectedChannel.IsDownloading = true;
-            await SelectedVideoItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
+            await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
         }
 
         private async Task DownloadHd()
@@ -965,7 +965,7 @@ namespace Crawler.ViewModels
             if (IsFfmegExist())
             {
                 SelectedChannel.IsDownloading = true;
-                await SelectedVideoItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
+                await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
             }
             else
             {
@@ -1656,7 +1656,7 @@ namespace Crawler.ViewModels
         {
             if (SelectedChannel is ServiceChannelViewModel)
             {
-                await AddNewChannel(SelectedVideoItem.MakeLink(), string.Empty, SelectedVideoItem.Site);
+                await AddNewChannel(SelectedChannel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
             }
         }
 
@@ -1767,7 +1767,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Edit:
-                    OpenDescription(SelectedVideoItem);
+                    OpenDescription(SelectedChannel.SelectedItem);
                     break;
 
                 case VideoMenuItem.HD:
@@ -1788,7 +1788,7 @@ namespace Crawler.ViewModels
         {
             try
             {
-                Clipboard.SetText(SelectedVideoItem.MakeLink());
+                Clipboard.SetText(SelectedChannel.SelectedItem.MakeLink());
             }
             catch (Exception ex)
             {
