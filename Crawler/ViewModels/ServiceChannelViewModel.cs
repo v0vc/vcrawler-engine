@@ -12,8 +12,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using Crawler.Common;
 using DataAPI;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -139,6 +139,17 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Methods
+
+        public bool FilterVideo(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
+        }
 
         public void Init(MainWindowViewModel mainWindowModel)
         {
@@ -331,17 +342,6 @@ namespace Crawler.ViewModels
             {
                 ChannelItems.Add(item);
             }
-        }
-
-        public bool FilterVideo(object item)
-        {
-            var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
-            {
-                return false;
-            }
-
-            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
         }
 
         #endregion

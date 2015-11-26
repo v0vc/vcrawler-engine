@@ -5,10 +5,9 @@
 using System;
 using System.Linq;
 using System.Windows;
+using Crawler.Common;
 using Extensions;
-using Interfaces;
 using Interfaces.Models;
-using Models.BO;
 using Models.BO.Channels;
 
 namespace Crawler.ViewModels

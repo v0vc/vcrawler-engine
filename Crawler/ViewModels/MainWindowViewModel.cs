@@ -21,9 +21,9 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using Autofac;
+using Crawler.Common;
 using Crawler.Views;
 using Extensions;
-using Interfaces;
 using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Factories;
@@ -31,6 +31,7 @@ using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO.Channels;
+using Models.BO.Items;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
 using Container = IoC.Container;
@@ -72,6 +73,7 @@ namespace Crawler.ViewModels
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
+        private RelayCommand fillSubitlesCommand;
         private string filterChannelKey;
         private string info;
         private bool isExpand;
@@ -213,6 +215,14 @@ namespace Crawler.ViewModels
             get
             {
                 return fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
+            }
+        }
+
+        public RelayCommand FillSubitlesCommand
+        {
+            get
+            {
+                return fillSubitlesCommand ?? (fillSubitlesCommand = new RelayCommand(FillSubtitles));
             }
         }
 
@@ -492,6 +502,16 @@ namespace Crawler.ViewModels
                     await channel.FillChannelDescriptionAsync();
                 }
             }
+        }
+
+        private static async void FillSubtitles(object obj)
+        {
+            var item = obj as YouTubeItem;
+            if (item == null)
+            {
+                return;
+            }
+            await item.FillSubtitles();
         }
 
         private static ScrollViewer GetScrollbar(DependencyObject dep)
@@ -818,7 +838,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Subscribe:
-                    await Subscribe();
+                    await SubscribeOnRelated();
                     break;
 
                 case ChannelMenuItem.Tags:
@@ -1609,7 +1629,15 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task Subscribe()
+        private async Task SubscribeOnPopular()
+        {
+            if (SelectedChannel is ServiceChannelViewModel)
+            {
+                await AddNewChannel(SelectedChannel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+            }
+        }
+
+        private async Task SubscribeOnRelated()
         {
             if (SelectedChannel.IsInWork)
             {
@@ -1622,14 +1650,6 @@ namespace Crawler.ViewModels
             }
             Channels.Add(channel);
             await channel.InsertChannelItemsAsync();
-        }
-
-        private async Task SubscribeOn()
-        {
-            if (SelectedChannel is ServiceChannelViewModel)
-            {
-                await AddNewChannel(SelectedChannel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
-            }
         }
 
         private async Task SyncChannel(YouChannel channel)
@@ -1751,7 +1771,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Subscribe:
-                    await SubscribeOn();
+                    await SubscribeOnPopular();
                     break;
             }
         }

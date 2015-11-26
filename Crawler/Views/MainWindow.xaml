@@ -616,7 +616,7 @@
                                 <MenuItem Header="Subtitles" StaysOpenOnClick="True" >
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="SubmenuOpened">
-                                            <i:InvokeCommandAction Command="{Binding FillSubitlesCommand, Mode=OneTime}" />
+                                            <i:InvokeCommandAction Command="{Binding DataContext.FillSubitlesCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
 

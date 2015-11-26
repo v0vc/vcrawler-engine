@@ -9,8 +9,8 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
+using Crawler.Common;
 using Extensions;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 

@@ -5,7 +5,7 @@
 using System;
 using System.Windows.Input;
 
-namespace Interfaces
+namespace Crawler.Common
 {
     // http://stackoverflow.com/questions/6634777/what-is-the-actual-task-of-canexecutechanged-and-commandmanager-requerysuggested
 

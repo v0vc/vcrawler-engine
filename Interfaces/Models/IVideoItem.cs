@@ -41,8 +41,6 @@ namespace Interfaces.Models
 
         Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio);
 
-        Task FillSubtitles();
-
         Task FillDescriptionAsync();
 
         Task InsertItemAsync();
@@ -54,8 +52,6 @@ namespace Interfaces.Models
         string MakeLink();
 
         Task RunItem(string mpcpath);
-
-        RelayCommand FillSubitlesCommand { get; }
 
         #endregion
     }

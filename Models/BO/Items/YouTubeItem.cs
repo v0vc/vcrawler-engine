@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -15,7 +14,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Extensions;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -34,17 +32,15 @@ namespace Models.BO.Items
 
         #region Fields
 
+        private string description;
         private double downloadPercentage;
-
         private bool isAudio;
         private bool isHasLocalFile;
         private byte[] largeThumb;
         private string logText;
+        private ItemState state;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
-        private ItemState state;
-        private string description;
-        private RelayCommand fillSubitlesCommand;
 
         #endregion
 
@@ -84,13 +80,41 @@ namespace Models.BO.Items
 
         #region Methods
 
-        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        public async Task DeleteItemAsync()
         {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
+            await vf.DeleteItemAsync(ID);
+        }
+
+        public async Task FillSubtitles()
+        {
+            if (Subtitles.Any())
             {
-                handler(this, new PropertyChangedEventArgs(propertyName));
+                return;
             }
+
+            IEnumerable<ISubtitle> res = await vf.GetVideoItemSubtitlesAsync(ID);
+
+            Subtitles.Clear();
+
+            foreach (ISubtitle sub in res)
+            {
+                Subtitles.Add(sub);
+            }
+        }
+
+        public async Task<IChannel> GetParentChannelAsync()
+        {
+            return await vf.GetParentChannelAsync(ParentID);
+        }
+
+        public async Task<IVideoItem> GetVideoItemDbAsync()
+        {
+            return await vf.GetVideoItemDbAsync(ID);
+        }
+
+        public async Task<IVideoItem> GetVideoItemNetAsync()
+        {
+            return await vf.GetVideoItemNetAsync(ID, Site);
         }
 
         private void ErrorOccured()
@@ -99,6 +123,15 @@ namespace Models.BO.Items
             taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
             State = ItemState.LocalNo;
             IsHasLocalFile = false;
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         private void ProcessExited()
@@ -217,7 +250,6 @@ namespace Models.BO.Items
         }
 
         public bool IsNewItem { get; set; }
-
         public bool IsSelected { get; set; }
 
         public byte[] LargeThumb
@@ -276,16 +308,11 @@ namespace Models.BO.Items
             }
         }
 
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
-        public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public long ViewCount { get; set; }
-
-        public async Task DeleteItemAsync()
-        {
-            await vf.DeleteItemAsync(ID);
-        }
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudiOnly)
         {
@@ -310,9 +337,9 @@ namespace Models.BO.Items
                     string.Format(
                                   isHd
                                       ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
-                        dir,
-                        MakeLink(),
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}", 
+                        dir, 
+                        MakeLink(), 
                         options);
             }
 
@@ -332,12 +359,12 @@ namespace Models.BO.Items
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden, 
+                UseShellExecute = false, 
+                RedirectStandardOutput = true, 
+                RedirectStandardError = true, 
+                RedirectStandardInput = true, 
+                ErrorDialog = false, 
                 CreateNoWindow = true
             };
 
@@ -360,41 +387,9 @@ namespace Models.BO.Items
             });
         }
 
-        public async Task FillSubtitles()
-        {
-            if (Subtitles.Any())
-            {
-                return;
-            }
-
-            IEnumerable<ISubtitle> res = await vf.GetVideoItemSubtitlesAsync(ID);
-
-            Subtitles.Clear();
-
-            foreach (ISubtitle sub in res)
-            {
-                Subtitles.Add(sub);
-            }
-        }
-
         public async Task FillDescriptionAsync()
         {
             await vf.FillDescriptionAsync(this);
-        }
-
-        public async Task<IChannel> GetParentChannelAsync()
-        {
-            return await vf.GetParentChannelAsync(ParentID);
-        }
-
-        public async Task<IVideoItem> GetVideoItemDbAsync()
-        {
-            return await vf.GetVideoItemDbAsync(ID);
-        }
-
-        public async Task<IVideoItem> GetVideoItemNetAsync()
-        {
-            return await vf.GetVideoItemNetAsync(ID, Site);
         }
 
         public async Task InsertItemAsync()
@@ -455,14 +450,6 @@ namespace Models.BO.Items
             {
                 string param = string.Format("\"{0}\" /play", MakeLink());
                 await Task.Run(() => Process.Start(mpcpath, param));
-            }
-        }
-
-        public RelayCommand FillSubitlesCommand
-        {
-            get
-            {
-                return fillSubitlesCommand ?? (fillSubitlesCommand = new RelayCommand(x => FillSubtitles()));
             }
         }
 

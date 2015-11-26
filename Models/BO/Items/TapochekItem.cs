@@ -5,7 +5,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 
@@ -48,11 +47,6 @@ namespace Models.BO.Items
         }
 
         public Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FillSubtitles()
         {
             throw new NotImplementedException();
         }
@@ -101,8 +95,6 @@ namespace Models.BO.Items
         {
             throw new NotImplementedException();
         }
-
-        public RelayCommand FillSubitlesCommand { get; private set; }
 
         #endregion
     }

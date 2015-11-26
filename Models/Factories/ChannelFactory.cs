@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -16,7 +15,6 @@ using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using Models.BO;
 using Models.BO.Channels;
 
 namespace Models.Factories
@@ -583,10 +581,10 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
@@ -596,11 +594,11 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
-                Site = site,
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
+                Site = site, 
                 SiteAdress = CommonExtensions.GetSiteAdress(site)
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
@@ -611,15 +609,15 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ID = poco.ID,
-                Title = poco.Title,
+                ID = poco.ID, 
+                Title = poco.Title, 
                 SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail,
-                SiteAdress = poco.Site,
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
+                Thumbnail = poco.Thumbnail, 
+                SiteAdress = poco.Site, 
+                ChannelItems = new ObservableCollection<IVideoItem>(), 
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
+                ChannelTags = new ObservableCollection<ITag>(), 
+                ChannelCookies = new CookieContainer(), 
                 Site = CommonExtensions.GetSiteType(poco.Site)
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);

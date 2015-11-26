@@ -1,16 +1,14 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
+using Crawler.Common;
 using Crawler.Views;
-using Interfaces;
 using Interfaces.Models;
-using Models.BO;
 using Models.BO.Channels;
 
 namespace Crawler.ViewModels
@@ -19,17 +17,14 @@ namespace Crawler.ViewModels
     {
         #region Fields
 
+        private RelayCommand addCommand;
         private RelayCommand deleteTagCommand;
         private RelayCommand fillTagsCommand;
         private RelayCommand saveCommand;
-        private RelayCommand addCommand;
 
         #endregion
 
         #region Properties
-
-        public ObservableCollection<IChannel> Channels { get; set; }
-        public ObservableCollection<ITag> CurrentTags { get; set; }
 
         public RelayCommand AddCommand
         {
@@ -39,25 +34,8 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void Add(object obj)
-        {
-            var window = obj as Window;
-            if (window == null)
-            {
-                return;
-            }
-            var atvm = new AddTagViewModel { ParentChannel = ParentChannel };
-            foreach (ITag tag in Tags)
-            {
-                atvm.Tags.Add(tag);
-            }
-
-            atvm.SelectedTag = atvm.Tags.First();
-
-            var atv = new AddTagView { DataContext = atvm, Owner = window, WindowStartupLocation = WindowStartupLocation.CenterOwner };
-
-            atv.ShowDialog();
-        }
+        public ObservableCollection<IChannel> Channels { get; set; }
+        public ObservableCollection<ITag> CurrentTags { get; set; }
 
         public RelayCommand DeleteTagCommand
         {
@@ -91,6 +69,26 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Methods
+
+        private void Add(object obj)
+        {
+            var window = obj as Window;
+            if (window == null)
+            {
+                return;
+            }
+            var atvm = new AddTagViewModel { ParentChannel = ParentChannel };
+            foreach (ITag tag in Tags)
+            {
+                atvm.Tags.Add(tag);
+            }
+
+            atvm.SelectedTag = atvm.Tags.First();
+
+            var atv = new AddTagView { DataContext = atvm, Owner = window, WindowStartupLocation = WindowStartupLocation.CenterOwner };
+
+            atv.ShowDialog();
+        }
 
         private async void DeleteTag(object obj)
         {

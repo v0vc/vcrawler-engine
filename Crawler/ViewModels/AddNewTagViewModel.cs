@@ -4,8 +4,7 @@
 
 using System.Linq;
 using System.Windows;
-using Extensions;
-using Interfaces;
+using Crawler.Common;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
