@@ -30,7 +30,6 @@ using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
-using Models.BO;
 using Models.BO.Channels;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
@@ -91,7 +90,6 @@ namespace Crawler.ViewModels
         private IList selectedChannels = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
-        private IVideoItem selectedVideoItem;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
         private RelayCommand videoClickCommand;
@@ -422,19 +420,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        //public IVideoItem SelectedVideoItem
-        //{
-        //    get
-        //    {
-        //        return selectedVideoItem;
-        //    }
-        //    set
-        //    {
-        //        selectedVideoItem = value;
-        //        OnPropertyChanged();
-        //    }
-        //}
-
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
         public SettingsViewModel SettingsViewModel { get; private set; }
@@ -573,19 +558,6 @@ namespace Crawler.ViewModels
                 }
             }
         }
-
-        //private static async void SubmenuOpened(object obj)
-        //{
-        //    var item = obj as IVideoItem;
-        //    if (item == null)
-        //    {
-        //        return;
-        //    }
-        //    if (!item.Subtitles.Any())
-        //    {
-        //        await item.FillSubtitles();
-        //    }
-        //}
 
         #endregion
 
