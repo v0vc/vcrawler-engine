@@ -57,6 +57,17 @@
                           Margin="20,0,0,0" VerticalAlignment="Center" 
                           />
                 <Label Content="Only Audio" VerticalAlignment="Top" MouseLeftButtonDown="AddLink_OnAudioMouseEnter" />
+
+                <ListView ItemsSource="{Binding Path=Subtitles}" BorderThickness="0" Background="WhiteSmoke" Width="40" Margin="20,4,0,4">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox IsChecked="{Binding IsChecked}" Margin="0,1,0,0" />
+                                <TextBlock Text="{Binding Language}" IsEnabled="{Binding IsEnabled}" Margin="10,0,10,0" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
                 
             </StackPanel>
         </Grid>

@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -43,7 +44,7 @@ namespace Crawler.ViewModels
             {
                 text = CommonExtensions.RemoveSpecialCharacters(text);
             }
-            ParseYou(text);
+            Link = text;
         }
 
         #endregion
@@ -96,6 +97,7 @@ namespace Crawler.ViewModels
             }
         }
 
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
         #endregion
 
         #region Static Methods

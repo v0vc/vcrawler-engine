@@ -811,7 +811,7 @@ namespace Crawler.ViewModels
             switch (key)
             {
                 case KeyboardKey.Delete:
-                    await ConfirmDelete();
+                    await DeleteChannels();
                     break;
 
                 case KeyboardKey.Enter:
@@ -826,7 +826,7 @@ namespace Crawler.ViewModels
             switch (menu)
             {
                 case ChannelMenuItem.Delete:
-                    await ConfirmDelete();
+                    await DeleteChannels();
                     break;
 
                 case ChannelMenuItem.Edit:
@@ -851,7 +851,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task ConfirmDelete()
+        private async Task DeleteChannels()
         {
             var sb = new StringBuilder();
 
@@ -936,38 +936,40 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task DownloadAudio()
+        private async Task DownloadWithOptions(VideoMenuItem item)
         {
             if (!IsYoutubeExist())
             {
                 return;
             }
-
-            SelectedChannel.IsDownloading = true;
-            await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
-        }
-
-        private async Task DownloadHd()
-        {
-            if (!IsYoutubeExist())
+            switch (item)
             {
-                return;
-            }
+                case VideoMenuItem.Audio:
 
-            if (IsFfmegExist())
-            {
-                SelectedChannel.IsDownloading = true;
-                await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
-            }
-            else
-            {
-                var ff = new FfmpegView
-                {
-                    Owner = Application.Current.MainWindow, 
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
-                };
+                    SelectedChannel.IsDownloading = true;
+                    await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
 
-                ff.ShowDialog();
+                    break;
+
+                case VideoMenuItem.HD:
+
+                    if (IsFfmegExist())
+                    {
+                        SelectedChannel.IsDownloading = true;
+                        await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
+                    }
+                    else
+                    {
+                        var ff = new FfmpegView
+                        {
+                            Owner = Application.Current.MainWindow,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+
+                        ff.ShowDialog();
+                    }
+
+                    break;
             }
         }
 
@@ -1755,11 +1757,11 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Audio:
-                    await DownloadAudio();
+                    await DownloadWithOptions(menu);
                     break;
 
                 case VideoMenuItem.HD:
-                    await DownloadHd();
+                    await DownloadWithOptions(menu);
                     break;
 
                 case VideoMenuItem.Link:
