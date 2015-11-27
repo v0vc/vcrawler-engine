@@ -3,9 +3,11 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -13,7 +15,9 @@ using System.Windows;
 using Crawler.Common;
 using Extensions;
 using Interfaces.Enums;
+using Interfaces.Factories;
 using Interfaces.Models;
+using Interfaces.POCO;
 
 namespace Crawler.ViewModels
 {
@@ -30,6 +34,7 @@ namespace Crawler.ViewModels
         private RelayCommand downloadLinkCommand;
         private bool isYouTube;
         private string link;
+        private RelayCommand subtitlesDropDownOpenedCommand;
         private string youId;
 
         #endregion
@@ -39,6 +44,7 @@ namespace Crawler.ViewModels
         public DownloadLinkViewModel(MainWindowViewModel mv)
         {
             this.mv = mv;
+            Subtitles = new ObservableCollection<ISubtitle>();
             var text = Clipboard.GetData(DataFormats.Text) as string;
             if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
             {
@@ -98,6 +104,16 @@ namespace Crawler.ViewModels
         }
 
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
+
+        public RelayCommand SubtitlesDropDownOpenedCommand
+        {
+            get
+            {
+                return subtitlesDropDownOpenedCommand
+                       ?? (subtitlesDropDownOpenedCommand = new RelayCommand(async x => await FillSubtitles()));
+            }
+        }
+
         #endregion
 
         #region Static Methods
@@ -156,6 +172,10 @@ namespace Crawler.ViewModels
             if (IsYouTube)
             {
                 IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
+                foreach (ISubtitle subtitle in Subtitles.Where(subtitle => subtitle.IsChecked))
+                {
+                    vi.Subtitles.Add(subtitle);
+                }
                 vi.ParentID = null;
                 mv.SelectedChannel = mv.ServiceChannel;
                 mv.SelectedChannel.SelectedItem = vi;
@@ -177,6 +197,25 @@ namespace Crawler.ViewModels
                         process.Close();
                     }
                 });
+            }
+        }
+
+        private async Task FillSubtitles()
+        {
+            if (Subtitles.Any())
+            {
+                return;
+            }
+
+            ISubtitleFactory cf = mv.BaseFactory.CreateSubtitleFactory();
+            IEnumerable<ISubtitlePOCO> res = (await mv.BaseFactory.CreateYouTubeSite().GetVideoSubtitlesByIdAsync(youId)).ToList();
+            if (res.Any())
+            {
+                Subtitles.Clear();
+                foreach (ISubtitle sb in res.Select(poco => cf.CreateSubtitle(poco)))
+                {
+                    Subtitles.Add(sb);
+                }
             }
         }
 
