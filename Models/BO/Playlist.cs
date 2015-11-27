@@ -35,7 +35,6 @@ namespace Models.BO
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
-        public List<IVideoItem> PlaylistItems { get; set; }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }

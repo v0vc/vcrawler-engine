@@ -138,7 +138,7 @@ namespace Models.Factories
 
         public IPlaylist CreatePlaylist()
         {
-            var pl = new Playlist(this) { PlaylistItems = new List<IVideoItem>() };
+            var pl = new Playlist(this);
             return pl;
         }
 
@@ -151,7 +151,6 @@ namespace Models.Factories
                 SubTitle = poco.SubTitle, 
                 Thumbnail = poco.Thumbnail, 
                 ChannelId = poco.ChannelID, 
-                PlaylistItems = new List<IVideoItem>()
             };
             return pl;
         }

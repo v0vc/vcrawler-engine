@@ -1004,10 +1004,12 @@ namespace Crawler.ViewModels
             var channel = obj as YouChannel;
             if (channel == null)
             {
+                // ну пока так
                 return;
             }
 
-            channel.FilterVideoKey = string.Empty;
+            channel.ChannelItemsCollectionView.Filter = null;
+
             IsExpand = false;
 
             if (RelatedChannels.Any() && !RelatedChannels.Contains(channel))
@@ -1111,7 +1113,12 @@ namespace Crawler.ViewModels
         private bool FilterByPlayList(object obj)
         {
             var item = (IVideoItem)obj;
-            return item != null && plids.Any(plid => item.ID == plid);
+            if (item == null)
+            {
+                return false;
+            }
+            bool res = plids.Any(plid => item.ID == plid);
+            return res;
         }
 
         private bool FilterChannel(object item)
@@ -1400,17 +1407,13 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
-            IEnumerable<string> pls = await pl.GetPlaylistItemsIdsListNetAsync();
+            List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync()).ToList();
 
-            pl.PlaylistItems.Clear();
-
-            foreach (string id in pls.Where(id => !pl.PlaylistItems.Select(x => x.ID).Contains(id)))
+            foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
-
                 SelectedChannel.AddNewItem(vi, false);
-
-                pl.PlaylistItems.Add(vi);
+                await pl.UpdatePlaylistAsync(id);
             }
 
             SetStatus(0);
@@ -1420,12 +1423,19 @@ namespace Crawler.ViewModels
         {
             try
             {
-                string link = string.Format("https://www.youtube.com/playlist?list={0}", SelectedPlaylist.ID);
+                string link = string.Empty;
+                switch (SelectedPlaylist.Site)
+                {
+                    case SiteType.YouTube:
+                        link = string.Format("https://www.youtube.com/playlist?list={0}", SelectedPlaylist.ID);
+                        break;
+                }
+
                 Clipboard.SetText(link);
             }
-            catch (Exception ex)
+            catch
             {
-                Info = ex.Message;
+                // ignore
             }
         }
 
@@ -1529,6 +1539,17 @@ namespace Crawler.ViewModels
             }
         }
 
+        private async Task RestoreFullChannelItems(YouChannel channel)
+        {
+            if (channel.ChannelItemsCount > channel.ChannelItems.Count)
+            {
+                await
+                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
+                        channel.ChannelItemsCount - channel.ChannelItems.Count, 
+                        channel.ChannelItems.Count);
+            }
+        }
+
         private async void RunItemDoubleClick(object obj)
         {
             var item = obj as IVideoItem;
@@ -1593,13 +1614,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            if (channel.ChannelItemsCount > channel.ChannelItems.Count)
-            {
-                await
-                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
-                        channel.ChannelItemsCount - channel.ChannelItems.Count, 
-                        channel.ChannelItems.Count);
-            }
+            await RestoreFullChannelItems(channel);
         }
 
         private async void SelectPlaylist(object obj)
@@ -1613,10 +1628,12 @@ namespace Crawler.ViewModels
             plids = await pl.GetPlaylistItemsIdsListDbAsync();
 
             var channel = SelectedChannel as YouChannel;
-            if (channel != null)
+            if (channel == null)
             {
-                channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
+                return;
             }
+            await RestoreFullChannelItems(channel);
+            channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
         }
 
         private void SelectPopular(object obj)

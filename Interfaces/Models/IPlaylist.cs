@@ -14,7 +14,6 @@ namespace Interfaces.Models
 
         string ChannelId { get; set; }
         string ID { get; set; }
-        List<IVideoItem> PlaylistItems { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
