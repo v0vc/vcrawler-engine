@@ -1342,9 +1342,13 @@ namespace DataAPI.Database
 
         public async Task VacuumAsync()
         {
-            using (SQLiteCommand command = GetCommand("vacuum"))
+            var command = new SQLiteCommand { CommandText = "vacuum", CommandType = CommandType.Text };
+            using (var connection = new SQLiteConnection(dbConnection))
             {
-                await ExecuteNonQueryAsync(command);
+                await connection.OpenAsync();
+                command.Connection = connection;
+                await command.ExecuteNonQueryAsync();
+                connection.Close();
             }
         }
 
