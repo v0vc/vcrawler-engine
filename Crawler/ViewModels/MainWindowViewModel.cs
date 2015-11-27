@@ -84,6 +84,7 @@ namespace Crawler.ViewModels
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
+        private IEnumerable<string> plids;
         private RelayCommand popularSelectCommand;
         private double prValue;
         private string result;
@@ -700,6 +701,7 @@ namespace Crawler.ViewModels
                 channel.ChannelPlaylists.Add(pl);
                 await pl.InsertPlaylistAsync();
                 IEnumerable<string> plv = await pl.GetPlaylistItemsIdsListNetAsync(); // получим список id плейлиста
+                var dicttocheck = new Dictionary<string, IPlaylist>();
                 var needcheck = new List<string>();
                 foreach (string id in plv)
                 {
@@ -709,7 +711,12 @@ namespace Crawler.ViewModels
                     }
                     else
                     {
+                        if (needcheck.Contains(id))
+                        {
+                            continue;
+                        }
                         needcheck.Add(id); // видео нету - пока добавим в список для дальнейшей проверки
+                        dicttocheck.Add(id, pl);
                     }
                 }
 
@@ -745,6 +752,12 @@ namespace Crawler.ViewModels
                         IVideoItem vi = vf.CreateVideoItem(poco);
                         channel.AddNewItem(vi, false);
                         await vi.InsertItemAsync();
+                        IPlaylist playlist;
+                        if (dicttocheck.TryGetValue(vi.ID, out playlist))
+                        {
+                            // проапдейтим
+                            await playlist.UpdatePlaylistAsync(vi.ID);
+                        }
                     }
                 }
             }
@@ -962,7 +975,7 @@ namespace Crawler.ViewModels
                     {
                         var ff = new FfmpegView
                         {
-                            Owner = Application.Current.MainWindow,
+                            Owner = Application.Current.MainWindow, 
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
                         };
 
@@ -1093,6 +1106,12 @@ namespace Crawler.ViewModels
             }
             bool res = channel.ChannelTags.Any(x => x.IsChecked);
             return res;
+        }
+
+        private bool FilterByPlayList(object obj)
+        {
+            var item = (IVideoItem)obj;
+            return item != null && plids.Any(plid => item.ID == plid);
         }
 
         private bool FilterChannel(object item)
@@ -1591,35 +1610,13 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            IEnumerable<string> lstv = (await pl.GetPlaylistItemsIdsListDbAsync()).ToList();
+            plids = await pl.GetPlaylistItemsIdsListDbAsync();
 
-            // if (!lstv.Any())
-            // {
-            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            // {
-            // item.IsShowRow = false;
-            // }
-
-            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            // {
-            // item.IsShowRow = pl.PlaylistItems.Select(x => x.ID).Contains(item.ID);
-            // }
-
-            // return;
-            // }
-
-            // pl.PlaylistItems.Clear();
-
-            // foreach (IVideoItem item in SelectedChannel.ChannelItems)
-            // {
-            // item.IsShowRow = lstv.Contains(item.ID);
-            // if (item.IsShowRow)
-            // {
-            // pl.PlaylistItems.Add(item);
-            // }
-            // }
-
-            // filterlist.Clear();
+            var channel = SelectedChannel as YouChannel;
+            if (channel != null)
+            {
+                channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
+            }
         }
 
         private void SelectPopular(object obj)
