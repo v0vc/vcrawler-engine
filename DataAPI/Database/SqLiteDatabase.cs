@@ -190,10 +190,12 @@ namespace DataAPI.Database
                 string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
                 await RunSqlCodeAsync(sqltext);
             }
-            else
-            {
-                throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
-            }
+
+            // now can be set from launch param
+            // else
+            // {
+            //    throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
+            // }
         }
 
         private async Task RunSqlCodeAsync(string sqltext)
