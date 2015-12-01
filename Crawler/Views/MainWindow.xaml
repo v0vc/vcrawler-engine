@@ -91,7 +91,10 @@
                                               >
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="SelectionChanged" SourceName="relatedGrid">
-                                                <i:InvokeCommandAction Command="{Binding ChannelSelectionChangedCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=relatedGrid}"/>
+                                                <i:InvokeCommandAction Command="{Binding FillRelatedChannelCommand, Mode=OneTime}" CommandParameter="25"/>
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding FillRelatedChannelCommand, Mode=OneTime}" />
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
                                         

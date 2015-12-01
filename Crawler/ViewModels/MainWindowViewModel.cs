@@ -73,6 +73,7 @@ namespace Crawler.ViewModels
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
+        private RelayCommand fillRelatedChannelCommand;
         private RelayCommand fillSubitlesCommand;
         private string filterChannelKey;
         private string info;
@@ -216,6 +217,14 @@ namespace Crawler.ViewModels
             get
             {
                 return fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
+            }
+        }
+
+        public RelayCommand FillRelatedChannelCommand
+        {
+            get
+            {
+                return fillRelatedChannelCommand ?? (fillRelatedChannelCommand = new RelayCommand(FillRelated));
             }
         }
 
@@ -1049,19 +1058,6 @@ namespace Crawler.ViewModels
                 {
                     channel.PlaylistCount = await channel.GetChannelPlaylistCountDbAsync();
                 }
-                else
-                {
-                    // нет в базе = related YouChannel
-                    SetStatus(1);
-                    channel.IsInWork = true;
-                    IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0);
-                    foreach (IVideoItem item in lst)
-                    {
-                        channel.AddNewItem(item, false);
-                    }
-                    channel.IsInWork = false;
-                    SetStatus(0);
-                }
             }
         }
 
@@ -1093,6 +1089,31 @@ namespace Crawler.ViewModels
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
             channelGrid = null;
+        }
+
+        private async void FillRelated(object obj)
+        {
+            var channel = SelectedChannel as YouChannel;
+            if (channel == null)
+            {
+                return;
+            }
+            int count = obj == null ? 0 : 25;
+
+            if (obj != null && channel.ChannelItems.Any())
+            {
+                return;
+            }
+            SetStatus(1);
+            channel.IsInWork = true;
+            IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(count);
+            foreach (IVideoItem item in lst)
+            {
+                channel.AddNewItem(item, false);
+            }
+            channel.IsInWork = false;
+            channel.ChannelItemsCount = channel.ChannelItems.Count;
+            SetStatus(0);
         }
 
         private bool FilterByCheckedTag(object item)
@@ -1664,12 +1685,27 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+
+            var lst = new List<IVideoItem>();
+            channel.ChannelItems.ForEach(x => lst.Add(x));
             Channels.Add(channel);
+            foreach (IVideoItem item in lst)
+            {
+                Channels[Channels.IndexOf(channel)].AddNewItem(item, false);
+            }
+            lst.Clear();
+            SelectedChannel = channel;
             await channel.InsertChannelItemsAsync();
         }
 
-        private async Task SyncChannel(YouChannel channel)
+        private async void SyncChannel(object obj)
         {
+            var channel = obj as YouChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
             Stopwatch watch = Stopwatch.StartNew();
@@ -1679,18 +1715,8 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async void SyncChannel(object obj)
-        {
-            var channel = obj as YouChannel;
-            if (channel != null)
-            {
-                await SyncChannel(channel);
-            }
-        }
-
         private async Task SyncChannelPlaylist()
         {
-            SetStatus(1);
             if (SelectedChannel.IsInWork)
             {
                 return;
@@ -1702,6 +1728,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
+            SetStatus(1);
             try
             {
                 await channel.SyncChannelPlaylistsAsync();
