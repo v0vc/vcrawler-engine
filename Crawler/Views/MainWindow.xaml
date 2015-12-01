@@ -828,7 +828,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" Height="150" >
-                                    <TextBox Text="{Binding SelectedChannel.SelectedItem.LogText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                                    <TextBox Text="{Binding SelectedChannel.SelectedItem.LogText, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
                                 </ScrollViewer>
 
                                 <TextBox Grid.Column="1" BorderBrush="Lavender" Width="Auto" Height="24" Margin="1,0,1,0"
