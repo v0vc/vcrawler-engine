@@ -32,6 +32,7 @@ namespace Models.BO.Channels
         private bool isDownloading;
         private bool isInWork;
         private int playlistCount;
+        private IVideoItem selectedItem;
         private string subTitle;
         private string title;
 
@@ -47,6 +48,12 @@ namespace Models.BO.Channels
         private YouChannel()
         {
         }
+
+        #endregion
+
+        #region Properties
+
+        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         #endregion
 
@@ -80,6 +87,17 @@ namespace Models.BO.Channels
         public async Task FillChannelItemsDbAsync(string dir, int count, int offset)
         {
             await cf.FillChannelItemsFromDbAsync(this, dir, count, offset);
+        }
+
+        public bool FilterVideo(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
         }
 
         public async Task<ICred> GetChannelCredentialsAsync()
@@ -183,7 +201,6 @@ namespace Models.BO.Channels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
-        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         public int ChannelItemsCount
         {
@@ -261,6 +278,8 @@ namespace Models.BO.Channels
             }
         }
 
+        public bool IsPlayListExpand { get; set; }
+
         public int PlaylistCount
         {
             get
@@ -274,7 +293,22 @@ namespace Models.BO.Channels
             }
         }
 
-        public IVideoItem SelectedItem { get; set; }
+        public IVideoItem SelectedItem
+        {
+            get
+            {
+                return selectedItem;
+            }
+            set
+            {
+                if (value == selectedItem)
+                {
+                    return;
+                }
+                selectedItem = value;
+                OnPropertyChanged();
+            }
+        }
 
         public IList<IVideoItem> SelectedItems
         {
@@ -331,17 +365,6 @@ namespace Models.BO.Channels
             {
                 ChannelItems.Add(item);
             }
-        }
-
-        public bool FilterVideo(object item)
-        {
-            var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
-            {
-                return false;
-            }
-
-            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
         }
 
         #endregion
