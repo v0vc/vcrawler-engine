@@ -41,6 +41,7 @@ namespace Models.BO.Items
         private ItemState state;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
+        private bool isProxyReady;
 
         #endregion
 
@@ -308,6 +309,8 @@ namespace Models.BO.Items
             }
         }
 
+        public string ProxyUrl { get; set; }
+
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
@@ -316,6 +319,11 @@ namespace Models.BO.Items
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudiOnly)
         {
+            if (!string.IsNullOrEmpty(ProxyUrl))
+            {
+                isProxyReady = CommonExtensions.IsValidUrl(ProxyUrl) && CommonExtensions.IsUrlExist(ProxyUrl);
+            }
+
             isAudio = isAudiOnly;
             State = ItemState.Downloading;
             DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
@@ -324,7 +332,12 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            const string options = "--no-check-certificate --console-title --no-call-home";
+            var options = "--no-check-certificate --console-title --no-call-home";
+
+            if (isProxyReady)
+            {
+                options += "--proxy " + ProxyUrl;
+            }
 
             string param;
             if (isAudio)

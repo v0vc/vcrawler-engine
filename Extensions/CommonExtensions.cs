@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -102,6 +103,29 @@ namespace Extensions
             }
             Uri uri;
             return Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out uri) && null != uri;
+        }
+
+        public static bool IsUrlExist(string url)
+        {
+            try
+            {
+                var request = WebRequest.Create(url) as HttpWebRequest;
+                if (request != null)
+                {
+                    request.Method = "HEAD";
+                    var response = request.GetResponse() as HttpWebResponse;
+                    if (response != null)
+                    {
+                        response.Close();
+                        return response.StatusCode == HttpStatusCode.OK;
+                    }
+                }
+            }
+            catch 
+            {
+                return false;
+            }
+            return true;
         }
 
         public static string MakeValidFileName(this string name)

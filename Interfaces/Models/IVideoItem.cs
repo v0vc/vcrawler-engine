@@ -34,6 +34,7 @@ namespace Interfaces.Models
         long ViewCount { get; set; }
         SiteType Site { get; set; }
         ItemState State { get; set; }
+        string ProxyUrl { get; set; }
 
         #endregion
 

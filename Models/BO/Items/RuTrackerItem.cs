@@ -30,6 +30,7 @@ namespace Models.BO.Items
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
         public ItemState State { get; set; }
+        public string ProxyUrl { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
