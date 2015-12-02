@@ -139,7 +139,7 @@ namespace Extensions
 
         public static string RemoveSpecialCharacters(string str)
         {
-            return Regex.Replace(str, "[^a-zA-Z0-9_.]+", string.Empty, RegexOptions.Compiled);
+            return string.IsNullOrEmpty(str) ? string.Empty : Regex.Replace(str, "[^a-zA-Z0-9_.]+", string.Empty, RegexOptions.Compiled);
         }
 
         public static bool RenameFile(FileInfo oldFile, FileInfo newFile)

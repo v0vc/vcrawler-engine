@@ -136,6 +136,7 @@ namespace Crawler.ViewModels
                 }
                 catch (Exception ex)
                 {
+                    MvModel.SetStatus(3);
                     MessageBox.Show(ex.Message);
                 }
             }
