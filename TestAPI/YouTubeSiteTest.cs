@@ -94,7 +94,7 @@ namespace TestAPI
         {
             IYouTubeSite you = _fabric.CreateYouTubeSite();
 
-            IEnumerable<IPlaylistPOCO> res = await you.GetChannelPlaylistNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
+            IEnumerable<IPlaylistPOCO> res = await you.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
             Assert.IsTrue(res.Any());
         }
@@ -193,6 +193,14 @@ namespace TestAPI
                 IEnumerable<IVideoItemPOCO> lst = await you.SearchItemsAsync("russia", "RU", i);
                 Assert.AreEqual(lst.Count(), i);
             }
+        }
+
+        [TestMethod]
+        public async Task GetChannelRelatedPlaylistsNetAsync()
+        {
+            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IEnumerable<IPlaylistPOCO> lst = await you.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            Assert.AreEqual(lst.Count(), 3);
         }
 
         #endregion

@@ -51,6 +51,23 @@ namespace Models.Factories
             }
         }
 
+        public async Task DeleteChannelPlaylistsAsync(string channelID)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            try
+            {
+                IEnumerable<string> lst = await fb.GetChannelsPlaylistsIdsListDbAsync(channelID);
+                foreach (string id in lst)
+                {
+                    await fb.DeletePlaylistAsync(id);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task DeleteChannelTagAsync(string channelid, string tag)
         {
             ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
@@ -174,7 +191,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.GetChannelItemsAsync(channelID, count, offset);
-                lst.AddRange(fbres.Select(vf.CreateVideoItem));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -218,14 +235,14 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     IEnumerable<IVideoItemPOCO> youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
-                    lst.AddRange(youres.Select(vf.CreateVideoItem));
+                    lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
                 case SiteType.Tapochek:
 
                     IEnumerable<IVideoItemPOCO> tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
-                    lst.AddRange(tapres.Select(vf.CreateVideoItem));
+                    lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
@@ -258,7 +275,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistAsync(channelID);
-                lst.AddRange(fbres.Select(pf.CreatePlaylist));
+                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -274,8 +291,8 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistNetAsync(channelID);
-                lst.AddRange(fbres.Select(pf.CreatePlaylist));
+                IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistsNetAsync(channelID);
+                lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -293,7 +310,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<ITagPOCO> fbres = await fb.GetChannelTagsAsync(id);
-                lst.AddRange(fbres.Select(tf.CreateTag));
+                lst.AddRange(fbres.Select(poco => tf.CreateTag(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -311,7 +328,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.GetPopularItemsAsync(regionID, maxresult);
-                lst.AddRange(fbres.Select(vf.CreateVideoItem));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -398,7 +415,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<IVideoItemPOCO> fbres = await fb.SearchItemsAsync(key, regionID, maxresult);
-                lst.AddRange(fbres.Select(vf.CreateVideoItem));
+                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -541,6 +558,7 @@ namespace Models.Factories
 
             IVideoItemFactory vf = _c.CreateVideoItemFactory();
 
+            channel.PlaylistCount = pls.Count;
             foreach (IPlaylist playlist in pls)
             {
                 await playlist.InsertPlaylistAsync();
@@ -678,22 +696,5 @@ namespace Models.Factories
         }
 
         #endregion
-
-        public async Task DeleteChannelPlaylistsAsync(string channelID)
-        {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            try
-            {
-                IEnumerable<string> lst = await fb.GetChannelsPlaylistsIdsListDbAsync(channelID);
-                foreach (string id in lst)
-                {
-                    await fb.DeletePlaylistAsync(id);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
     }
 }

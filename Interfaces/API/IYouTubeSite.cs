@@ -58,11 +58,18 @@ namespace Interfaces.API
         Task<IChannelPOCO> GetChannelNetAsync(string channelID);
 
         /// <summary>
+        ///     Получить списки технических плэйлистов канала
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID);
+
+        /// <summary>
         ///     Получение списка плэйлистов канала
         /// </summary>
         /// <param name="channelID">ID канала</param>
         /// <returns>Список плейлистов</returns>
-        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID);
+        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID);
 
         /// <summary>
         ///     Получить список всех ID видео плэйлиста

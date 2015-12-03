@@ -360,7 +360,32 @@ namespace DataAPI.Videos
             return ch;
         }
 
-        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistNetAsync(string channelID)
+        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID)
+        {
+            var res = new List<IPlaylistPOCO>();
+            string zap = string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))",
+                url,
+                key,
+                channelID);
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            JObject jsvideo = JObject.Parse(str);
+            JToken par = jsvideo.SelectToken("items[0].contentDetails.relatedPlaylists");
+            if (par == null)
+            {
+                return res;
+            }
+            foreach (JToken jToken in par)
+            {
+                IPlaylistPOCO pl = await GetPlaylistNetAsync(jToken.Value<string>());
+                if (!string.IsNullOrEmpty(pl.Title))
+                {
+                    res.Add(pl);
+                }
+            }
+            return res;
+        }
+
+        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
 
@@ -368,11 +393,11 @@ namespace DataAPI.Videos
 
             string zap =
                 string.Format(
-                              "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}", 
-                    url, 
-                    key, 
-                    channelID, 
-                    itemsPerPage, 
+                              "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}",
+                    url,
+                    key,
+                    channelID,
+                    itemsPerPage,
                     printType);
 
             do
