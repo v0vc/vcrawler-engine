@@ -20,6 +20,25 @@
         </i:EventTrigger>
     </i:Interaction.Triggers>
     
+    <Window.Resources>
+        <ItemsPanelTemplate x:Key="MenuItemPanelTemplate">
+            <StackPanel Margin="-20,0,-50,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+        </ItemsPanelTemplate>
+        <ItemsPanelTemplate x:Key="ContextItemPanelTemplate">
+            <StackPanel Margin="-20,0,0,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+        </ItemsPanelTemplate>
+        <Style TargetType="{x:Type ContextMenu}">
+            <Setter Property="ItemsPanel" Value="{StaticResource ContextItemPanelTemplate}"/>
+        </Style>
+        <Style TargetType="{x:Type MenuItem}">
+            <Setter Property="ItemsPanel" Value="{StaticResource MenuItemPanelTemplate}"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        </Style>
+    </Window.Resources>
+    
     <Grid>
         
         <Grid.RowDefinitions>
@@ -104,13 +123,6 @@
                                                 <MenuItem Header="Subscribe" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Subscribe}" />
                                             </ContextMenu>
                                         </DataGrid.Resources>
-
-                                        <DataGrid.CellStyle>
-                                            <Style TargetType="DataGridCell">
-                                                <Setter Property="BorderThickness" Value="0" />
-                                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                            </Style>
-                                        </DataGrid.CellStyle>
 
                                         <DataGrid.RowStyle>
                                             <Style TargetType="{x:Type DataGridRow}">
@@ -219,18 +231,10 @@
                             <MenuItem Header="Tags" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Tags}" />
                             <MenuItem Header="Update PL" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
                         </ContextMenu>
-                    </DataGrid.Resources>
-                    
-                    <DataGrid.CellStyle>
-                        <Style TargetType="DataGridCell">
-                            <Setter Property="BorderThickness" Value="0" />
-                            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                        </Style>
-                    </DataGrid.CellStyle>
+                    </DataGrid.Resources> 
                     
                     <DataGrid.RowStyle>
                         <Style TargetType="{x:Type DataGridRow}">
-                            <!--<Setter Property="IsSelected" Value="{Binding Path=IsSelected}"/>-->
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
@@ -377,17 +381,10 @@
                                                 <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
                                             </i:EventTrigger>
                                         </i:Interaction.Triggers>
-                                        
-                                        <DataGrid.Resources>
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                                    </DataGrid.Resources>
 
-                                        <DataGrid.CellStyle>
-                                            <Style TargetType="DataGridCell">
-                                                <Setter Property="BorderThickness" Value="0" />
-                                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                            </Style>
-                                        </DataGrid.CellStyle>
+                                        <DataGrid.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                        </DataGrid.Resources>
 
                                         <DataGrid.Columns>
                                             <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:ServiceChannelViewModel}">
@@ -643,9 +640,11 @@
                                         </ListView.ItemTemplate>
                                     </ListView>
                                 </MenuItem>
+                                
                                 <MenuItem Header="Proxy" StaysOpenOnClick="True">
                                     <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                             Width="100"/>
+                                             Width="140"
+                                             />
                                 </MenuItem>
 
                             </ContextMenu>
@@ -662,13 +661,6 @@
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>
-
-                        <DataGrid.CellStyle>
-                            <Style TargetType="DataGridCell">
-                                <Setter Property="BorderThickness" Value="0" />
-                                <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                            </Style>
-                        </DataGrid.CellStyle>
 
                         <DataGrid.Columns>
 
@@ -927,13 +919,6 @@
                                     <MenuItem Header="Download" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Download}" />
                                 </ContextMenu>
                             </DataGrid.Resources>
-                            
-                            <DataGrid.CellStyle>
-                                <Style TargetType="DataGridCell">
-                                    <Setter Property="BorderThickness" Value="0" />
-                                    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-                                </Style>
-                            </DataGrid.CellStyle>
                             
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">

@@ -535,10 +535,7 @@ namespace Models.Factories
 
             if (pls.Any())
             {
-                foreach (IPlaylist playlist in channel.ChannelPlaylists)
-                {
-                    await playlist.DeletePlaylistAsync();
-                }
+                await channel.DeleteChannelPlaylistsAsync();
                 channel.ChannelPlaylists.Clear();
             }
 
@@ -566,6 +563,7 @@ namespace Models.Factories
 
                         channel.AddNewItem(item, true);
                         await item.InsertItemAsync();
+                        await playlist.UpdatePlaylistAsync(item.ID);
                     }
                 }
 
@@ -680,5 +678,22 @@ namespace Models.Factories
         }
 
         #endregion
+
+        public async Task DeleteChannelPlaylistsAsync(string channelID)
+        {
+            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            try
+            {
+                IEnumerable<string> lst = await fb.GetChannelsPlaylistsIdsListDbAsync(channelID);
+                foreach (string id in lst)
+                {
+                    await fb.DeletePlaylistAsync(id);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
     }
 }

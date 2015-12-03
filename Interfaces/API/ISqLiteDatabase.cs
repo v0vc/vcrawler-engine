@@ -147,6 +147,12 @@ namespace Interfaces.API
         Task<IEnumerable<string>> GetChannelsIdsListDbAsync();
 
         /// <summary>
+        ///     Получить список всех ID плейлистов канала
+        /// </summary>
+        /// <returns></returns>
+        Task<IEnumerable<string>> GetChannelsPlaylistsIdsListDbAsync(string id);
+
+        /// <summary>
         ///     Получить список всех каналов из бд
         /// </summary>
         /// <returns></returns>

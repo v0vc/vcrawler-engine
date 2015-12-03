@@ -696,6 +696,44 @@ namespace DataAPI.Database
             return res;
         }
 
+        public async Task<IEnumerable<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
+        {
+            var res = new List<string>();
+
+            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", playlistID, tableplaylists, playlistChannelId, id);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Commit();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync())
+                            {
+                                var ch = reader[playlistID] as string;
+                                res.Add(ch);
+                            }
+
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
         public async Task<IEnumerable<IChannelPOCO>> GetChannelsListAsync()
         {
             var res = new List<IChannelPOCO>();

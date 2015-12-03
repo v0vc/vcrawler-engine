@@ -69,6 +69,11 @@ namespace Models.BO.Channels
             await cf.DeleteChannelTagAsync(ID, tag);
         }
 
+        public async Task DeleteChannelPlaylistsAsync()
+        {
+            await cf.DeleteChannelPlaylistsAsync(ID);
+        }
+
         public void FillChannelCookieDb()
         {
             cf.FillChannelCookieDb(this);

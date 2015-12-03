@@ -321,7 +321,8 @@ namespace Models.BO.Items
         {
             if (!string.IsNullOrEmpty(ProxyUrl))
             {
-                isProxyReady = CommonExtensions.IsValidUrl(ProxyUrl) && CommonExtensions.IsUrlExist(ProxyUrl);
+                // isProxyReady = CommonExtensions.IsValidUrl(ProxyUrl) && CommonExtensions.IsUrlExist(ProxyUrl);
+                isProxyReady = true;
             }
 
             isAudio = isAudiOnly;
@@ -336,7 +337,7 @@ namespace Models.BO.Items
 
             if (isProxyReady)
             {
-                options += "--proxy " + ProxyUrl;
+                options += " --proxy " + ProxyUrl;
             }
 
             string param;
@@ -384,6 +385,7 @@ namespace Models.BO.Items
             taskbar = TaskbarManager.Instance;
             taskbar.SetProgressState(TaskbarProgressBarState.Normal);
 
+            await Log("======");
             await Task.Run(() =>
             {
                 var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
