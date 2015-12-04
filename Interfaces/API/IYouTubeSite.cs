@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -43,6 +42,13 @@ namespace Interfaces.API
         Task<int> GetChannelItemsCountNetAsync(string channelID);
 
         /// <summary>
+        ///     Получить количество элементов канала поиском
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        Task<int> GetChannelItemsCountBySearchNetAsync(string channelID);
+
+            /// <summary>
         ///     Получить список всех ID видео с канала
         /// </summary>
         /// <param name="channelID">ID канала</param>
@@ -58,6 +64,13 @@ namespace Interfaces.API
         Task<IChannelPOCO> GetChannelNetAsync(string channelID);
 
         /// <summary>
+        ///     Получение списка плэйлистов канала
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <returns>Список плейлистов</returns>
+        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID);
+
+        /// <summary>
         ///     Получить списки технических плэйлистов канала
         /// </summary>
         /// <param name="channelID"></param>
@@ -65,11 +78,11 @@ namespace Interfaces.API
         Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID);
 
         /// <summary>
-        ///     Получение списка плэйлистов канала
+        ///     Получить количество элементов плейлиста
         /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns>Список плейлистов</returns>
-        Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID);
+        /// <param name="plId"></param>
+        /// <returns></returns>
+        Task<int> GetPlaylistItemsCountNetAsync(string plId);
 
         /// <summary>
         ///     Получить список всех ID видео плэйлиста
@@ -122,13 +135,6 @@ namespace Interfaces.API
         Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid);
 
         /// <summary>
-        ///     Получить список субтитров видео
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id);
-
-        /// <summary>
         ///     Получить список полных видео по списку id
         /// </summary>
         /// <param name="ids"></param>
@@ -141,6 +147,13 @@ namespace Interfaces.API
         /// <param name="ids"></param>
         /// <returns></returns>
         Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids);
+
+        /// <summary>
+        ///     Получить список субтитров видео
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id);
 
         /// <summary>
         ///     Парсим что ввел юзер для получения ID канала

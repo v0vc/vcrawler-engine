@@ -217,14 +217,29 @@ namespace DataAPI.Videos
                 key, 
                 printType);
 
-            // var zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", Url, channelID, Key, Print);
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
 
             JObject jsvideo = JObject.Parse(str);
 
             JToken total = jsvideo.SelectToken("items[0].statistics.videoCount");
 
-            // var total = jsvideo.SelectToken("pageInfo.totalResults");
+            if (total == null)
+            {
+                throw new Exception(zap);
+            }
+            return total.Value<int>();
+        }
+
+        public async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
+        {
+            var zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            var total = jsvideo.SelectToken("pageInfo.totalResults");
+
             if (total == null)
             {
                 throw new Exception(zap);
@@ -405,10 +420,13 @@ namespace DataAPI.Videos
         public async Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
-            string zap = string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))", 
-                url, 
-                key, 
-                channelID);
+            string zap =
+                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists)&{3})",
+                    url,
+                    key,
+                    channelID,
+                    printType);
+
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
             JObject jsvideo = JObject.Parse(str);
             JToken par = jsvideo.SelectToken("items[0].contentDetails.relatedPlaylists");
@@ -438,6 +456,27 @@ namespace DataAPI.Videos
                 res.Add(pl);
             }
             return res;
+        }
+
+        public async Task<int> GetPlaylistItemsCountNetAsync(string plId)
+        {
+            string zap = string.Format("{0}playlists?id={1}&key={2}&part=contentDetails&fields=items(contentDetails(itemCount))&{3}",
+                url,
+                plId,
+                key,
+                printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken total = jsvideo.SelectToken("items[0].contentDetails.itemCount");
+
+            if (total == null)
+            {
+                throw new Exception(zap);
+            }
+            return total.Value<int>();
         }
 
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)

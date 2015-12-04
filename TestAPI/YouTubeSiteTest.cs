@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Interfaces.API;
 using Interfaces.Factories;
+using Interfaces.Models;
 using Interfaces.POCO;
 using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -19,7 +20,13 @@ namespace TestAPI
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _fabric;
+        private readonly ICommonFactory fabric;
+
+        #endregion
+
+        #region Fields
+
+        private ICred cred;
 
         #endregion
 
@@ -27,10 +34,11 @@ namespace TestAPI
 
         public YouTubeSiteTest()
         {
-            using (var scope = Container.Kernel.BeginLifetimeScope())
+            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                _fabric = scope.Resolve<ICommonFactory>();
+                fabric = scope.Resolve<ICommonFactory>();
             }
+            FillCred();
         }
 
         #endregion
@@ -40,7 +48,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelIdByUserNameNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             string res = await you.GetChannelIdByUserNameNetAsync("mcmbmirussian");
 
@@ -50,7 +58,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
@@ -62,7 +70,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsCountNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             int res = await you.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
@@ -72,7 +80,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsIdsListNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IEnumerable<string> res = await you.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
 
@@ -82,7 +90,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IChannelPOCO res = await you.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
@@ -92,7 +100,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelPlaylistNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IEnumerable<IPlaylistPOCO> res = await you.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
@@ -100,9 +108,17 @@ namespace TestAPI
         }
 
         [TestMethod]
+        public async Task GetChannelRelatedPlaylistsNetAsync()
+        {
+            IYouTubeSite you = GetYouFabric();
+            IEnumerable<IPlaylistPOCO> lst = await you.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            Assert.AreEqual(lst.Count(), 3);
+        }
+
+        [TestMethod]
         public async Task GetListVideoByIdsAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             var lst = new List<string> { "-wA6Qj4oF2E" };
 
@@ -114,7 +130,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsIdsListNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IEnumerable<string> res = await you.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
@@ -122,11 +138,23 @@ namespace TestAPI
         }
 
         [TestMethod]
+        public async Task GetPlaylistItemsCountNetAsync()
+        {
+            IYouTubeSite you = GetYouFabric();
+
+            int res = await you.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+
+            int res2 = await you.GetChannelItemsCountBySearchNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+
+            Assert.IsTrue(res == res2);
+        }
+
+        [TestMethod]
         public async Task GetPlaylistItemsNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
-            IEnumerable<IVideoItemPOCO> lst = await you.GetPlaylistItemsNetAsync("PLiCpP_44QZByvNe1h9hGLlOXIXRwnz5l3");
+            IEnumerable<IVideoItemPOCO> lst = await you.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(lst.Any());
         }
@@ -134,7 +162,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IPlaylistPOCO res = await you.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
@@ -146,7 +174,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPopularItemsAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             // var testindex = new[] { 1, 2, 25, 26, 27, 49, 50, 51 };
             var testindex = new[] { 2 };
@@ -160,7 +188,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetRelatedChannelsByIdAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
             IEnumerable<IChannelPOCO> res = await you.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
             Assert.IsTrue(res.Any());
         }
@@ -168,7 +196,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoItemNetAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
 
             IVideoItemPOCO res = await you.GetVideoItemNetAsync("9bZkp7q19f0"); // lHgIpxQac3w
 
@@ -178,7 +206,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoSubtitlesByIdAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
             IEnumerable<ISubtitlePOCO> res = await you.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
             Assert.IsTrue(res.Any());
         }
@@ -186,7 +214,7 @@ namespace TestAPI
         [TestMethod]
         public async Task SearchItemsAsync()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
+            IYouTubeSite you = GetYouFabric();
             var testindex = new[] { 5 };
             foreach (int i in testindex)
             {
@@ -195,12 +223,18 @@ namespace TestAPI
             }
         }
 
-        [TestMethod]
-        public async Task GetChannelRelatedPlaylistsNetAsync()
+        private async void FillCred()
         {
-            IYouTubeSite you = _fabric.CreateYouTubeSite();
-            IEnumerable<IPlaylistPOCO> lst = await you.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
-            Assert.AreEqual(lst.Count(), 3);
+            ICredFactory cf = fabric.CreateCredFactory();
+            ICredPOCO poco = await fabric.CreateSqLiteDatabase().GetCredAsync("youtube.com");
+            cred = cf.CreateCred(poco);
+        }
+
+        private IYouTubeSite GetYouFabric()
+        {
+            IYouTubeSite you = fabric.CreateYouTubeSite();
+            you.Cred = cred;
+            return you;
         }
 
         #endregion
