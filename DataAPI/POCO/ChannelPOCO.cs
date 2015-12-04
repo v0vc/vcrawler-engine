@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
@@ -57,6 +58,8 @@ namespace DataAPI.POCO
         public string SubTitle { get; private set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
+        public List<IPlaylistPOCO> Playlists { get; set; }
+        public List<IVideoItemPOCO> Items { get; set; }
 
         #endregion
     }

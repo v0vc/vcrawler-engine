@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Interfaces.Enums;
 using Interfaces.POCO;
@@ -76,6 +77,7 @@ namespace DataAPI.POCO
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
+        public IEnumerable<IVideoItemPOCO> PlaylistItems { get; set; }
         public SiteType Site { get; set; }
 
         #endregion

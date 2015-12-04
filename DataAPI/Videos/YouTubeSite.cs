@@ -375,6 +375,28 @@ namespace DataAPI.Videos
             return ch;
         }
 
+        public async Task<IChannelPOCO> GetChannelFullNetAsync(string channelID)
+        {
+            IChannelPOCO ch = await GetChannelNetAsync(channelID);
+
+            ch.Playlists = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
+
+            IPlaylistPOCO uploads = ch.Playlists.Single(x => x.SubTitle == "uploads");
+
+            ch.Items = (await GetPlaylistItemsNetAsync(uploads.ID)).ToList();
+
+            IEnumerable<IPlaylistPOCO> pls = await GetChannelPlaylistsNetAsync(channelID);
+
+            ch.Playlists.AddRange(pls);
+
+            for (int i = ch.Playlists.Count; i > 0; i--)
+            {
+                
+            }
+
+            return ch;
+        }
+
         public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();

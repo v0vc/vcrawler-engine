@@ -64,6 +64,13 @@ namespace Interfaces.API
         Task<IChannelPOCO> GetChannelNetAsync(string channelID);
 
         /// <summary>
+        ///     Получить канал целиком
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        Task<IChannelPOCO> GetChannelFullNetAsync(string channelID);
+
+        /// <summary>
         ///     Получение списка плэйлистов канала
         /// </summary>
         /// <param name="channelID">ID канала</param>

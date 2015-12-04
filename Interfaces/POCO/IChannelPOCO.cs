@@ -2,6 +2,8 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System.Collections.Generic;
+
 namespace Interfaces.POCO
 {
     public interface IChannelPOCO
@@ -14,6 +16,8 @@ namespace Interfaces.POCO
         byte[] Thumbnail { get; }
         string Title { get; }
 
+        List<IPlaylistPOCO> Playlists { get; set; }
+        List<IVideoItemPOCO> Items { get; set; }
         #endregion
     }
 }

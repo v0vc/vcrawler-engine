@@ -2,7 +2,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using Interfaces.Enums;
+using System.Collections.Generic;
 
 namespace Interfaces.POCO
 {
@@ -16,7 +16,7 @@ namespace Interfaces.POCO
         byte[] Thumbnail { get; }
         string Title { get; }
 
-        SiteType Site { get; }
+        IEnumerable<IVideoItemPOCO> PlaylistItems { get; set; }
         #endregion
     }
 }
