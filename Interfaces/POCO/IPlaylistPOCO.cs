@@ -12,7 +12,7 @@ namespace Interfaces.POCO
 
         string ChannelID { get; }
         string ID { get; }
-        string SubTitle { get; }
+        string SubTitle { get; set; }
         byte[] Thumbnail { get; }
         string Title { get; }
 
