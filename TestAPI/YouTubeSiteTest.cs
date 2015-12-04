@@ -144,7 +144,7 @@ namespace TestAPI
 
             int res = await you.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
-            int res2 = await you.GetChannelItemsCountBySearchNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            int res2 = await you.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(res == res2);
         }
