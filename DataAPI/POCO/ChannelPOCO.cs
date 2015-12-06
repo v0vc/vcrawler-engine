@@ -32,7 +32,7 @@ namespace DataAPI.POCO
 
         public static async Task<ChannelPOCO> CreatePoco(string id, JObject record)
         {
-            var ch = new ChannelPOCO { ID = id };
+            var ch = new ChannelPOCO { ID = id, Items = new List<IVideoItemPOCO>(), Playlists = new List<IPlaylistPOCO>() };
 
             JToken ttitle = record.SelectToken("items[0].snippet.title");
             ch.Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;

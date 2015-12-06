@@ -52,6 +52,8 @@ namespace TestAPI
         {
             IYouTubeSite you = GetYouFabric();
             var channel = await you.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            var count = await you.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            Assert.IsTrue(channel.Items.Count == count);
             Assert.IsTrue(channel.Items.Any());
             Assert.IsTrue(channel.Playlists.Any());
         }

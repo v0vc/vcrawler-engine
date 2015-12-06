@@ -24,8 +24,11 @@ namespace DataAPI.POCO
             ChannelID = channelid;
         }
 
-        public PlaylistPOCO()
+        public PlaylistPOCO(string id, SiteType site)
         {
+            ID = id;
+            Site = site;
+            PlaylistItems = new List<IVideoItemPOCO>();
         }
 
         #endregion
@@ -77,7 +80,7 @@ namespace DataAPI.POCO
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
-        public IEnumerable<IVideoItemPOCO> PlaylistItems { get; set; }
+        public List<IVideoItemPOCO> PlaylistItems { get; set; }
         public SiteType Site { get; set; }
 
         #endregion

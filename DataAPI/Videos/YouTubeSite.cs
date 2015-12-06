@@ -379,24 +379,33 @@ namespace DataAPI.Videos
         {
             IChannelPOCO ch = await GetChannelNetAsync(channelID);
 
-            ch.Playlists = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
+            var plsr = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
 
-            IPlaylistPOCO uploads = ch.Playlists.Single(x => x.SubTitle == "uploads");
+            IPlaylistPOCO uploads = plsr.SingleOrDefault(x => x.SubTitle == "uploads");
 
-            ch.Items = (await GetPlaylistItemsNetAsync(uploads.ID)).ToList();
-
-            IEnumerable<IPlaylistPOCO> pls = await GetChannelPlaylistsNetAsync(channelID);
-
-            foreach (IPlaylistPOCO pl in pls.Where(pl => !ch.Playlists.Select(x => x.ID).Contains(pl.ID)))
+            if (uploads == null)
             {
-                ch.Playlists.Add(pl);
+                return ch;
             }
 
-            for (int i = ch.Playlists.Count; i > 0; i--)
-            {
-                
-            }
+            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
 
+            ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
+
+            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
+
+            foreach (IPlaylistPOCO pl in ch.Playlists)
+            {
+                var plids = await GetPlaylistItemsIdsListNetAsync(pl.ID);
+                foreach (string id in plids)
+                {
+                    var item = ch.Items.SingleOrDefault(x => x.ID == id);
+                    if (item != null)
+                    {
+                        pl.PlaylistItems.Add(item);
+                    }
+                }
+            }
             return ch;
         }
 
@@ -425,7 +434,7 @@ namespace DataAPI.Videos
 
                 foreach (JToken pair in jsvideo["items"])
                 {
-                    var p = new PlaylistPOCO { ChannelID = channelID, Site = SiteType.YouTube };
+                    var p = new PlaylistPOCO(channelID, SiteType.YouTube);
 
                     await p.FillFieldsFromGetting(pair);
 
@@ -672,7 +681,7 @@ namespace DataAPI.Videos
 
         public async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
         {
-            var pl = new PlaylistPOCO { ID = id, Site = SiteType.YouTube };
+            var pl = new PlaylistPOCO(id, SiteType.YouTube);
 
             string zap =
                 string.Format(
