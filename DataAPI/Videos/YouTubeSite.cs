@@ -433,13 +433,9 @@ namespace DataAPI.Videos
             foreach (IPlaylistPOCO pl in ch.Playlists)
             {
                 var plids = await GetPlaylistItemsIdsListNetAsync(pl.ID);
-                foreach (string id in plids)
+                foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
                 {
-                    var item = ch.Items.SingleOrDefault(x => x.ID == id);
-                    if (item != null)
-                    {
-                        pl.PlaylistItems.Add(item);
-                    }
+                    pl.PlaylistItems.Add(id);
                 }
             }
             return ch;

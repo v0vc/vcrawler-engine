@@ -37,6 +37,7 @@ namespace Models.BO
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
+        public IEnumerable<string> PlItems { get; set; }
         public SiteType Site { get; set; }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }

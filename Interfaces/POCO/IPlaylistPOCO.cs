@@ -15,8 +15,7 @@ namespace Interfaces.POCO
         string SubTitle { get; set; }
         byte[] Thumbnail { get; }
         string Title { get; }
-
-        List<IVideoItemPOCO> PlaylistItems { get; set; }
+        List<string> PlaylistItems { get; }
         #endregion
     }
 }

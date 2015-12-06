@@ -89,7 +89,6 @@ namespace Crawler.ViewModels
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
-        private IEnumerable<string> plids;
         private RelayCommand popularSelectCommand;
         private double prValue;
         private string result;
@@ -699,7 +698,7 @@ namespace Crawler.ViewModels
 
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
-            var channel = (await cf.GetChannelNetAsync(channelid, site)) as YouChannel;
+            var channel = await cf.GetChannelNetAsync(channelid, site);
             if (channel == null)
             {
                 return;
@@ -707,7 +706,7 @@ namespace Crawler.ViewModels
 
             if (string.IsNullOrEmpty(channel.Title))
             {
-                throw new Exception("Can't get YouChannel: " + channel.ID);
+                throw new Exception("Can't get Channel: " + channel.ID);
             }
 
             if (!string.IsNullOrEmpty(channeltitle))
@@ -715,89 +714,90 @@ namespace Crawler.ViewModels
                 channel.Title = channeltitle;
             }
 
-            await channel.DeleteChannelAsync();
+            //await channel.DeleteChannelAsync();
             Channels.Add(channel);
             channel.IsDownloading = true;
-            channel.IsInWork = true;
+            //channel.IsInWork = true;
             SelectedChannel = channel;
 
-            IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0); // TODO add site
-            foreach (IVideoItem item in lst)
-            {
-                channel.AddNewItem(item, false);
-            }
-            await channel.InsertChannelItemsAsync();
+            //IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0); // TODO add site
+            //foreach (IVideoItem item in lst)
+            //{
+            //    channel.AddNewItem(item, false);
+            //}
+            //await channel.InsertChannelItemsAsync();
 
-            IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync(); // TODO add site
+            //IEnumerable<IPlaylist> pls = await channel.GetChannelPlaylistsNetAsync(); // TODO add site
 
-            foreach (IPlaylist pl in pls)
-            {
-                channel.ChannelPlaylists.Add(pl);
-                await pl.InsertPlaylistAsync();
-                IEnumerable<string> plv = await pl.GetPlaylistItemsIdsListNetAsync(); // получим список id плейлиста
-                var dicttocheck = new Dictionary<string, IPlaylist>();
-                var needcheck = new List<string>();
-                foreach (string id in plv)
-                {
-                    if (channel.ChannelItems.Select(x => x.ID).Contains(id))
-                    {
-                        await pl.UpdatePlaylistAsync(id); // видео есть на нашем канале - проапдейтим связь
-                    }
-                    else
-                    {
-                        if (needcheck.Contains(id))
-                        {
-                            continue;
-                        }
-                        needcheck.Add(id); // видео нету - пока добавим в список для дальнейшей проверки
-                        dicttocheck.Add(id, pl);
-                    }
-                }
+            //foreach (IPlaylist pl in pls)
+            //{
+            //    channel.ChannelPlaylists.Add(pl);
+            //    await pl.InsertPlaylistAsync();
+            //    IEnumerable<string> plv = await pl.GetPlaylistItemsIdsListNetAsync(); // получим список id плейлиста
+            //    var dicttocheck = new Dictionary<string, IPlaylist>();
+            //    var needcheck = new List<string>();
+            //    foreach (string id in plv)
+            //    {
+            //        if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+            //        {
+            //            await pl.UpdatePlaylistAsync(id); // видео есть на нашем канале - проапдейтим связь
+            //        }
+            //        else
+            //        {
+            //            if (needcheck.Contains(id))
+            //            {
+            //                continue;
+            //            }
+            //            needcheck.Add(id); // видео нету - пока добавим в список для дальнейшей проверки
+            //            dicttocheck.Add(id, pl);
+            //        }
+            //    }
 
-                IEnumerable<List<string>> nchanks = CommonExtensions.SplitList(needcheck);
+            //    IEnumerable<List<string>> nchanks = CommonExtensions.SplitList(needcheck);
 
-                // разобьем на чанки по 50, чтоб поменьше дергать ютуб
-                var trueids = new List<string>();
-                foreach (List<string> nchank in nchanks)
-                {
-                    IEnumerable<IVideoItemPOCO> lvlite = await yf.GetVideosListByIdsLiteAsync(nchank);
+            //    // разобьем на чанки по 50, чтоб поменьше дергать ютуб
+            //    var trueids = new List<string>();
+            //    foreach (List<string> nchank in nchanks)
+            //    {
+            //        IEnumerable<IVideoItemPOCO> lvlite = await yf.GetVideosListByIdsLiteAsync(nchank);
 
-                    // получим лайтовые объекты, только id и parentid
-                    foreach (IVideoItemPOCO poco in lvlite)
-                    {
-                        // не наши - пофиг, не нужны
-                        if (poco.ParentID != channel.ID)
-                        {
-                            continue;
-                        }
-                        trueids.Add(poco.ID); // а вот эти с нашего канала - собираем
-                    }
-                }
+            //        // получим лайтовые объекты, только id и parentid
+            //        foreach (IVideoItemPOCO poco in lvlite)
+            //        {
+            //            // не наши - пофиг, не нужны
+            //            if (poco.ParentID != channel.ID)
+            //            {
+            //                continue;
+            //            }
+            //            trueids.Add(poco.ID); // а вот эти с нашего канала - собираем
+            //        }
+            //    }
 
-                IEnumerable<List<string>> truchanks = CommonExtensions.SplitList(trueids); // опять же разобьем на чанки
+            //    IEnumerable<List<string>> truchanks = CommonExtensions.SplitList(trueids); // опять же разобьем на чанки
 
-                foreach (List<string> truchank in truchanks)
-                {
-                    IEnumerable<IVideoItemPOCO> lvfull = await yf.GetVideosListByIdsAsync(truchank);
+            //    foreach (List<string> truchank in truchanks)
+            //    {
+            //        IEnumerable<IVideoItemPOCO> lvfull = await yf.GetVideosListByIdsAsync(truchank);
 
-                    // ну и начнем получать уже полные объекты
-                    foreach (IVideoItemPOCO poco in lvfull)
-                    {
-                        IVideoItem vi = vf.CreateVideoItem(poco);
-                        channel.AddNewItem(vi, false);
-                        await vi.InsertItemAsync();
-                        IPlaylist playlist;
-                        if (dicttocheck.TryGetValue(vi.ID, out playlist))
-                        {
-                            // проапдейтим
-                            await playlist.UpdatePlaylistAsync(vi.ID);
-                        }
-                    }
-                }
-            }
+            //        // ну и начнем получать уже полные объекты
+            //        foreach (IVideoItemPOCO poco in lvfull)
+            //        {
+            //            IVideoItem vi = vf.CreateVideoItem(poco);
+            //            channel.AddNewItem(vi, false);
+            //            await vi.InsertItemAsync();
+            //            IPlaylist playlist;
+            //            if (dicttocheck.TryGetValue(vi.ID, out playlist))
+            //            {
+            //                // проапдейтим
+            //                await playlist.UpdatePlaylistAsync(vi.ID);
+            //            }
+            //        }
+            //    }
+            //}
+
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
-            channel.IsInWork = false;
+            //channel.IsInWork = false;
             SetStatus(0);
         }
 
@@ -1165,7 +1165,12 @@ namespace Crawler.ViewModels
             {
                 return false;
             }
-            bool res = plids.Any(plid => item.ID == plid);
+            if (SelectedPlaylist == null)
+            {
+                return false;
+            }
+
+            bool res = SelectedPlaylist.PlItems.Any(plid => item.ID == plid);
             return res;
         }
 
@@ -1672,8 +1677,6 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-
-            plids = await pl.GetPlaylistItemsIdsListDbAsync();
 
             var channel = SelectedChannel as YouChannel;
             if (channel == null)

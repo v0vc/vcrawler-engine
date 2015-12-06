@@ -28,7 +28,7 @@ namespace DataAPI.POCO
         {
             ID = id;
             Site = site;
-            PlaylistItems = new List<IVideoItemPOCO>();
+            PlaylistItems = new List<string>();
         }
 
         #endregion
@@ -80,7 +80,7 @@ namespace DataAPI.POCO
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
-        public List<IVideoItemPOCO> PlaylistItems { get; set; }
+        public List<string> PlaylistItems { get; set; }
         public SiteType Site { get; set; }
 
         #endregion

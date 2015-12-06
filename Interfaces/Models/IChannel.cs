@@ -1,9 +1,11 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Net;
 using Interfaces.Enums;
 
@@ -15,6 +17,7 @@ namespace Interfaces.Models
 
         CookieContainer ChannelCookies { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        ICollectionView ChannelItemsCollectionView { get; set; }
         int ChannelItemsCount { get; set; }
         ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         ObservableCollection<ITag> ChannelTags { get; set; }

@@ -134,7 +134,7 @@ namespace Crawler.ViewModels
         }
 
         public List<CredImage> SupportedSites { get; set; }
-        private ICollectionView ChannelItemsCollectionView { get; set; }
+        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         #endregion
 

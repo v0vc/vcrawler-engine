@@ -150,6 +150,7 @@ namespace Models.Factories
                 SubTitle = poco.SubTitle,
                 Thumbnail = poco.Thumbnail,
                 ChannelId = poco.ChannelID,
+                PlItems = poco.PlaylistItems
             };
             return pl;
         }

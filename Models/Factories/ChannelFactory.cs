@@ -623,19 +623,55 @@ namespace Models.Factories
 
         public IChannel CreateChannel(IChannelPOCO poco)
         {
-            var channel = new YouChannel(this)
+            var vf = commonFactory.CreateVideoItemFactory();
+            var pf = commonFactory.CreatePlaylistFactory();
+            var site = CommonExtensions.GetSiteType(poco.Site);
+            IChannel channel = null;
+
+            switch (site)
             {
-                ID = poco.ID,
-                Title = poco.Title,
-                SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail,
-                SiteAdress = poco.Site,
-                ChannelItems = new ObservableCollection<IVideoItem>(),
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
-                ChannelTags = new ObservableCollection<ITag>(),
-                ChannelCookies = new CookieContainer(),
-                Site = CommonExtensions.GetSiteType(poco.Site)
-            };
+                case SiteType.YouTube:
+
+                    channel = new YouChannel(this)
+                    {
+                        ID = poco.ID,
+                        Title = poco.Title,
+                        SubTitle = poco.SubTitle, // .WordWrap(80);
+                        Thumbnail = poco.Thumbnail,
+                        SiteAdress = poco.Site,
+                        ChannelItems = new ObservableCollection<IVideoItem>(),
+                        ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                        ChannelTags = new ObservableCollection<ITag>(),
+                        ChannelCookies = new CookieContainer()
+                    };
+
+                    if (poco.Items != null)
+                    {
+                        foreach (IVideoItemPOCO item in poco.Items)
+                        {
+                            channel.ChannelItems.Add(vf.CreateVideoItem(item));
+                        }
+                    }
+
+                    if (poco.Playlists != null)
+                    {
+                        foreach (IPlaylistPOCO playlist in poco.Playlists)
+                        {
+                            channel.ChannelPlaylists.Add(pf.CreatePlaylist(playlist));
+                        }
+                    }
+
+                    break;
+
+                case SiteType.RuTracker:
+                    channel = null;
+                    break;
+
+                case SiteType.Tapochek:
+                    channel = null;
+                    break;
+            }
+
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
         }
@@ -677,7 +713,8 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await commonFactory.CreateYouTubeSite().GetChannelNetAsync(channelID);
+                        //poco = await commonFactory.CreateYouTubeSite().GetChannelNetAsync(channelID);
+                        poco = await commonFactory.CreateYouTubeSite().GetChannelFullNetAsync(channelID);
                         break;
                     case SiteType.RuTracker:
                         poco = await commonFactory.CreateRutrackerSite().GetChannelNetAsync(channelID);
