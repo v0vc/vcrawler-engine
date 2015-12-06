@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -23,15 +24,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public ChannelFactory(ICommonFactory c)
+        public ChannelFactory(CommonFactory commonFactory)
         {
-            _c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
@@ -40,7 +41,7 @@ namespace Models.Factories
 
         public async Task DeleteChannelAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteChannelAsync(channelID);
@@ -53,7 +54,7 @@ namespace Models.Factories
 
         public async Task DeleteChannelPlaylistsAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 IEnumerable<string> lst = await fb.GetChannelsPlaylistsIdsListDbAsync(channelID);
@@ -70,7 +71,7 @@ namespace Models.Factories
 
         public async Task DeleteChannelTagAsync(string channelid, string tag)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteChannelTagsAsync(channelid, tag);
@@ -83,7 +84,7 @@ namespace Models.Factories
 
         public void FillChannelCookieDb(IChannel channel)
         {
-            ISqLiteDatabase cf = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase cf = commonFactory.CreateSqLiteDatabase();
 
             try
             {
@@ -101,7 +102,7 @@ namespace Models.Factories
             {
                 case SiteType.Tapochek:
 
-                    ITapochekSite fb = _c.CreateTapochekSite();
+                    ITapochekSite fb = commonFactory.CreateTapochekSite();
                     channel.ChannelCookies = await fb.GetCookieNetAsync(channel);
 
                     break;
@@ -113,14 +114,14 @@ namespace Models.Factories
 
         public async Task FillChannelDescriptionAsync(IChannel channel)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             channel.SubTitle = await fb.GetChannelDescriptionAsync(channel.ID);
         }
 
         public async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 channel.ChannelItemsCount = await fb.GetChannelItemsCountDbAsync(channel.ID);
@@ -145,7 +146,7 @@ namespace Models.Factories
 
         public async Task<ICred> GetChannelCredentialsAsync(IChannel channel)
         {
-            ICredFactory cf = _c.CreateCredFactory();
+            ICredFactory cf = commonFactory.CreateCredFactory();
             try
             {
                 return await cf.GetCredDbAsync(channel.Site);
@@ -158,7 +159,7 @@ namespace Models.Factories
 
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetChannelItemsCountDbAsync(channelID);
@@ -171,7 +172,7 @@ namespace Models.Factories
 
         public async Task<int> GetChannelItemsCountNetAsync(string channelID)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
             try
             {
                 return await fb.GetChannelItemsCountNetAsync(channelID);
@@ -184,8 +185,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID, int count, int offset)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -202,7 +203,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetChannelItemsIdListDbAsync(channelID, 0, 0);
@@ -215,7 +216,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
             try
             {
                 return await fb.GetChannelItemsIdsListNetAsync(channelID, maxResult);
@@ -228,20 +229,21 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(YouChannel channel, int maxresult)
         {
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
             switch (channel.Site)
             {
                 case SiteType.YouTube:
 
-                    IEnumerable<IVideoItemPOCO> youres = await _c.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
+                    IEnumerable<IVideoItemPOCO> youres =
+                        await commonFactory.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
                     lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
                 case SiteType.Tapochek:
 
-                    IEnumerable<IVideoItemPOCO> tapres = await _c.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
+                    IEnumerable<IVideoItemPOCO> tapres = await commonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
@@ -255,7 +257,7 @@ namespace Models.Factories
 
         public async Task<int> GetChannelPlaylistCountDbAsync(string id)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetChannelPlaylistCountDbAsync(id);
@@ -268,8 +270,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IPlaylistFactory pf = _c.CreatePlaylistFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IPlaylistFactory pf = commonFactory.CreatePlaylistFactory();
             var lst = new List<IPlaylist>();
 
             try
@@ -286,8 +288,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IPlaylistFactory pf = _c.CreatePlaylistFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IPlaylistFactory pf = commonFactory.CreatePlaylistFactory();
             var lst = new List<IPlaylist>();
             try
             {
@@ -303,8 +305,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<ITag>> GetChannelTagsAsync(string id)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            ITagFactory tf = _c.CreateTagFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            ITagFactory tf = commonFactory.CreateTagFactory();
             var lst = new List<ITag>();
 
             try
@@ -321,8 +323,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetPopularItemsNetAsync(string regionID, int maxresult)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -343,7 +345,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    related = await _c.CreateYouTubeSite().GetRelatedChannelsByIdAsync(id);
+                    related = await commonFactory.CreateYouTubeSite().GetRelatedChannelsByIdAsync(id);
                     break;
 
                 default:
@@ -356,7 +358,7 @@ namespace Models.Factories
 
         public async Task InsertChannelAsync(IChannel channel)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertChannelAsync(channel);
@@ -369,7 +371,7 @@ namespace Models.Factories
 
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertChannelItemsAsync(channel);
@@ -382,7 +384,7 @@ namespace Models.Factories
 
         public async Task InsertChannelTagAsync(string channelid, string tag)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertChannelTagsAsync(channelid, tag);
@@ -395,7 +397,7 @@ namespace Models.Factories
 
         public async Task RenameChannelAsync(string parentID, string newName)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.RenameChannelAsync(parentID, newName);
@@ -408,8 +410,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> SearchItemsNetAsync(string key, string regionID, int maxresult)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             var lst = new List<IVideoItem>();
 
             try
@@ -426,7 +428,7 @@ namespace Models.Factories
 
         public void StoreCookies(string site, CookieContainer cookies)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 fb.StoreCookies(site, cookies);
@@ -461,8 +463,8 @@ namespace Models.Factories
                     List<string> trueids = lsidNet.Where(id => !idsdb.Contains(id)).ToList(); // id которых нет
                     if (trueids.Any())
                     {
-                        IVideoItemFactory vf = _c.CreateVideoItemFactory();
-                        IYouTubeSite you = _c.CreateYouTubeSite();
+                        IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
+                        IYouTubeSite you = commonFactory.CreateYouTubeSite();
 
                         IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
 
@@ -556,7 +558,7 @@ namespace Models.Factories
                 channel.ChannelPlaylists.Clear();
             }
 
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
 
             channel.PlaylistCount = pls.Count;
             foreach (IPlaylist playlist in pls)
@@ -597,10 +599,10 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelCookies = new CookieContainer(),
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
@@ -610,11 +612,11 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
-                Site = site, 
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelCookies = new CookieContainer(),
+                Site = site,
                 SiteAdress = CommonExtensions.GetSiteAdress(site)
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
@@ -625,15 +627,15 @@ namespace Models.Factories
         {
             var channel = new YouChannel(this)
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
+                ID = poco.ID,
+                Title = poco.Title,
                 SubTitle = poco.SubTitle, // .WordWrap(80);
-                Thumbnail = poco.Thumbnail, 
-                SiteAdress = poco.Site, 
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
+                Thumbnail = poco.Thumbnail,
+                SiteAdress = poco.Site,
+                ChannelItems = new ObservableCollection<IVideoItem>(),
+                ChannelPlaylists = new ObservableCollection<IPlaylist>(),
+                ChannelTags = new ObservableCollection<ITag>(),
+                ChannelCookies = new CookieContainer(),
                 Site = CommonExtensions.GetSiteType(poco.Site)
             };
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
@@ -643,7 +645,7 @@ namespace Models.Factories
         public async Task<IChannel> GetChannelDbAsync(string channelID)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 IChannelPOCO poco = await fb.GetChannelAsync(channelID);
@@ -658,7 +660,7 @@ namespace Models.Factories
 
         public async Task<string> GetChannelIdByUserNameNetAsync(string username)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
             try
             {
                 return await fb.GetChannelIdByUserNameNetAsync(username);
@@ -677,13 +679,13 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await _c.CreateYouTubeSite().GetChannelNetAsync(channelID);
+                        poco = await commonFactory.CreateYouTubeSite().GetChannelNetAsync(channelID);
                         break;
                     case SiteType.RuTracker:
-                        poco = await _c.CreateRutrackerSite().GetChannelNetAsync(channelID);
+                        poco = await commonFactory.CreateRutrackerSite().GetChannelNetAsync(channelID);
                         break;
                     case SiteType.Tapochek:
-                        poco = await _c.CreateTapochekSite().GetChannelNetAsync(channelID);
+                        poco = await commonFactory.CreateTapochekSite().GetChannelNetAsync(channelID);
                         break;
                 }
                 IChannel channel = CreateChannel(poco);

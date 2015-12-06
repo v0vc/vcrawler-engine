@@ -1,7 +1,9 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Interfaces.Enums;
@@ -14,15 +16,15 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly PlaylistFactory _pf;
+        private readonly PlaylistFactory playlistFactory;
 
         #endregion
 
         #region Constructors
 
-        public Playlist(PlaylistFactory pf)
+        public Playlist(PlaylistFactory playlistFactory)
         {
-            _pf = pf;
+            this.playlistFactory = playlistFactory;
         }
 
         private Playlist()
@@ -35,50 +37,50 @@ namespace Models.BO
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
+        public SiteType Site { get; set; }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
-        public SiteType Site { get; set; }
 
         public async Task DeletePlaylistAsync()
         {
             // await ((PlaylistFactory) ServiceLocator.PlaylistFactory).DeletePlaylistAsync(ID);
-            await _pf.DeletePlaylistAsync(ID);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync()
-        {
-            return await _pf.GetPlaylistItemsDbAsync(ID, ChannelId);
-        }
-
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync()
-        {
-            return await _pf.GetPlaylistItemsIdsListDbAsync(ID);
-        }
-
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync()
-        {
-            return await _pf.GetPlaylistItemsIdsListNetAsync(ID);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync()
-        {
-            return await _pf.GetPlaylistItemsNetAsync(this);
-        }
-
-        public async Task InsertPlaylistAsync()
-        {
-            await _pf.InsertPlaylistAsync(this);
-        }
-
-        public async Task UpdatePlaylistAsync(string videoId)
-        {
-            await _pf.UpdatePlaylistAsync(ID, videoId, ChannelId);
+            await playlistFactory.DeletePlaylistAsync(ID);
         }
 
         public Task DownloadPlaylist()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync()
+        {
+            return await playlistFactory.GetPlaylistItemsDbAsync(ID, ChannelId);
+        }
+
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync()
+        {
+            return await playlistFactory.GetPlaylistItemsIdsListDbAsync(ID);
+        }
+
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync()
+        {
+            return await playlistFactory.GetPlaylistItemsIdsListNetAsync(ID);
+        }
+
+        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync()
+        {
+            return await playlistFactory.GetPlaylistItemsNetAsync(this);
+        }
+
+        public async Task InsertPlaylistAsync()
+        {
+            await playlistFactory.InsertPlaylistAsync(this);
+        }
+
+        public async Task UpdatePlaylistAsync(string videoId)
+        {
+            await playlistFactory.UpdatePlaylistAsync(ID, videoId, ChannelId);
         }
 
         #endregion

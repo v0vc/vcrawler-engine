@@ -60,13 +60,13 @@
     <Compile Include="YouTubeSiteTest.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\DataAPI\DataAPI.csproj">
+      <Project>{58735A6C-F7DE-4B30-BBE2-75BCE8BBDE91}</Project>
+      <Name>DataAPI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Interfaces\Interfaces.csproj">
       <Project>{d7fc9cfb-9494-4079-bb7f-5aff0b2160ea}</Project>
       <Name>Interfaces</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\IoC\IoC.csproj">
-      <Project>{6a0b7942-8c56-448f-a8e7-615a06aae3af}</Project>
-      <Name>IoC</Name>
     </ProjectReference>
     <ProjectReference Include="..\Models\Models.csproj">
       <Project>{2DA3980E-45CD-4567-9981-25161ECB889B}</Project>

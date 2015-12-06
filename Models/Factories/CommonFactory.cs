@@ -4,100 +4,101 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Autofac;
-using Interfaces.API;
-using Interfaces.Factories;
+using DataAPI.Database;
+using DataAPI.Trackers;
+using DataAPI.Videos;
 
-namespace IoC
+namespace Models.Factories
 {
-    public class CommonFactory : ICommonFactory
+    public class CommonFactory
     {
-        #region ICommonFactory Members
+        #region Methods
 
-        public IChannelFactory CreateChannelFactory()
+        public ChannelFactory CreateChannelFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IChannelFactory>();
+                return scope.Resolve<ChannelFactory>();
             }
         }
 
-        public ISubtitleFactory CreateSubtitleFactory()
+        public CredFactory CreateCredFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ISubtitleFactory>();
+                return scope.Resolve<CredFactory>();
             }
         }
 
-        public ICredFactory CreateCredFactory()
+        public PlaylistFactory CreatePlaylistFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ICredFactory>();
+                return scope.Resolve<PlaylistFactory>();
             }
         }
 
-        public IPlaylistFactory CreatePlaylistFactory()
+        public RutrackerSite CreateRutrackerSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IPlaylistFactory>();
+                return scope.Resolve<RutrackerSite>();
             }
         }
 
-        public IRutrackerSite CreateRutrackerSite()
+        public SettingFactory CreateSettingFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IRutrackerSite>();
+                return scope.Resolve<SettingFactory>();
             }
         }
 
-        public ISettingFactory CreateSettingFactory()
+        public SqLiteDatabase CreateSqLiteDatabase()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ISettingFactory>();
+                return scope.Resolve<SqLiteDatabase>();
             }
         }
 
-        public ISqLiteDatabase CreateSqLiteDatabase()
+        public SubtitleFactory CreateSubtitleFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ISqLiteDatabase>();
+                return scope.Resolve<SubtitleFactory>();
             }
         }
 
-        public ITagFactory CreateTagFactory()
+        public TagFactory CreateTagFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ITagFactory>();
+                return scope.Resolve<TagFactory>();
             }
         }
 
-        public ITapochekSite CreateTapochekSite()
+        public TapochekSite CreateTapochekSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<ITapochekSite>();
+                return scope.Resolve<TapochekSite>();
             }
         }
 
-        public IVideoItemFactory CreateVideoItemFactory()
+        public VideoItemFactory CreateVideoItemFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IVideoItemFactory>();
+                return scope.Resolve<VideoItemFactory>();
             }
         }
 
-        public IYouTubeSite CreateYouTubeSite()
+        public YouTubeSite CreateYouTubeSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                return scope.Resolve<IYouTubeSite>();
+                return scope.Resolve<YouTubeSite>();
             }
         }
 

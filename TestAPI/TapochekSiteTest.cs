@@ -14,10 +14,10 @@ using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Models.BO;
+using Models;
 using Models.BO.Channels;
+using Models.Factories;
 
 namespace TestAPI
 {
@@ -26,14 +26,14 @@ namespace TestAPI
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _fabric;
+        private readonly CommonFactory fabric;
 
         #endregion
 
         #region Fields
 
-        private ITapochekSite _tf;
         private ICred cred;
+        private ITapochekSite tf;
 
         #endregion
 
@@ -41,9 +41,9 @@ namespace TestAPI
 
         public TapochekSiteTest()
         {
-            using (var scope = Container.Kernel.BeginLifetimeScope())
+            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                _fabric = scope.Resolve<ICommonFactory>();
+                fabric = scope.Resolve<CommonFactory>();
             }
             FillCred();
         }
@@ -55,8 +55,8 @@ namespace TestAPI
         [TestMethod]
         public void FillChannelCookieDbAsync()
         {
-            IChannelFactory chf = _fabric.CreateChannelFactory();
-            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            IChannelFactory chf = fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -68,33 +68,32 @@ namespace TestAPI
         [TestMethod]
         public async Task FillChannelNetAsync()
         {
-            IChannelFactory chf = _fabric.CreateChannelFactory();
-            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            IChannelFactory chf = fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
             }
             ch.ID = "27253";
             ch.FillChannelCookieDb();
-            await _tf.FillChannelNetAsync(ch);
+            await tf.FillChannelNetAsync(ch);
             Assert.IsTrue(ch.ChannelItems.Any());
-            
         }
 
         [TestMethod]
         public async Task GetChannelCookieNetAsync()
         {
-            IChannelFactory chf = _fabric.CreateChannelFactory();
+            IChannelFactory chf = fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
-            CookieContainer cookie = await _tf.GetCookieNetAsync(ch);
+            CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             Assert.IsTrue(cookie.Count > 0);
         }
 
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            IChannelFactory chf = _fabric.CreateChannelFactory();
-            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            IChannelFactory chf = fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -106,12 +105,12 @@ namespace TestAPI
                 await ch.FillChannelCookieNetAsync();
                 ch.StoreCookies();
             }
-            IEnumerable<IVideoItemPOCO> t = (await _tf.GetChannelItemsAsync(ch, 0)).ToList();
+            IEnumerable<IVideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
                 await ch.FillChannelCookieNetAsync();
                 ch.StoreCookies();
-                t = (await _tf.GetChannelItemsAsync(ch, 0)).ToList();
+                t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             }
             Assert.IsTrue(t.Any());
         }
@@ -119,17 +118,17 @@ namespace TestAPI
         [TestMethod]
         public async Task StoreCookiesAsync()
         {
-            IChannelFactory chf = _fabric.CreateChannelFactory();
-            YouChannel ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            IChannelFactory chf = fabric.CreateChannelFactory();
+            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
             }
-            CookieContainer cookie = await _tf.GetCookieNetAsync(ch);
+            CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             ch.ChannelCookies = cookie;
 
             ch.StoreCookies();
-            ISqLiteDatabase c = _fabric.CreateSqLiteDatabase();
+            ISqLiteDatabase c = fabric.CreateSqLiteDatabase();
             if (c.FileBase.DirectoryName != null)
             {
                 var folder = new DirectoryInfo(Path.Combine(c.FileBase.DirectoryName, "Cookie"));
@@ -140,9 +139,9 @@ namespace TestAPI
 
         private async void FillCred()
         {
-            cred = await _fabric.CreateCredFactory().GetCredDbAsync(SiteType.Tapochek);
-            _tf = _fabric.CreateTapochekSite();
-            _tf.Cred = cred;
+            cred = await fabric.CreateCredFactory().GetCredDbAsync(SiteType.Tapochek);
+            tf = fabric.CreateTapochekSite();
+            tf.Cred = cred;
         }
 
         #endregion

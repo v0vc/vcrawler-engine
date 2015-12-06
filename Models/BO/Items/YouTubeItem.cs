@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -26,7 +27,7 @@ namespace Models.BO.Items
         #region Static and Readonly Fields
 
         private readonly string[] exts = { "mp4", "mkv", "mp3" };
-        private readonly VideoItemFactory vf;
+        private readonly VideoItemFactory videoItemFactory;
 
         #endregion
 
@@ -36,20 +37,20 @@ namespace Models.BO.Items
         private double downloadPercentage;
         private bool isAudio;
         private bool isHasLocalFile;
+        private bool isProxyReady;
         private byte[] largeThumb;
         private string logText;
         private ItemState state;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
-        private bool isProxyReady;
 
         #endregion
 
         #region Constructors
 
-        public YouTubeItem(VideoItemFactory vf)
+        public YouTubeItem(VideoItemFactory videoItemFactory)
         {
-            this.vf = vf;
+            this.videoItemFactory = videoItemFactory;
         }
 
         private YouTubeItem()
@@ -81,11 +82,6 @@ namespace Models.BO.Items
 
         #region Methods
 
-        public async Task DeleteItemAsync()
-        {
-            await vf.DeleteItemAsync(ID);
-        }
-
         public async Task FillSubtitles()
         {
             if (Subtitles.Any())
@@ -93,7 +89,7 @@ namespace Models.BO.Items
                 return;
             }
 
-            IEnumerable<ISubtitle> res = await vf.GetVideoItemSubtitlesAsync(ID);
+            IEnumerable<ISubtitle> res = await videoItemFactory.GetVideoItemSubtitlesAsync(ID);
 
             Subtitles.Clear();
 
@@ -101,21 +97,6 @@ namespace Models.BO.Items
             {
                 Subtitles.Add(sub);
             }
-        }
-
-        public async Task<IChannel> GetParentChannelAsync()
-        {
-            return await vf.GetParentChannelAsync(ParentID);
-        }
-
-        public async Task<IVideoItem> GetVideoItemDbAsync()
-        {
-            return await vf.GetVideoItemDbAsync(ID);
-        }
-
-        public async Task<IVideoItem> GetVideoItemNetAsync()
-        {
-            return await vf.GetVideoItemNetAsync(ID, Site);
         }
 
         private void ErrorOccured()
@@ -290,6 +271,7 @@ namespace Models.BO.Items
         }
 
         public string ParentID { get; set; }
+        public string ProxyUrl { get; set; }
         public SiteType Site { get; set; }
 
         public ItemState State
@@ -308,8 +290,6 @@ namespace Models.BO.Items
                 OnPropertyChanged();
             }
         }
-
-        public string ProxyUrl { get; set; }
 
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public byte[] Thumbnail { get; set; }
@@ -333,7 +313,7 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            var options = "--no-check-certificate --console-title --no-call-home";
+            string options = "--no-check-certificate --console-title --no-call-home";
 
             if (isProxyReady)
             {
@@ -351,9 +331,9 @@ namespace Models.BO.Items
                     string.Format(
                                   isHd
                                       ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}", 
-                        dir, 
-                        MakeLink(), 
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
+                        dir,
+                        MakeLink(),
                         options);
             }
 
@@ -373,12 +353,12 @@ namespace Models.BO.Items
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
-                WindowStyle = ProcessWindowStyle.Hidden, 
-                UseShellExecute = false, 
-                RedirectStandardOutput = true, 
-                RedirectStandardError = true, 
-                RedirectStandardInput = true, 
-                ErrorDialog = false, 
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                ErrorDialog = false,
                 CreateNoWindow = true
             };
 
@@ -404,12 +384,12 @@ namespace Models.BO.Items
 
         public async Task FillDescriptionAsync()
         {
-            await vf.FillDescriptionAsync(this);
+            await videoItemFactory.FillDescriptionAsync(this);
         }
 
         public async Task InsertItemAsync()
         {
-            await vf.InsertItemAsync(this);
+            await videoItemFactory.InsertItemAsync(this);
         }
 
         public void IsHasLocalFileFound(string dir)

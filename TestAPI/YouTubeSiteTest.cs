@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -10,8 +11,9 @@ using Interfaces.API;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
-using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Models;
+using Models.Factories;
 
 namespace TestAPI
 {
@@ -20,7 +22,7 @@ namespace TestAPI
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory fabric;
+        private readonly CommonFactory fabric;
 
         #endregion
 
@@ -36,7 +38,7 @@ namespace TestAPI
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                fabric = scope.Resolve<ICommonFactory>();
+                fabric = scope.Resolve<CommonFactory>();
             }
             FillCred();
         }
@@ -46,6 +48,15 @@ namespace TestAPI
         #region Methods
 
         [TestMethod]
+        public async Task GetFullChannel()
+        {
+            IYouTubeSite you = GetYouFabric();
+            var channel = await you.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            Assert.IsTrue(channel.Items.Any());
+            Assert.IsTrue(channel.Playlists.Any());
+        }
+
+        [TestMethod]
         public async Task GetChannelIdByUserNameNetAsync()
         {
             IYouTubeSite you = GetYouFabric();
@@ -53,6 +64,10 @@ namespace TestAPI
             string res = await you.GetChannelIdByUserNameNetAsync("mcmbmirussian");
 
             Assert.AreEqual(res, "UCH0miwnqCojki-ado_lLI5A");
+
+            string res1 = await you.GetChannelIdByUserNameNetAsync("CarCrashCompilation7");
+
+            Assert.IsFalse(string.IsNullOrEmpty(res1));
         }
 
         [TestMethod]
@@ -128,16 +143,6 @@ namespace TestAPI
         }
 
         [TestMethod]
-        public async Task GetPlaylistItemsIdsListNetAsync()
-        {
-            IYouTubeSite you = GetYouFabric();
-
-            IEnumerable<string> res = await you.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
-
-            Assert.IsTrue(res.Any());
-        }
-
-        [TestMethod]
         public async Task GetPlaylistItemsCountNetAsync()
         {
             IYouTubeSite you = GetYouFabric();
@@ -147,6 +152,16 @@ namespace TestAPI
             int res2 = await you.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(res == res2);
+        }
+
+        [TestMethod]
+        public async Task GetPlaylistItemsIdsListNetAsync()
+        {
+            IYouTubeSite you = GetYouFabric();
+
+            IEnumerable<string> res = await you.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+
+            Assert.IsTrue(res.Any());
         }
 
         [TestMethod]

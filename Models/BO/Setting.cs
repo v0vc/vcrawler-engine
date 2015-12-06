@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Threading.Tasks;
@@ -12,15 +13,15 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly SettingFactory _sf;
+        private readonly SettingFactory settingFactory;
 
         #endregion
 
         #region Constructors
 
-        public Setting(SettingFactory sf)
+        public Setting(SettingFactory settingFactory)
         {
-            _sf = sf;
+            this.settingFactory = settingFactory;
         }
 
         private Setting()
@@ -36,18 +37,18 @@ namespace Models.BO
 
         public async Task DeleteSettingAsync()
         {
-            await _sf.DeleteSettingAsync(Key);
+            await settingFactory.DeleteSettingAsync(Key);
         }
 
         public async Task InsertSettingAsync()
         {
             // await ((SettingFactory) ServiceLocator.SettingFactory).InsertSettingAsync(this);
-            await _sf.InsertSettingAsync(this);
+            await settingFactory.InsertSettingAsync(this);
         }
 
         public async Task UpdateSettingAsync(string newvalue)
         {
-            await _sf.UpdateSettingAsync(Key, newvalue);
+            await settingFactory.UpdateSettingAsync(Key, newvalue);
         }
 
         #endregion

@@ -1,40 +1,38 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.ObjectModel;
 using System.Net;
+using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
+using DataAPI;
+using DataAPI.Database;
 using Interfaces.API;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
-using IoC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Models;
+using Models.Factories;
 
 namespace TestAPI
 {
     [TestClass]
     public class SqLiteDataBaseTest
     {
-        #region Constants
-
-        private const string TestPhoto = "https://yt3.ggpht.com/-qMfsaQGvdSQ/AAAAAAAAAAI/AAAAAAAAAAA/NLFnUAWeiaM/s88-c-k-no/photo.jpg";
-
-        #endregion
-
         #region Static and Readonly Fields
 
-        private readonly IChannelFactory _cf;
-        private readonly ICredFactory _crf;
-        private readonly ISqLiteDatabase _db;
-        private readonly ICommonFactory _factory;
-        private readonly IPlaylistFactory _pf;
-        private readonly ISettingFactory _sf;
-        private readonly ITagFactory _tf;
-        private readonly IVideoItemFactory _vf;
+        private readonly ChannelFactory cf;
+        private readonly CredFactory crf;
+        private readonly SqLiteDatabase db;
+        private readonly CommonFactory factory;
+        private readonly PlaylistFactory pf;
+        private readonly SettingFactory sf;
+        private readonly TagFactory tf;
+        private readonly VideoItemFactory vf;
 
         #endregion
 
@@ -42,17 +40,17 @@ namespace TestAPI
 
         public SqLiteDataBaseTest()
         {
-            using (var scope = Container.Kernel.BeginLifetimeScope())
+            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                _factory = scope.Resolve<ICommonFactory>();
+                factory = scope.Resolve<CommonFactory>();
             }
-            _vf = _factory.CreateVideoItemFactory();
-            _db = _factory.CreateSqLiteDatabase();
-            _cf = _factory.CreateChannelFactory();
-            _crf = _factory.CreateCredFactory();
-            _pf = _factory.CreatePlaylistFactory();
-            _tf = _factory.CreateTagFactory();
-            _sf = _factory.CreateSettingFactory();
+            vf = factory.CreateVideoItemFactory();
+            db = factory.CreateSqLiteDatabase();
+            cf = factory.CreateChannelFactory();
+            crf = factory.CreateCredFactory();
+            pf = factory.CreatePlaylistFactory();
+            tf = factory.CreateTagFactory();
+            sf = factory.CreateSettingFactory();
         }
 
         #endregion
@@ -65,7 +63,7 @@ namespace TestAPI
             ch.ID = "testch";
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
-            ch.Thumbnail = GetStreamFromUrl(TestPhoto);
+            ch.Thumbnail = SiteHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png"));
             ch.SiteAdress = cred.SiteAdress;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
@@ -86,7 +84,7 @@ namespace TestAPI
             pl.ID = "testID";
             pl.Title = "Плейлист №1";
             pl.SubTitle = "test subtitle";
-            pl.Thumbnail = GetStreamFromUrl(TestPhoto);
+            pl.Thumbnail = SiteHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png"));
             pl.ChannelId = ch.ID;
         }
 
@@ -133,9 +131,7 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudCredentials()
         {
-            ISqLiteDatabase db = _factory.CreateSqLiteDatabase();
-
-            ICred cred = _crf.CreateCred();
+            ICred cred = crf.CreateCred();
             FillTestCred(cred);
 
             // DeleteCredAsync
@@ -174,169 +170,169 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudItems()
         {
-            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
-            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
-            ICred cred = _crf.CreateCred();
+            ICred cred = crf.CreateCred();
             FillTestCred(cred);
-            IChannel ch = _cf.CreateChannel();
+            IChannel ch = cf.CreateChannel();
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
-            Task t = _db.DeleteCredAsync(cred.SiteAdress);
+            Task t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
-            t = _db.InsertCredAsync(cred);
+            t = db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelAsync
-            t = _db.InsertChannelAsync(ch);
+            t = db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             // RenameChannelAsync
-            t = _db.RenameChannelAsync(ch.ID, "newname");
+            t = db.RenameChannelAsync(ch.ID, "newname");
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelAsync
-            t = _db.GetChannelAsync(ch.ID);
+            t = db.GetChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelsListAsync
-            t = _db.GetChannelsListAsync();
+            t = db.GetChannelsListAsync();
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsAsync
-            t = _db.GetChannelItemsAsync(ch.ID, 0, 0);
+            t = db.GetChannelItemsAsync(ch.ID, 0, 0);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsCountDbAsync
-            t = _db.GetChannelItemsCountDbAsync(ch.ID);
+            t = db.GetChannelItemsCountDbAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelItemsAsync
-            t = _db.InsertChannelItemsAsync(ch);
+            t = db.InsertChannelItemsAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // ITEMS
 
             // InsertChannelAsync
-            t = _db.InsertChannelAsync(ch);
+            t = db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertItemAsync
-            t = _db.InsertItemAsync(vi);
+            t = db.InsertItemAsync(vi);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetVideoItemAsync
-            t = _db.GetVideoItemAsync(vi.ID);
+            t = db.GetVideoItemAsync(vi.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteItemAsync
-            t = _db.DeleteItemAsync(vi.ID);
+            t = db.DeleteItemAsync(vi.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.SiteAdress);
+            t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 
         [TestMethod]
         public void TestCrudPlaylists()
         {
-            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
 
-            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
 
-            ICred cred = _crf.CreateCred();
+            ICred cred = crf.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = _cf.CreateChannel();
+            IChannel ch = cf.CreateChannel();
             FillTestChannel(ch, vi, vi2, cred);
 
-            IPlaylist pl = _pf.CreatePlaylist();
+            IPlaylist pl = pf.CreatePlaylist();
             FillTestPl(pl, ch);
 
             // DeleteCredAsync
-            Task t = _db.DeleteCredAsync(cred.SiteAdress);
+            Task t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
-            t = _db.InsertCredAsync(cred);
+            t = db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelItemsAsync
-            t = _db.InsertChannelItemsAsync(ch);
+            t = db.InsertChannelItemsAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeletePlaylistAsync
-            t = _db.DeletePlaylistAsync(pl.ID);
+            t = db.DeletePlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertPlaylistAsync
-            t = _db.InsertPlaylistAsync(pl);
+            t = db.InsertPlaylistAsync(pl);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetPlaylistAsync
-            t = _db.GetPlaylistAsync(pl.ID);
+            t = db.GetPlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelPlaylistAsync
-            t = _db.GetChannelPlaylistAsync(ch.ID);
+            t = db.GetChannelPlaylistAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdatePlaylistAsync
-            t = _db.UpdatePlaylistAsync(pl.ID, vi.ID, ch.ID);
+            t = db.UpdatePlaylistAsync(pl.ID, vi.ID, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetPlaylistItemsAsync
-            t = _db.GetPlaylistItemsAsync(pl.ID, ch.ID);
+            t = db.GetPlaylistItemsAsync(pl.ID, ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeletePlaylistAsync
-            t = _db.DeletePlaylistAsync(pl.ID);
+            t = db.DeletePlaylistAsync(pl.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.SiteAdress);
+            t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 
         [TestMethod]
         public void TestCrudSettings()
         {
-            ISqLiteDatabase db = _factory.CreateSqLiteDatabase();
+            ISqLiteDatabase db = factory.CreateSqLiteDatabase();
 
-            ISetting setting = _sf.CreateSetting();
+            ISetting setting = sf.CreateSetting();
             FillTestSetting(setting);
 
             // DeleteSettingAsync
@@ -363,76 +359,76 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudTags()
         {
-            ITag tag = _tf.CreateTag();
+            ITag tag = tf.CreateTag();
             FillTestTag(tag);
 
             // DeleteTagAsync
-            Task t = _db.DeleteTagAsync(tag.Title);
+            Task t = db.DeleteTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertTagAsync
-            t = _db.InsertTagAsync(tag);
+            t = db.InsertTagAsync(tag);
             Assert.IsTrue(!t.IsFaulted);
 
-            IVideoItem vi = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi);
 
-            IVideoItem vi2 = _vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2);
             vi2.ID = "vi2";
 
-            ICred cred = _crf.CreateCred();
+            ICred cred = crf.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = _cf.CreateChannel();
+            IChannel ch = cf.CreateChannel();
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.SiteAdress);
+            t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertCredAsync
-            t = _db.InsertCredAsync(cred);
+            t = db.InsertCredAsync(cred);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelAsync
-            t = _db.InsertChannelAsync(ch);
+            t = db.InsertChannelAsync(ch);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelTagsAsync
-            t = _db.InsertChannelTagsAsync(ch.ID, tag.Title);
+            t = db.InsertChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // InsertChannelTagsAsync
-            t = _db.InsertChannelTagsAsync(ch.ID, tag.Title);
+            t = db.InsertChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelTagsAsync
-            t = _db.GetChannelTagsAsync(ch.ID);
+            t = db.GetChannelTagsAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelsByTagAsync
-            t = _db.GetChannelsByTagAsync(tag.Title);
+            t = db.GetChannelsByTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelTagsAsync
-            t = _db.DeleteChannelTagsAsync(ch.ID, tag.Title);
+            t = db.DeleteChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelAsync
-            t = _db.DeleteChannelAsync(ch.ID);
+            t = db.DeleteChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteTagAsync
-            t = _db.DeleteTagAsync(tag.Title);
+            t = db.DeleteTagAsync(tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
             // DeleteCredAsync
-            t = _db.DeleteCredAsync(cred.SiteAdress);
+            t = db.DeleteCredAsync(cred.SiteAdress);
             Assert.IsTrue(!t.IsFaulted);
         }
 

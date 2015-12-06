@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
@@ -14,7 +15,7 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly TagFactory tf;
+        private readonly TagFactory tagFactory;
 
         #endregion
 
@@ -26,9 +27,9 @@ namespace Models.BO
 
         #region Constructors
 
-        public Tag(TagFactory tf)
+        public Tag(TagFactory tagFactory)
         {
-            this.tf = tf;
+            this.tagFactory = tagFactory;
         }
 
         private Tag()
@@ -75,13 +76,12 @@ namespace Models.BO
 
         public async Task DeleteTagAsync()
         {
-            // return ServiceLocator.TagFactory.DeleteTagAsync(Title);
-            await tf.DeleteTagAsync(Title);
+            await tagFactory.DeleteTagAsync(Title);
         }
 
         public async Task InsertTagAsync()
         {
-            await tf.InsertTagAsync(this);
+            await tagFactory.InsertTagAsync(this);
         }
 
         #endregion

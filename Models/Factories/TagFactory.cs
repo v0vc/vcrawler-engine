@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -16,15 +17,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public TagFactory(ICommonFactory c)
+        public TagFactory(CommonFactory commonFactory)
         {
-            _c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
@@ -33,7 +34,7 @@ namespace Models.Factories
 
         public async Task DeleteTagAsync(string tag)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
 
             // var fb = ServiceLocator.SqLiteDatabase;
             try
@@ -48,7 +49,7 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);

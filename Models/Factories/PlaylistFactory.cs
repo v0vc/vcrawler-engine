@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -18,15 +19,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public PlaylistFactory(ICommonFactory c)
+        public PlaylistFactory(CommonFactory commonFactory)
         {
-            _c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
@@ -35,7 +36,7 @@ namespace Models.Factories
 
         public async Task DeletePlaylistAsync(string id)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeletePlaylistAsync(id);
@@ -48,8 +49,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -65,7 +66,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetPlaylistItemsIdsListDbAsync(id);
@@ -78,7 +79,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
             try
             {
                 return await fb.GetPlaylistItemsIdsListNetAsync(id);
@@ -91,8 +92,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IVideoItemFactory vf = _c.CreateVideoItemFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -108,7 +109,7 @@ namespace Models.Factories
 
         public async Task InsertPlaylistAsync(Playlist playlist)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertPlaylistAsync(playlist);
@@ -121,7 +122,7 @@ namespace Models.Factories
 
         public async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePlaylistAsync(plid, itemid, channelid);
@@ -146,11 +147,11 @@ namespace Models.Factories
         {
             var pl = new Playlist(this)
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
-                SubTitle = poco.SubTitle, 
-                Thumbnail = poco.Thumbnail, 
-                ChannelId = poco.ChannelID, 
+                ID = poco.ID,
+                Title = poco.Title,
+                SubTitle = poco.SubTitle,
+                Thumbnail = poco.Thumbnail,
+                ChannelId = poco.ChannelID,
             };
             return pl;
         }
@@ -158,8 +159,8 @@ namespace Models.Factories
         public async Task<IPlaylist> GetPlaylistDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            IPlaylistFactory pf = _c.CreatePlaylistFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IPlaylistFactory pf = commonFactory.CreatePlaylistFactory();
 
             try
             {
@@ -175,8 +176,8 @@ namespace Models.Factories
 
         public async Task<IPlaylist> GetPlaylistNetAsync(string id)
         {
-            IYouTubeSite fb = _c.CreateYouTubeSite();
-            IPlaylistFactory pf = _c.CreatePlaylistFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IPlaylistFactory pf = commonFactory.CreatePlaylistFactory();
             try
             {
                 IPlaylistPOCO fbres = await fb.GetPlaylistNetAsync(id);

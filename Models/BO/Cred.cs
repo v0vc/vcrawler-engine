@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -14,7 +15,7 @@ namespace Models.BO
     {
         #region Static and Readonly Fields
 
-        private readonly CredFactory _credFactory;
+        private readonly CredFactory credFactory;
 
         #endregion
 
@@ -22,7 +23,7 @@ namespace Models.BO
 
         public Cred(CredFactory credFactory)
         {
-            _credFactory = credFactory;
+            this.credFactory = credFactory;
         }
 
         private Cred()
@@ -38,33 +39,33 @@ namespace Models.BO
         public DateTime Expired { get; set; }
         public string Login { get; set; }
         public string Pass { get; set; }
-        public string SiteAdress { get; set; }
         public SiteType Site { get; set; }
+        public string SiteAdress { get; set; }
 
         public async Task DeleteCredAsync()
         {
-            await _credFactory.DeleteCredAsync(SiteAdress);
+            await credFactory.DeleteCredAsync(SiteAdress);
         }
 
         public async Task InsertCredAsync()
         {
             // await ((CredFactory) ServiceLocator.CredFactory).InsertCRedAsync(this);
-            await _credFactory.InsertCredAsync(this);
+            await credFactory.InsertCredAsync(this);
         }
 
         public async Task UpdateAutorizationAsync(short autorize)
         {
-            await _credFactory.UpdateAutorizationAsync(SiteAdress, autorize);
+            await credFactory.UpdateAutorizationAsync(SiteAdress, autorize);
         }
 
         public async Task UpdateLoginAsync(string newlogin)
         {
-            await _credFactory.UpdateLoginAsync(SiteAdress, newlogin);
+            await credFactory.UpdateLoginAsync(SiteAdress, newlogin);
         }
 
         public async Task UpdatePasswordAsync(string newpassword)
         {
-            await _credFactory.UpdatePasswordAsync(SiteAdress, newpassword);
+            await credFactory.UpdatePasswordAsync(SiteAdress, newpassword);
         }
 
         #endregion

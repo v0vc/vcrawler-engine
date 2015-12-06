@@ -9,13 +9,12 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Interfaces.API;
 using Interfaces.Models;
 using Interfaces.POCO;
 
 namespace DataAPI.Trackers
 {
-    public class RutrackerSite : CommonTracker, IRutrackerSite
+    public class RutrackerSite : CommonTracker
     {
         #region Fields
 

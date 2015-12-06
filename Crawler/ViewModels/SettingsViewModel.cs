@@ -22,6 +22,7 @@ using Interfaces.Enums;
 using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
+using Models.Factories;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -45,7 +46,7 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory baseFactory;
+        private readonly CommonFactory baseFactory;
 
         #endregion
 
@@ -66,7 +67,7 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(ICommonFactory baseFactory)
+        public SettingsViewModel(CommonFactory baseFactory)
         {
             this.baseFactory = baseFactory;
             SupportedTags = new ObservableCollection<ITag>();

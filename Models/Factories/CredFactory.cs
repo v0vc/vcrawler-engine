@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -18,15 +19,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public CredFactory(ICommonFactory c)
+        public CredFactory(CommonFactory commonFactory)
         {
-            _c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
@@ -35,7 +36,7 @@ namespace Models.Factories
 
         public async Task DeleteCredAsync(string site)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteCredAsync(site);
@@ -48,7 +49,7 @@ namespace Models.Factories
 
         public async Task InsertCredAsync(ICred cred)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertCredAsync(cred);
@@ -61,7 +62,7 @@ namespace Models.Factories
 
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateAutorizationAsync(site, autorize);
@@ -74,7 +75,7 @@ namespace Models.Factories
 
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateLoginAsync(site, newlogin);
@@ -87,7 +88,7 @@ namespace Models.Factories
 
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePasswordAsync(site, newpassword);
@@ -111,11 +112,11 @@ namespace Models.Factories
         {
             var cred = new Cred(this)
             {
-                SiteAdress = poco.Site, 
-                Login = poco.Login, 
-                Pass = poco.Pass, 
-                Cookie = poco.Cookie, 
-                Expired = poco.Expired, 
+                SiteAdress = poco.Site,
+                Login = poco.Login,
+                Pass = poco.Pass,
+                Cookie = poco.Cookie,
+                Expired = poco.Expired,
                 Autorization = poco.Autorization,
                 Site = CommonExtensions.GetSiteType(poco.Site)
             };
@@ -125,8 +126,8 @@ namespace Models.Factories
         public async Task<ICred> GetCredDbAsync(SiteType site)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            ICredFactory cf = _c.CreateCredFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            ICredFactory cf = commonFactory.CreateCredFactory();
 
             try
             {

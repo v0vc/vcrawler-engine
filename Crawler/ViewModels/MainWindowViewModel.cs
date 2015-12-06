@@ -33,9 +33,10 @@ using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO.Channels;
 using Models.BO.Items;
+using Models.Factories;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
-using Container = IoC.Container;
+using Container = Models.Container;
 using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
 
@@ -110,7 +111,7 @@ namespace Crawler.ViewModels
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
-                BaseFactory = scope.Resolve<ICommonFactory>();
+                BaseFactory = scope.Resolve<CommonFactory>();
             }
             ParseCommandLineArguments();
             df = BaseFactory.CreateSqLiteDatabase();
@@ -152,7 +153,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ICommonFactory BaseFactory { get; private set; }
+        public CommonFactory BaseFactory { get; private set; }
 
         public RelayCommand ChannelDoubleClickCommand
         {

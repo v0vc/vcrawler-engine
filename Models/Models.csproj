@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Autofac, Version=3.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.3.5.2\lib\net40\Autofac.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Microsoft.WindowsAPICodePack.Shell">
       <HintPath>..\Crawler\DLL\Microsoft.WindowsAPICodePack.Shell.dll</HintPath>
     </Reference>
@@ -55,7 +59,9 @@
     <Compile Include="BO\Playlist.cs" />
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />
+    <Compile Include="Container.cs" />
     <Compile Include="Factories\ChannelFactory.cs" />
+    <Compile Include="Factories\CommonFactory.cs" />
     <Compile Include="Factories\SubtitleFactory.cs" />
     <Compile Include="Factories\CredFactory.cs" />
     <Compile Include="Factories\PlaylistFactory.cs" />
@@ -64,10 +70,12 @@
     <Compile Include="Factories\VideoItemFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
-    <Folder Include="Factories\Items\" />
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\DataAPI\DataAPI.csproj">
+      <Project>{58735A6C-F7DE-4B30-BBE2-75BCE8BBDE91}</Project>
+      <Name>DataAPI</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Extensions\Extensions.csproj">
       <Project>{d592acb6-1c49-4ea9-9a76-a8d378ae6516}</Project>
       <Name>Extensions</Name>
@@ -76,6 +84,9 @@
       <Project>{d7fc9cfb-9494-4079-bb7f-5aff0b2160ea}</Project>
       <Name>Interfaces</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

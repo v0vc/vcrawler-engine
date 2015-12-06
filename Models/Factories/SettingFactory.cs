@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -16,15 +17,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory _c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public SettingFactory(ICommonFactory c)
+        public SettingFactory(CommonFactory commonFactory)
         {
-            _c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
@@ -33,7 +34,7 @@ namespace Models.Factories
 
         public async Task DeleteSettingAsync(string key)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteSettingAsync(key);
@@ -46,7 +47,7 @@ namespace Models.Factories
 
         public async Task InsertSettingAsync(Setting setting)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertSettingAsync(setting);
@@ -59,7 +60,7 @@ namespace Models.Factories
 
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateSettingAsync(key, newvalue);
@@ -88,8 +89,8 @@ namespace Models.Factories
         public async Task<ISetting> GetSettingDbAsync(string key)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = _c.CreateSqLiteDatabase();
-            ISettingFactory sf = _c.CreateSettingFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            ISettingFactory sf = commonFactory.CreateSettingFactory();
 
             try
             {

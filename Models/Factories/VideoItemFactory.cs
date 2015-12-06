@@ -22,20 +22,28 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly ICommonFactory c;
+        private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public VideoItemFactory(ICommonFactory c)
+        public VideoItemFactory(CommonFactory commonFactory)
         {
-            this.c = c;
+            this.commonFactory = commonFactory;
         }
 
         #endregion
 
         #region Static Methods
+
+        private static string IntTostrTime(int duration)
+        {
+            TimeSpan t = TimeSpan.FromSeconds(duration);
+            return t.Hours > 0
+                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
+                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
+        }
 
         private static string TimeAgo(DateTime dt)
         {
@@ -81,21 +89,13 @@ namespace Models.Factories
             return string.Empty;
         }
 
-        private static string IntTostrTime(int duration)
-        {
-            TimeSpan t = TimeSpan.FromSeconds(duration);
-            return t.Hours > 0
-                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
-                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
-        }
-
         #endregion
 
         #region Methods
 
         public async Task DeleteItemAsync(string id)
         {
-            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -106,30 +106,17 @@ namespace Models.Factories
             }
         }
 
-        public async Task InsertItemAsync(IVideoItem item)
-        {
-            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
-            try
-            {
-                await fb.InsertItemAsync(item);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task FillDescriptionAsync(IVideoItem videoItem)
         {
-            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             string res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
             videoItem.Description = res.WordWrap(150);
         }
 
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
-            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
-            IChannelFactory cf = c.CreateChannelFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IChannelFactory cf = commonFactory.CreateChannelFactory();
             try
             {
                 IChannelPOCO poco = await fb.GetChannelAsync(channelID);
@@ -142,10 +129,26 @@ namespace Models.Factories
             }
         }
 
+        public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
+        {
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
+            try
+            {
+                IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
+                IVideoItem vi = vf.CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
-            IYouTubeSite fb = c.CreateYouTubeSite();
-            ISubtitleFactory cf = c.CreateSubtitleFactory();
+            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
+            ISubtitleFactory cf = commonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
             try
             {
@@ -167,15 +170,12 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
+        public async Task InsertItemAsync(IVideoItem item)
         {
-            IYouTubeSite fb = c.CreateYouTubeSite();
-            IVideoItemFactory vf = c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
-                IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
-                IVideoItem vi = vf.CreateVideoItem(poco);
-                return vi;
+                await fb.InsertItemAsync(item);
             }
             catch (Exception ex)
             {
@@ -185,7 +185,7 @@ namespace Models.Factories
 
         #endregion
 
-        #region ICommonItemFactory Members
+        #region IVideoItemFactory Members
 
         public IVideoItem CreateVideoItem(SiteType site)
         {
@@ -226,8 +226,8 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = c.CreateSqLiteDatabase();
-            IVideoItemFactory vf = c.CreateVideoItemFactory();
+            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
 
             try
             {
@@ -243,14 +243,14 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
         {
-            IVideoItemFactory vf = c.CreateVideoItemFactory();
+            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = null;
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await c.CreateYouTubeSite().GetVideoItemNetAsync(id);
+                        poco = await commonFactory.CreateYouTubeSite().GetVideoItemNetAsync(id);
                         break;
                 }
                 IVideoItem vi = vf.CreateVideoItem(poco);

@@ -22,10 +22,10 @@
     
     <Window.Resources>
         <ItemsPanelTemplate x:Key="MenuItemPanelTemplate">
-            <StackPanel Margin="-20,0,-50,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+            <StackPanel Margin="-15,0,-30,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
         </ItemsPanelTemplate>
         <ItemsPanelTemplate x:Key="ContextItemPanelTemplate">
-            <StackPanel Margin="-20,0,0,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+            <StackPanel Margin="-15,0,0,0" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
         </ItemsPanelTemplate>
         <Style TargetType="{x:Type ContextMenu}">
             <Setter Property="ItemsPanel" Value="{StaticResource ContextItemPanelTemplate}"/>

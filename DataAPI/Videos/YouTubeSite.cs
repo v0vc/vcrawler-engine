@@ -387,7 +387,10 @@ namespace DataAPI.Videos
 
             IEnumerable<IPlaylistPOCO> pls = await GetChannelPlaylistsNetAsync(channelID);
 
-            ch.Playlists.AddRange(pls);
+            foreach (IPlaylistPOCO pl in pls.Where(pl => !ch.Playlists.Select(x => x.ID).Contains(pl.ID)))
+            {
+                ch.Playlists.Add(pl);
+            }
 
             for (int i = ch.Playlists.Count; i > 0; i--)
             {
@@ -443,7 +446,7 @@ namespace DataAPI.Videos
         {
             var res = new List<IPlaylistPOCO>();
             string zap =
-                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists)&{3})",
+                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))&{3}",
                     url,
                     key,
                     channelID,
