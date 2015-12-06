@@ -5,15 +5,14 @@
 
 using System;
 using System.Threading.Tasks;
-using Interfaces.API;
-using Interfaces.Factories;
+using DataAPI.Database;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
 {
-    public class SettingFactory : ISettingFactory
+    public class SettingFactory
     {
         #region Static and Readonly Fields
 
@@ -32,9 +31,14 @@ namespace Models.Factories
 
         #region Methods
 
+        public ISetting CreateSetting()
+        {
+            return new Setting(this);
+        }
+
         public async Task DeleteSettingAsync(string key)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteSettingAsync(key);
@@ -45,9 +49,27 @@ namespace Models.Factories
             }
         }
 
+        public async Task<ISetting> GetSettingDbAsync(string key)
+        {
+            // var fb = ServiceLocator.SqLiteDatabase;
+            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SettingFactory sf = commonFactory.CreateSettingFactory();
+
+            try
+            {
+                ISettingPOCO fbres = await fb.GetSettingAsync(key);
+                ISetting set = sf.CreateSetting(fbres);
+                return set;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
         public async Task InsertSettingAsync(Setting setting)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertSettingAsync(setting);
@@ -60,7 +82,7 @@ namespace Models.Factories
 
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateSettingAsync(key, newvalue);
@@ -71,37 +93,10 @@ namespace Models.Factories
             }
         }
 
-        #endregion
-
-        #region ISettingFactory Members
-
-        public ISetting CreateSetting()
-        {
-            return new Setting(this);
-        }
-
-        public ISetting CreateSetting(ISettingPOCO poco)
+        private ISetting CreateSetting(ISettingPOCO poco)
         {
             var set = new Setting(this) { Key = poco.Key, Value = poco.Value };
             return set;
-        }
-
-        public async Task<ISetting> GetSettingDbAsync(string key)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
-            ISettingFactory sf = commonFactory.CreateSettingFactory();
-
-            try
-            {
-                ISettingPOCO fbres = await fb.GetSettingAsync(key);
-                ISetting set = sf.CreateSetting(fbres);
-                return set;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
 
         #endregion

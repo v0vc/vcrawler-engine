@@ -6,16 +6,14 @@
 using System;
 using System.Threading.Tasks;
 using Extensions;
-using Interfaces.API;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
 {
-    public class CredFactory : ICredFactory
+    public class CredFactory
     {
         #region Static and Readonly Fields
 
@@ -36,7 +34,7 @@ namespace Models.Factories
 
         public async Task DeleteCredAsync(string site)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteCredAsync(site);
@@ -49,7 +47,7 @@ namespace Models.Factories
 
         public async Task InsertCredAsync(ICred cred)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertCredAsync(cred);
@@ -62,7 +60,7 @@ namespace Models.Factories
 
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateAutorizationAsync(site, autorize);
@@ -75,7 +73,7 @@ namespace Models.Factories
 
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateLoginAsync(site, newlogin);
@@ -88,7 +86,7 @@ namespace Models.Factories
 
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePasswordAsync(site, newpassword);
@@ -126,8 +124,8 @@ namespace Models.Factories
         public async Task<ICred> GetCredDbAsync(SiteType site)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
-            ICredFactory cf = commonFactory.CreateCredFactory();
+            var fb = commonFactory.CreateSqLiteDatabase();
+            var cf = commonFactory.CreateCredFactory();
 
             try
             {

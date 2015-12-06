@@ -19,7 +19,6 @@ using Crawler.Properties;
 using Crawler.Views;
 using Extensions;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.Factories;
@@ -215,7 +214,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadSettingsFromDb()
         {
-            ISettingFactory sf = baseFactory.CreateSettingFactory();
+            var sf = baseFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             DirPath = savedir.Value;
@@ -370,7 +369,7 @@ namespace Crawler.ViewModels
 
         private async Task SaveSettingsToDb()
         {
-            ISettingFactory sf = baseFactory.CreateSettingFactory();
+            var sf = baseFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             if (savedir.Value != DirPath)

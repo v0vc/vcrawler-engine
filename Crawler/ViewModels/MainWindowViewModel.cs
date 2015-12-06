@@ -24,10 +24,11 @@ using System.Windows.Media;
 using Autofac;
 using Crawler.Common;
 using Crawler.Views;
+using DataAPI.Database;
+using DataAPI.Trackers;
+using DataAPI.Videos;
 using Extensions;
-using Interfaces.API;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -53,13 +54,13 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
-        private readonly IChannelFactory cf;
+        private readonly ChannelFactory cf;
         private readonly ICollectionView channelCollectionView;
-        private readonly ISqLiteDatabase df;
+        private readonly SqLiteDatabase df;
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
-        private readonly ITapochekSite tf;
-        private readonly IVideoItemFactory vf;
-        private readonly IYouTubeSite yf;
+        private readonly TapochekSite tf;
+        private readonly VideoItemFactory vf;
+        private readonly YouTubeSite yf;
 
         #endregion
 
@@ -825,7 +826,7 @@ namespace Crawler.ViewModels
             DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                ISqLiteDatabase fb = BaseFactory.CreateSqLiteDatabase();
+                var fb = BaseFactory.CreateSqLiteDatabase();
                 List<IChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
                 var sb = new StringBuilder();
                 foreach (IChannelPOCO poco in lst)
@@ -1807,7 +1808,7 @@ namespace Crawler.ViewModels
 
         private async Task Vacuumdb()
         {
-            ISqLiteDatabase db = BaseFactory.CreateSqLiteDatabase();
+            var db = BaseFactory.CreateSqLiteDatabase();
             long sizebefore = db.FileBase.Length;
             await db.VacuumAsync();
             long sizeafter = new FileInfo(db.FileBase.FullName).Length;

@@ -10,7 +10,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DataAPI.POCO;
 using Extensions;
-using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -18,7 +17,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DataAPI.Videos
 {
-    public class YouTubeSite : IYouTubeSite
+    public class YouTubeSite
     {
         #region Constants
 
@@ -65,6 +64,11 @@ namespace DataAPI.Videos
             }
         }
 
+        /// <summary>
+        ///     Получить ID канала по имени пользователя
+        /// </summary>
+        /// <param name="username">Имя пользоватедя</param>
+        /// <returns></returns>
         public async Task<string> GetChannelIdByUserNameNetAsync(string username)
         {
             string zap = string.Format("{0}channels?&forUsername={1}&key={2}&part=snippet&&fields=items(id)&prettyPrint=false&{3}", 
@@ -87,6 +91,12 @@ namespace DataAPI.Videos
             throw new Exception("Can't get channel ID for username: " + username);
         }
 
+        /// <summary>
+        ///     Получить заданное количество видео с канала, 0 - все записи
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <param name="maxResult">Количество</param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
         {
             var res = new List<IVideoItemPOCO>();
@@ -209,6 +219,11 @@ namespace DataAPI.Videos
             return res.Where(x => x.Status != privacyDef).ToList();
         }
 
+        /// <summary>
+        ///     Получить количество видео на канале
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <returns></returns>
         public async Task<int> GetChannelItemsCountNetAsync(string channelID)
         {
             string zap = string.Format("{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}", 
@@ -230,6 +245,11 @@ namespace DataAPI.Videos
             return total.Value<int>();
         }
 
+        /// <summary>
+        ///     Получить количество элементов канала поиском
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
         public async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
         {
             var zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
@@ -247,6 +267,12 @@ namespace DataAPI.Videos
             return total.Value<int>();
         }
 
+        /// <summary>
+        ///     Получить список всех ID видео с канала
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <param name="maxResult">Количество</param>
+        /// <returns></returns>
         public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
         {
             var res = new List<IVideoItemPOCO>();
@@ -354,6 +380,11 @@ namespace DataAPI.Videos
             return res.Where(x => x.Status == privacyPub).Select(x => x.ID).ToList();
         }
 
+        /// <summary>
+        ///     Получить канал по ID
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <returns></returns>
         public async Task<IChannelPOCO> GetChannelNetAsync(string channelID)
         {
             string zap =
@@ -375,6 +406,11 @@ namespace DataAPI.Videos
             return ch;
         }
 
+        /// <summary>
+        ///     Получить канал целиком
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
         public async Task<IChannelPOCO> GetChannelFullNetAsync(string channelID)
         {
             IChannelPOCO ch = await GetChannelNetAsync(channelID);
@@ -390,7 +426,7 @@ namespace DataAPI.Videos
 
             ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
 
-            ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
+            //ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
 
             ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
 
@@ -409,6 +445,11 @@ namespace DataAPI.Videos
             return ch;
         }
 
+        /// <summary>
+        ///     Получить список плэйлистов канала
+        /// </summary>
+        /// <param name="channelID">ID канала</param>
+        /// <returns>Список плейлистов</returns>
         public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
@@ -451,6 +492,11 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Получить списки технических плэйлистов канала
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
@@ -492,6 +538,11 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Получить количество элементов плейлиста
+        /// </summary>
+        /// <param name="plId"></param>
+        /// <returns></returns>
         public async Task<int> GetPlaylistItemsCountNetAsync(string plId)
         {
             string zap = string.Format("{0}playlists?id={1}&key={2}&part=contentDetails&fields=items(contentDetails(itemCount))&{3}",
@@ -513,6 +564,11 @@ namespace DataAPI.Videos
             return total.Value<int>();
         }
 
+        /// <summary>
+        ///     Получить список всех ID видео плэйлиста
+        /// </summary>
+        /// <param name="id">ID плэйлиста</param>
+        /// <returns></returns>
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
         {
             var res = new List<string>();
@@ -577,6 +633,11 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Получить список видео плэйлиста
+        /// </summary>
+        /// <param name="plid">Ссылка</param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
         {
             var res = new List<IVideoItemPOCO>();
@@ -679,6 +740,11 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Получить плэйлист по ID
+        /// </summary>
+        /// <param name="id">ID плейлиста</param>
+        /// <returns></returns>
         public async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
         {
             var pl = new PlaylistPOCO(id, SiteType.YouTube);
@@ -700,6 +766,12 @@ namespace DataAPI.Videos
             return pl;
         }
 
+        /// <summary>
+        ///     Получить список популярных видео по стране
+        /// </summary>
+        /// <param name="regionID">Код региона</param>
+        /// <param name="maxResult">Желаемое количество записей</param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
             int itemsppage = itemsPerPage;
@@ -803,6 +875,11 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Получить список похожих каналов
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
         {
             var lst = new List<IChannelPOCO>();
@@ -836,6 +913,11 @@ namespace DataAPI.Videos
             return lst;
         }
 
+        /// <summary>
+        ///     Получить облегченный объект видео
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemLiteNetAsync(string id)
         {
             var item = new VideoItemPOCO(id, Cred.Site);
@@ -857,6 +939,11 @@ namespace DataAPI.Videos
             return item;
         }
 
+        /// <summary>
+        ///     Получить видео по ID
+        /// </summary>
+        /// <param name="videoid">ID видео</param>
+        /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {
             var item = new VideoItemPOCO(videoid, Cred.Site);
@@ -878,6 +965,11 @@ namespace DataAPI.Videos
             return item;
         }
 
+        /// <summary>
+        ///     Получить список полных видео по списку id
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
@@ -943,6 +1035,11 @@ namespace DataAPI.Videos
             return lst.Where(x => x.Status != privacyDef).ToList();
         }
 
+        /// <summary>
+        ///     Получить список облегченных видео по списку id
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
@@ -992,6 +1089,11 @@ namespace DataAPI.Videos
             return lst;
         }
 
+        /// <summary>
+        ///     Получить список субтитров видео
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
         {
             string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
@@ -1011,6 +1113,11 @@ namespace DataAPI.Videos
                 select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<ISubtitlePOCO>().ToList();
         }
 
+        /// <summary>
+        ///     Парсим что ввел юзер для получения ID канала
+        /// </summary>
+        /// <param name="inputChannelLink"></param>
+        /// <returns></returns>
         public async Task<string> ParseChannelLink(string inputChannelLink)
         {
             string parsedChannelId = string.Empty;
@@ -1065,6 +1172,13 @@ namespace DataAPI.Videos
             return parsedChannelId;
         }
 
+        /// <summary>
+        ///     Поиск
+        /// </summary>
+        /// <param name="keyword">Что ищем</param>
+        /// <param name="region">Регион</param>
+        /// <param name="maxResult">Количество записей</param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
             int itemsppage = itemsPerPage;

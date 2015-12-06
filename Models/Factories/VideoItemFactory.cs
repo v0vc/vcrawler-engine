@@ -9,16 +9,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Extensions;
-using Interfaces.API;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO.Items;
 
 namespace Models.Factories
 {
-    public class VideoItemFactory : IVideoItemFactory
+    public class VideoItemFactory
     {
         #region Static and Readonly Fields
 
@@ -95,7 +93,7 @@ namespace Models.Factories
 
         public async Task DeleteItemAsync(string id)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteItemAsync(id);
@@ -108,15 +106,15 @@ namespace Models.Factories
 
         public async Task FillDescriptionAsync(IVideoItem videoItem)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             string res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
             videoItem.Description = res.WordWrap(150);
         }
 
         public async Task<IChannel> GetParentChannelAsync(string channelID)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
-            IChannelFactory cf = commonFactory.CreateChannelFactory();
+            var fb = commonFactory.CreateSqLiteDatabase();
+            var cf = commonFactory.CreateChannelFactory();
             try
             {
                 IChannelPOCO poco = await fb.GetChannelAsync(channelID);
@@ -131,8 +129,8 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
-            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
-            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
+            var fb = commonFactory.CreateYouTubeSite();
+            var vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
@@ -147,8 +145,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
-            IYouTubeSite fb = commonFactory.CreateYouTubeSite();
-            ISubtitleFactory cf = commonFactory.CreateSubtitleFactory();
+            var fb = commonFactory.CreateYouTubeSite();
+            var cf = commonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
             try
             {
@@ -172,7 +170,7 @@ namespace Models.Factories
 
         public async Task InsertItemAsync(IVideoItem item)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertItemAsync(item);
@@ -226,8 +224,8 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
-            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
+            var fb = commonFactory.CreateSqLiteDatabase();
+            var vf = commonFactory.CreateVideoItemFactory();
 
             try
             {
@@ -243,7 +241,7 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
         {
-            IVideoItemFactory vf = commonFactory.CreateVideoItemFactory();
+            var vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = null;

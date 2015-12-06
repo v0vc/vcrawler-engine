@@ -5,15 +5,13 @@
 
 using System;
 using System.Threading.Tasks;
-using Interfaces.API;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
 {
-    public class TagFactory : ITagFactory
+    public class TagFactory
     {
         #region Static and Readonly Fields
 
@@ -34,7 +32,7 @@ namespace Models.Factories
 
         public async Task DeleteTagAsync(string tag)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
 
             // var fb = ServiceLocator.SqLiteDatabase;
             try
@@ -49,7 +47,7 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            ISqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);

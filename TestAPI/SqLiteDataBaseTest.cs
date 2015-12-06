@@ -11,7 +11,6 @@ using System.Threading.Tasks;
 using Autofac;
 using DataAPI;
 using DataAPI.Database;
-using Interfaces.API;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -330,8 +329,6 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudSettings()
         {
-            ISqLiteDatabase db = factory.CreateSqLiteDatabase();
-
             ISetting setting = sf.CreateSetting();
             FillTestSetting(setting);
 

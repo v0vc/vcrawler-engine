@@ -9,9 +9,8 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Autofac;
-using Interfaces.API;
+using DataAPI.Trackers;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -33,7 +32,7 @@ namespace TestAPI
         #region Fields
 
         private ICred cred;
-        private ITapochekSite tf;
+        private TapochekSite tf;
 
         #endregion
 
@@ -55,7 +54,7 @@ namespace TestAPI
         [TestMethod]
         public void FillChannelCookieDbAsync()
         {
-            IChannelFactory chf = fabric.CreateChannelFactory();
+            var chf = fabric.CreateChannelFactory();
             var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
@@ -68,7 +67,7 @@ namespace TestAPI
         [TestMethod]
         public async Task FillChannelNetAsync()
         {
-            IChannelFactory chf = fabric.CreateChannelFactory();
+            var chf = fabric.CreateChannelFactory();
             var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
@@ -83,7 +82,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelCookieNetAsync()
         {
-            IChannelFactory chf = fabric.CreateChannelFactory();
+            var chf = fabric.CreateChannelFactory();
             IChannel ch = chf.CreateChannel(SiteType.Tapochek);
             CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             Assert.IsTrue(cookie.Count > 0);
@@ -92,7 +91,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            IChannelFactory chf = fabric.CreateChannelFactory();
+            var chf = fabric.CreateChannelFactory();
             var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
@@ -118,7 +117,7 @@ namespace TestAPI
         [TestMethod]
         public async Task StoreCookiesAsync()
         {
-            IChannelFactory chf = fabric.CreateChannelFactory();
+            var chf = fabric.CreateChannelFactory();
             var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
@@ -128,7 +127,7 @@ namespace TestAPI
             ch.ChannelCookies = cookie;
 
             ch.StoreCookies();
-            ISqLiteDatabase c = fabric.CreateSqLiteDatabase();
+            var c = fabric.CreateSqLiteDatabase();
             if (c.FileBase.DirectoryName != null)
             {
                 var folder = new DirectoryInfo(Path.Combine(c.FileBase.DirectoryName, "Cookie"));

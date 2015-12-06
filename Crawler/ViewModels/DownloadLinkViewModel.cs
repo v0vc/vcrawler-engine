@@ -15,7 +15,6 @@ using System.Windows;
 using Crawler.Common;
 using Extensions;
 using Interfaces.Enums;
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 
@@ -207,7 +206,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            ISubtitleFactory cf = mv.BaseFactory.CreateSubtitleFactory();
+            var cf = mv.BaseFactory.CreateSubtitleFactory();
             IEnumerable<ISubtitlePOCO> res = (await mv.BaseFactory.CreateYouTubeSite().GetVideoSubtitlesByIdAsync(youId)).ToList();
             if (res.Any())
             {

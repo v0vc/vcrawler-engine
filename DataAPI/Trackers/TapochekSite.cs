@@ -14,13 +14,12 @@ using System.Threading.Tasks;
 using System.Web;
 using DataAPI.POCO;
 using HtmlAgilityPack;
-using Interfaces.API;
 using Interfaces.Models;
 using Interfaces.POCO;
 
 namespace DataAPI.Trackers
 {
-    public class TapochekSite : CommonTracker, ITapochekSite
+    public class TapochekSite : CommonTracker
     {
         #region Fields
 
@@ -81,6 +80,11 @@ namespace DataAPI.Trackers
             }
         }
 
+        /// <summary>
+        ///     Заполнить канал элементами
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
         public async Task FillChannelNetAsync(IChannel channel)
         {
             string zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, channel.ID);
@@ -114,6 +118,12 @@ namespace DataAPI.Trackers
             }
         }
 
+        /// <summary>
+        ///     Получиить релизы пользователя, 0 - все релизы
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <param name="maxresult"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             var lst = new List<IVideoItemPOCO>();
@@ -174,6 +184,11 @@ namespace DataAPI.Trackers
             return lst;
         }
 
+        /// <summary>
+        ///     Получить куки пользователя с сайта
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
         public async Task<CookieContainer> GetCookieNetAsync(IChannel channel)
         {
             if (string.IsNullOrEmpty(Cred.Login) || string.IsNullOrEmpty(Cred.Pass))

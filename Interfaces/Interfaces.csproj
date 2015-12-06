@@ -41,18 +41,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="API\IRutrackerSite.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="API\ISqLiteDatabase.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="API\ITapochekSite.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="API\IYouTubeSite.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Enums\ChannelMenuItem.cs" />
     <Compile Include="Enums\ItemState.cs" />
     <Compile Include="Enums\KeyboardKey.cs" />
@@ -61,13 +49,6 @@
     <Compile Include="Enums\PlaylistMenuItem.cs" />
     <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Enums\VideoMenuItem.cs" />
-    <Compile Include="Factories\IChannelFactory.cs" />
-    <Compile Include="Factories\ISubtitleFactory.cs" />
-    <Compile Include="Factories\ICredFactory.cs" />
-    <Compile Include="Factories\IPlaylistFactory.cs" />
-    <Compile Include="Factories\ISettingFactory.cs" />
-    <Compile Include="Factories\ITagFactory.cs" />
-    <Compile Include="Factories\IVideoItemFactory.cs" />
     <Compile Include="Models\IChannel.cs" />
     <Compile Include="Models\ISubtitle.cs" />
     <Compile Include="Models\ICred.cs" />

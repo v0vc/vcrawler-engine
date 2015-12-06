@@ -2,14 +2,13 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using Interfaces.Factories;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
 {
-    public class SubtitleFactory : ISubtitleFactory
+    public class SubtitleFactory
     {
         #region ISubtitleFactory Members
 
