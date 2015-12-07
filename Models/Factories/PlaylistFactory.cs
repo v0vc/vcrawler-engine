@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAPI.Videos;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Models.BO;
@@ -179,7 +180,7 @@ namespace Models.Factories
             var pf = commonFactory.CreatePlaylistFactory();
             try
             {
-                IPlaylistPOCO fbres = await fb.GetPlaylistNetAsync(id);
+                IPlaylistPOCO fbres = await YouTubeSite.GetPlaylistNetAsync(id);
                 IPlaylist pl = pf.CreatePlaylist(fbres);
                 return pl;
             }

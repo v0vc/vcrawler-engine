@@ -698,7 +698,7 @@ namespace Crawler.ViewModels
 
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
-            var channel = await cf.GetChannelNetAsync(channelid, site);
+            IChannel channel = await cf.GetChannelNetAsync(channelid, site);
             if (channel == null)
             {
                 return;

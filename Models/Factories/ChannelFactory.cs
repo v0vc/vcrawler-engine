@@ -649,7 +649,7 @@ namespace Models.Factories
                     {
                         foreach (IVideoItemPOCO item in poco.Items)
                         {
-                            channel.ChannelItems.Add(vf.CreateVideoItem(item));
+                            channel.AddNewItem(vf.CreateVideoItem(item), false);
                         }
                     }
 
@@ -713,7 +713,6 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        //poco = await commonFactory.CreateYouTubeSite().GetChannelNetAsync(channelID);
                         poco = await commonFactory.CreateYouTubeSite().GetChannelFullNetAsync(channelID);
                         break;
                     case SiteType.RuTracker:

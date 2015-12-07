@@ -175,7 +175,7 @@ namespace DataAPI.POCO
             }
         }
 
-        public void FillFieldsFromPlaylist(JToken record)
+        public async void FillFieldsFromPlaylist(JToken record)
         {
             JToken tpid = record.SelectToken("snippet.channelId");
             ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
@@ -185,6 +185,12 @@ namespace DataAPI.POCO
 
             JToken tm = record.SelectToken("snippet.publishedAt");
             Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
+
+            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
+            if (tlink != null)
+            {
+                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+            }
         }
 
         public async Task FillFieldsFromSingleVideo(JObject record)

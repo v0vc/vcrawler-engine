@@ -180,7 +180,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IPlaylistPOCO res = await you.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            IPlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
             Assert.AreEqual(res.Title, "Creating Windows Services");
 

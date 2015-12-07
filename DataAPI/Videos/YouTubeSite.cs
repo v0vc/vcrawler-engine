@@ -563,7 +563,7 @@ namespace DataAPI.Videos
         /// <summary>
         ///     Получить список всех ID видео плэйлиста
         /// </summary>
-        /// <param name="id">ID плэйлиста</param>
+        /// <param name="plid">ID плэйлиста</param>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
         {
@@ -737,11 +737,11 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить плэйлист по ID
+        ///     Get playlist by ID
         /// </summary>
-        /// <param name="id">ID плейлиста</param>
+        /// <param name="id">ID</param>
         /// <returns></returns>
-        public async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
+        public static async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
         {
             var pl = new PlaylistPOCO(id, SiteType.YouTube);
 
