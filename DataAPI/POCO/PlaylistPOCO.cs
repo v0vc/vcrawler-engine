@@ -22,6 +22,7 @@ namespace DataAPI.POCO
             SubTitle = subtitle;
             Thumbnail = thumbnail;
             ChannelID = channelid;
+            PlaylistItems = new List<string>();
         }
 
         public PlaylistPOCO(string id, SiteType site)

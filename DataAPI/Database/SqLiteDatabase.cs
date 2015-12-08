@@ -664,6 +664,11 @@ namespace DataAPI.Database
                     }
                 }
             }
+            foreach (IPlaylistPOCO poco in res)
+            {
+                poco.PlaylistItems.AddRange(await GetPlaylistItemsIdsListDbAsync(poco.ID));
+            }
+
             return res;
         }
 
