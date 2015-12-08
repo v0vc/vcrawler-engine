@@ -81,7 +81,7 @@ namespace Models.Factories
             var fb = commonFactory.CreateYouTubeSite();
             try
             {
-                return await fb.GetPlaylistItemsIdsListNetAsync(id);
+                return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id);
             }
             catch (Exception ex)
             {

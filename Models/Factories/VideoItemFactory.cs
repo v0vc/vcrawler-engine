@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -150,7 +151,7 @@ namespace Models.Factories
             var res = new List<ISubtitle>();
             try
             {
-                IEnumerable<ISubtitlePOCO> poco = await fb.GetVideoSubtitlesByIdAsync(id);
+                IEnumerable<ISubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
                 res.AddRange(poco.Select(cf.CreateSubtitle));
                 if (res.Any())
                 {

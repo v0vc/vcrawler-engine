@@ -60,11 +60,6 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public async Task DeleteChannelAsync()
-        {
-            await channelFactory.DeleteChannelAsync(ID);
-        }
-
         public async Task DeleteChannelPlaylistsAsync()
         {
             await channelFactory.DeleteChannelPlaylistsAsync(ID);

@@ -714,11 +714,15 @@ namespace Crawler.ViewModels
                 channel.Title = channeltitle;
             }
 
-            //await channel.DeleteChannelAsync();
+            if (Channels.Select(x => x.ID).Contains(channel.ID))
+            {
+                await cf.DeleteChannelAsync(channel.ID);
+            }
             Channels.Add(channel);
             channel.IsDownloading = true;
-            //channel.IsInWork = true;
             SelectedChannel = channel;
+            channel.IsInWork = true;
+            await cf.InsertChannelAsync(channel);
 
             //IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(0); // TODO add site
             //foreach (IVideoItem item in lst)
@@ -921,13 +925,13 @@ namespace Crawler.ViewModels
             {
                 for (int i = SelectedChannels.Count; i > 0; i--)
                 {
-                    var channel = SelectedChannels[i - 1] as YouChannel;
+                    var channel = SelectedChannels[i - 1] as IChannel;
                     if (channel == null)
                     {
                         continue;
                     }
                     Channels.Remove(channel);
-                    await channel.DeleteChannelAsync();
+                    await cf.DeleteChannelAsync(channel.ID);
                 }
 
                 if (Channels.Any())

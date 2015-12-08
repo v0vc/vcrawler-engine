@@ -227,9 +227,8 @@ namespace DataAPI.Database
 
         #endregion
 
-        #region ISqLiteDatabase Members
         /// <summary>
-        ///     Файл базы
+        ///     DB file
         /// </summary>
         public FileInfo FileBase
         {
@@ -251,9 +250,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить канал
+        ///     Delete
         /// </summary>
-        /// <param name="parID">ID канала</param>
+        /// <param name="parID">channel ID</param>
         /// <returns></returns>
         public async Task DeleteChannelAsync(string parID)
         {
@@ -262,10 +261,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить тэг у канала
+        ///     Delete channel tag
         /// </summary>
-        /// <param name="channelid">ID канала</param>
-        /// <param name="tag">ID тэга</param>
+        /// <param name="channelid">channel ID</param>
+        /// <param name="tag">tag ID</param>
         /// <returns></returns>
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
         {
@@ -279,9 +278,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить credential
+        ///     Delete credential
         /// </summary>
-        /// <param name="site">ID сайта</param>
+        /// <param name="site">site ID</param>
         /// <returns></returns>
         public async Task DeleteCredAsync(string site)
         {
@@ -290,9 +289,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить элемент канала
+        ///     Delete item
         /// </summary>
-        /// <param name="id">ID видео</param>
+        /// <param name="id">item ID</param>
         /// <returns></returns>
         public async Task DeleteItemAsync(string id)
         {
@@ -301,9 +300,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить плэйлист
+        ///     Delete playlist
         /// </summary>
-        /// <param name="id">ID плэйлиста</param>
+        /// <param name="id">playlist ID</param>
         /// <returns></returns>
         public async Task DeletePlaylistAsync(string id)
         {
@@ -312,9 +311,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Удалить настройку
+        ///     Delete setting
         /// </summary>
-        /// <param name="key">ID настройки</param>
+        /// <param name="key">setting ID</param>
         /// <returns></returns>
         public async Task DeleteSettingAsync(string key)
         {
@@ -323,9 +322,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить тэг
+        ///     Delete tag
         /// </summary>
-        /// <param name="tag">ID тэга</param>
+        /// <param name="tag">tag ID</param>
         /// <returns></returns>
         public async Task DeleteTagAsync(string tag)
         {
@@ -336,7 +335,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить все тэги
+        ///     Get all tags
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<ITagPOCO>> GetAllTagsAsync()
@@ -377,9 +376,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить канал по ID
+        ///     Get channel by ID
         /// </summary>
-        /// <param name="id">ID канала</param>
+        /// <param name="id">channel ID</param>
         /// <returns></returns>
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
@@ -427,7 +426,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить описание канала из базы
+        ///     Get channel description
         /// </summary>
         /// <param name="channelID"></param>
         /// <returns></returns>
@@ -460,9 +459,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список видео канала, 0 - все
+        ///     Get channel items, 0 - all
         /// </summary>
-        /// <param name="channelID">ID канала</param>
+        /// <param name="channelID">channel ID</param>
         /// <param name="count"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
@@ -535,9 +534,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить количество записей канала
+        ///     Get channel items count
         /// </summary>
-        /// <param name="channelID">ID канала</param>
+        /// <param name="channelID">channel ID</param>
         /// <returns></returns>
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)
         {
@@ -567,7 +566,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список ID видео с канала в базе, 0 - все
+        ///     Get channel items ids, 0 - all
         /// </summary>
         /// <param name="channelID"></param>
         /// <param name="count"></param>
@@ -625,9 +624,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список всех плэйлистов канала
+        ///     Get channel playlists
         /// </summary>
-        /// <param name="channelID">ID канала</param>
+        /// <param name="channelID">channel ID</param>
         /// <returns></returns>
         public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
@@ -669,7 +668,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить количество плейлистов канала
+        ///     Get channel playlist count
         /// </summary>
         /// <param name="channelID"></param>
         /// <returns></returns>
@@ -701,9 +700,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список каналов по тэгу
+        ///     Get channels by tag
         /// </summary>
-        /// <param name="tag">ID тэга</param>
+        /// <param name="tag">tag ID</param>
         /// <returns></returns>
         public async Task<IEnumerable<IChannelPOCO>> GetChannelsByTagAsync(string tag)
         {
@@ -744,7 +743,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список всех ID каналов в базе
+        ///     Get all channels id's
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetChannelsIdsListDbAsync()
@@ -786,7 +785,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список всех ID плейлистов канала
+        ///     Get all playlists id's
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
@@ -828,7 +827,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список всех каналов из бд
+        ///     Get channels list
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<IChannelPOCO>> GetChannelsListAsync()
@@ -879,9 +878,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список тэгов канала
+        ///     Get channel tags
         /// </summary>
-        /// <param name="id">ID канала</param>
+        /// <param name="id">channel ID</param>
         /// <returns></returns>
         public async Task<IEnumerable<ITagPOCO>> GetChannelTagsAsync(string id)
         {
@@ -919,9 +918,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить credentials сайта
+        ///     Get site credentials
         /// </summary>
-        /// <param name="site">ID сайта</param>
+        /// <param name="site">site ID</param>
         /// <returns></returns>
         public async Task<ICredPOCO> GetCredAsync(string site)
         {
@@ -958,7 +957,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список всех креденшиалов (поддерживаемых площадок)
+        ///     Get credentials
         /// </summary>
         /// <returns></returns>
         public async Task<IEnumerable<ICredPOCO>> GetCredListAsync()
@@ -998,9 +997,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить плэйлист
+        ///     Get playlist
         /// </summary>
-        /// <param name="id">ID плэйлиста</param>
+        /// <param name="id">playlist ID</param>
         /// <returns></returns>
         public async Task<IPlaylistPOCO> GetPlaylistAsync(string id)
         {
@@ -1041,10 +1040,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить список видео, относящегося к плэйлисту канала
+        ///     Get playlist items
         /// </summary>
-        /// <param name="id">ID плэйлиста</param>
-        /// <param name="channelID">ID канала</param>
+        /// <param name="id">playlist ID</param>
+        /// <param name="channelID">channel ID</param>
         /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
         {
@@ -1095,9 +1094,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получение списка ID видео плейлиста из базы
+        ///     Get playlist items ids
         /// </summary>
-        /// <param name="id">ID плэйлиста</param>
+        /// <param name="id">playlist ID</param>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
@@ -1138,9 +1137,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить настройку
+        ///     Get setting
         /// </summary>
-        /// <param name="key">ID настройки</param>
+        /// <param name="key">setting ID</param>
         /// <returns></returns>
         public async Task<ISettingPOCO> GetSettingAsync(string key)
         {
@@ -1178,9 +1177,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить видео
+        ///     Get item
         /// </summary>
-        /// <param name="id">ID видео</param>
+        /// <param name="id"></param>
         /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
@@ -1236,7 +1235,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить описание видео из базы
+        ///     Get item description
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -1269,9 +1268,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Записать канал без списка видео
+        ///     Insert only channel
         /// </summary>
-        /// <param name="channel">Канал</param>
+        /// <param name="channel"></param>
         /// <returns></returns>
         public async Task InsertChannelAsync(IChannel channel)
         {
@@ -1297,9 +1296,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Записать канал со списком видео
+        ///     Insert channel with items
         /// </summary>
-        /// <param name="channel">Канал</param>
+        /// <param name="channel"></param>
         /// <returns></returns>
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
@@ -1349,10 +1348,113 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Добавить тэг каналу
+        ///     Full channel insert
         /// </summary>
-        /// <param name="channelid">ID канала</param>
-        /// <param name="tag">ID тэга</param>
+        /// <param name="channel"></param>
+        /// <returns></returns>
+        public async Task InsertChannelItemsPlaylistAsync(IChannel channel)
+        {
+            await InsertChannelAsync(channel);
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandType = CommandType.Text;
+
+                        #region Playlists
+
+                        command.CommandText =
+                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                                tableplaylists,
+                                playlistID,
+                                playlistTitle,
+                                playlistSubTitle,
+                                playlistThumbnail,
+                                playlistChannelId);
+
+                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                        {
+                            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
+                            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
+                            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
+                            command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
+                                playlist.Thumbnail;
+                            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+
+                        #endregion
+
+                        #region Items
+
+                        command.CommandText =
+                            string.Format(
+                                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
+                                tableitems,
+                                itemId,
+                                parentID,
+                                title,
+                                description,
+                                viewCount,
+                                duration,
+                                comments,
+                                thumbnail,
+                                timestamp);
+
+                        foreach (IVideoItem item in channel.ChannelItems)
+                        {
+                            command.Parameters.AddWithValue("@" + itemId, item.ID);
+                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                            command.Parameters.AddWithValue("@" + title, item.Title);
+                            command.Parameters.AddWithValue("@" + description, item.Description);
+                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                            command.Parameters.AddWithValue("@" + duration, item.Duration);
+                            command.Parameters.AddWithValue("@" + comments, item.Comments);
+                            command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+
+                        #endregion
+
+                        #region Update Playlists items
+
+                        command.CommandText = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+                            tableplaylistitems,
+                            fPlaylistId,
+                            fItemId,
+                            fChannelId);
+
+                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                        {
+                            foreach (string plItem in playlist.PlItems)
+                            {
+                                command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
+                                command.Parameters.AddWithValue("@" + fItemId, plItem);
+                                command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
+
+                                await command.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        #endregion
+                    }
+
+                    transaction.Commit();
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Add tag to channel
+        /// </summary>
+        /// <param name="channelid">channel ID</param>
+        /// <param name="tag">tag ID</param>
         /// <returns></returns>
         public async Task InsertChannelTagsAsync(string channelid, string tag)
         {
@@ -1371,7 +1473,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Записать credential
+        ///     Insert credential
         /// </summary>
         /// <param name="cred">Credential</param>
         /// <returns></returns>
@@ -1400,9 +1502,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Добавить видео
+        ///     Insert item
         /// </summary>
-        /// <param name="item">Видео</param>
+        /// <param name="item"></param>
         /// <returns></returns>
         public async Task InsertItemAsync(IVideoItem item)
         {
@@ -1437,9 +1539,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Добавить плэйлист
+        ///     Insert playlist
         /// </summary>
-        /// <param name="playlist">Плэйлист</param>
+        /// <param name="playlist"></param>
         /// <returns></returns>
         public async Task InsertPlaylistAsync(IPlaylist playlist)
         {
@@ -1464,9 +1566,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Добавить настройку
+        ///     Insert setting
         /// </summary>
-        /// <param name="setting">Настройка</param>
+        /// <param name="setting"></param>
         /// <returns></returns>
         public async Task InsertSettingAsync(ISetting setting)
         {
@@ -1482,9 +1584,9 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Добавить тэг
+        ///     Insert tag
         /// </summary>
-        /// <param name="tag">Тэг</param>
+        /// <param name="tag"></param>
         /// <returns></returns>
         public async Task InsertTagAsync(ITag tag)
         {
@@ -1498,10 +1600,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Переименовать канал
+        ///     Rename channel
         /// </summary>
-        /// <param name="id">ID канала</param>
-        /// <param name="newName">Новое название</param>
+        /// <param name="id">channel ID</param>
+        /// <param name="newName">New name</param>
         /// <returns></returns>
         public async Task RenameChannelAsync(string id, string newName)
         {
@@ -1510,10 +1612,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Обновить поле требовать авторизацию или нет
+        ///     Update authorization
         /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="autorize">0 - не требовать, 1 - требовать</param>
+        /// <param name="site">site ID</param>
+        /// <param name="autorize">values 0,1</param>
         /// <returns></returns>
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
@@ -1527,10 +1629,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Обновить логин к сайту
+        ///     Update site login
         /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="newlogin">Новый логин</param>
+        /// <param name="site">site ID</param>
+        /// <param name="newlogin">New login</param>
         /// <returns></returns>
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
@@ -1539,10 +1641,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Обновить пароль от сайта
+        ///     Update site pass
         /// </summary>
-        /// <param name="site">ID сайта</param>
-        /// <param name="newpassword">новый пароль</param>
+        /// <param name="site">site ID</param>
+        /// <param name="newpassword">New pass</param>
         /// <returns></returns>
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
@@ -1556,11 +1658,11 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Обновить коллекцию видео, относящихся к плэйлисту
+        ///     Update playlist items references
         /// </summary>
-        /// <param name="playlistid">ID плэйлиста</param>
-        /// <param name="itemid">ID видео</param>
-        /// <param name="channelid">ID канала</param>
+        /// <param name="playlistid">playlist ID</param>
+        /// <param name="itemid">item ID</param>
+        /// <param name="channelid">channel ID</param>
         /// <returns></returns>
         public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
         {
@@ -1589,10 +1691,10 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Обновить значение настройки
+        ///     Update setting value
         /// </summary>
-        /// <param name="key">ID настройки</param>
-        /// <param name="newvalue">Новое значение</param>
+        /// <param name="key">setting ID</param>
+        /// <param name="newvalue">value</param>
         /// <returns></returns>
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
@@ -1601,7 +1703,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Скукожить базу
+        ///     Skukojit' db
         /// </summary>
         /// <returns></returns>
         public async Task VacuumAsync()
@@ -1617,7 +1719,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Схранить куки
+        ///     Store cookie
         /// </summary>
         /// <param name="site"></param>
         /// <param name="cookies"></param>
@@ -1660,7 +1762,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Получить куки
+        ///     Get cookie
         /// </summary>
         /// <param name="site"></param>
         /// <returns></returns>
@@ -1683,7 +1785,5 @@ namespace DataAPI.Database
                 return (CookieContainer)formatter.Deserialize(stream);
             }
         }
-
-        #endregion
     }
 }

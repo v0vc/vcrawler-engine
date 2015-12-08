@@ -51,7 +51,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
             var channel = await you.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
-            var count = await you.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            var count = await YouTubeSite.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
             Assert.IsTrue(channel.Items.Count == count);
             Assert.IsTrue(channel.Items.Any());
             Assert.IsTrue(channel.Playlists.Any());
@@ -62,13 +62,13 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            string res = await you.GetChannelIdByUserNameNetAsync("mcmbmirussian");
+            string res = await YouTubeSite.GetChannelIdByUserNameNetAsync("mcmbmirussian");
 
             Assert.AreEqual(res, "UCH0miwnqCojki-ado_lLI5A");
 
-            string res1 = await you.GetChannelIdByUserNameNetAsync("CarCrashCompilation7");
+            res = await YouTubeSite.GetChannelIdByUserNameNetAsync("CarCrashCompilation7");
 
-            Assert.IsFalse(string.IsNullOrEmpty(res1));
+            Assert.IsFalse(string.IsNullOrEmpty(res));
         }
 
         [TestMethod]
@@ -76,6 +76,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
+            // UCGtFbbGApG0s_8mMuJd-zKg = berestian
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
             IEnumerable<IVideoItemPOCO> lst = await you.GetChannelItemsAsync("UCQoZVSaWvaJN046F-8SmyPg", 5);
@@ -88,7 +89,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            int res = await you.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
+            int res = await YouTubeSite.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
             Assert.AreEqual(res, 8);
         }
@@ -108,7 +109,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IChannelPOCO res = await you.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
+            IChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
             Assert.AreEqual(res.Title, "Vlad RT");
         }
@@ -118,7 +119,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IEnumerable<IPlaylistPOCO> res = await you.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
+            IEnumerable<IPlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
             Assert.IsTrue(res.Any());
         }
@@ -127,7 +128,7 @@ namespace TestAPI
         public async Task GetChannelRelatedPlaylistsNetAsync()
         {
             var you = GetYouFabric();
-            IEnumerable<IPlaylistPOCO> lst = await you.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            IEnumerable<IPlaylistPOCO> lst = await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
             Assert.AreEqual(lst.Count(), 3);
         }
 
@@ -148,9 +149,9 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            int res = await you.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+            int res = await YouTubeSite.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
-            int res2 = await you.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            int res2 = await YouTubeSite.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(res == res2);
         }
@@ -160,7 +161,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IEnumerable<string> res = await you.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            IEnumerable<string> res = await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
             Assert.IsTrue(res.Any());
         }
@@ -205,7 +206,7 @@ namespace TestAPI
         public async Task GetRelatedChannelsByIdAsync()
         {
             var you = GetYouFabric();
-            IEnumerable<IChannelPOCO> res = await you.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
+            IEnumerable<IChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
             Assert.IsTrue(res.Any());
         }
 
@@ -223,7 +224,7 @@ namespace TestAPI
         public async Task GetVideoSubtitlesByIdAsync()
         {
             var you = GetYouFabric();
-            IEnumerable<ISubtitlePOCO> res = await you.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
+            IEnumerable<ISubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
             Assert.IsTrue(res.Any());
         }
 

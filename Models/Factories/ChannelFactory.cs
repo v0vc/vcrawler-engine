@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -173,7 +174,7 @@ namespace Models.Factories
             var fb = commonFactory.CreateYouTubeSite();
             try
             {
-                return await fb.GetChannelItemsCountNetAsync(channelID);
+                return await YouTubeSite.GetChannelItemsCountNetAsync(channelID);
             }
             catch (Exception ex)
             {
@@ -291,7 +292,7 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<IPlaylistPOCO> fbres = await fb.GetChannelPlaylistsNetAsync(channelID);
+                IEnumerable<IPlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
                 lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
@@ -343,7 +344,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    related = await commonFactory.CreateYouTubeSite().GetRelatedChannelsByIdAsync(id);
+                    related = await YouTubeSite.GetRelatedChannelsByIdAsync(id);
                     break;
 
                 default:
@@ -359,7 +360,7 @@ namespace Models.Factories
             var fb = commonFactory.CreateSqLiteDatabase();
             try
             {
-                await fb.InsertChannelAsync(channel);
+                await fb.InsertChannelItemsPlaylistAsync(channel);
             }
             catch (Exception ex)
             {
@@ -697,7 +698,7 @@ namespace Models.Factories
             var fb = commonFactory.CreateYouTubeSite();
             try
             {
-                return await fb.GetChannelIdByUserNameNetAsync(username);
+                return await YouTubeSite.GetChannelIdByUserNameNetAsync(username);
             }
             catch (Exception ex)
             {

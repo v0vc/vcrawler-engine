@@ -134,22 +134,10 @@ namespace Crawler.ViewModels
         }
 
         public List<CredImage> SupportedSites { get; set; }
-        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         #endregion
 
         #region Methods
-
-        public bool FilterVideo(object item)
-        {
-            var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
-            {
-                return false;
-            }
-
-            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
-        }
 
         public void Init(MainWindowViewModel mainWindowModel)
         {
@@ -273,6 +261,17 @@ namespace Crawler.ViewModels
             mainVm.SetStatus(0);
         }
 
+        private bool FilterVideo(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
+        }
+
         private void SiteChanged()
         {
             mainVm.SelectedChannel = this;
@@ -284,6 +283,7 @@ namespace Crawler.ViewModels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        public ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }

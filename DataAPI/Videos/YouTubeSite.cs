@@ -46,7 +46,7 @@ namespace DataAPI.Videos
 
         #endregion
 
-        #region IYouTubeSite Members
+        #region Properties
 
         public ICred Cred
         {
@@ -64,12 +64,16 @@ namespace DataAPI.Videos
             }
         }
 
+        #endregion
+
+        #region Static Methods
+
         /// <summary>
-        ///     Получить ID канала по имени пользователя
+        ///     Get channel ID by username
         /// </summary>
-        /// <param name="username">Имя пользоватедя</param>
+        /// <param name="username"></param>
         /// <returns></returns>
-        public async Task<string> GetChannelIdByUserNameNetAsync(string username)
+        public static async Task<string> GetChannelIdByUserNameNetAsync(string username)
         {
             string zap = string.Format("{0}channels?&forUsername={1}&key={2}&part=snippet&&fields=items(id)&prettyPrint=false&{3}", 
                 url, 
@@ -92,10 +96,376 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить заданное количество видео с канала, 0 - все записи
+        ///     Get channel items count
         /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <param name="maxResult">Количество</param>
+        /// <param name="channelID">channel ID</param>
+        /// <returns></returns>
+        public static async Task<int> GetChannelItemsCountNetAsync(string channelID)
+        {
+            string zap = string.Format("{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}", 
+                url, 
+                channelID, 
+                key, 
+                printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken total = jsvideo.SelectToken("items[0].statistics.videoCount");
+
+            if (total == null)
+            {
+                throw new Exception(zap);
+            }
+            return total.Value<int>();
+        }
+
+        /// <summary>
+        ///     Get channel by ID
+        /// </summary>
+        /// <param name="channelID">channel ID</param>
+        /// <returns></returns>
+        public static async Task<IChannelPOCO> GetChannelNetAsync(string channelID)
+        {
+            string zap =
+                string.Format(
+                              "{0}channels?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,thumbnails(default(url))))&{3}", 
+                    url, 
+                    channelID, 
+                    key, 
+                    printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            ChannelPOCO ch = await ChannelPOCO.CreatePoco(channelID, jsvideo);
+
+            ch.Site = site;
+
+            return ch;
+        }
+
+        /// <summary>
+        ///     Get channel playlists
+        /// </summary>
+        /// <param name="channelID">channel ID</param>
+        /// <returns>Список плейлистов</returns>
+        public static async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
+        {
+            var res = new List<IPlaylistPOCO>();
+
+            object pagetoken;
+
+            string zap =
+                string.Format(
+                              "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}", 
+                    url, 
+                    key, 
+                    channelID, 
+                    itemsPerPage, 
+                    printType);
+
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    var p = new PlaylistPOCO(channelID, SiteType.YouTube);
+
+                    await p.FillFieldsFromGetting(pair);
+
+                    if (res.Select(x => x.ID).Contains(p.ID))
+                    {
+                        continue;
+                    }
+                    p.ChannelID = channelID;
+                    res.Add(p);
+                }
+            }
+            while (pagetoken != null);
+
+            return res;
+        }
+
+        /// <summary>
+        ///     Get channel related playlists
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID)
+        {
+            var res = new List<IPlaylistPOCO>();
+            string zap =
+                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))&{3}", 
+                    url, 
+                    key, 
+                    channelID, 
+                    printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            JObject jsvideo = JObject.Parse(str);
+            JToken par = jsvideo.SelectToken("items[0].contentDetails.relatedPlaylists");
+            if (par == null)
+            {
+                return res;
+            }
+            foreach (JToken jToken in par)
+            {
+                if (!jToken.HasValues)
+                {
+                    continue;
+                }
+                string[] values = jToken.ToString().Split(':');
+                if (values.Length != 2)
+                {
+                    continue;
+                }
+                string name = values[0].Trim(' ', '\"');
+                string id = values[1].Trim(' ', '\"');
+                IPlaylistPOCO pl = await GetPlaylistNetAsync(id);
+                if (string.IsNullOrEmpty(pl.Title))
+                {
+                    continue;
+                }
+                pl.SubTitle = name;
+                res.Add(pl);
+            }
+            return res;
+        }
+
+        /// <summary>
+        ///     Get playlist items count
+        /// </summary>
+        /// <param name="plId"></param>
+        /// <returns></returns>
+        public static async Task<int> GetPlaylistItemsCountNetAsync(string plId)
+        {
+            string zap = string.Format("{0}playlists?id={1}&key={2}&part=contentDetails&fields=items(contentDetails(itemCount))&{3}", 
+                url, 
+                plId, 
+                key, 
+                printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken total = jsvideo.SelectToken("items[0].contentDetails.itemCount");
+
+            if (total == null)
+            {
+                throw new Exception(zap);
+            }
+            return total.Value<int>();
+        }
+
+        /// <summary>
+        ///     Get playlist items id's
+        /// </summary>
+        /// <param name="plid">playlist ID</param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
+        {
+            var res = new List<string>();
+
+            object pagetoken;
+
+            string zap =
+                string.Format(
+                              "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}", 
+                    url, 
+                    key, 
+                    plid, 
+                    itemsPerPage, 
+                    printType);
+
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    JToken tid = pair.SelectToken("snippet.resourceId.videoId");
+                    if (tid == null)
+                    {
+                        continue;
+                    }
+
+                    var id = tid.Value<string>();
+                    if (res.Contains(id))
+                    {
+                        continue;
+                    }
+
+                    JToken pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                    {
+                        continue;
+                    }
+                    var prstatus = pr.Value<string>();
+                    if (prstatus == privacyPub || prstatus == privacyUnList)
+                    {
+                        res.Add(id);
+                    }
+                }
+
+                zap =
+                    string.Format(
+                                  "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}", 
+                        url, 
+                        key, 
+                        plid, 
+                        pagetoken, 
+                        itemsPerPage, 
+                        printType);
+            }
+            while (pagetoken != null);
+
+            return res;
+        }
+
+        /// <summary>
+        ///     Get playlist by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
+        {
+            var pl = new PlaylistPOCO(id, SiteType.YouTube);
+
+            string zap =
+                string.Format(
+                              "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}", 
+                    url, 
+                    id, 
+                    key, 
+                    printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            await pl.FillFieldsFromSingle(jsvideo);
+
+            return pl;
+        }
+
+        /// <summary>
+        ///     Get channel related channels
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
+        {
+            var lst = new List<IChannelPOCO>();
+
+            string zap =
+                string.Format(
+                              "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}", 
+                    url, 
+                    id, 
+                    key, 
+                    printType);
+
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(det);
+
+            JToken par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
+
+            if (par != null)
+            {
+                foreach (JToken jToken in par)
+                {
+                    IChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>());
+                    if (!string.IsNullOrEmpty(ch.Title))
+                    {
+                        lst.Add(ch);
+                    }
+                }
+            }
+
+            return lst;
+        }
+
+        /// <summary>
+        ///     Get video subtitles
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
+        {
+            string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
+                url, 
+                id, 
+                key, 
+                printType);
+
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(det);
+
+            return (from pair in jsvideo["items"]
+                select pair.SelectToken("snippet.language")
+                into lang
+                where lang != null
+                select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<ISubtitlePOCO>().ToList();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        ///     Get full channel
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public async Task<IChannelPOCO> GetChannelFullNetAsync(string channelID)
+        {
+            IChannelPOCO ch = await GetChannelNetAsync(channelID);
+
+            List<IPlaylistPOCO> plsr = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
+
+            IPlaylistPOCO uploads = plsr.SingleOrDefault(x => x.SubTitle == "uploads");
+
+            if (uploads == null)
+            {
+                return ch;
+            }
+
+            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
+
+            // ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
+            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
+
+            foreach (IPlaylistPOCO pl in ch.Playlists)
+            {
+                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID);
+                foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
+                {
+                    pl.PlaylistItems.Add(id);
+                }
+            }
+            return ch;
+        }
+
+        /// <summary>
+        ///     Get channel items, 0 - all items
+        /// </summary>
+        /// <param name="channelID">channel ID</param>
+        /// <param name="maxResult">count</param>
         /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
         {
@@ -220,45 +590,19 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить количество видео на канале
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<int> GetChannelItemsCountNetAsync(string channelID)
-        {
-            string zap = string.Format("{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}", 
-                url, 
-                channelID, 
-                key, 
-                printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            JToken total = jsvideo.SelectToken("items[0].statistics.videoCount");
-
-            if (total == null)
-            {
-                throw new Exception(zap);
-            }
-            return total.Value<int>();
-        }
-
-        /// <summary>
-        ///     Получить количество элементов канала поиском
+        ///     Get channel items count using search (can include hidden items)
         /// </summary>
         /// <param name="channelID"></param>
         /// <returns></returns>
         public async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
         {
-            var zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
+            string zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
 
             JObject jsvideo = JObject.Parse(str);
 
-            var total = jsvideo.SelectToken("pageInfo.totalResults");
+            JToken total = jsvideo.SelectToken("pageInfo.totalResults");
 
             if (total == null)
             {
@@ -268,10 +612,10 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить список всех ID видео с канала
+        ///     Get channel items IDs
         /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <param name="maxResult">Количество</param>
+        /// <param name="channelID">channel ID</param>
+        /// <param name="maxResult">Count</param>
         /// <returns></returns>
         public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
         {
@@ -381,258 +725,9 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить канал по ID
+        ///     Get playlist items
         /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns></returns>
-        public async Task<IChannelPOCO> GetChannelNetAsync(string channelID)
-        {
-            string zap =
-                string.Format(
-                              "{0}channels?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,thumbnails(default(url))))&{3}", 
-                    url, 
-                    channelID, 
-                    key, 
-                    printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            ChannelPOCO ch = await ChannelPOCO.CreatePoco(channelID, jsvideo);
-
-            ch.Site = site;
-
-            return ch;
-        }
-
-        /// <summary>
-        ///     Получить канал целиком
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<IChannelPOCO> GetChannelFullNetAsync(string channelID)
-        {
-            IChannelPOCO ch = await GetChannelNetAsync(channelID);
-
-            var plsr = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
-
-            IPlaylistPOCO uploads = plsr.SingleOrDefault(x => x.SubTitle == "uploads");
-
-            if (uploads == null)
-            {
-                return ch;
-            }
-
-            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
-
-            //ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
-
-            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
-
-            foreach (IPlaylistPOCO pl in ch.Playlists)
-            {
-                var plids = await GetPlaylistItemsIdsListNetAsync(pl.ID);
-                foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
-                {
-                    pl.PlaylistItems.Add(id);
-                }
-            }
-            return ch;
-        }
-
-        /// <summary>
-        ///     Получить список плэйлистов канала
-        /// </summary>
-        /// <param name="channelID">ID канала</param>
-        /// <returns>Список плейлистов</returns>
-        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
-        {
-            var res = new List<IPlaylistPOCO>();
-
-            object pagetoken;
-
-            string zap =
-                string.Format(
-                              "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}", 
-                    url, 
-                    key, 
-                    channelID, 
-                    itemsPerPage, 
-                    printType);
-
-            do
-            {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                JObject jsvideo = JObject.Parse(str);
-
-                pagetoken = jsvideo.SelectToken(token);
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    var p = new PlaylistPOCO(channelID, SiteType.YouTube);
-
-                    await p.FillFieldsFromGetting(pair);
-
-                    if (res.Select(x => x.ID).Contains(p.ID))
-                    {
-                        continue;
-                    }
-
-                    res.Add(p);
-                }
-            }
-            while (pagetoken != null);
-
-            return res;
-        }
-
-        /// <summary>
-        ///     Получить списки технических плэйлистов канала
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelRelatedPlaylistsNetAsync(string channelID)
-        {
-            var res = new List<IPlaylistPOCO>();
-            string zap =
-                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))&{3}",
-                    url,
-                    key,
-                    channelID,
-                    printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-            JObject jsvideo = JObject.Parse(str);
-            JToken par = jsvideo.SelectToken("items[0].contentDetails.relatedPlaylists");
-            if (par == null)
-            {
-                return res;
-            }
-            foreach (JToken jToken in par)
-            {
-                if (!jToken.HasValues)
-                {
-                    continue;
-                }
-                string[] values = jToken.ToString().Split(':');
-                if (values.Length != 2)
-                {
-                    continue;
-                }
-                string name = values[0].Trim(' ', '\"');
-                string id = values[1].Trim(' ', '\"');
-                IPlaylistPOCO pl = await GetPlaylistNetAsync(id);
-                if (string.IsNullOrEmpty(pl.Title))
-                {
-                    continue;
-                }
-                pl.SubTitle = name;
-                res.Add(pl);
-            }
-            return res;
-        }
-
-        /// <summary>
-        ///     Получить количество элементов плейлиста
-        /// </summary>
-        /// <param name="plId"></param>
-        /// <returns></returns>
-        public async Task<int> GetPlaylistItemsCountNetAsync(string plId)
-        {
-            string zap = string.Format("{0}playlists?id={1}&key={2}&part=contentDetails&fields=items(contentDetails(itemCount))&{3}",
-                url,
-                plId,
-                key,
-                printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            JToken total = jsvideo.SelectToken("items[0].contentDetails.itemCount");
-
-            if (total == null)
-            {
-                throw new Exception(zap);
-            }
-            return total.Value<int>();
-        }
-
-        /// <summary>
-        ///     Получить список всех ID видео плэйлиста
-        /// </summary>
-        /// <param name="plid">ID плэйлиста</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
-        {
-            var res = new List<string>();
-
-            object pagetoken;
-
-            string zap =
-                string.Format(
-                              "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}", 
-                    url, 
-                    key, 
-                    plid, 
-                    itemsPerPage, 
-                    printType);
-
-            do
-            {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                JObject jsvideo = JObject.Parse(str);
-
-                pagetoken = jsvideo.SelectToken(token);
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    JToken tid = pair.SelectToken("snippet.resourceId.videoId");
-                    if (tid == null)
-                    {
-                        continue;
-                    }
-
-                    var id = tid.Value<string>();
-                    if (res.Contains(id))
-                    {
-                        continue;
-                    }
-
-                    JToken pr = pair.SelectToken("status.privacyStatus");
-                    if (pr == null)
-                    {
-                        continue;
-                    }
-                    var prstatus = pr.Value<string>();
-                    if (prstatus == privacyPub || prstatus == privacyUnList)
-                    {
-                        res.Add(id);
-                    }
-                }
-
-                zap =
-                    string.Format(
-                                  "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}", 
-                        url, 
-                        key, 
-                        plid, 
-                        pagetoken, 
-                        itemsPerPage, 
-                        printType);
-            }
-            while (pagetoken != null);
-
-            return res;
-        }
-
-        /// <summary>
-        ///     Получить список видео плэйлиста
-        /// </summary>
-        /// <param name="plid">Ссылка</param>
+        /// <param name="plid"></param>
         /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
         {
@@ -737,36 +832,10 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Get playlist by ID
+        ///     Get popular by country
         /// </summary>
-        /// <param name="id">ID</param>
-        /// <returns></returns>
-        public static async Task<IPlaylistPOCO> GetPlaylistNetAsync(string id)
-        {
-            var pl = new PlaylistPOCO(id, SiteType.YouTube);
-
-            string zap =
-                string.Format(
-                              "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}", 
-                    url, 
-                    id, 
-                    key, 
-                    printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            await pl.FillFieldsFromSingle(jsvideo);
-
-            return pl;
-        }
-
-        /// <summary>
-        ///     Получить список популярных видео по стране
-        /// </summary>
-        /// <param name="regionID">Код региона</param>
-        /// <param name="maxResult">Желаемое количество записей</param>
+        /// <param name="regionID">Country code</param>
+        /// <param name="maxResult">count</param>
         /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
@@ -872,45 +941,7 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить список похожих каналов
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<IChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
-        {
-            var lst = new List<IChannelPOCO>();
-
-            string zap =
-                string.Format(
-                              "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}", 
-                    url, 
-                    id, 
-                    key, 
-                    printType);
-
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(det);
-
-            JToken par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
-
-            if (par != null)
-            {
-                foreach (JToken jToken in par)
-                {
-                    IChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>());
-                    if (!string.IsNullOrEmpty(ch.Title))
-                    {
-                        lst.Add(ch);
-                    }
-                }
-            }
-
-            return lst;
-        }
-
-        /// <summary>
-        ///     Получить облегченный объект видео
+        ///     Get lite video
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -936,9 +967,9 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить видео по ID
+        ///     Get video by id
         /// </summary>
-        /// <param name="videoid">ID видео</param>
+        /// <param name="videoid">video ID</param>
         /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {
@@ -962,7 +993,7 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить список полных видео по списку id
+        ///     Get videos by list id's
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
@@ -1032,7 +1063,7 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить список облегченных видео по списку id
+        ///     Get lite videos by list id's
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
@@ -1086,31 +1117,7 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Получить список субтитров видео
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<IEnumerable<ISubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
-        {
-            string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
-                url, 
-                id, 
-                key, 
-                printType);
-
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(det);
-
-            return (from pair in jsvideo["items"]
-                select pair.SelectToken("snippet.language")
-                into lang
-                where lang != null
-                select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<ISubtitlePOCO>().ToList();
-        }
-
-        /// <summary>
-        ///     Парсим что ввел юзер для получения ID канала
+        ///     Get channel id by user input
         /// </summary>
         /// <param name="inputChannelLink"></param>
         /// <returns></returns>
@@ -1169,11 +1176,11 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Поиск
+        ///     Search
         /// </summary>
-        /// <param name="keyword">Что ищем</param>
-        /// <param name="region">Регион</param>
-        /// <param name="maxResult">Количество записей</param>
+        /// <param name="keyword">key</param>
+        /// <param name="region">region</param>
+        /// <param name="maxResult">count</param>
         /// <returns></returns>
         public async Task<IEnumerable<IVideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
