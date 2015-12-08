@@ -1734,7 +1734,7 @@ namespace Crawler.ViewModels
 
         private async void SyncChannel(object obj)
         {
-            var channel = obj as YouChannel;
+            var channel = obj as IChannel;
             if (channel == null)
             {
                 return;
@@ -1743,7 +1743,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
             Stopwatch watch = Stopwatch.StartNew();
-            await channel.SyncChannelAsync(true);
+            await cf.SyncChannelAsync(channel);
             watch.Stop();
             Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
             SetStatus(0);

@@ -1289,5 +1289,10 @@ namespace DataAPI.Videos
         }
 
         #endregion
+
+        public Task SyncChannelAsync(IChannel channel)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

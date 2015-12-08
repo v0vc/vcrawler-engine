@@ -438,6 +438,22 @@ namespace Models.Factories
             }
         }
 
+        public async Task SyncChannelAsync(IChannel channel)
+        {
+            channel.IsInWork = true;
+
+            switch (channel.Site)
+            {
+                case SiteType.YouTube:
+
+                    await commonFactory.CreateYouTubeSite().SyncChannelAsync(channel);
+
+                    break;
+            }
+
+            channel.IsInWork = false;
+        }
+
         public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)
         {
             channel.IsInWork = true;
