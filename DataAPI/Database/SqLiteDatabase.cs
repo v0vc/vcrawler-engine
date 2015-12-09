@@ -382,7 +382,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} WHERE {5}='{6}'", 
+            string zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} WHERE {5}='{6}' LIMIT 1", 
                 channelId, 
                 channelTitle, 
                 channelThumbnail, 
@@ -929,7 +929,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<ICredPOCO> GetCredAsync(string site)
         {
-            string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}'", tablecredentials, credSite, site);
+            string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, site);
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1008,7 +1008,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<IPlaylistPOCO> GetPlaylistAsync(string id)
         {
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tableplaylists, playlistID, id);
+            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tableplaylists, playlistID, id);
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1036,6 +1036,50 @@ namespace DataAPI.Database
                                 (string)reader[playlistSubTitle],
                                 (byte[])reader[playlistThumbnail],
                                 (string)reader[playlistChannelId]);
+                            transaction.Commit();
+                            return pl;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Get channel uploads playlist
+        /// </summary>
+        /// <param name="id">channel ID</param>
+        /// <returns></returns>
+        public async Task<IPlaylistPOCO> GetUploadPlaylistAsync(string id)
+        {
+            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='uploads' LIMIT 1",
+                tableplaylists,
+                playlistChannelId,
+                id,
+                playlistSubTitle);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Commit();
+                                return null;
+                            }
+
+                            if (!await reader.ReadAsync())
+                            {
+                                transaction.Commit();
+                                throw new Exception(zap);
+                            }
+                            var pl = new PlaylistPOCO((string)reader[playlistID], null, null, null, (string)reader[playlistChannelId]);
                             transaction.Commit();
                             return pl;
                         }
@@ -1148,7 +1192,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<ISettingPOCO> GetSettingAsync(string key)
         {
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablesettings, setKey, key);
+            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablesettings, setKey, key);
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1188,7 +1232,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}'",
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' LIMIT 1",
                 itemId,
                 parentID,
                 title,
@@ -1246,7 +1290,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<string> GetVideoItemDescriptionAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", description, tableitems, itemId, id);
+            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' LIMIT 1", description, tableitems, itemId, id);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1357,9 +1401,8 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
-        public async Task InsertChannelItemsPlaylistAsync(IChannel channel)
+        public async Task InsertChannelFullAsync(IChannel channel)
         {
-            await InsertChannelAsync(channel);
             using (var conn = new SQLiteConnection(dbConnection))
             {
                 await conn.OpenAsync();
@@ -1368,6 +1411,28 @@ namespace DataAPI.Database
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
                         command.CommandType = CommandType.Text;
+
+                        #region channel
+
+                        command.CommandText =
+                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                                tablechannels,
+                                channelId,
+                                channelTitle,
+                                channelSubTitle,
+                                channelThumbnail,
+                                channelSite);
+
+                        command.Parameters.AddWithValue("@" + channelId, channel.ID);
+                        command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
+                        command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
+                        command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
+                        command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
+                        command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+
+                        await command.ExecuteNonQueryAsync();
+
+                        #endregion
 
                         #region Playlists
 
@@ -1449,7 +1514,6 @@ namespace DataAPI.Database
 
                         #endregion
                     }
-
                     transaction.Commit();
                 }
             }

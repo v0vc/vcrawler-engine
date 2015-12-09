@@ -911,7 +911,6 @@
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             
-
                             <DataGrid.Resources>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                 <ContextMenu x:Key="DataRowContextMenu">

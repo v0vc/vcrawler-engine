@@ -76,12 +76,12 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id)
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id, int maxResult)
         {
             var fb = commonFactory.CreateYouTubeSite();
             try
             {
-                return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id);
+                return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id, maxResult);
             }
             catch (Exception ex)
             {
@@ -144,6 +144,10 @@ namespace Models.Factories
 
         public IPlaylist CreatePlaylist(IPlaylistPOCO poco)
         {
+            if (poco == null)
+            {
+                return null;
+            }
             var pl = new Playlist(this)
             {
                 ID = poco.ID,

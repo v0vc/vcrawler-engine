@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -718,6 +719,7 @@ namespace Crawler.ViewModels
             {
                 await cf.DeleteChannelAsync(channel.ID);
             }
+
             Channels.Add(channel);
             channel.IsDownloading = true;
             SelectedChannel = channel;
@@ -1464,7 +1466,7 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
-            List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync()).ToList();
+            List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
 
             foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
@@ -1784,7 +1786,7 @@ namespace Crawler.ViewModels
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
 
-            foreach (YouChannel channel in Channels.OfType<YouChannel>())
+            foreach (IChannel channel in Channels)
             {
                 i += 1;
                 PrValue = Math.Round((double)(100 * i) / Channels.Count);
@@ -1792,7 +1794,7 @@ namespace Crawler.ViewModels
                 Info = "Syncing: " + channel.Title;
                 try
                 {
-                    await channel.SyncChannelAsync(false);
+                    await cf.SyncChannelAsync(channel);
                 }
                 catch (Exception ex)
                 {

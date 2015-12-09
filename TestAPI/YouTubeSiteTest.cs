@@ -60,28 +60,26 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelIdByUserNameNetAsync()
         {
-            var you = GetYouFabric();
-
             string res = await YouTubeSite.GetChannelIdByUserNameNetAsync("mcmbmirussian");
 
             Assert.AreEqual(res, "UCH0miwnqCojki-ado_lLI5A");
 
             res = await YouTubeSite.GetChannelIdByUserNameNetAsync("CarCrashCompilation7");
 
-            Assert.IsFalse(string.IsNullOrEmpty(res));
+            Assert.AreEqual("UCeXeMXzjt21uv5tonZHtOrA", res);
         }
 
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            var you = GetYouFabric();
+            YouTubeSite you = GetYouFabric();
 
             // UCGtFbbGApG0s_8mMuJd-zKg = berestian
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
-            IEnumerable<IVideoItemPOCO> lst = await you.GetChannelItemsAsync("UCQoZVSaWvaJN046F-8SmyPg", 5);
-
-            Assert.AreEqual(lst.Count(), 5);
+            const int count = 2;
+            IEnumerable<IVideoItemPOCO> lst = await you.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
+            Assert.AreEqual(count, lst.Count());
         }
 
         [TestMethod]
@@ -161,7 +159,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IEnumerable<string> res = await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            IEnumerable<string> res = await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC", 0);
 
             Assert.IsTrue(res.Any());
         }

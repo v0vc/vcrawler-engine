@@ -37,7 +37,7 @@ namespace Models.BO
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
-        public IEnumerable<string> PlItems { get; set; }
+        public List<string> PlItems { get; set; }
         public SiteType Site { get; set; }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
@@ -64,9 +64,9 @@ namespace Models.BO
             return await playlistFactory.GetPlaylistItemsIdsListDbAsync(ID);
         }
 
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync()
+        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(int maxResult)
         {
-            return await playlistFactory.GetPlaylistItemsIdsListNetAsync(ID);
+            return await playlistFactory.GetPlaylistItemsIdsListNetAsync(ID, maxResult);
         }
 
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync()

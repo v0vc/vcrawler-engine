@@ -50,7 +50,7 @@ namespace DataAPI.Videos
 
         public ICred Cred
         {
-            get
+            private get
             {
                 return cred;
             }
@@ -151,7 +151,7 @@ namespace DataAPI.Videos
         ///     Get channel playlists
         /// </summary>
         /// <param name="channelID">channel ID</param>
-        /// <returns>Список плейлистов</returns>
+        /// <returns></returns>
         public static async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var res = new List<IPlaylistPOCO>();
@@ -270,10 +270,18 @@ namespace DataAPI.Videos
         ///     Get playlist items id's
         /// </summary>
         /// <param name="plid">playlist ID</param>
+        /// <param name="maxResult"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid)
+        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid, int maxResult)
         {
             var res = new List<string>();
+
+            int itemsppage = itemsPerPage;
+
+            if (maxResult < itemsPerPage & maxResult != 0)
+            {
+                itemsppage = maxResult;
+            }
 
             object pagetoken;
 
@@ -282,8 +290,8 @@ namespace DataAPI.Videos
                               "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}", 
                     url, 
                     key, 
-                    plid, 
-                    itemsPerPage, 
+                    plid,
+                    itemsppage, 
                     printType);
 
             do
@@ -317,6 +325,12 @@ namespace DataAPI.Videos
                     if (prstatus == privacyPub || prstatus == privacyUnList)
                     {
                         res.Add(id);
+                    }
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
                     }
                 }
 
@@ -436,9 +450,9 @@ namespace DataAPI.Videos
         {
             IChannelPOCO ch = await GetChannelNetAsync(channelID);
 
-            List<IPlaylistPOCO> plsr = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
+            List<IPlaylistPOCO> relatedpls = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
 
-            IPlaylistPOCO uploads = plsr.SingleOrDefault(x => x.SubTitle == "uploads");
+            IPlaylistPOCO uploads = relatedpls.SingleOrDefault(x => x.SubTitle == "uploads");
 
             if (uploads == null)
             {
@@ -447,17 +461,27 @@ namespace DataAPI.Videos
 
             ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
 
-            // ch.Playlists.AddRange(plsr.Where(x => x != uploads)); // Liked, favorites and other
+            // ch.Playlists.AddRange(relatedpls.Where(x => x != uploads)); // Liked, favorites and other
             ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
 
             foreach (IPlaylistPOCO pl in ch.Playlists)
             {
-                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID);
+                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID, 0);
                 foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
                 {
                     pl.PlaylistItems.Add(id);
                 }
             }
+
+            uploads.PlaylistItems.AddRange(ch.Items.Select(x => x.ID));
+
+            foreach (IPlaylistPOCO poco in ch.Playlists.Where(poco => poco.SubTitle == "uploads"))
+            {
+                poco.SubTitle = string.Empty;
+            }
+
+            ch.Playlists.Add(uploads);
+
             return ch;
         }
 
@@ -1289,10 +1313,5 @@ namespace DataAPI.Videos
         }
 
         #endregion
-
-        public Task SyncChannelAsync(IChannel channel)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

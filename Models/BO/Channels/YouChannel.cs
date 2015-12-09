@@ -1,12 +1,10 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -49,12 +47,6 @@ namespace Models.BO.Channels
         private YouChannel()
         {
         }
-
-        #endregion
-
-        #region Properties
-
-        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         #endregion
 
@@ -122,7 +114,7 @@ namespace Models.BO.Channels
 
         public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
         {
-            return await channelFactory.GetRelatedChannelNetAsync(id, site);
+            return await channelFactory.GetRelatedChannelNetAsync(this);
         }
 
         public async Task InsertChannelItemsAsync()
@@ -143,11 +135,6 @@ namespace Models.BO.Channels
         public void StoreCookies()
         {
             channelFactory.StoreCookies(SiteAdress, ChannelCookies);
-        }
-
-        public async Task SyncChannelAsync(bool isSyncPls)
-        {
-            await channelFactory.SyncChannelAsync(this, isSyncPls);
         }
 
         public async Task SyncChannelPlaylistsAsync()
@@ -181,6 +168,7 @@ namespace Models.BO.Channels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+        public ICollectionView ChannelItemsCollectionView { get; set; }
 
         public int ChannelItemsCount
         {

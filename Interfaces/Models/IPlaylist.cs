@@ -15,7 +15,7 @@ namespace Interfaces.Models
 
         string ChannelId { get; set; }
         string ID { get; set; }
-        IEnumerable<string> PlItems { get; set; }
+        List<string> PlItems { get; set; }
         SiteType Site { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
@@ -33,7 +33,7 @@ namespace Interfaces.Models
 
         Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync();
 
-        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync();
+        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(int maxResult);
 
         Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync();
 
