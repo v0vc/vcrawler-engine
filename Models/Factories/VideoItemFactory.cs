@@ -131,11 +131,10 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemLiteNetAsync(string id)
         {
             var fb = commonFactory.CreateYouTubeSite();
-            var vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemLiteNetAsync(id);
-                IVideoItem vi = vf.CreateVideoItem(poco);
+                IVideoItem vi = CreateVideoItem(poco);
                 return vi;
             }
             catch (Exception ex)
@@ -146,7 +145,6 @@ namespace Models.Factories
 
         public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
-            var fb = commonFactory.CreateYouTubeSite();
             var cf = commonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
             try
@@ -226,12 +224,10 @@ namespace Models.Factories
         {
             // var fb = ServiceLocator.SqLiteDatabase;
             var fb = commonFactory.CreateSqLiteDatabase();
-            var vf = commonFactory.CreateVideoItemFactory();
-
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemAsync(id);
-                IVideoItem vi = vf.CreateVideoItem(poco);
+                IVideoItem vi = CreateVideoItem(poco);
                 return vi;
             }
             catch (Exception ex)
@@ -242,7 +238,6 @@ namespace Models.Factories
 
         public async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
         {
-            var vf = commonFactory.CreateVideoItemFactory();
             try
             {
                 IVideoItemPOCO poco = null;
@@ -252,7 +247,7 @@ namespace Models.Factories
                         poco = await commonFactory.CreateYouTubeSite().GetVideoItemNetAsync(id);
                         break;
                 }
-                IVideoItem vi = vf.CreateVideoItem(poco);
+                IVideoItem vi = CreateVideoItem(poco);
                 return vi;
             }
             catch (Exception ex)

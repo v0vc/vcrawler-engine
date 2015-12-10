@@ -494,13 +494,38 @@ namespace Models.Factories
                 if (uploads == null)
                 {
                     // old db
-                    channel = CreateChannel(await you.GetChannelFullNetAsync(channel.ID));
+                    string oldname = channel.Title;
+                    int oldcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
+                    IChannelPOCO newchannel = await you.GetChannelFullNetAsync(channel.ID);
+                    channel.ChannelItems.Clear();
+                    channel.ChannelPlaylists.Clear();
+                    foreach (IVideoItemPOCO poco in newchannel.Items)
+                    {
+                        channel.ChannelItems.Add(vf.CreateVideoItem(poco));
+                    }
+                    foreach (IPlaylistPOCO poco in newchannel.Playlists)
+                    {
+                        channel.ChannelPlaylists.Add(pf.CreatePlaylist(poco));
+                    }
+                    channel.ChannelItemsCount = newchannel.Items.Count;
+
+                    if (channel.Title != oldname)
+                    {
+                        channel.Title = oldname;
+                    }
+
+                    channel.CountNew = channel.ChannelItems.Count - oldcount;
                     await DeleteChannelAsync(channel.ID);
                     await InsertChannelAsync(channel);
                     return;
                 }
 
                 uploads.PlItems = (await sql.GetPlaylistItemsIdsListDbAsync(uploads.ID)).ToList();
+
+                //IPlaylist uploads = pf.CreatePlaylist();
+                //uploads.ID = channel.ID.Replace("UC", "UU");
+                //uploads.PlItems = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
+
                 int newCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(uploads.ID);
                 if (newCount == uploads.PlItems.Count)
                 {
@@ -513,7 +538,6 @@ namespace Models.Factories
                     List<string> trueids = newItems.Where(id => !uploads.PlItems.Contains(id)).ToList();
                     if (trueids.Any())
                     {
-                        VideoItemFactory vf = commonFactory.CreateVideoItemFactory();
                         IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids);
                         foreach (List<string> list in tchanks)
                         {
@@ -524,33 +548,18 @@ namespace Models.Factories
                                 channel.AddNewItem(vi, true);
                                 await vi.InsertItemAsync();
                                 await uploads.UpdatePlaylistAsync(vi.ID);
+                                channel.ChannelItemsCount = channel.ChannelItems.Count;
                             }
                         }
                     }
                 }
                 else
                 {
-                    IEnumerable<string> netplids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(uploads.ID, 0)).ToList();
-                    for (int i = uploads.PlItems.Count; i > 0; i--)
-                    {
-                        string myid = uploads.PlItems[i - 1];
-                        if (netplids.Contains(myid))
-                        {
-                            continue;
-                        }
-                        uploads.PlItems.Remove(myid);
-                        IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == myid);
-                        if (item == null)
-                        {
-                            continue;
-                        }
-                        channel.ChannelItems.Remove(item);
-                        channel.CountNew -= 1;
-                    }
+                    // в инете меньше чем у нас
                 }
-            }
 
-            channel.IsInWork = false;
+                channel.IsInWork = false;
+            }
         }
 
         // public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)
