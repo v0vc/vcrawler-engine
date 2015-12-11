@@ -42,6 +42,12 @@ namespace Models.BO.Channels
         public YouChannel(ChannelFactory channelFactory)
         {
             this.channelFactory = channelFactory;
+            AddedIds = new List<string>();
+            DeletedIds = new List<string>();
+            ChannelItems = new ObservableCollection<IVideoItem>();
+            ChannelPlaylists = new ObservableCollection<IPlaylist>();
+            ChannelTags = new ObservableCollection<ITag>();
+            ChannelCookies = new CookieContainer();
         }
 
         private YouChannel()
@@ -314,6 +320,9 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
+
+        public List<string> AddedIds { get; set; }
+        public List<string> DeletedIds { get; set; }
 
         public void AddNewItem(IVideoItem item, bool isNew)
         {

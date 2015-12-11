@@ -1403,131 +1403,131 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelFullAsync(IChannel channel)
         {
-            await InsertChannelItemsAsync(channel);
-            foreach (IPlaylist playlist in channel.ChannelPlaylists)
-            {
-                await InsertPlaylistAsync(playlist);
-                foreach (string item in playlist.PlItems)
-                {
-                    await UpdatePlaylistAsync(playlist.ID, item, playlist.ChannelId);
-                }
-            }
-            
-
-            //using (var conn = new SQLiteConnection(dbConnection))
+            //await InsertChannelItemsAsync(channel);
+            //foreach (IPlaylist playlist in channel.ChannelPlaylists)
             //{
-            //    await conn.OpenAsync();
-            //    using (SQLiteTransaction transaction = conn.BeginTransaction())
+            //    await InsertPlaylistAsync(playlist);
+            //    foreach (string item in playlist.PlItems)
             //    {
-            //        using (SQLiteCommand command = conn.CreateCommand())
-            //        {
-            //            command.CommandType = CommandType.Text;
-
-            //            #region channel
-
-            //            command.CommandText =
-            //                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-            //                    tablechannels,
-            //                    channelId,
-            //                    channelTitle,
-            //                    channelSubTitle,
-            //                    channelThumbnail,
-            //                    channelSite);
-
-            //            command.Parameters.AddWithValue("@" + channelId, channel.ID);
-            //            command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
-            //            command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-            //            command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
-            //            command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
-            //            command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
-
-            //            await command.ExecuteNonQueryAsync();
-
-            //            #endregion
-
-            //            #region Playlists
-
-            //            command.CommandText =
-            //                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-            //                    tableplaylists,
-            //                    playlistID,
-            //                    playlistTitle,
-            //                    playlistSubTitle,
-            //                    playlistThumbnail,
-            //                    playlistChannelId);
-
-            //            foreach (IPlaylist playlist in channel.ChannelPlaylists)
-            //            {
-            //                command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
-            //                command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
-            //                command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-            //                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
-            //                    playlist.Thumbnail;
-            //                command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
-
-            //                await command.ExecuteNonQueryAsync();
-            //            }
-
-            //            #endregion
-
-            //            #region Items
-
-            //            command.CommandText =
-            //                string.Format(
-            //                              @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
-            //                    tableitems,
-            //                    itemId,
-            //                    parentID,
-            //                    title,
-            //                    description,
-            //                    viewCount,
-            //                    duration,
-            //                    comments,
-            //                    thumbnail,
-            //                    timestamp);
-
-            //            foreach (IVideoItem item in channel.ChannelItems)
-            //            {
-            //                command.Parameters.AddWithValue("@" + itemId, item.ID);
-            //                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-            //                command.Parameters.AddWithValue("@" + title, item.Title);
-            //                command.Parameters.AddWithValue("@" + description, item.Description);
-            //                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-            //                command.Parameters.AddWithValue("@" + duration, item.Duration);
-            //                command.Parameters.AddWithValue("@" + comments, item.Comments);
-            //                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
-            //                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-
-            //                await command.ExecuteNonQueryAsync();
-            //            }
-
-            //            #endregion
-
-            //            #region Update Playlists items
-
-            //            command.CommandText = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
-            //                tableplaylistitems,
-            //                fPlaylistId,
-            //                fItemId,
-            //                fChannelId);
-
-            //            foreach (IPlaylist playlist in channel.ChannelPlaylists)
-            //            {
-            //                foreach (string plItem in playlist.PlItems)
-            //                {
-            //                    command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
-            //                    command.Parameters.AddWithValue("@" + fItemId, plItem);
-            //                    command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
-
-            //                    await command.ExecuteNonQueryAsync();
-            //                }
-            //            }
-
-            //            #endregion
-            //        }
-            //        transaction.Commit();
+            //        await UpdatePlaylistAsync(playlist.ID, item, playlist.ChannelId);
             //    }
             //}
+
+
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandType = CommandType.Text;
+
+                        #region channel
+
+                        command.CommandText =
+                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                                tablechannels,
+                                channelId,
+                                channelTitle,
+                                channelSubTitle,
+                                channelThumbnail,
+                                channelSite);
+
+                        command.Parameters.AddWithValue("@" + channelId, channel.ID);
+                        command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
+                        command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
+                        command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
+                        command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
+                        command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+
+                        await command.ExecuteNonQueryAsync();
+
+                        #endregion
+
+                        #region Playlists
+
+                        command.CommandText =
+                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                                tableplaylists,
+                                playlistID,
+                                playlistTitle,
+                                playlistSubTitle,
+                                playlistThumbnail,
+                                playlistChannelId);
+
+                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                        {
+                            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
+                            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
+                            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
+                            command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
+                                playlist.Thumbnail;
+                            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+
+                        #endregion
+
+                        #region Items
+
+                        command.CommandText =
+                            string.Format(
+                                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
+                                tableitems,
+                                itemId,
+                                parentID,
+                                title,
+                                description,
+                                viewCount,
+                                duration,
+                                comments,
+                                thumbnail,
+                                timestamp);
+
+                        foreach (IVideoItem item in channel.ChannelItems)
+                        {
+                            command.Parameters.AddWithValue("@" + itemId, item.ID);
+                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                            command.Parameters.AddWithValue("@" + title, item.Title);
+                            command.Parameters.AddWithValue("@" + description, item.Description);
+                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                            command.Parameters.AddWithValue("@" + duration, item.Duration);
+                            command.Parameters.AddWithValue("@" + comments, item.Comments);
+                            command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+
+                        #endregion
+
+                        #region Update Playlists items
+
+                        command.CommandText = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+                            tableplaylistitems,
+                            fPlaylistId,
+                            fItemId,
+                            fChannelId);
+
+                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                        {
+                            foreach (string plItem in playlist.PlItems)
+                            {
+                                command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
+                                command.Parameters.AddWithValue("@" + fItemId, plItem);
+                                command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
+
+                                await command.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        #endregion
+                    }
+                    transaction.Commit();
+                }
+            }
         }
 
         /// <summary>

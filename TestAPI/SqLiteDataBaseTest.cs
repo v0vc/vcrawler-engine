@@ -176,7 +176,7 @@ namespace TestAPI
             vi2.ID = "vi2";
             ICred cred = crf.CreateCred();
             FillTestCred(cred);
-            IChannel ch = cf.CreateChannel();
+            IChannel ch = cf.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
@@ -267,7 +267,7 @@ namespace TestAPI
             ICred cred = crf.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = cf.CreateChannel();
+            IChannel ch = cf.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
             IPlaylist pl = pf.CreatePlaylist();
@@ -377,7 +377,7 @@ namespace TestAPI
             ICred cred = crf.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = cf.CreateChannel();
+            IChannel ch = cf.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync

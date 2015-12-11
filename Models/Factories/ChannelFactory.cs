@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using DataAPI.Database;
@@ -47,30 +48,21 @@ namespace Models.Factories
 
         #region Methods
 
-        public IChannel CreateChannel()
-        {
-            var channel = new YouChannel(this)
-            {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
-            };
-            channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
-            return channel;
-        }
-
         public IChannel CreateChannel(SiteType site)
         {
-            var channel = new YouChannel(this)
+            IChannel channel = null;
+            switch (site)
             {
-                ChannelItems = new ObservableCollection<IVideoItem>(), 
-                ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                ChannelTags = new ObservableCollection<ITag>(), 
-                ChannelCookies = new CookieContainer(), 
-                Site = site, 
-                SiteAdress = CommonExtensions.GetSiteAdress(site)
-            };
+                case SiteType.YouTube:
+                    channel = new YouChannel(this) { Site = site, SiteAdress = CommonExtensions.GetSiteAdress(site) };
+                    break;
+            }
+
+            if (channel == null)
+            {
+                throw new Exception();
+            }
+
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
         }
@@ -86,15 +78,11 @@ namespace Models.Factories
 
                     channel = new YouChannel(this)
                     {
-                        ID = poco.ID, 
-                        Title = poco.Title, 
+                        ID = poco.ID,
+                        Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail, 
-                        SiteAdress = poco.Site, 
-                        ChannelItems = new ObservableCollection<IVideoItem>(), 
-                        ChannelPlaylists = new ObservableCollection<IPlaylist>(), 
-                        ChannelTags = new ObservableCollection<ITag>(), 
-                        ChannelCookies = new CookieContainer()
+                        Thumbnail = poco.Thumbnail,
+                        SiteAdress = poco.Site
                     };
 
                     if (poco.Items != null)
@@ -223,34 +211,6 @@ namespace Models.Factories
                         vid.IsHasLocalFileFound(dir);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<ICred> GetChannelCredentialsAsync(IChannel channel)
-        {
-            CredFactory cf = commonFactory.CreateCredFactory();
-            try
-            {
-                return await cf.GetCredDbAsync(channel.Site);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IChannel> GetChannelDbAsync(string channelID)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            try
-            {
-                IChannelPOCO poco = await sql.GetChannelAsync(channelID);
-                IChannel channel = CreateChannel(poco);
-                return channel;
             }
             catch (Exception ex)
             {
@@ -490,76 +450,54 @@ namespace Models.Factories
 
             if (channel is YouChannel)
             {
-                IPlaylist uploads = pf.CreatePlaylist(await sql.GetUploadPlaylistAsync(channel.ID));
-                if (uploads == null)
-                {
-                    // old db
-                    string oldname = channel.Title;
-                    int oldcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
-                    IChannelPOCO newchannel = await you.GetChannelFullNetAsync(channel.ID);
-                    channel.ChannelItems.Clear();
-                    channel.ChannelPlaylists.Clear();
-                    foreach (IVideoItemPOCO poco in newchannel.Items)
-                    {
-                        channel.ChannelItems.Add(vf.CreateVideoItem(poco));
-                    }
-                    foreach (IPlaylistPOCO poco in newchannel.Playlists)
-                    {
-                        channel.ChannelPlaylists.Add(pf.CreatePlaylist(poco));
-                    }
-                    channel.ChannelItemsCount = newchannel.Items.Count;
+                var sb = new StringBuilder(channel.ID);
+                sb[1] = 'U';
+                string pluploadsid = sb.ToString();
 
-                    if (channel.Title != oldname)
-                    {
-                        channel.Title = oldname;
-                    }
-
-                    channel.CountNew = channel.ChannelItems.Count - oldcount;
-                    await DeleteChannelAsync(channel.ID);
-                    await InsertChannelAsync(channel);
-                    return;
-                }
-
-                uploads.PlItems = (await sql.GetPlaylistItemsIdsListDbAsync(uploads.ID)).ToList();
-
-                //IPlaylist uploads = pf.CreatePlaylist();
-                //uploads.ID = channel.ID.Replace("UC", "UU");
-                //uploads.PlItems = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
-
-                int newCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(uploads.ID);
-                if (newCount == uploads.PlItems.Count)
+                // теоретически, может не сработать (добавили одно, удалили одно), но в общем случае - быстрее
+                int dbcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
+                int netCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(pluploadsid);
+                if (dbcount == netCount)
                 {
                     return;
                 }
-                if (newCount > uploads.PlItems.Count)
+
+                List<string> netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
+                List<string> dbids = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
+
+                // удаляем из базы те, которых нет на канале
+                foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                 {
-                    int nc = newCount - uploads.PlItems.Count + 3; // с запасом
-                    IEnumerable<string> newItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(uploads.ID, nc);
-                    List<string> trueids = newItems.Where(id => !uploads.PlItems.Contains(id)).ToList();
-                    if (trueids.Any())
-                    {
-                        IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids);
-                        foreach (List<string> list in tchanks)
-                        {
-                            IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
-                            foreach (IVideoItemPOCO poco in res)
-                            {
-                                IVideoItem vi = vf.CreateVideoItem(poco);
-                                channel.AddNewItem(vi, true);
-                                await vi.InsertItemAsync();
-                                await uploads.UpdatePlaylistAsync(vi.ID);
-                                channel.ChannelItemsCount = channel.ChannelItems.Count;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // в инете меньше чем у нас
+                    await sql.DeleteItemAsync(dbid);
+                    channel.CountNew -= 1;
+                    ((YouChannel)channel).DeletedIds.Add(dbid);
+
+                    //IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == dbid);
+                    //if (item == null)
+                    //{
+                    //    continue;
+                    //}
+                    //channel.ChannelItems.Remove(item);
                 }
 
-                channel.IsInWork = false;
+                // cобираем новые
+                List<string> trueids = netids.Where(netid => !dbids.Contains(netid)).ToList();
+                IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids);
+                foreach (List<string> list in tchanks)
+                {
+                    IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
+                    foreach (IVideoItem vi in res.Select(poco => vf.CreateVideoItem(poco)).Where(vi => vi.ParentID == channel.ID))
+                    {
+                        channel.AddNewItem(vi, true);
+                        await vi.InsertItemAsync();
+                        ((YouChannel)channel).AddedIds.Add(vi.ID);
+                    }
+                }
+
+                channel.ChannelItemsCount = channel.ChannelItems.Count;
             }
+
+            channel.IsInWork = false;
         }
 
         // public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)
