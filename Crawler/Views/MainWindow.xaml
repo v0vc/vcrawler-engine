@@ -659,13 +659,8 @@
                                         <Setter Property="Background" Value="PaleGreen" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding SyncState}" Value="{x:Static enums:SyncState.Deleted}">
-                                        <Setter Property="Background" Value="IndianRed" />
+                                        <Setter Property="Background" Value="LightPink" />
                                     </DataTrigger>
-                                    
-                                    <!--<DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
-                                        <Setter Property="Background" Value="PaleGreen" />
-                                    </DataTrigger>-->
-                                    
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>

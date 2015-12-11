@@ -5,8 +5,8 @@ namespace Interfaces.Enums
 {
     public enum ItemState
     {
-        Downloading, 
-        LocalYes, 
-        LocalNo
+        LocalNo,
+        LocalYes,
+        Downloading
     }
 }

@@ -468,9 +468,11 @@ namespace Models.Factories
                 // удаляем из базы те, которых нет на канале
                 foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                 {
+                    IVideoItem ditem = vf.CreateVideoItem(await sql.GetVideoItemAsync(dbid));
+                    ditem.SyncState = SyncState.Deleted;
+                    channel.DeletedIds.Add(ditem);
                     await sql.DeleteItemAsync(dbid);
                     channel.CountNew -= 1;
-                    channel.DeletedIds.Add(dbid);
                 }
 
                 // cобираем новые

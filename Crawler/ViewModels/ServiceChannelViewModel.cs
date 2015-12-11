@@ -330,7 +330,7 @@ namespace Crawler.ViewModels
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
         public List<string> AddedIds { get; set; }
-        public List<string> DeletedIds { get; set; }
+        public List<IVideoItem> DeletedIds { get; set; }
 
         public void AddNewItem(IVideoItem item, SyncState syncState)
         {

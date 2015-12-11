@@ -43,7 +43,7 @@ namespace Models.BO.Channels
         {
             this.channelFactory = channelFactory;
             AddedIds = new List<string>();
-            DeletedIds = new List<string>();
+            DeletedIds = new List<IVideoItem>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
@@ -321,24 +321,22 @@ namespace Models.BO.Channels
             }
         }
 
-        public List<string> AddedIds { get; set; }
-        public List<string> DeletedIds { get; set; }
+        public List<string> AddedIds { get; private set; }
+        public List<IVideoItem> DeletedIds { get; private set; }
 
         public void AddNewItem(IVideoItem item, SyncState syncState)
         {
-            item.FileState = ItemState.LocalNo;
+            item.SyncState = syncState;
             item.IsHasLocalFile = false;
             item.Site = Site;
 
             if (syncState == SyncState.Added)
             {
-                item.SyncState = SyncState.Added;
                 ChannelItems.Insert(0, item);
                 CountNew += 1;
             }
             else
             {
-                item.SyncState = SyncState.Notset;
                 ChannelItems.Add(item);
             }
         }

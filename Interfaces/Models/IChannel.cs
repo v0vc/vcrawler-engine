@@ -34,8 +34,8 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
-        List<string> AddedIds { get; set; }
-        List<string> DeletedIds { get;set; }
+        List<string> AddedIds { get; }
+        List<IVideoItem> DeletedIds { get; }
 
         #endregion
 
