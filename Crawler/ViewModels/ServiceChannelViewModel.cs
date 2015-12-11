@@ -311,7 +311,7 @@ namespace Crawler.ViewModels
         }
 
         public string ID { get; set; }
-        public bool IsDownloading { get; set; }
+        public ChannelState ChannelState { get; set; }
         public bool IsInWork { get; set; }
         public int PlaylistCount { get; set; }
         public IVideoItem SelectedItem { get; set; }

@@ -718,8 +718,8 @@ namespace Crawler.ViewModels
                 await cf.DeleteChannelAsync(channel.ID);
             }
 
+            channel.ChannelState = ChannelState.Added;
             Channels.Add(channel);
-            channel.IsDownloading = true;
             SelectedChannel = channel;
             channel.IsInWork = true;
             await cf.InsertChannelAsync(channel);
@@ -1010,7 +1010,7 @@ namespace Crawler.ViewModels
             {
                 case VideoMenuItem.Audio:
 
-                    SelectedChannel.IsDownloading = true;
+                    SelectedChannel.ChannelState = ChannelState.Downloading;
                     await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
 
                     break;
@@ -1019,7 +1019,7 @@ namespace Crawler.ViewModels
 
                     if (IsFfmegExist())
                     {
-                        SelectedChannel.IsDownloading = true;
+                        SelectedChannel.ChannelState = ChannelState.Downloading;
                         await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
                     }
                     else
@@ -1067,7 +1067,7 @@ namespace Crawler.ViewModels
                                     && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.SyncState == SyncState.Added);
 
             // заполняем только если либо ничего нет, либо одни новые
-            if ((!(!channel.ChannelItems.Any() & !channel.IsDownloading)) && !isHasNewFromSync)
+            if ((!(!channel.ChannelItems.Any() & channel.ChannelState != ChannelState.Added)) && !isHasNewFromSync)
             {
                 return;
             }
@@ -1087,7 +1087,7 @@ namespace Crawler.ViewModels
                 await cf.FillChannelItemsFromDbAsync(channel, SettingsViewModel.DirPath, 25, 0);
             }
 
-            if (channel.ChannelItems.Any() && channel.PlaylistCount == 0)
+            if (channel.PlaylistCount == 0)
             {
                 channel.PlaylistCount = await cf.GetChannelPlaylistCountDbAsync(channel.ID);
             }
@@ -1246,7 +1246,7 @@ namespace Crawler.ViewModels
             {
                 if (Channels.Select(x => x.ID).Contains(ch.ID))
                 {
-                    ch.IsDownloading = true;
+                    ch.ChannelState = ChannelState.Added;
                 }
                 RelatedChannels.Add(ch);
             }
@@ -1465,13 +1465,22 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
+            //SelectedChannel.ChannelItemsCollectionView.Filter = null;
+
             List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
 
             foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
                 SelectedChannel.AddNewItem(vi, SyncState.Notset);
-                await pl.UpdatePlaylistAsync(id);
+                if (!pl.PlItems.Contains(id))
+                {
+                    pl.PlItems.Add(id);
+                }
+                if (vi.ParentID == SelectedChannel.ID)
+                {
+                    await pl.UpdatePlaylistAsync(id);
+                }
             }
 
             SetStatus(0);
@@ -1608,8 +1617,7 @@ namespace Crawler.ViewModels
 
                 if (channel.DeletedIds.Any())
                 {
-                    foreach (IVideoItem deletedId in
-                        channel.DeletedIds.Where(deletedId => !channel.ChannelItems.Select(x => x.ID).Contains(deletedId.ID)))
+                    foreach (IVideoItem deletedId in channel.DeletedIds)
                     {
                         channel.AddNewItem(deletedId, SyncState.Deleted);
                     }
@@ -1655,7 +1663,7 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                SelectedChannel.IsDownloading = true;
+                SelectedChannel.ChannelState = ChannelState.Downloading;
                 await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, false, false);
             }
         }

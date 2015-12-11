@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Enums\ChannelMenuItem.cs" />
+    <Compile Include="Enums\ChannelState.cs" />
     <Compile Include="Enums\ItemState.cs" />
     <Compile Include="Enums\KeyboardKey.cs" />
     <Compile Include="Enums\MainMenuItem.cs" />

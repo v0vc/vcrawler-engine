@@ -28,12 +28,12 @@ namespace Models.BO.Channels
         private int channelItemsCount;
         private int countNew;
         private string filterVideoKey;
-        private bool isDownloading;
         private bool isInWork;
         private int playlistCount;
         private IVideoItem selectedItem;
         private string subTitle;
         private string title;
+        private ChannelState channelState;
 
         #endregion
 
@@ -226,15 +226,19 @@ namespace Models.BO.Channels
 
         public string ID { get; set; }
 
-        public bool IsDownloading
+        public ChannelState ChannelState
         {
             get
             {
-                return isDownloading;
+                return channelState;
             }
             set
             {
-                isDownloading = value;
+                if (value == channelState)
+                {
+                    return;
+                }
+                channelState = value;
                 OnPropertyChanged();
             }
         }

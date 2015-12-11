@@ -473,14 +473,12 @@ namespace DataAPI.Videos
                 }
             }
 
-            uploads.PlaylistItems.AddRange(ch.Items.Select(x => x.ID));
-
-            foreach (IPlaylistPOCO poco in ch.Playlists.Where(poco => poco.SubTitle == "uploads"))
-            {
-                poco.SubTitle = string.Empty;
-            }
-
-            ch.Playlists.Add(uploads);
+            //uploads.PlaylistItems.AddRange(ch.Items.Select(x => x.ID));
+            //foreach (IPlaylistPOCO poco in ch.Playlists.Where(poco => poco.SubTitle == "uploads"))
+            //{
+            //    poco.SubTitle = string.Empty;
+            //}
+            //ch.Playlists.Add(uploads);
 
             return ch;
         }

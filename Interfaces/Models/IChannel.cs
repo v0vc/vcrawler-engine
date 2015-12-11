@@ -24,7 +24,7 @@ namespace Interfaces.Models
         int CountNew { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
-        bool IsDownloading { get; set; }
+        ChannelState ChannelState { get; set; }
         bool IsInWork { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }
