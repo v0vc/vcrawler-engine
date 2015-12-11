@@ -1465,7 +1465,7 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
-            //SelectedChannel.ChannelItemsCollectionView.Filter = null;
+            SelectedChannel.ChannelItemsCollectionView.Filter = null;
 
             List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
 
