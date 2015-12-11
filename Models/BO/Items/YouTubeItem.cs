@@ -40,7 +40,7 @@ namespace Models.BO.Items
         private bool isProxyReady;
         private byte[] largeThumb;
         private string logText;
-        private ItemState state;
+        private ItemState fileState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
 
@@ -103,7 +103,7 @@ namespace Models.BO.Items
         {
             DownloadPercentage = 0;
             taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
-            State = ItemState.LocalNo;
+            FileState = ItemState.LocalNo;
             IsHasLocalFile = false;
         }
 
@@ -138,13 +138,13 @@ namespace Models.BO.Items
                 // в имени нет запретных знаков
                 if (fn.Exists)
                 {
-                    State = ItemState.LocalYes;
+                    FileState = ItemState.LocalYes;
                     IsHasLocalFile = true;
                     LocalFilePath = fn.FullName;
                 }
                 else
                 {
-                    State = ItemState.LocalNo;
+                    FileState = ItemState.LocalNo;
                     IsHasLocalFile = false;
                 }
             }
@@ -159,13 +159,13 @@ namespace Models.BO.Items
                 var fnn = new FileInfo(Path.Combine(fn.DirectoryName, cleartitle + Path.GetExtension(fn.Name)));
                 if (CommonExtensions.RenameFile(fn, fnn))
                 {
-                    State = ItemState.LocalYes;
+                    FileState = ItemState.LocalYes;
                     IsHasLocalFile = true;
                     LocalFilePath = fnn.FullName;
                 }
                 else
                 {
-                    State = ItemState.LocalNo;
+                    FileState = ItemState.LocalNo;
                     IsHasLocalFile = false;
                 }
             }
@@ -274,24 +274,25 @@ namespace Models.BO.Items
         public string ProxyUrl { get; set; }
         public SiteType Site { get; set; }
 
-        public ItemState State
+        public ItemState FileState
         {
             get
             {
-                return state;
+                return fileState;
             }
             set
             {
-                if (value == state)
+                if (value == fileState)
                 {
                     return;
                 }
-                state = value;
+                fileState = value;
                 OnPropertyChanged();
             }
         }
 
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
+        public SyncState SyncState { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
@@ -306,7 +307,7 @@ namespace Models.BO.Items
             }
 
             isAudio = isAudiOnly;
-            State = ItemState.Downloading;
+            FileState = ItemState.Downloading;
             DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
             {
@@ -407,11 +408,11 @@ namespace Models.BO.Items
                 IsHasLocalFile = fnvid.Exists;
                 if (IsHasLocalFile)
                 {
-                    State = ItemState.LocalYes;
+                    FileState = ItemState.LocalYes;
                     LocalFilePath = fnvid.FullName;
                     break;
                 }
-                State = ItemState.LocalNo;
+                FileState = ItemState.LocalNo;
             }
         }
 

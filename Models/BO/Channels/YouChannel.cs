@@ -324,20 +324,21 @@ namespace Models.BO.Channels
         public List<string> AddedIds { get; set; }
         public List<string> DeletedIds { get; set; }
 
-        public void AddNewItem(IVideoItem item, bool isNew)
+        public void AddNewItem(IVideoItem item, SyncState syncState)
         {
-            item.IsNewItem = isNew;
-            item.State = ItemState.LocalNo;
+            item.FileState = ItemState.LocalNo;
             item.IsHasLocalFile = false;
             item.Site = Site;
 
-            if (isNew)
+            if (syncState == SyncState.Added)
             {
+                item.SyncState = SyncState.Added;
                 ChannelItems.Insert(0, item);
                 CountNew += 1;
             }
             else
             {
+                item.SyncState = SyncState.Notset;
                 ChannelItems.Add(item);
             }
         }

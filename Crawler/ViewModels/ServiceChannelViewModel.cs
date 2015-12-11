@@ -104,7 +104,7 @@ namespace Crawler.ViewModels
                 ChannelItems.Clear();
                 foreach (IVideoItem item in lst)
                 {
-                    AddNewItem(item, false);
+                    AddNewItem(item, SyncState.Notset);
                 }
             }
         }
@@ -164,14 +164,16 @@ namespace Crawler.ViewModels
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)
                         {
-                            if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
+                            if (
+                                !(ChannelItems[i - 1].FileState == ItemState.LocalYes
+                                  || ChannelItems[i - 1].FileState == ItemState.Downloading))
                             {
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
                         foreach (IVideoItem item in lst.Select(poco => mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
                         {
-                            AddNewItem(item, false);
+                            AddNewItem(item, SyncState.Notset);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         }
                     }
@@ -223,7 +225,7 @@ namespace Crawler.ViewModels
                 // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
                 for (int i = ChannelItems.Count; i > 0; i--)
                 {
-                    if (!(ChannelItems[i - 1].State == ItemState.LocalYes || ChannelItems[i - 1].State == ItemState.Downloading))
+                    if (!(ChannelItems[i - 1].FileState == ItemState.LocalYes || ChannelItems[i - 1].FileState == ItemState.Downloading))
                     {
                         ChannelItems.RemoveAt(i - 1);
                     }
@@ -241,12 +243,12 @@ namespace Crawler.ViewModels
                     foreach (IVideoItemPOCO poco in lst)
                     {
                         IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
-                        AddNewItem(item, false);
+                        AddNewItem(item, SyncState.Notset);
                         item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
                         {
                             // подсветим видео, если канал уже есть в подписке
-                            item.IsNewItem = true;
+                            item.SyncState = SyncState.Added;
                         }
                         lstemp.Add(item);
                     }
@@ -327,19 +329,22 @@ namespace Crawler.ViewModels
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
+        public List<string> AddedIds { get; set; }
+        public List<string> DeletedIds { get; set; }
 
-        public void AddNewItem(IVideoItem item, bool isNew)
+        public void AddNewItem(IVideoItem item, SyncState syncState)
         {
-            item.IsNewItem = isNew;
-            item.State = ItemState.LocalNo;
+            item.FileState = ItemState.LocalNo;
             item.IsHasLocalFile = false;
 
-            if (isNew)
+            if (syncState == SyncState.Added)
             {
+                item.SyncState = SyncState.Added;
                 ChannelItems.Insert(0, item);
             }
             else
             {
+                item.SyncState = SyncState.Notset;
                 ChannelItems.Add(item);
             }
         }

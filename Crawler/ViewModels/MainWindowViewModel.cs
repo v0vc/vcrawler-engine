@@ -978,7 +978,7 @@ namespace Crawler.ViewModels
                         await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
                         item.LocalFilePath = string.Empty;
                         item.IsHasLocalFile = false;
-                        item.State = ItemState.LocalNo;
+                        item.FileState = ItemState.LocalNo;
                         item.Subtitles.Clear();
                     }
                     catch (Exception ex)
@@ -1066,31 +1066,32 @@ namespace Crawler.ViewModels
 
             // есть новые элементы после синхронизации
             bool isHasNewFromSync = channel.ChannelItems.Any()
-                                    && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.IsNewItem);
+                                    && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.SyncState == SyncState.Added);
 
             // заполняем только если либо ничего нет, либо одни новые
-            if ((!channel.ChannelItems.Any() & !channel.IsDownloading) || isHasNewFromSync)
+            if ((!(!channel.ChannelItems.Any() & !channel.IsDownloading)) && !isHasNewFromSync)
             {
-                if (isHasNewFromSync)
+                return;
+            }
+            if (isHasNewFromSync)
+            {
+                List<string> lstnew = channel.ChannelItems.Select(x => x.ID).ToList();
+                channel.ChannelItems.Clear();
+                await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+                foreach (IVideoItem item in
+                    from item in channel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
                 {
-                    List<string> lstnew = channel.ChannelItems.Select(x => x.ID).ToList();
-                    channel.ChannelItems.Clear();
-                    await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
-                    foreach (IVideoItem item in
-                        from item in channel.ChannelItems from id in lstnew.Where(id => item.ID == id) select item)
-                    {
-                        item.IsNewItem = true;
-                    }
+                    item.SyncState = SyncState.Added;
                 }
-                else
-                {
-                    await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
-                }
+            }
+            else
+            {
+                await channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 25, 0);
+            }
 
-                if (channel.ChannelItems.Any())
-                {
-                    channel.PlaylistCount = await channel.GetChannelPlaylistCountDbAsync();
-                }
+            if (channel.ChannelItems.Any())
+            {
+                channel.PlaylistCount = await channel.GetChannelPlaylistCountDbAsync();
             }
         }
 
@@ -1142,7 +1143,7 @@ namespace Crawler.ViewModels
             IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(count);
             foreach (IVideoItem item in lst)
             {
-                channel.AddNewItem(item, false);
+                channel.AddNewItem(item, SyncState.Notset);
             }
             channel.IsInWork = false;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
@@ -1471,7 +1472,7 @@ namespace Crawler.ViewModels
             foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
-                SelectedChannel.AddNewItem(vi, false);
+                SelectedChannel.AddNewItem(vi, SyncState.Notset);
                 await pl.UpdatePlaylistAsync(id);
             }
 
@@ -1727,7 +1728,7 @@ namespace Crawler.ViewModels
             Channels.Add(channel);
             foreach (IVideoItem item in lst)
             {
-                Channels[Channels.IndexOf(channel)].AddNewItem(item, false);
+                Channels[Channels.IndexOf(channel)].AddNewItem(item, SyncState.Notset);
             }
             lst.Clear();
             SelectedChannel = channel;

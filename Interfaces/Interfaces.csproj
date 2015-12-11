@@ -48,6 +48,7 @@
     <Compile Include="Enums\OpenDirParam.cs" />
     <Compile Include="Enums\PlaylistMenuItem.cs" />
     <Compile Include="Enums\SiteType.cs" />
+    <Compile Include="Enums\SyncState.cs" />
     <Compile Include="Enums\VideoMenuItem.cs" />
     <Compile Include="Models\IChannel.cs" />
     <Compile Include="Models\ISubtitle.cs" />

@@ -19,22 +19,22 @@ namespace Interfaces.Models
         double DownloadPercentage { get; set; }
         int Duration { get; set; }
         string DurationString { get; set; }
+        ItemState FileState { get; set; }
         string ID { get; set; }
         bool IsHasLocalFile { get; set; }
-        bool IsNewItem { get; set; }
         bool IsSelected { get; set; }
         byte[] LargeThumb { get; set; }
         string LocalFilePath { get; set; }
         string LogText { get; set; }
         string ParentID { get; set; }
+        string ProxyUrl { get; set; }
+        SiteType Site { get; set; }
+        ObservableCollection<ISubtitle> Subtitles { get; set; }
+        SyncState SyncState { get; set; }
         byte[] Thumbnail { get; set; }
         DateTime Timestamp { get; set; }
         string Title { get; set; }
-        ObservableCollection<ISubtitle> Subtitles { get; set; }
         long ViewCount { get; set; }
-        SiteType Site { get; set; }
-        ItemState State { get; set; }
-        string ProxyUrl { get; set; }
 
         #endregion
 

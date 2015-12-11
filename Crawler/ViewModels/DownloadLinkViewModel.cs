@@ -179,9 +179,9 @@ namespace Crawler.ViewModels
                 vi.ParentID = null;
                 mv.SelectedChannel = mv.ServiceChannel;
                 mv.SelectedChannel.SelectedItem = vi;
-                mv.SelectedChannel.AddNewItem(vi, true);
+                mv.SelectedChannel.AddNewItem(vi, SyncState.Added);
                 await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
-                vi.IsNewItem = true;
+                vi.SyncState = SyncState.Added;
             }
             else
             {

@@ -89,7 +89,7 @@ namespace Models.Factories
                     {
                         foreach (IVideoItemPOCO item in poco.Items)
                         {
-                            channel.AddNewItem(vf.CreateVideoItem(item), false);
+                            channel.AddNewItem(vf.CreateVideoItem(item), SyncState.Notset);
                         }
                     }
 
@@ -207,7 +207,7 @@ namespace Models.Factories
                     foreach (string id in lst)
                     {
                         IVideoItem vid = await vf.GetVideoItemDbAsync(id);
-                        channel.AddNewItem(vid, false);
+                        channel.AddNewItem(vid, SyncState.Notset);
                         vid.IsHasLocalFileFound(dir);
                     }
                 }
@@ -470,14 +470,7 @@ namespace Models.Factories
                 {
                     await sql.DeleteItemAsync(dbid);
                     channel.CountNew -= 1;
-                    ((YouChannel)channel).DeletedIds.Add(dbid);
-
-                    //IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == dbid);
-                    //if (item == null)
-                    //{
-                    //    continue;
-                    //}
-                    //channel.ChannelItems.Remove(item);
+                    channel.DeletedIds.Add(dbid);
                 }
 
                 // cобираем новые
@@ -488,9 +481,9 @@ namespace Models.Factories
                     IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
                     foreach (IVideoItem vi in res.Select(poco => vf.CreateVideoItem(poco)).Where(vi => vi.ParentID == channel.ID))
                     {
-                        channel.AddNewItem(vi, true);
+                        channel.AddNewItem(vi, SyncState.Added);
                         await vi.InsertItemAsync();
-                        ((YouChannel)channel).AddedIds.Add(vi.ID);
+                        channel.AddedIds.Add(vi.ID);
                     }
                 }
 
@@ -638,7 +631,7 @@ namespace Models.Factories
                             continue;
                         }
 
-                        channel.AddNewItem(item, true);
+                        channel.AddNewItem(item, SyncState.Added);
                         await item.InsertItemAsync();
                         await playlist.UpdatePlaylistAsync(item.ID);
                     }

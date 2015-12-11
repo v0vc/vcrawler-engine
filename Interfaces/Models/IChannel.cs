@@ -34,12 +34,14 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
+        List<string> AddedIds { get; set; }
+        List<string> DeletedIds { get;set; }
 
         #endregion
 
         #region Methods
 
-        void AddNewItem(IVideoItem item, bool isNew);
+        void AddNewItem(IVideoItem item, SyncState syncState);
 
         #endregion
     }

@@ -655,9 +655,17 @@
                                 <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
                                 <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
+                                    <DataTrigger Binding="{Binding SyncState}" Value="{x:Static enums:SyncState.Added}">
                                         <Setter Property="Background" Value="PaleGreen" />
                                     </DataTrigger>
+                                    <DataTrigger Binding="{Binding SyncState}" Value="{x:Static enums:SyncState.Deleted}">
+                                        <Setter Property="Background" Value="IndianRed" />
+                                    </DataTrigger>
+                                    
+                                    <!--<DataTrigger Binding="{Binding Path=IsNewItem}" Value="True">
+                                        <Setter Property="Background" Value="PaleGreen" />
+                                    </DataTrigger>-->
+                                    
                                 </Style.Triggers>
                             </Style>
                         </DataGrid.RowStyle>
@@ -762,13 +770,13 @@
                                                             <Image.Style>
                                                                 <Style TargetType="{x:Type Image}">
                                                                     <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.LocalNo}">
                                                                             <Setter Property="Source" Value="../Images/add_64.png"/>
                                                                         </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.LocalYes}">
                                                                             <Setter Property="Source" Value="../Images/tick_64.png"/>
                                                                         </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.Downloading}">
                                                                             <Setter Property="Height" Value="32"/>
                                                                             <Setter Property="Source" Value="../Images/inbox-32.png"></Setter>
                                                                         </DataTrigger>
@@ -780,13 +788,13 @@
                                                             <ProgressBar.Style>
                                                                 <Style TargetType="{x:Type ProgressBar}">
                                                                     <Style.Triggers>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalNo}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.LocalNo}">
                                                                             <Setter Property="Height" Value="0"/>
                                                                         </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.LocalYes}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.LocalYes}">
                                                                             <Setter Property="Height" Value="0"/>
                                                                         </DataTrigger>
-                                                                        <DataTrigger Binding="{Binding State}" Value="{x:Static enums:ItemState.Downloading}">
+                                                                        <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.Downloading}">
                                                                             <Setter Property="Height" Value="16"/>
                                                                         </DataTrigger>
                                                                     </Style.Triggers>
