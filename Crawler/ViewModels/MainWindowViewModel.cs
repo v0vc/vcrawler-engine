@@ -719,6 +719,7 @@ namespace Crawler.ViewModels
             }
 
             channel.ChannelState = ChannelState.Added;
+            channel.DirPath = SettingsViewModel.DirPath;
             Channels.Add(channel);
             SelectedChannel = channel;
             channel.IsInWork = true;
@@ -1098,6 +1099,7 @@ namespace Crawler.ViewModels
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)
             {
+                ch.DirPath = SettingsViewModel.DirPath;
                 Channels.Add(ch);
             }
             if (Channels.Any())
@@ -1606,25 +1608,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task RestoreFullChannelItems(YouChannel channel)
-        {
-            if (channel.ChannelItemsCount > channel.ChannelItems.Count)
-            {
-                await
-                    channel.FillChannelItemsDbAsync(SettingsViewModel.DirPath, 
-                        channel.ChannelItemsCount - channel.ChannelItems.Count, 
-                        channel.ChannelItems.Count);
-
-                if (channel.DeletedIds.Any())
-                {
-                    foreach (IVideoItem deletedId in channel.DeletedIds)
-                    {
-                        channel.AddNewItem(deletedId, SyncState.Deleted);
-                    }
-                }
-            }
-        }
-
         private async void RunItemDoubleClick(object obj)
         {
             var item = obj as IVideoItem;
@@ -1689,7 +1672,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            await RestoreFullChannelItems(channel);
+            await channel.RestoreFullChannelItems();
         }
 
         private async void SelectPlaylist(object obj)
@@ -1705,7 +1688,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            await RestoreFullChannelItems(channel);
+            await channel.RestoreFullChannelItems();
             channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
         }
 
