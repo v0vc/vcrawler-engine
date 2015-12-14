@@ -36,6 +36,7 @@ namespace Interfaces.Models
         string Title { get; set; }
         List<string> AddedIds { get; }
         List<IVideoItem> DeletedIds { get; }
+        bool IsShowSynced { get; set; }
 
         #endregion
 

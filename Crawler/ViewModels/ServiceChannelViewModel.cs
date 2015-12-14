@@ -331,6 +331,7 @@ namespace Crawler.ViewModels
         public string Title { get; set; }
         public List<string> AddedIds { get; set; }
         public List<IVideoItem> DeletedIds { get; set; }
+        public bool IsShowSynced { get; set; }
 
         public void AddNewItem(IVideoItem item, SyncState syncState)
         {

@@ -833,14 +833,15 @@
                                              TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                              />
                                 </ScrollViewer>
-                                
+
                                 <StackPanel Grid.Column="1" Orientation="Vertical">
-                                    <CheckBox HorizontalAlignment="Center" Margin="0,10,0,0" ToolTip="Show/Hide Added/Deleted" />
-                                    
-                                    <TextBox BorderBrush="Lavender" Width="Auto" Height="24" Margin="0,104,0,0"
+                                    <CheckBox HorizontalAlignment="Center" Margin="0,10,0,0" ToolTip="Show/Hide Added/Deleted" 
+                                              IsChecked="{Binding SelectedChannel.IsShowSynced, Mode=TwoWay}" IsThreeState="False" 
+                                              />
+
+                                    <TextBox BorderBrush="Lavender" Width="Auto" Height="24" Margin="2,103,0,0"
                                          Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                         VerticalAlignment="Bottom" 
-                                         VerticalContentAlignment="Center"
+                                         VerticalAlignment="Bottom" VerticalContentAlignment="Center"
                                          >
                                         <TextBox.Resources>
                                             <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">

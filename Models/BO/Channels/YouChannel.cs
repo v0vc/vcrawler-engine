@@ -26,14 +26,15 @@ namespace Models.BO.Channels
         #region Fields
 
         private int channelItemsCount;
+        private ChannelState channelState;
         private int countNew;
         private string filterVideoKey;
         private bool isInWork;
+        private bool isShowSynced;
         private int playlistCount;
         private IVideoItem selectedItem;
         private string subTitle;
         private string title;
-        private ChannelState channelState;
 
         #endregion
 
@@ -148,7 +149,23 @@ namespace Models.BO.Channels
             await channelFactory.SyncChannelPlaylistsAsync(this);
         }
 
-        private bool FilterVideo(object item)
+        private bool FilterVideoBySynced(object item)
+        {
+            if (!AddedIds.Any() && !DeletedIds.Any())
+            {
+                return false;
+            }
+            var value = (IVideoItem)item;
+            if (value == null)
+            {
+                return false;
+            }
+
+            bool res = AddedIds.Contains(value.ID) || DeletedIds.Select(x => x.ID).Contains(value.ID);
+            return res;
+        }
+
+        private bool FilterVideoByTitle(object item)
         {
             var value = (IVideoItem)item;
             if (value == null || value.Title == null)
@@ -172,6 +189,7 @@ namespace Models.BO.Channels
 
         #region IChannel Members
 
+        public List<string> AddedIds { get; private set; }
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
@@ -190,41 +208,6 @@ namespace Models.BO.Channels
         }
 
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
-        public ObservableCollection<ITag> ChannelTags { get; set; }
-
-        public int CountNew
-        {
-            get
-            {
-                return countNew;
-            }
-            set
-            {
-                countNew = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public string FilterVideoKey
-        {
-            get
-            {
-                return filterVideoKey;
-            }
-            set
-            {
-                if (value == filterVideoKey)
-                {
-                    return;
-                }
-
-                filterVideoKey = value;
-                ChannelItemsCollectionView.Filter = FilterVideo;
-                OnPropertyChanged();
-            }
-        }
-
-        public string ID { get; set; }
 
         public ChannelState ChannelState
         {
@@ -243,6 +226,44 @@ namespace Models.BO.Channels
             }
         }
 
+        public ObservableCollection<ITag> ChannelTags { get; set; }
+
+        public int CountNew
+        {
+            get
+            {
+                return countNew;
+            }
+            set
+            {
+                countNew = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public List<IVideoItem> DeletedIds { get; private set; }
+
+        public string FilterVideoKey
+        {
+            get
+            {
+                return filterVideoKey;
+            }
+            set
+            {
+                if (value == filterVideoKey)
+                {
+                    return;
+                }
+
+                filterVideoKey = value;
+                ChannelItemsCollectionView.Filter = FilterVideoByTitle;
+                OnPropertyChanged();
+            }
+        }
+
+        public string ID { get; set; }
+
         public bool IsInWork
         {
             get
@@ -252,6 +273,32 @@ namespace Models.BO.Channels
             set
             {
                 isInWork = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsShowSynced
+        {
+            get
+            {
+                return isShowSynced;
+            }
+            set
+            {
+                if (value == isShowSynced)
+                {
+                    return;
+                }
+                isShowSynced = value;
+
+                if (isShowSynced)
+                {
+                    ChannelItemsCollectionView.Filter = FilterVideoBySynced;
+                }
+                else
+                {
+                    ChannelItemsCollectionView.Filter = null;
+                }
                 OnPropertyChanged();
             }
         }
@@ -324,9 +371,6 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
-        public List<string> AddedIds { get; private set; }
-        public List<IVideoItem> DeletedIds { get; private set; }
 
         public void AddNewItem(IVideoItem item, SyncState syncState)
         {
