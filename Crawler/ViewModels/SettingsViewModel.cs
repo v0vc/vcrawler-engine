@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -27,7 +28,7 @@ using MessageBox = System.Windows.MessageBox;
 
 namespace Crawler.ViewModels
 {
-    public class SettingsViewModel : INotifyPropertyChanged
+    public sealed class SettingsViewModel : INotifyPropertyChanged
     {
         #region Constants
 
@@ -37,8 +38,8 @@ namespace Crawler.ViewModels
         private const string pathToDownload = "pathToDownload";
         private const string pathToMpc = "pathToMpc";
         private const string pathToYoudl = "pathToYoudl";
-        private const string youheader = "Youtube-dl";
         private const string youLaunchParam = "you";
+        private const string youheader = "Youtube-dl";
         private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
@@ -213,6 +214,16 @@ namespace Crawler.ViewModels
 
         #region Methods
 
+        public bool IsMpcExist()
+        {
+            if (!string.IsNullOrEmpty(MpcPath))
+            {
+                return true;
+            }
+            MessageBox.Show("Please, select MPC");
+            return false;
+        }
+
         public async Task LoadCredsFromDb()
         {
             IEnumerable<ICredPOCO> fbres = await baseFactory.CreateSqLiteDatabase().GetCredListAsync();
@@ -286,22 +297,13 @@ namespace Crawler.ViewModels
             }
         }
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
         private void AddNewTag()
         {
             var advm = new AddNewTagViewModel(this) { Tag = baseFactory.CreateTagFactory().CreateTag() };
             var antv = new AddNewTagView
             {
-                DataContext = advm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = advm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -316,9 +318,9 @@ namespace Crawler.ViewModels
                 return;
             }
             MessageBoxResult result =
-                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title), 
-                    "Confirm", 
-                    MessageBoxButton.OKCancel, 
+                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title),
+                    "Confirm",
+                    MessageBoxButton.OKCancel,
                     MessageBoxImage.Information);
 
             if (result != MessageBoxResult.OK)
@@ -334,6 +336,15 @@ namespace Crawler.ViewModels
             YouHeader = string.IsNullOrEmpty(YouPath)
                 ? youheader
                 : string.Format("{0} ({1})", youheader, CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim());
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         private void OpenDir(object obj)

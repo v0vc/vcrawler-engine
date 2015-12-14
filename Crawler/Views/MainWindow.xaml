@@ -215,6 +215,12 @@
                             <i:InvokeCommandAction Command="{Binding ChannelGridFocusCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="SelectionChanged">
+                            <i:InvokeCommandAction Command="{Binding ChannelSelectCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=videoGrid}"/>
+                        </i:EventTrigger>
+                        <i:EventTrigger EventName="MouseDoubleClick">
+                            <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                        </i:EventTrigger>
+                        <!--<i:EventTrigger EventName="SelectionChanged">
                             <i:InvokeCommandAction Command="{Binding ChannelSelectCommand, Mode=OneTime}" >
                                 <i:InvokeCommandAction.CommandParameter>
                                     <MultiBinding Converter="{StaticResource MultiParamConverter}">
@@ -223,10 +229,7 @@
                                     </MultiBinding>
                                 </i:InvokeCommandAction.CommandParameter>
                             </i:InvokeCommandAction>
-                        </i:EventTrigger>
-                        <i:EventTrigger EventName="MouseDoubleClick">
-                            <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
-                        </i:EventTrigger>
+                        </i:EventTrigger>-->
                     </i:Interaction.Triggers>
 
                     <DataGrid.Resources>
