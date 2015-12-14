@@ -833,36 +833,40 @@
                                              TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                              />
                                 </ScrollViewer>
-
-                                <TextBox Grid.Column="1" BorderBrush="Lavender" Width="Auto" Height="24" Margin="1,0,1,0"
+                                
+                                <StackPanel Grid.Column="1" Orientation="Vertical">
+                                    <CheckBox HorizontalAlignment="Center" Margin="0,10,0,0" ToolTip="Show/Hide Added/Deleted" />
+                                    
+                                    <TextBox BorderBrush="Lavender" Width="Auto" Height="24" Margin="0,104,0,0"
                                          Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                                          VerticalAlignment="Bottom" 
                                          VerticalContentAlignment="Center"
                                          >
-                                    <TextBox.Resources>
-                                        <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
-                                            <VisualBrush.Visual>
-                                                <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
-                                            </VisualBrush.Visual>
-                                            <VisualBrush.Transform>
-                                                <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
-                                            </VisualBrush.Transform>
-                                        </VisualBrush>
-                                    </TextBox.Resources>
-                                    <TextBox.Style>
-                                        <Style TargetType="TextBox">
-                                            <Style.Triggers>
-                                                <Trigger Property="Text" Value="{x:Null}">
-                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
-                                                </Trigger>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Background" Value="{StaticResource HelpBrush}" />
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBox.Style>
-                                </TextBox>
-
+                                        <TextBox.Resources>
+                                            <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
+                                                <VisualBrush.Visual>
+                                                    <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
+                                                </VisualBrush.Visual>
+                                                <VisualBrush.Transform>
+                                                    <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
+                                                </VisualBrush.Transform>
+                                            </VisualBrush>
+                                        </TextBox.Resources>
+                                        <TextBox.Style>
+                                            <Style TargetType="TextBox">
+                                                <Style.Triggers>
+                                                    <Trigger Property="Text" Value="{x:Null}">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                    <Trigger Property="Text" Value="">
+                                                        <Setter Property="Background" Value="{StaticResource HelpBrush}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBox.Style>
+                                    </TextBox>
+                                    
+                                </StackPanel>
                             </Grid>
                         </Expander.Content>
                     
