@@ -598,6 +598,7 @@
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
                               SelectionMode="Extended"
+                              behaviors:DataGridBehavior.Autoscroll="True"
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
