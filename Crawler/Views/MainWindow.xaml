@@ -215,7 +215,14 @@
                             <i:InvokeCommandAction Command="{Binding ChannelGridFocusCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="SelectionChanged">
-                            <i:InvokeCommandAction Command="{Binding ChannelSelectCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
+                            <i:InvokeCommandAction Command="{Binding ChannelSelectCommand, Mode=OneTime}" >
+                                <i:InvokeCommandAction.CommandParameter>
+                                    <MultiBinding Converter="{StaticResource MultiParamConverter}">
+                                        <Binding ElementName="channelsGrid" Path="SelectedItem" />
+                                        <Binding ElementName="videoGrid" />
+                                    </MultiBinding>
+                                </i:InvokeCommandAction.CommandParameter>
+                            </i:InvokeCommandAction>
                         </i:EventTrigger>
                         <i:EventTrigger EventName="MouseDoubleClick">
                             <i:InvokeCommandAction Command="{Binding ChannelDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
@@ -598,7 +605,6 @@
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
                               SelectionMode="Extended"
-                              behaviors:DataGridBehavior.Autoscroll="True"
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
@@ -889,6 +895,7 @@
                         <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
+                
                 <Expander.Content>
                     <Grid>
                         <Grid.ColumnDefinitions>

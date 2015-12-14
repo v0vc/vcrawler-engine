@@ -105,5 +105,6 @@
     </Style>
 
     <converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
+    <converters:MultiParamConverter x:Key="MultiParamConverter" />
     <converters:SiteTypeToVisibilityConverter x:Key="SiteTypeToVisibilityConverter" />
 </ResourceDictionary>

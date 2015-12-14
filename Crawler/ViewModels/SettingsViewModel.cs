@@ -184,6 +184,13 @@ namespace Crawler.ViewModels
 
         #region Static Methods
 
+        public static bool IsFfmegExist()
+        {
+            const string ff = "ffmpeg.exe";
+            string values = Environment.GetEnvironmentVariable("PATH");
+            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
+        }
+
         private static bool CheckForInternetConnection(string url)
         {
             try
@@ -214,7 +221,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadSettingsFromDb()
         {
-            var sf = baseFactory.CreateSettingFactory();
+            SettingFactory sf = baseFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             DirPath = savedir.Value;
@@ -369,7 +376,7 @@ namespace Crawler.ViewModels
 
         private async Task SaveSettingsToDb()
         {
-            var sf = baseFactory.CreateSettingFactory();
+            SettingFactory sf = baseFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             if (savedir.Value != DirPath)

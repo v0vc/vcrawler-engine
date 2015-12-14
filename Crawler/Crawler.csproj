@@ -77,8 +77,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="Behaviors\DataGridBehavior.cs" />
-    <Compile Include="Behaviors\DataGridSelectedItemsBehavior.cs" />
     <Compile Include="Behaviors\FocusExtension.cs" />
     <Compile Include="Behaviors\RoutedEventTrigger.cs" />
     <Compile Include="Behaviors\TextBoxBehavior.cs" />
@@ -88,6 +86,7 @@
     <Compile Include="Controls\CustomDataGrid.cs" />
     <Compile Include="Controls\VisualTargetPresentationSource.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
+    <Compile Include="Converters\MultiParamConverter.cs" />
     <Compile Include="Converters\SiteTypeToVisibilityConverter.cs" />
     <Compile Include="ViewModels\AddChannelViewModel.cs" />
     <Compile Include="ViewModels\AddNewTagViewModel.cs" />

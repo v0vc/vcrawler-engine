@@ -19,7 +19,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
 using Autofac;
 using Crawler.Common;
 using Crawler.Views;
@@ -547,31 +546,6 @@ namespace Crawler.ViewModels
             await item.FillSubtitles();
         }
 
-        private static ScrollViewer GetScrollbar(DependencyObject dep)
-        {
-            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dep); i++)
-            {
-                DependencyObject child = VisualTreeHelper.GetChild(dep, i);
-                if (child is ScrollViewer)
-                {
-                    return child as ScrollViewer;
-                }
-                ScrollViewer sub = GetScrollbar(child);
-                if (sub != null)
-                {
-                    return sub;
-                }
-            }
-            return null;
-        }
-
-        private static bool IsFfmegExist()
-        {
-            const string ff = "ffmpeg.exe";
-            string values = Environment.GetEnvironmentVariable("PATH");
-            return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
-        }
-
         private static void OpenDescription(object obj)
         {
             var item = obj as IVideoItem;
@@ -1018,7 +992,7 @@ namespace Crawler.ViewModels
 
                 case VideoMenuItem.HD:
 
-                    if (IsFfmegExist())
+                    if (SettingsViewModel.IsFfmegExist())
                     {
                         SelectedChannel.ChannelState = ChannelState.Downloading;
                         await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
@@ -1053,11 +1027,35 @@ namespace Crawler.ViewModels
 
         private async void FillChannelItems(object obj)
         {
-            var channel = obj as IChannel;
+            // почему-то сначала приходит канал, только потом мой кортежик
+            IChannel channel;
+            DataGrid vGrid = null;
+
+            var tuple = obj as Tuple<IChannel, DataGrid>;
+            if (tuple != null)
+            {
+                channel = tuple.Item1;
+                vGrid = tuple.Item2;
+            }
+            else
+            {
+                channel = obj as IChannel;
+            }
+
+            if (vGrid != null)
+            {
+                ScrollViewer scr = UiExtensions.GetScrollbar(vGrid);
+                if (scr != null)
+                {
+                    scr.ScrollToTop();
+                }
+            }
+
             if (channel == null)
             {
                 return;
             }
+
             IsLogExpand = false;
             IsPlExpand = false;
             channel.ChannelItemsCollectionView.Filter = null;
@@ -1658,7 +1656,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            ScrollViewer scroll = GetScrollbar(grid);
+            ScrollViewer scroll = UiExtensions.GetScrollbar(grid);
             if (scroll == null)
             {
                 return;
