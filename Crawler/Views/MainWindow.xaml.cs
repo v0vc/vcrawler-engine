@@ -13,12 +13,6 @@ namespace Crawler.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        #region Fields
-
-        private GridLength rememberWidth = GridLength.Auto;
-
-        #endregion
-
         #region Constructors
 
         public MainWindow()
@@ -29,26 +23,6 @@ namespace Crawler.Views
         #endregion
 
         #region Event Handling
-
-        private void GridCollapsed(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as Grid;
-            if (grid == null)
-            {
-                return;
-            }
-            rememberWidth = grid.ColumnDefinitions[1].Width;
-            grid.ColumnDefinitions[1].Width = GridLength.Auto;
-        }
-
-        private void GridExpanded(object sender, RoutedEventArgs e)
-        {
-            var grid = sender as Grid;
-            if (grid != null)
-            {
-                grid.ColumnDefinitions[1].Width = rememberWidth;
-            }
-        }
 
         private void VideoGrid_OnSorting(object sender, DataGridSortingEventArgs e)
         {

@@ -896,7 +896,7 @@
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 <Expander.Content>
-                    <Grid Expander.Collapsed="GridCollapsed" Expander.Expanded="GridExpanded">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
