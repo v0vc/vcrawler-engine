@@ -169,7 +169,7 @@ namespace Models.BO.Channels
         {
             if (!AddedIds.Any() && !DeletedIds.Any())
             {
-                return false;
+                return true;
             }
             var value = (IVideoItem)item;
             if (value == null)

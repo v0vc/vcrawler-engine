@@ -251,7 +251,7 @@ namespace Crawler.ViewModels
                     return;
                 }
                 filterChannelKey = value;
-                channelCollectionView.Filter = FilterChannel;
+                channelCollectionView.Filter = FilterChannelByTitleOrId;
                 OnPropertyChanged();
             }
         }
@@ -841,8 +841,11 @@ namespace Crawler.ViewModels
                     {
                         continue;
                     }
+                    
                     Channels.Remove(channel);
                     await cf.DeleteChannelAsync(channel.ID);
+                    channelCollectionView.Filter = null;
+                    FilterChannelKey = string.Empty;
                 }
 
                 if (Channels.Any())
@@ -1087,7 +1090,7 @@ namespace Crawler.ViewModels
             return res;
         }
 
-        private bool FilterChannel(object item)
+        private bool FilterChannelByTitleOrId(object item)
         {
             var value = (IChannel)item;
             if (value == null || value.Title == null)
@@ -1095,7 +1098,9 @@ namespace Crawler.ViewModels
                 return false;
             }
 
-            return value.Title.ToLower().Contains(FilterChannelKey.ToLower());
+            string key = FilterChannelKey.ToLower();
+            bool res = value.Title.ToLower().Contains(key);
+            return res || value.ID.ToLower().Contains(key);
         }
 
         private bool FilterChannelsByTag(object item)

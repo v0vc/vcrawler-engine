@@ -344,7 +344,7 @@
                                     </Grid.ColumnDefinitions>
                                     <TextBox Grid.Column="2" FlowDirection="LeftToRight" 
                                              Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
-                                             Text="{Binding FilterChannelKey, Mode=OneWayToSource, UpdateSourceTrigger=PropertyChanged}"
+                                             Text="{Binding FilterChannelKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              >
                                         <TextBox.Resources>
@@ -1009,7 +1009,7 @@
                             <TextBlock Text="{Binding SelectedChannel.PlaylistCount, Mode=OneWay}" HorizontalAlignment="Center"/>
                         </StackPanel>
 
-                        <CheckBox Grid.Row="2" HorizontalAlignment="Center" Margin="1,0,0,0" ToolTip="Show/Hide Added/Deleted" 
+                        <CheckBox Grid.Row="2" HorizontalAlignment="Center" Margin="1,0,0,2" ToolTip="Show/Hide Added/Deleted" 
                                   IsChecked="{Binding SelectedChannel.IsShowSynced, Mode=TwoWay}" IsThreeState="False" 
                                   />
                     </Grid>
