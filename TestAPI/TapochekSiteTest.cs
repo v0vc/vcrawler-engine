@@ -102,13 +102,13 @@ namespace TestAPI
             if (ch.ChannelCookies == null)
             {
                 await ch.FillChannelCookieNetAsync();
-                ch.StoreCookies();
+                //ch.StoreCookies();
             }
             IEnumerable<IVideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
                 await ch.FillChannelCookieNetAsync();
-                ch.StoreCookies();
+                //ch.StoreCookies();
                 t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             }
             Assert.IsTrue(t.Any());
@@ -126,7 +126,7 @@ namespace TestAPI
             CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             ch.ChannelCookies = cookie;
 
-            ch.StoreCookies();
+            //ch.StoreCookies();
             var c = fabric.CreateSqLiteDatabase();
             if (c.FileBase.DirectoryName != null)
             {

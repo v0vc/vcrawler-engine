@@ -84,11 +84,6 @@ namespace Models.BO.Channels
             await channelFactory.FillChannelDescriptionAsync(this);
         }
 
-        public async Task FillChannelItemsDbAsync(string dir, int count, int offset)
-        {
-            await channelFactory.FillChannelItemsFromDbAsync(this, dir, count, offset);
-        }
-
         public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
         {
             return await channelFactory.GetChannelItemsIdsListNetAsync(ID, maxresult);
@@ -139,30 +134,32 @@ namespace Models.BO.Channels
             await channelFactory.RenameChannelAsync(ID, newName);
         }
 
-        public async Task RestoreFullChannelItems(string dirPath)
+        public async void RestoreFullChannelItems(string dirPath)
         {
-            if (ChannelItemsCount > ChannelItems.Count)
+            if (ChannelItemsCount <= ChannelItems.Count)
             {
-                await FillChannelItemsDbAsync(dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
-
-                if (DeletedIds.Any())
-                {
-                    foreach (IVideoItem deletedId in DeletedIds)
-                    {
-                        AddNewItem(deletedId, SyncState.Deleted);
-                    }
-                }
+                return;
             }
-        }
+            await FillChannelItemsDbAsync(dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
 
-        public void StoreCookies()
-        {
-            channelFactory.StoreCookies(SiteAdress, ChannelCookies);
+            if (!DeletedIds.Any())
+            {
+                return;
+            }
+            foreach (IVideoItem deletedId in DeletedIds)
+            {
+                AddNewItem(deletedId, SyncState.Deleted);
+            }
         }
 
         public async Task SyncChannelPlaylistsAsync()
         {
             await channelFactory.SyncChannelPlaylistsAsync(this);
+        }
+
+        private async Task FillChannelItemsDbAsync(string dir, int count, int offset)
+        {
+            await channelFactory.FillChannelItemsFromDbAsync(this, dir, count, offset);
         }
 
         private bool FilterVideoBySynced(object item)
@@ -258,6 +255,7 @@ namespace Models.BO.Channels
         }
 
         public List<IVideoItem> DeletedIds { get; private set; }
+        public string DirPath { get; set; }
 
         public string FilterVideoKey
         {
@@ -273,6 +271,7 @@ namespace Models.BO.Channels
                 }
 
                 filterVideoKey = value;
+                RestoreFullChannelItems(DirPath);
                 ChannelItemsCollectionView.Filter = FilterVideoByTitle;
                 OnPropertyChanged();
             }
@@ -309,6 +308,7 @@ namespace Models.BO.Channels
 
                 if (isShowSynced)
                 {
+                    RestoreFullChannelItems(DirPath);
                     ChannelItemsCollectionView.Filter = FilterVideoBySynced;
                 }
                 else

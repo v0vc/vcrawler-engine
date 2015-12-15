@@ -432,18 +432,6 @@ namespace Models.Factories
             }
         }
 
-        public void StoreCookies(string site, CookieContainer cookies)
-        {
-            try
-            {
-                sql.StoreCookies(site, cookies);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task SyncChannelAsync(IChannel channel)
         {
             channel.IsInWork = true;

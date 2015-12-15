@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
-using System.Threading.Tasks;
 using Interfaces.Enums;
 
 namespace Interfaces.Models
@@ -15,17 +14,21 @@ namespace Interfaces.Models
     {
         #region Properties
 
+        List<string> AddedIds { get; }
         CookieContainer ChannelCookies { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
         ICollectionView ChannelItemsCollectionView { get; set; }
         int ChannelItemsCount { get; set; }
         ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
+        ChannelState ChannelState { get; set; }
         ObservableCollection<ITag> ChannelTags { get; set; }
         int CountNew { get; set; }
+        List<IVideoItem> DeletedIds { get; }
+        string DirPath { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
-        ChannelState ChannelState { get; set; }
         bool IsInWork { get; set; }
+        bool IsShowSynced { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }
         IList<IVideoItem> SelectedItems { get; }
@@ -34,9 +37,6 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
-        List<string> AddedIds { get; }
-        List<IVideoItem> DeletedIds { get; }
-        bool IsShowSynced { get; set; }
 
         #endregion
 
