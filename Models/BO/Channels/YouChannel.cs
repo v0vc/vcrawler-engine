@@ -139,11 +139,11 @@ namespace Models.BO.Channels
             await channelFactory.RenameChannelAsync(ID, newName);
         }
 
-        public async Task RestoreFullChannelItems()
+        public async Task RestoreFullChannelItems(string dirPath)
         {
             if (ChannelItemsCount > ChannelItems.Count)
             {
-                await FillChannelItemsDbAsync(DirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
+                await FillChannelItemsDbAsync(dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
 
                 if (DeletedIds.Any())
                 {
@@ -258,7 +258,6 @@ namespace Models.BO.Channels
         }
 
         public List<IVideoItem> DeletedIds { get; private set; }
-        public string DirPath { get; set; }
 
         public string FilterVideoKey
         {

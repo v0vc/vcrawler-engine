@@ -694,7 +694,6 @@ namespace Crawler.ViewModels
             }
 
             channel.ChannelState = ChannelState.Added;
-            channel.DirPath = SettingsViewModel.DirPath;
             Channels.Add(channel);
             SelectedChannel = channel;
             channel.IsInWork = true;
@@ -1009,7 +1008,6 @@ namespace Crawler.ViewModels
             IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
             foreach (IChannel ch in lst)
             {
-                ch.DirPath = SettingsViewModel.DirPath;
                 Channels.Add(ch);
             }
             if (Channels.Any())
@@ -1570,7 +1568,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            await channel.RestoreFullChannelItems();
+            await channel.RestoreFullChannelItems(SettingsViewModel.DirPath);
         }
 
         private async void SelectPlaylist(object obj)
@@ -1586,7 +1584,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            await channel.RestoreFullChannelItems();
+            await channel.RestoreFullChannelItems(SettingsViewModel.DirPath);
             channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
         }
 
