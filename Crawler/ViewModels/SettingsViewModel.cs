@@ -47,6 +47,7 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly CommonFactory baseFactory;
+        private readonly ObservableCollection<IChannel> channels;
 
         #endregion
 
@@ -67,9 +68,10 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(CommonFactory baseFactory)
+        public SettingsViewModel(CommonFactory baseFactory, ObservableCollection<IChannel> channels)
         {
             this.baseFactory = baseFactory;
+            this.channels = channels;
             SupportedTags = new ObservableCollection<ITag>();
             SupportedCreds = new List<ICred>();
         }
@@ -393,6 +395,13 @@ namespace Crawler.ViewModels
             if (savedir.Value != DirPath)
             {
                 await savedir.UpdateSettingAsync(DirPath);
+                if (channels != null && channels.Any())
+                {
+                    foreach (IChannel channel in channels)
+                    {
+                        channel.DirPath = DirPath;
+                    }
+                }
             }
 
             ISetting mpcdir = await sf.GetSettingDbAsync(pathToMpc);

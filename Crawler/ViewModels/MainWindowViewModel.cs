@@ -123,7 +123,7 @@ namespace Crawler.ViewModels
                 }
             }
 
-            SettingsViewModel = new SettingsViewModel(BaseFactory);
+            SettingsViewModel = new SettingsViewModel(BaseFactory, Channels);
 
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
