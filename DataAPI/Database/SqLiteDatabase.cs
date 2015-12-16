@@ -8,6 +8,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -64,6 +65,23 @@ namespace DataAPI.Database
         private const string thumbnail = "thumbnail";
 
         private const string timestamp = "timestamp";
+
+        private const string syncstate = "syncstate";
+
+        private readonly string itemsInsertString =
+            string.Format(
+                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10})",
+                tableitems,
+                itemId,
+                parentID,
+                title,
+                description,
+                viewCount,
+                duration,
+                comments,
+                thumbnail,
+                timestamp,
+                syncstate);
 
         #endregion
 
@@ -174,6 +192,20 @@ namespace DataAPI.Database
             }
 
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
+        }
+
+        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
+        {
+            var vi = new VideoItemPOCO((string)reader[itemId],
+                (string)reader[parentID],
+                (string)reader[title],
+                Convert.ToInt32(reader[viewCount]),
+                Convert.ToInt32(reader[duration]),
+                Convert.ToInt32(reader[comments]),
+                (byte[])reader[thumbnail],
+                (DateTime)reader[timestamp],
+                Convert.ToByte(reader[syncstate]));
+            return vi;
         }
 
         #endregion
@@ -470,7 +502,7 @@ namespace DataAPI.Database
             var res = new List<IVideoItemPOCO>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}' ORDER BY {6} DESC",
+                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {6} DESC",
                     itemId,
                     parentID,
                     title,
@@ -478,11 +510,12 @@ namespace DataAPI.Database
                     duration,
                     comments,
                     timestamp,
+                    syncstate,
                     tableitems,
                     parentID,
                     channelID)
                 : string.Format(
-                                @"SELECT {0},{1},{2},{3},{4},{5},{6} FROM {7} WHERE {8}='{9}' ORDER BY {6} DESC LIMIT {10} OFFSET {11}",
+                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {6} DESC LIMIT {11} OFFSET {12}",
                     itemId,
                     parentID,
                     title,
@@ -490,6 +523,7 @@ namespace DataAPI.Database
                     duration,
                     comments,
                     timestamp,
+                    syncstate,
                     tableitems,
                     parentID,
                     channelID,
@@ -515,14 +549,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var vi = new VideoItemPOCO((string)reader[itemId],
-                                    (string)reader[parentID],
-                                    (string)reader[title],
-                                    Convert.ToInt32(reader[viewCount]),
-                                    Convert.ToInt32(reader[duration]),
-                                    Convert.ToInt32(reader[comments]),
-                                    (byte[])reader[thumbnail],
-                                    (DateTime)reader[timestamp]);
+                                VideoItemPOCO vi = CreateVideoItem(reader);
                                 res.Add(vi);
                             }
                             transaction.Commit();
@@ -715,13 +742,13 @@ namespace DataAPI.Database
 
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, tagIdF, tag);
 
+            var lst = new List<string>();
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
                     await connection.OpenAsync();
                     command.Connection = connection;
-
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
                         using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
@@ -734,14 +761,17 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                IChannelPOCO channel = await GetChannelAsync(reader[channelIdF].ToString());
-                                res.Add(channel);
+                                lst.Add(reader[channelIdF].ToString());
                             }
 
                             transaction.Commit();
                         }
                     }
                 }
+            }
+            foreach (string id in lst)
+            {
+                res.Add(await GetChannelAsync(id));
             }
 
             return res;
@@ -1045,50 +1075,6 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get channel uploads playlist
-        /// </summary>
-        /// <param name="id">channel ID</param>
-        /// <returns></returns>
-        public async Task<IPlaylistPOCO> GetUploadPlaylistAsync(string id)
-        {
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='uploads' LIMIT 1",
-                tableplaylists,
-                playlistChannelId,
-                id,
-                playlistSubTitle);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync();
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Commit();
-                                return null;
-                            }
-
-                            if (!await reader.ReadAsync())
-                            {
-                                transaction.Commit();
-                                throw new Exception(zap);
-                            }
-                            var pl = new PlaylistPOCO((string)reader[playlistID], null, null, null, (string)reader[playlistChannelId]);
-                            transaction.Commit();
-                            return pl;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
         ///     Get playlist items
         /// </summary>
         /// <param name="id">playlist ID</param>
@@ -1232,7 +1218,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' LIMIT 1",
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' LIMIT 1",
                 itemId,
                 parentID,
                 title,
@@ -1241,6 +1227,7 @@ namespace DataAPI.Database
                 comments,
                 thumbnail,
                 timestamp,
+                syncstate,
                 tableitems,
                 itemId,
                 id);
@@ -1267,14 +1254,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            var vi = new VideoItemPOCO((string)reader[itemId],
-                                (string)reader[parentID],
-                                (string)reader[title],
-                                Convert.ToInt32(reader[viewCount]),
-                                Convert.ToInt32(reader[duration]),
-                                Convert.ToInt32(reader[comments]),
-                                (byte[])reader[thumbnail],
-                                (DateTime)reader[timestamp]);
+                            VideoItemPOCO vi = CreateVideoItem(reader);
                             transaction.Commit();
                             return vi;
                         }
@@ -1360,20 +1340,7 @@ namespace DataAPI.Database
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        command.CommandText =
-                            string.Format(
-                                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
-                                tableitems,
-                                itemId,
-                                parentID,
-                                title,
-                                description,
-                                viewCount,
-                                duration,
-                                comments,
-                                thumbnail,
-                                timestamp);
-
+                        command.CommandText = itemsInsertString;
                         command.CommandType = CommandType.Text;
 
                         foreach (IVideoItem item in channel.ChannelItems)
@@ -1387,6 +1354,7 @@ namespace DataAPI.Database
                             command.Parameters.AddWithValue("@" + comments, item.Comments);
                             command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
                             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
                             await command.ExecuteNonQueryAsync();
                         }
@@ -1403,17 +1371,6 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelFullAsync(IChannel channel)
         {
-            //await InsertChannelItemsAsync(channel);
-            //foreach (IPlaylist playlist in channel.ChannelPlaylists)
-            //{
-            //    await InsertPlaylistAsync(playlist);
-            //    foreach (string item in playlist.PlItems)
-            //    {
-            //        await UpdatePlaylistAsync(playlist.ID, item, playlist.ChannelId);
-            //    }
-            //}
-
-
             using (var conn = new SQLiteConnection(dbConnection))
             {
                 await conn.OpenAsync();
@@ -1472,19 +1429,7 @@ namespace DataAPI.Database
 
                         #region Items
 
-                        command.CommandText =
-                            string.Format(
-                                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
-                                tableitems,
-                                itemId,
-                                parentID,
-                                title,
-                                description,
-                                viewCount,
-                                duration,
-                                comments,
-                                thumbnail,
-                                timestamp);
+                        command.CommandText = itemsInsertString;
 
                         foreach (IVideoItem item in channel.ChannelItems)
                         {
@@ -1497,6 +1442,7 @@ namespace DataAPI.Database
                             command.Parameters.AddWithValue("@" + comments, item.Comments);
                             command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
                             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
                             await command.ExecuteNonQueryAsync();
                         }
@@ -1588,21 +1534,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertItemAsync(IVideoItem item)
         {
-            string zap =
-                string.Format(
-                              @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9})",
-                    tableitems,
-                    itemId,
-                    parentID,
-                    title,
-                    description,
-                    viewCount,
-                    duration,
-                    comments,
-                    thumbnail,
-                    timestamp);
-
-            using (SQLiteCommand command = GetCommand(zap))
+            using (SQLiteCommand command = GetCommand(itemsInsertString))
             {
                 command.Parameters.AddWithValue("@" + itemId, item.ID);
                 command.Parameters.AddWithValue("@" + parentID, item.ParentID);
@@ -1613,6 +1545,7 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + comments, item.Comments);
                 command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
                 command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
                 await ExecuteNonQueryAsync(command);
             }

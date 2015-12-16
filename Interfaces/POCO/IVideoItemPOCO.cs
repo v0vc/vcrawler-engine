@@ -23,7 +23,7 @@ namespace Interfaces.POCO
         DateTime Timestamp { get; }
         string Title { get; }
         long ViewCount { get; }
-
+        byte SyncState { get; }
         #endregion
     }
 }

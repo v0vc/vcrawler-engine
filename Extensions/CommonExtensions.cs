@@ -128,6 +128,18 @@ namespace Extensions
             return true;
         }
 
+        public static byte[] GetStreamFromUrl(string url)
+        {
+            byte[] imageData;
+
+            using (var wc = new WebClient())
+            {
+                imageData = wc.DownloadData(url);
+            }
+
+            return imageData;
+        }
+
         public static string MakeValidFileName(this string name)
         {
             string regexSearch = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());

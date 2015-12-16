@@ -27,7 +27,8 @@ namespace DataAPI.POCO
             int duration,
             int comments,
             byte[] thumbnail,
-            DateTime timestamp)
+            DateTime timestamp,
+            byte syncstate)
         {
             ID = id;
             ParentID = parentid;
@@ -37,6 +38,7 @@ namespace DataAPI.POCO
             Comments = comments;
             Thumbnail = thumbnail;
             Timestamp = timestamp;
+            SyncState = syncstate;
         }
 
         public VideoItemPOCO(string id, SiteType site)
@@ -246,6 +248,7 @@ namespace DataAPI.POCO
         public DateTime Timestamp { get; private set; }
         public string Title { get; private set; }
         public long ViewCount { get; private set; }
+        public byte SyncState { get; private set; }
 
         #endregion
     }

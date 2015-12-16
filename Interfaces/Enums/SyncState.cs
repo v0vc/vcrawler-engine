@@ -3,10 +3,10 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 namespace Interfaces.Enums
 {
-    public enum SyncState
+    public enum SyncState : byte
     {
-        Notset, 
-        Added, 
-        Deleted
+        Notset = 0, 
+        Added = 1, 
+        Deleted = 2
     }
 }

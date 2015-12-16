@@ -52,6 +52,7 @@ CREATE TABLE `items` (
 `comments` INTEGER NOT NULL DEFAULT '0',
 `thumbnail` BLOB  NULL,
 `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+`syncstate` INTEGER NOT NULL CHECK (syncstate IN (0,1,2)) DEFAULT '0',
 FOREIGN KEY(`parentid`) REFERENCES channels(`id`) ON DELETE CASCADE
 );
 
@@ -69,12 +70,12 @@ INSERT INTO "tags" VALUES ('мото');
 INSERT INTO "tags" VALUES ('обзоры');
 INSERT INTO "tags" VALUES ('новости');
 INSERT INTO "tags" VALUES ('игры');
-INSERT INTO "tags" VALUES ('торрент');
 INSERT INTO "tags" VALUES ('смешное');
-INSERT INTO "tags" VALUES ('аудио');
-INSERT INTO "tags" VALUES ('видео');
-INSERT INTO "tags" VALUES ('фильмы');
-INSERT INTO "tags" VALUES ('техника');
+INSERT INTO "tags" VALUES ('топ');
+INSERT INTO "tags" VALUES ('мультики');
+INSERT INTO "tags" VALUES ('еда');
+INSERT INTO "tags" VALUES ('природа');
+INSERT INTO "tags" VALUES ('торрент');
 
 --таблица соответвий тэгов каналам
 CREATE TABLE `channeltags` (

@@ -122,24 +122,13 @@ namespace Models.Factories
                 Comments = poco.Comments, 
                 Thumbnail = poco.Thumbnail, 
                 Timestamp = poco.Timestamp, 
+                SyncState = (SyncState)poco.SyncState,
                 Site = poco.Site, 
                 DurationString = IntTostrTime(poco.Duration), 
                 DateTimeAgo = TimeAgo(poco.Timestamp), 
                 Subtitles = new ObservableCollection<ISubtitle>()
             };
             return vi;
-        }
-
-        public async Task DeleteItemAsync(string id)
-        {
-            try
-            {
-                await fb.DeleteItemAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
 
         public async Task FillDescriptionAsync(IVideoItem videoItem)
@@ -151,7 +140,6 @@ namespace Models.Factories
         public async Task<IVideoItem> GetVideoItemDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
             try
             {
                 IVideoItemPOCO poco = await fb.GetVideoItemAsync(id);

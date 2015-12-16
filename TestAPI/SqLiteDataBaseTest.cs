@@ -1,12 +1,9 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.ObjectModel;
-using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 using Autofac;
 using DataAPI;
@@ -27,7 +24,6 @@ namespace TestAPI
         private readonly ChannelFactory cf;
         private readonly CredFactory crf;
         private readonly SqLiteDatabase db;
-        private readonly CommonFactory factory;
         private readonly PlaylistFactory pf;
         private readonly SettingFactory sf;
         private readonly TagFactory tf;
@@ -39,6 +35,7 @@ namespace TestAPI
 
         public SqLiteDataBaseTest()
         {
+            CommonFactory factory;
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 factory = scope.Resolve<CommonFactory>();
@@ -56,13 +53,13 @@ namespace TestAPI
 
         #region Static Methods
 
-        private static void FillTestChannel(IChannel ch, IVideoItem v1, IVideoItem v2, ICred cred)
+        private static async void FillTestChannel(IChannel ch, IVideoItem v1, IVideoItem v2, ICred cred)
         {
             ch.ChannelItems = new ObservableCollection<IVideoItem>();
             ch.ID = "testch";
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
-            ch.Thumbnail = SiteHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png"));
+            ch.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
             ch.SiteAdress = cred.SiteAdress;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
@@ -78,12 +75,12 @@ namespace TestAPI
             cred.Autorization = 0;
         }
 
-        private static void FillTestPl(IPlaylist pl, IChannel ch)
+        private static async void FillTestPl(IPlaylist pl, IChannel ch)
         {
             pl.ID = "testID";
             pl.Title = "Плейлист №1";
             pl.SubTitle = "test subtitle";
-            pl.Thumbnail = SiteHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png"));
+            pl.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
             pl.ChannelId = ch.ID;
         }
 
@@ -98,7 +95,7 @@ namespace TestAPI
             tag.Title = "testag";
         }
 
-        private static void FillTestVideoItem(IVideoItem vi)
+        private static async void FillTestVideoItem(IVideoItem vi, SyncState state)
         {
             vi.ID = "vi";
             vi.ParentID = "testch";
@@ -107,20 +104,9 @@ namespace TestAPI
             vi.ViewCount = 123;
             vi.Duration = 321;
             vi.Comments = 123;
-            vi.Thumbnail = GetStreamFromUrl("https://i.ytimg.com/vi/29vzpOxZ_ys/1.jpg");
+            vi.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
             vi.Timestamp = DateTime.Now;
-        }
-
-        private static byte[] GetStreamFromUrl(string url)
-        {
-            byte[] imageData;
-
-            using (var wc = new WebClient())
-            {
-                imageData = wc.DownloadData(url);
-            }
-
-            return imageData;
+            vi.SyncState = state;
         }
 
         #endregion
@@ -170,9 +156,9 @@ namespace TestAPI
         public void TestCrudItems()
         {
             IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi);
+            FillTestVideoItem(vi, SyncState.Added);
             IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi2);
+            FillTestVideoItem(vi2, SyncState.Notset);
             vi2.ID = "vi2";
             ICred cred = crf.CreateCred();
             FillTestCred(cred);
@@ -258,10 +244,10 @@ namespace TestAPI
         public void TestCrudPlaylists()
         {
             IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi);
+            FillTestVideoItem(vi, SyncState.Added);
 
             IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi2);
+            FillTestVideoItem(vi2, SyncState.Deleted);
             vi2.ID = "vi2";
 
             ICred cred = crf.CreateCred();
@@ -368,10 +354,10 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi);
+            FillTestVideoItem(vi, SyncState.Notset);
 
             IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
-            FillTestVideoItem(vi2);
+            FillTestVideoItem(vi2, SyncState.Deleted);
             vi2.ID = "vi2";
 
             ICred cred = crf.CreateCred();

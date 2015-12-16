@@ -381,6 +381,7 @@ namespace Crawler.ViewModels
                     if (resy == DialogResult.OK)
                     {
                         YouPath = dlgy.FileName;
+                        FillYouHeader();
                     }
 
                     break;
