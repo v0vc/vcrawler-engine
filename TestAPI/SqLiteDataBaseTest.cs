@@ -3,6 +3,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Autofac;
@@ -160,6 +161,7 @@ namespace TestAPI
             IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2, SyncState.Notset);
             vi2.ID = "vi2";
+            var lst = new List<IVideoItem> { vi, vi2 };
             ICred cred = crf.CreateCred();
             FillTestCred(cred);
             IChannel ch = cf.CreateChannel(SiteType.YouTube);
@@ -221,6 +223,14 @@ namespace TestAPI
 
             // InsertItemAsync
             t = db.InsertItemAsync(vi);
+            Assert.IsTrue(!t.IsFaulted);
+
+            // UpdateItemSyncState
+            t = db.UpdateItemSyncState(vi.ID, SyncState.Deleted);
+            Assert.IsTrue(!t.IsFaulted);
+
+            // UpdateItemSyncState
+            t = db.UpdateItemSyncState(lst);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetVideoItemAsync

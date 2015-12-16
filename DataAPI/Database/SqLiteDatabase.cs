@@ -16,6 +16,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataAPI.POCO;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
 
@@ -1713,6 +1714,50 @@ namespace DataAPI.Database
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablesettings, setVal, newvalue, setKey, key);
             await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update SyncState, 0-Notset,1-Added,2-Deleted
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public async Task UpdateItemSyncState(string id, SyncState state)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, syncstate, (byte)state, itemId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update SyncState on group of items
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public async Task UpdateItemSyncState(IEnumerable<IVideoItem> items)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandType = CommandType.Text;
+
+                        foreach (IVideoItem item in items)
+                        {
+                            command.CommandText = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                                tableitems,
+                                syncstate,
+                                (byte)item.SyncState,
+                                itemId,
+                                item.ID);
+                            await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    transaction.Commit();
+                }
+            }
         }
 
         /// <summary>
