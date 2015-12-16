@@ -195,7 +195,7 @@ namespace DataAPI.Database
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
         }
 
-        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
+        private static IVideoItemPOCO CreateVideoItem(IDataRecord reader)
         {
             var vi = new VideoItemPOCO((string)reader[itemId],
                 (string)reader[parentID],
