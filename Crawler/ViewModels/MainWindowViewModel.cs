@@ -1053,7 +1053,7 @@ namespace Crawler.ViewModels
             IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(count);
             foreach (IVideoItem item in lst)
             {
-                channel.AddNewItem(item, SyncState.Notset);
+                channel.AddNewItem(item);
             }
             channel.IsInWork = false;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
@@ -1376,7 +1376,7 @@ namespace Crawler.ViewModels
             foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
-                SelectedChannel.AddNewItem(vi, SyncState.Notset);
+                SelectedChannel.AddNewItem(vi);
                 if (!pl.PlItems.Contains(id))
                 {
                     pl.PlItems.Add(id);
@@ -1628,7 +1628,7 @@ namespace Crawler.ViewModels
             Channels.Add(channel);
             foreach (IVideoItem item in lst)
             {
-                Channels[Channels.IndexOf(channel)].AddNewItem(item, SyncState.Notset);
+                Channels[Channels.IndexOf(channel)].AddNewItem(item);
             }
             lst.Clear();
             SelectedChannel = channel;

@@ -230,7 +230,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdateItemSyncState
-            t = db.UpdateItemSyncState(lst);
+            t = db.UpdateItemSyncState(lst, SyncState.Deleted);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetVideoItemAsync

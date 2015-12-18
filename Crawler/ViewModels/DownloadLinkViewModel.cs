@@ -179,7 +179,7 @@ namespace Crawler.ViewModels
                 vi.ParentID = null;
                 mv.SelectedChannel = mv.ServiceChannel;
                 mv.SelectedChannel.SelectedItem = vi;
-                mv.SelectedChannel.AddNewItem(vi, SyncState.Added);
+                mv.SelectedChannel.AddNewItem(vi);
                 await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
                 vi.SyncState = SyncState.Added;
             }

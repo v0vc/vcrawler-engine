@@ -104,7 +104,7 @@ namespace Crawler.ViewModels
                 ChannelItems.Clear();
                 foreach (IVideoItem item in lst)
                 {
-                    AddNewItem(item, SyncState.Notset);
+                    AddNewItem(item);
                 }
             }
         }
@@ -173,7 +173,7 @@ namespace Crawler.ViewModels
                         }
                         foreach (IVideoItem item in lst.Select(poco => mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
                         {
-                            AddNewItem(item, SyncState.Notset);
+                            AddNewItem(item);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         }
                     }
@@ -243,7 +243,7 @@ namespace Crawler.ViewModels
                     foreach (IVideoItemPOCO poco in lst)
                     {
                         IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
-                        AddNewItem(item, SyncState.Notset);
+                        AddNewItem(item);
                         item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
                         {
@@ -329,17 +329,15 @@ namespace Crawler.ViewModels
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
-        public List<string> AddedIds { get; set; }
-        public List<IVideoItem> DeletedIds { get; set; }
         public string DirPath { get; set; }
         public bool IsShowSynced { get; set; }
 
-        public void AddNewItem(IVideoItem item, SyncState syncState)
+        public void AddNewItem(IVideoItem item)
         {
             item.FileState = ItemState.LocalNo;
             item.IsHasLocalFile = false;
 
-            if (syncState == SyncState.Added)
+            if (item.SyncState == SyncState.Added)
             {
                 item.SyncState = SyncState.Added;
                 ChannelItems.Insert(0, item);

@@ -89,7 +89,7 @@ namespace Models.Factories
                     {
                         foreach (IVideoItemPOCO item in poco.Items)
                         {
-                            channel.AddNewItem(vf.CreateVideoItem(item), SyncState.Notset);
+                            channel.AddNewItem(vf.CreateVideoItem(item));
                         }
                     }
 
@@ -207,7 +207,7 @@ namespace Models.Factories
                     foreach (string id in lst)
                     {
                         IVideoItem vid = await vf.GetVideoItemDbAsync(id);
-                        channel.AddNewItem(vid, SyncState.Notset);
+                        channel.ChannelItems.Add(vid);
                         vid.IsHasLocalFileFound(dir);
                     }
                 }
@@ -443,24 +443,30 @@ namespace Models.Factories
                 string pluploadsid = sb.ToString();
 
                 // теоретически, может не сработать (добавили одно, удалили одно), но в общем случае - быстрее
-                int dbcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
-                int netCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(pluploadsid);
-                if (dbcount == netCount)
+                //int dbcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
+                //int netCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(pluploadsid);
+                //if (dbcount == netCount)
+                //{
+                //    return;
+                //}
+
+                // убираем признак предыдущей синхронизации
+                List<IVideoItem> preds = channel.ChannelItems.Where(x => x.SyncState == SyncState.Added).ToList();
+                if (preds.Any())
                 {
-                    return;
+                    preds.ForEach(x => x.SyncState = SyncState.Notset);
+                    await sql.UpdateItemSyncState(preds, SyncState.Notset);
                 }
 
                 List<string> netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
                 List<string> dbids = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
 
+
+
                 // удаляем из базы те, которых нет на канале
                 foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                 {
-                    IVideoItem ditem = vf.CreateVideoItem(await sql.GetVideoItemAsync(dbid));
-                    ditem.SyncState = SyncState.Deleted;
-                    channel.DeletedIds.Add(ditem);
-                    await sql.DeleteItemAsync(dbid);
-                    channel.CountNew -= 1;
+                    await sql.UpdateItemSyncState(dbid, SyncState.Deleted);
                 }
 
                 // cобираем новые
@@ -471,13 +477,13 @@ namespace Models.Factories
                     IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
                     foreach (IVideoItem vi in res.Select(poco => vf.CreateVideoItem(poco)).Where(vi => vi.ParentID == channel.ID))
                     {
-                        channel.AddNewItem(vi, SyncState.Added);
-                        await vi.InsertItemAsync();
-                        channel.AddedIds.Add(vi.ID);
+                        vi.SyncState = SyncState.Added;
+                        channel.AddNewItem(vi);
+                        await sql.InsertItemAsync(vi);
                     }
                 }
 
-                channel.ChannelItemsCount = channel.ChannelItems.Count;
+                channel.ChannelItemsCount = netids.Count;
             }
 
             channel.IsInWork = false;
@@ -621,7 +627,7 @@ namespace Models.Factories
                             continue;
                         }
 
-                        channel.AddNewItem(item, SyncState.Added);
+                        channel.AddNewItem(item);
                         await item.InsertItemAsync();
                         await playlist.UpdatePlaylistAsync(item.ID);
                     }

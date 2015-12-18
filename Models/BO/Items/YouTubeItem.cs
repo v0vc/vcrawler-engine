@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -35,12 +34,13 @@ namespace Models.BO.Items
 
         private string description;
         private double downloadPercentage;
+        private ItemState fileState;
         private bool isAudio;
         private bool isHasLocalFile;
         private bool isProxyReady;
         private byte[] largeThumb;
         private string logText;
-        private ItemState fileState;
+        private SyncState syncState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
 
@@ -56,6 +56,12 @@ namespace Models.BO.Items
         private YouTubeItem()
         {
         }
+
+        #endregion
+
+        #region Properties
+
+        public bool IsNewItem { get; set; }
 
         #endregion
 
@@ -212,6 +218,24 @@ namespace Models.BO.Items
 
         public int Duration { get; set; }
         public string DurationString { get; set; }
+
+        public ItemState FileState
+        {
+            get
+            {
+                return fileState;
+            }
+            set
+            {
+                if (value == fileState)
+                {
+                    return;
+                }
+                fileState = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string ID { get; set; }
 
         public bool IsHasLocalFile
@@ -231,7 +255,6 @@ namespace Models.BO.Items
             }
         }
 
-        public bool IsNewItem { get; set; }
         public bool IsSelected { get; set; }
 
         public byte[] LargeThumb
@@ -273,26 +296,25 @@ namespace Models.BO.Items
         public string ParentID { get; set; }
         public string ProxyUrl { get; set; }
         public SiteType Site { get; set; }
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
 
-        public ItemState FileState
+        public SyncState SyncState
         {
             get
             {
-                return fileState;
+                return syncState;
             }
             set
             {
-                if (value == fileState)
+                if (value == syncState)
                 {
                     return;
                 }
-                fileState = value;
+                syncState = value;
                 OnPropertyChanged();
             }
         }
 
-        public ObservableCollection<ISubtitle> Subtitles { get; set; }
-        public SyncState SyncState { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
@@ -314,7 +336,7 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            string options = "--no-check-certificate --console-title --no-call-home";
+            var options = "--no-check-certificate --console-title --no-call-home";
 
             if (isProxyReady)
             {
@@ -332,9 +354,9 @@ namespace Models.BO.Items
                     string.Format(
                                   isHd
                                       ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
-                        dir,
-                        MakeLink(),
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}", 
+                        dir, 
+                        MakeLink(), 
                         options);
             }
 
@@ -354,12 +376,12 @@ namespace Models.BO.Items
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
-                WindowStyle = ProcessWindowStyle.Hidden,
-                UseShellExecute = false,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
-                ErrorDialog = false,
+                WindowStyle = ProcessWindowStyle.Hidden, 
+                UseShellExecute = false, 
+                RedirectStandardOutput = true, 
+                RedirectStandardError = true, 
+                RedirectStandardInput = true, 
+                ErrorDialog = false, 
                 CreateNoWindow = true
             };
 

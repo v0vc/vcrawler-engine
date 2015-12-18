@@ -25,9 +25,11 @@ namespace Models.BO.Channels
 
         #region Fields
 
+        private List<string> added;
         private int channelItemsCount;
         private ChannelState channelState;
         private int countNew;
+        private List<string> deleted;
         private string filterVideoKey;
         private bool isInWork;
         private bool isShowSynced;
@@ -43,8 +45,6 @@ namespace Models.BO.Channels
         public YouChannel(ChannelFactory channelFactory)
         {
             this.channelFactory = channelFactory;
-            AddedIds = new List<string>();
-            DeletedIds = new List<IVideoItem>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
@@ -84,19 +84,9 @@ namespace Models.BO.Channels
             await channelFactory.FillChannelDescriptionAsync(this);
         }
 
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(int maxresult)
-        {
-            return await channelFactory.GetChannelItemsIdsListNetAsync(ID, maxresult);
-        }
-
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
         {
             return await channelFactory.GetChannelItemsNetAsync(this, maxresult);
-        }
-
-        public async Task<int> GetChannelPlaylistCountDbAsync()
-        {
-            return await channelFactory.GetChannelPlaylistCountDbAsync(ID);
         }
 
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
@@ -141,15 +131,6 @@ namespace Models.BO.Channels
                 return;
             }
             await FillChannelItemsDbAsync(dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
-
-            if (!DeletedIds.Any())
-            {
-                return;
-            }
-            foreach (IVideoItem deletedId in DeletedIds)
-            {
-                AddNewItem(deletedId, SyncState.Deleted);
-            }
         }
 
         public async Task SyncChannelPlaylistsAsync()
@@ -164,7 +145,15 @@ namespace Models.BO.Channels
 
         private bool FilterVideoBySynced(object item)
         {
-            if (!AddedIds.Any() && !DeletedIds.Any())
+            if (added == null)
+            {
+                added = ChannelItems.Where(x => x.SyncState == SyncState.Added).Select(x => x.ID).ToList();
+            }
+            if (deleted == null)
+            {
+                deleted = ChannelItems.Where(x => x.SyncState == SyncState.Deleted).Select(x => x.ID).ToList();
+            }
+            if (!added.Any() && !deleted.Any())
             {
                 return true;
             }
@@ -174,7 +163,7 @@ namespace Models.BO.Channels
                 return false;
             }
 
-            bool res = AddedIds.Contains(value.ID) || DeletedIds.Select(x => x.ID).Contains(value.ID);
+            bool res = added.Contains(value.ID) || deleted.Contains(value.ID);
             return res;
         }
 
@@ -202,7 +191,6 @@ namespace Models.BO.Channels
 
         #region IChannel Members
 
-        public List<string> AddedIds { get; private set; }
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
@@ -254,7 +242,6 @@ namespace Models.BO.Channels
             }
         }
 
-        public List<IVideoItem> DeletedIds { get; private set; }
         public string DirPath { get; set; }
 
         public string FilterVideoKey
@@ -388,13 +375,12 @@ namespace Models.BO.Channels
             }
         }
 
-        public void AddNewItem(IVideoItem item, SyncState syncState)
+        public void AddNewItem(IVideoItem item)
         {
-            item.SyncState = syncState;
             item.IsHasLocalFile = false;
             item.Site = Site;
 
-            if (syncState == SyncState.Added)
+            if (item.SyncState == SyncState.Added)
             {
                 ChannelItems.Insert(0, item);
                 CountNew += 1;

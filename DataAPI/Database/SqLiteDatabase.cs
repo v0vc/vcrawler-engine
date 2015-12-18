@@ -550,7 +550,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                VideoItemPOCO vi = CreateVideoItem(reader);
+                                IVideoItemPOCO vi = CreateVideoItem(reader);
                                 res.Add(vi);
                             }
                             transaction.Commit();
@@ -1255,7 +1255,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            VideoItemPOCO vi = CreateVideoItem(reader);
+                            IVideoItemPOCO vi = CreateVideoItem(reader);
                             transaction.Commit();
                             return vi;
                         }
@@ -1732,8 +1732,9 @@ namespace DataAPI.Database
         ///     Update SyncState on group of items
         /// </summary>
         /// <param name="items"></param>
+        /// <param name="state"></param>
         /// <returns></returns>
-        public async Task UpdateItemSyncState(IEnumerable<IVideoItem> items)
+        public async Task UpdateItemSyncState(IEnumerable<IVideoItem> items, SyncState state)
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
@@ -1749,7 +1750,7 @@ namespace DataAPI.Database
                             command.CommandText = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
                                 tableitems,
                                 syncstate,
-                                (byte)item.SyncState,
+                                (byte)state,
                                 itemId,
                                 item.ID);
                             await command.ExecuteNonQueryAsync();

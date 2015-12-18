@@ -14,7 +14,6 @@ namespace Interfaces.Models
     {
         #region Properties
 
-        List<string> AddedIds { get; }
         CookieContainer ChannelCookies { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
         ICollectionView ChannelItemsCollectionView { get; set; }
@@ -23,7 +22,6 @@ namespace Interfaces.Models
         ChannelState ChannelState { get; set; }
         ObservableCollection<ITag> ChannelTags { get; set; }
         int CountNew { get; set; }
-        List<IVideoItem> DeletedIds { get; }
         string DirPath { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
@@ -42,7 +40,7 @@ namespace Interfaces.Models
 
         #region Methods
 
-        void AddNewItem(IVideoItem item, SyncState syncState);
+        void AddNewItem(IVideoItem item);
 
         #endregion
     }
