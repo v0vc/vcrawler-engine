@@ -537,23 +537,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void FillSubtitles(object obj)
-        {
-            var item = obj as YouTubeItem;
-            if (item == null)
-            {
-                return;
-            }
-            try
-            {
-                await item.FillSubtitles();
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-            }
-        }
-
         private static void OpenDescription(object obj)
         {
             var item = obj as IVideoItem;
@@ -1066,6 +1049,23 @@ namespace Crawler.ViewModels
             channel.IsInWork = false;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             SetStatus(0);
+        }
+
+        private async void FillSubtitles(object obj)
+        {
+            var item = obj as YouTubeItem;
+            if (item == null)
+            {
+                return;
+            }
+            try
+            {
+                await item.FillSubtitles();
+            }
+            catch (Exception ex)
+            {
+                Info = ex.Message;
+            }
         }
 
         private bool FilterByCheckedTag(object item)
