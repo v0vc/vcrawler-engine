@@ -999,7 +999,17 @@ namespace Crawler.ViewModels
 
         private async Task FillChannels()
         {
-            IEnumerable<IChannel> lst = await GetChannelsListAsync(); // все каналы за раз
+            IEnumerable<IChannel> lst;
+            try
+            {
+                lst = await GetChannelsListAsync(); // все каналы за раз
+            }
+            catch (Exception ex)
+            {
+                Info = ex.Message;
+                return;
+            }
+            
             foreach (IChannel ch in lst)
             {
                 ch.DirPath = SettingsViewModel.DirPath;
@@ -1188,16 +1198,9 @@ namespace Crawler.ViewModels
         private async Task<IEnumerable<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
-            try
-            {
-                IEnumerable<IChannelPOCO> fbres = await df.GetChannelsListAsync();
-                lst.AddRange(fbres.Select(poco => cf.CreateChannel(poco)));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            IEnumerable<IChannelPOCO> fbres = await df.GetChannelsListAsync();
+            lst.AddRange(fbres.Select(poco => cf.CreateChannel(poco)));
+            return lst;
         }
 
         private async void MainMenuClick(object param)
