@@ -176,24 +176,18 @@ namespace Models.Factories
         {
             SubtitleFactory cf = commonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
-            try
+            IEnumerable<ISubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            res.AddRange(poco.Select(cf.CreateSubtitle));
+            if (res.Any())
             {
-                IEnumerable<ISubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
-                res.AddRange(poco.Select(cf.CreateSubtitle));
-                if (res.Any())
-                {
-                    return res;
-                }
-                ISubtitle chap = cf.CreateSubtitle();
-                chap.IsEnabled = false;
-                chap.Language = "Auto";
-                res.Add(chap);
                 return res;
             }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            ISubtitle chap = cf.CreateSubtitle();
+            chap.IsEnabled = false;
+            chap.Language = "Auto";
+            res.Add(chap);
+            return res;
+
         }
 
         public async Task InsertItemAsync(IVideoItem item)
