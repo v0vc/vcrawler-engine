@@ -4,9 +4,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -82,7 +80,8 @@ namespace Models.Factories
                         Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
                         Thumbnail = poco.Thumbnail,
-                        SiteAdress = poco.Site
+                        SiteAdress = poco.Site,
+                        CountNew = poco.Countnew
                     };
 
                     if (poco.Items != null)

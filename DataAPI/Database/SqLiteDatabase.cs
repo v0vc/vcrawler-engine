@@ -8,7 +8,6 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -50,25 +49,15 @@ namespace DataAPI.Database
         #region items
 
         private const string itemId = "id";
-
         private const string parentID = "parentid";
-
         private const string title = "title";
-
         private const string description = "description";
-
         private const string viewCount = "viewcount";
-
         private const string duration = "duration";
-
         private const string comments = "comments";
-
         private const string thumbnail = "thumbnail";
-
         private const string timestamp = "timestamp";
-
         private const string syncstate = "syncstate";
-
         private readonly string itemsInsertString =
             string.Format(
                           @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10})",
@@ -89,21 +78,27 @@ namespace DataAPI.Database
         #region channels
 
         private const string channelId = "id";
-
         private const string channelTitle = "title";
-
         private const string channelSubTitle = "subtitle";
-
         private const string channelThumbnail = "thumbnail";
-
         private const string channelSite = "site";
+        private const string newcount = "newcount";
+
+        private readonly string channelsInsertString =
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
+                tablechannels,
+                channelId,
+                channelTitle,
+                channelSubTitle,
+                channelThumbnail,
+                channelSite,
+                newcount);
 
         #endregion
 
         #region channeltags
 
         private const string tagIdF = "tagid";
-
         private const string channelIdF = "channelid";
 
         #endregion
@@ -111,13 +106,9 @@ namespace DataAPI.Database
         #region playlists
 
         private const string playlistID = "id";
-
         private const string playlistTitle = "title";
-
         private const string playlistSubTitle = "subtitle";
-
         private const string playlistThumbnail = "thumbnail";
-
         private const string playlistChannelId = "channelid";
 
         #endregion
@@ -125,9 +116,7 @@ namespace DataAPI.Database
         #region playlistitems
 
         private const string fPlaylistId = "playlistid";
-
         private const string fItemId = "itemid";
-
         private const string fChannelId = "channelid";
 
         #endregion
@@ -135,15 +124,10 @@ namespace DataAPI.Database
         #region credentials
 
         private const string credSite = "site";
-
         private const string credLogin = "login";
-
         private const string credPass = "pass";
-
         private const string credCookie = "cookie";
-
         private const string credExpired = "expired";
-
         private const string credAutorization = "autorization";
 
         #endregion
@@ -151,7 +135,6 @@ namespace DataAPI.Database
         #region settings
 
         private const string setKey = "key";
-
         private const string setVal = "val";
 
         #endregion
@@ -197,7 +180,7 @@ namespace DataAPI.Database
 
         private static IVideoItemPOCO CreateVideoItem(IDataRecord reader)
         {
-            var vi = new VideoItemPOCO((string)reader[itemId],
+            return new VideoItemPOCO((string)reader[itemId],
                 (string)reader[parentID],
                 (string)reader[title],
                 Convert.ToInt32(reader[viewCount]),
@@ -206,7 +189,40 @@ namespace DataAPI.Database
                 (byte[])reader[thumbnail],
                 (DateTime)reader[timestamp],
                 Convert.ToByte(reader[syncstate]));
-            return vi;
+        }
+
+        private static IChannelPOCO CreateChannel(IDataRecord reader)
+        {
+            return new ChannelPOCO((string)reader[channelId],
+                (string)reader[channelTitle],
+                (byte[])reader[channelThumbnail],
+                (string)reader[channelSite],
+                Convert.ToInt32(reader[newcount]));
+        }
+
+        private static ITagPOCO CreateTag(IDataRecord reader, string field)
+        {
+            return new TagPOCO((string)reader[field]);
+        }
+
+        private static IPlaylistPOCO CreatePlaylist(IDataRecord reader)
+        {
+            return new PlaylistPOCO((string)reader[playlistID],
+                (string)reader[playlistTitle],
+                (string)reader[playlistSubTitle],
+                (byte[])reader[playlistThumbnail],
+                (string)reader[playlistChannelId]);
+
+        }
+
+        private static ICredPOCO CreateCred(IDataRecord reader)
+        {
+            return new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
+        }
+
+        private static ISettingPOCO CreateSetting(IDataRecord reader)
+        {
+            return new SettingPOCO((string)reader[setKey], (string)reader[setVal]);
         }
 
         #endregion
@@ -395,7 +411,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var tag = new TagPOCO((string)reader[tagTitle]);
+                                var tag = CreateTag(reader, tagTitle);
                                 res.Add(tag);
                             }
 
@@ -415,11 +431,12 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<IChannelPOCO> GetChannelAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} WHERE {5}='{6}' LIMIT 1", 
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} WHERE {6}='{7}' LIMIT 1", 
                 channelId, 
                 channelTitle, 
                 channelThumbnail, 
-                channelSite, 
+                channelSite,
+                newcount,
                 tablechannels, 
                 channelId, 
                 id);
@@ -445,11 +462,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            var ch = new ChannelPOCO((string)reader[channelId],
-                                (string)reader[channelTitle],
-                                (byte[])reader[channelThumbnail],
-                                (string)reader[channelSite]);
-
+                            var ch = CreateChannel(reader);
                             transaction.Commit();
                             return ch;
                         }
@@ -679,11 +692,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var pl = new PlaylistPOCO((string)reader[playlistID],
-                                    (string)reader[playlistTitle],
-                                    (string)reader[playlistSubTitle],
-                                    (byte[])reader[playlistThumbnail],
-                                    (string)reader[playlistChannelId]);
+                                var pl = CreatePlaylist(reader);
                                 res.Add(pl);
                             }
 
@@ -870,11 +879,12 @@ namespace DataAPI.Database
         {
             var res = new List<IChannelPOCO>();
 
-            string zap = string.Format(@"SELECT {0},{1},{2},{3} FROM {4} ORDER BY {5} ASC", 
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} ORDER BY {6} ASC", 
                 channelId, 
                 channelTitle, 
                 channelThumbnail, 
-                channelSite, 
+                channelSite,
+                newcount,
                 tablechannels, 
                 channelTitle);
 
@@ -897,10 +907,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var ch = new ChannelPOCO((string)reader[channelId],
-                                    (string)reader[channelTitle],
-                                    (byte[])reader[channelThumbnail],
-                                    (string)reader[channelSite]);
+                                var ch = CreateChannel(reader);
                                 res.Add(ch);
                             }
 
@@ -941,7 +948,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var tag = new TagPOCO((string)reader[tagIdF]);
+                                var tag = CreateTag(reader, tagIdF);
                                 res.Add(tag);
                             }
 
@@ -983,7 +990,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            var cred = new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
+                            var cred = CreateCred(reader);
                             transaction.Commit();
                             return cred;
                         }
@@ -1019,7 +1026,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                var cred = new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
+                                var cred = CreateCred(reader);
                                 res.Add(cred);
                             }
 
@@ -1062,11 +1069,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            var pl = new PlaylistPOCO((string)reader[playlistID],
-                                (string)reader[playlistTitle],
-                                (string)reader[playlistSubTitle],
-                                (byte[])reader[playlistThumbnail],
-                                (string)reader[playlistChannelId]);
+                            var pl = CreatePlaylist(reader);
                             transaction.Commit();
                             return pl;
                         }
@@ -1203,7 +1206,7 @@ namespace DataAPI.Database
                                 throw new Exception(zap);
                             }
 
-                            var cred = new SettingPOCO((string)reader[setKey], (string)reader[setVal]);
+                            var cred = CreateSetting(reader);
                             transaction.Commit();
                             return cred;
                         }
@@ -1304,15 +1307,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelAsync(IChannel channel)
         {
-            string zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})", 
-                tablechannels, 
-                channelId, 
-                channelTitle, 
-                channelSubTitle, 
-                channelThumbnail, 
-                channelSite);
-
-            using (SQLiteCommand command = GetCommand(zap))
+            using (SQLiteCommand command = GetCommand(channelsInsertString))
             {
                 command.Parameters.AddWithValue("@" + channelId, channel.ID);
                 command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
@@ -1320,6 +1315,7 @@ namespace DataAPI.Database
                 command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                 command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
                 command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+                command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
                 await ExecuteNonQueryAsync(command);
             }
@@ -1383,14 +1379,7 @@ namespace DataAPI.Database
 
                         #region channel
 
-                        command.CommandText =
-                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                                tablechannels,
-                                channelId,
-                                channelTitle,
-                                channelSubTitle,
-                                channelThumbnail,
-                                channelSite);
+                        command.CommandText = channelsInsertString;
 
                         command.Parameters.AddWithValue("@" + channelId, channel.ID);
                         command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
@@ -1398,6 +1387,7 @@ namespace DataAPI.Database
                         command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                         command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
                         command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+                        command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
                         await command.ExecuteNonQueryAsync();
 

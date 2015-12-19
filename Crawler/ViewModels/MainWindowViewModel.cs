@@ -1561,7 +1561,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void ScrollChanged(object obj)
+        private void ScrollChanged(object obj)
         {
             var grid = obj as DataGrid;
             if (grid == null)

@@ -14,12 +14,13 @@ namespace DataAPI.POCO
     {
         #region Constructors
 
-        public ChannelPOCO(string id, string title, byte[] thumbnail, string site)
+        public ChannelPOCO(string id, string title, byte[] thumbnail, string site, int countnew)
         {
             ID = id;
             Title = title;
             Thumbnail = thumbnail;
             Site = site;
+            Countnew = countnew;
         }
 
         private ChannelPOCO()
@@ -58,8 +59,9 @@ namespace DataAPI.POCO
         public string SubTitle { get; private set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
-        public List<IPlaylistPOCO> Playlists { get; set; }
-        public List<IVideoItemPOCO> Items { get; set; }
+        public int Countnew { get; private set; }
+        public List<IPlaylistPOCO> Playlists { get; private set; }
+        public List<IVideoItemPOCO> Items { get; private set; }
 
         #endregion
     }
