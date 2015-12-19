@@ -187,6 +187,10 @@ namespace TestAPI
             t = db.RenameChannelAsync(ch.ID, "newname");
             Assert.IsTrue(!t.IsFaulted);
 
+            // UpdateChannelNewCountAsync
+            t = db.UpdateChannelNewCountAsync(ch.ID, 5);
+            Assert.IsTrue(!t.IsFaulted);
+
             // GetChannelAsync
             t = db.GetChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);

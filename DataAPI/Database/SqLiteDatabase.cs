@@ -1719,6 +1719,18 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Update Channel New Count
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public async Task UpdateChannelNewCountAsync(string id, int count)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, newcount, count, channelId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
         ///     Update SyncState on group of items
         /// </summary>
         /// <param name="items"></param>
