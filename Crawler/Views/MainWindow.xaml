@@ -833,28 +833,33 @@
                               >
                         <Expander.Content>
                             <Grid FlowDirection="LeftToRight">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition />
-                                    <ColumnDefinition Width="50" />
-                                </Grid.ColumnDefinitions>
-
                                 <ScrollViewer HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Visible" Height="150" >
                                     <TextBox Text="{Binding SelectedChannel.SelectedItem.LogText, Mode=OneWay}" 
                                              TextWrapping="Wrap" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                                              />
                                 </ScrollViewer>
-
-                                <TextBox Grid.Column="1" BorderBrush="Lavender" Width="Auto" Height="24" Margin="2,0,0,0"
-                                        Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                                        VerticalAlignment="Bottom" VerticalContentAlignment="Center"
-                                        >
+                            </Grid>
+                        </Expander.Content>
+                    
+                        <Expander.Header>
+                            <Grid HorizontalAlignment="{Binding Path=HorizontalAlignment, RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Mode=OneWayToSource}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Grid.Column="2" FlowDirection="LeftToRight" 
+                                             Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
+                                             Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                             VerticalContentAlignment="Center"
+                                             >
                                     <TextBox.Resources>
                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
                                             <VisualBrush.Visual>
-                                                <TextBlock FontStyle="Normal" Text="Filter" FontSize="13" />
+                                                <TextBlock FontStyle="Normal" Text="Filter" FontSize="16"/>
                                             </VisualBrush.Visual>
                                             <VisualBrush.Transform>
-                                                <ScaleTransform CenterX="500" ScaleX="0.99" ScaleY="0.89"/>
+                                                <ScaleTransform CenterX="20" CenterY="-5" ScaleX="0.8" ScaleY="0.8"/>
                                             </VisualBrush.Transform>
                                         </VisualBrush>
                                     </TextBox.Resources>
@@ -871,13 +876,8 @@
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>
+                                <Label Grid.Column="0" FontSize="10" Content="Log"/>
                             </Grid>
-                        </Expander.Content>
-                    
-                        <Expander.Header>
-                        <StackPanel>
-                            <Label FontSize="10" Content="Log"/>
-                        </StackPanel>
                     </Expander.Header>
                     </Expander>
                     
