@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -217,45 +218,6 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsDbAsync(string channelID, int count, int offset)
-        {
-            var lst = new List<IVideoItem>();
-            try
-            {
-                IEnumerable<IVideoItemPOCO> fbres = await sql.GetChannelItemsAsync(channelID, count, offset);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListDbAsync(string channelID)
-        {
-            try
-            {
-                return await sql.GetChannelItemsIdListDbAsync(channelID, 0, 0);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
-        {
-            try
-            {
-                return await you.GetChannelItemsIdsListNetAsync(channelID, maxResult);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(YouChannel channel, int maxresult)
         {
             var lst = new List<IVideoItem>();
@@ -455,14 +417,13 @@ namespace Models.Factories
                 {
                     preds.ForEach(x => x.SyncState = SyncState.Notset);
                     await sql.UpdateItemSyncState(preds, SyncState.Notset);
+                    await sql.UpdateChannelNewCountAsync(channel.ID, 0);
                 }
 
                 List<string> netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
-                List<string> dbids = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
+                List<string> dbids = (await sql.GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
 
-
-
-                // удаляем из базы те, которых нет на канале
+                // проставляем в базе признак того, что видео больше нет на канале
                 foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                 {
                     await sql.UpdateItemSyncState(dbid, SyncState.Deleted);
@@ -480,6 +441,12 @@ namespace Models.Factories
                         channel.AddNewItem(vi);
                         await sql.InsertItemAsync(vi);
                     }
+                }
+
+                // обновим инфу о количестве новых после синхронизации
+                if (channel.CountNew > 0)
+                {
+                    await sql.UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
                 }
 
                 channel.ChannelItemsCount = netids.Count;
