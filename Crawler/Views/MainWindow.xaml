@@ -9,7 +9,8 @@
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"        
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        xmlns:models="clr-namespace:Interfaces.Models;assembly=Interfaces"
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
@@ -139,7 +140,7 @@
                                             <DataGridTemplateColumn CanUserResize="False">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <StackPanel Margin="1">
+                                                        <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                                                             <StackPanel.OpacityMask>
                                                                 <VisualBrush Visual="{Binding ElementName=mask}" />
                                                             </StackPanel.OpacityMask>
@@ -164,7 +165,7 @@
                                                 </DataGridTemplateColumn.CellTemplate>
                                             </DataGridTemplateColumn>
 
-                                            <DataGridTemplateColumn CanUserResize="True" Width="*">
+                                            <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <TextBlock Text="{Binding Title, Mode=OneWay}" 
@@ -252,10 +253,7 @@
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
                                     <Setter Property="Background" Value="GreenYellow" />
-                                </DataTrigger>
-                                <!--<DataTrigger Binding="{Binding Path=IsDownloading, Mode=OneWay, UpdateSourceTrigger=PropertyChanged}" Value="True">
-                                    <Setter Property="Background" Value="PaleGreen" />
-                                </DataTrigger>-->                    
+                                </DataTrigger>                 
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>
@@ -264,7 +262,7 @@
                         <DataGridTemplateColumn CanUserResize="False">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
-                                    <StackPanel Margin="1">
+                                    <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                                         <StackPanel.OpacityMask>
                                             <VisualBrush Visual="{Binding ElementName=mask}" />
                                         </StackPanel.OpacityMask>
@@ -298,7 +296,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn CanUserResize="True" Width="*">
+                        <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Title, Mode=OneWay}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
@@ -306,7 +304,7 @@
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>
 
-                        <DataGridTemplateColumn CanUserResize="False" Width="50">
+                        <DataGridTemplateColumn CanUserResize="False" Width="50" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding CountNew, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
@@ -403,7 +401,7 @@
                                         </DataGrid.Resources>
 
                                         <DataGrid.Columns>
-                                            <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:ServiceChannelViewModel}">
+                                            <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:ServiceChannelViewModel, IsDesignTimeCreatable=False}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
                                                         <ComboBox ItemsSource="{Binding SupportedSites, Mode=OneWay}"
@@ -594,7 +592,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:BusyDecorator IsBusyIndicatorShowing="{Binding IsWorking}">
-                    <DataGrid x:Name="videoGrid" 
+                    <DataGrid x:Name="videoGrid"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
                               AutoGenerateColumns="False"
@@ -691,7 +689,7 @@
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Margin="1">
+                                        <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
                                             <StackPanel.OpacityMask>
                                                 <VisualBrush Visual="{Binding ElementName=mask}" />
                                             </StackPanel.OpacityMask>
@@ -734,7 +732,7 @@
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Grid>
+                                        <Grid d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
                                             <Grid.RowDefinitions>
                                                 <RowDefinition />
                                                 <RowDefinition />
@@ -745,17 +743,13 @@
                                                 </TextBlock.ToolTip>
                                             </TextBlock>
                                             <StackPanel Grid.Row="1" Orientation="Horizontal">
-
                                                 <TextBlock Text="{Binding DurationString}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="12"/>
-
                                                 <TextBlock Text="{Binding DateTimeAgo}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12">
                                                     <TextBlock.ToolTip>
                                                         <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
                                                     </TextBlock.ToolTip>
-                                            </TextBlock>
-
+                                                </TextBlock>
                                                 <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
-
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
@@ -776,7 +770,7 @@
                                                 >
                                             <Button.Template>
                                                 <ControlTemplate>
-                                                    <StackPanel Orientation="Vertical">
+                                                    <StackPanel Orientation="Vertical" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
                                                         <Image>
                                                             <Image.Style>
                                                                 <Style TargetType="{x:Type Image}">
@@ -907,7 +901,7 @@
                         </Grid.ColumnDefinitions>
                         
                         <GridSplitter Width="3"/>
-                        
+
                         <DataGrid Grid.Column="1" x:Name="plGrid"
                                   CanUserAddRows="False"
                                   CanUserDeleteRows="False"
@@ -948,7 +942,7 @@
                                 <DataGridTemplateColumn CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel Margin="1">
+                                            <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IPlaylist}">
                                                 <StackPanel.OpacityMask>
                                                     <VisualBrush Visual="{Binding ElementName=mask}" />
                                                 </StackPanel.OpacityMask>
@@ -973,7 +967,7 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn>
+                                <DataGridTemplateColumn d:DataContext="{d:DesignInstance Type=models:IPlaylist}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
