@@ -85,11 +85,9 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsCountNetAsync()
         {
-            var you = GetYouFabric();
-
             int res = await YouTubeSite.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
-            Assert.AreEqual(res, 8);
+            Assert.AreEqual(res, 6);
         }
 
         [TestMethod]
@@ -105,8 +103,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelNetAsync()
         {
-            var you = GetYouFabric();
-
             IChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
             Assert.AreEqual(res.Title, "Vlad RT");
@@ -115,8 +111,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelPlaylistNetAsync()
         {
-            var you = GetYouFabric();
-
             IEnumerable<IPlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
             Assert.IsTrue(res.Any());
@@ -125,7 +119,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelRelatedPlaylistsNetAsync()
         {
-            var you = GetYouFabric();
             IEnumerable<IPlaylistPOCO> lst = await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
             Assert.AreEqual(lst.Count(), 3);
         }
@@ -145,8 +138,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsCountNetAsync()
         {
-            var you = GetYouFabric();
-
             int res = await YouTubeSite.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
             int res2 = await YouTubeSite.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
@@ -157,8 +148,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsIdsListNetAsync()
         {
-            var you = GetYouFabric();
-
             IEnumerable<string> res = await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC", 0);
 
             Assert.IsTrue(res.Any());
@@ -177,8 +166,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistNetAsync()
         {
-            var you = GetYouFabric();
-
             IPlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
             Assert.AreEqual(res.Title, "Creating Windows Services");
@@ -203,7 +190,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetRelatedChannelsByIdAsync()
         {
-            var you = GetYouFabric();
             IEnumerable<IChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
             Assert.IsTrue(res.Any());
         }
@@ -213,7 +199,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IVideoItemPOCO res = await you.GetVideoItemNetAsync("9bZkp7q19f0"); // lHgIpxQac3w
+            IVideoItemPOCO res = await you.GetVideoItemNetAsync("lHgIpxQac3w"); // 
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -221,7 +207,6 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoSubtitlesByIdAsync()
         {
-            var you = GetYouFabric();
             IEnumerable<ISubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
             Assert.IsTrue(res.Any());
         }

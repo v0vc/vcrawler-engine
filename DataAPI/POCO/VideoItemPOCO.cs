@@ -142,7 +142,7 @@ namespace DataAPI.POCO
             Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 
             JToken stat = record.SelectToken("statistics.viewCount");
-            ViewCount = stat != null ? (stat.Value<int?>() ?? 0) : 0;
+            ViewCount = stat != null ? (stat.Value<long?>() ?? 0) : 0;
 
             JToken dur = record.SelectToken("contentDetails.duration");
             if (dur != null)
@@ -155,8 +155,9 @@ namespace DataAPI.POCO
                 Duration = 0;
             }
 
-            JToken comm = record.SelectToken("statistics.commentCount");
-            Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+            //JToken comm = record.SelectToken("statistics.commentCount");
+            //Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+            Comments = 0;
         }
 
         public async Task FillFieldsFromGetting(JToken record)
@@ -207,7 +208,7 @@ namespace DataAPI.POCO
             Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 
             JToken view = record.SelectToken("items[0].statistics.viewCount");
-            ViewCount = view != null ? (view.Value<int?>() ?? 0) : 0;
+            ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
 
             JToken dur = record.SelectToken("items[0].contentDetails.duration");
             if (dur != null)
@@ -220,8 +221,9 @@ namespace DataAPI.POCO
                 Duration = 0;
             }
 
-            JToken comm = record.SelectToken("items[0].statistics.commentCount");
-            Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+            //JToken comm = record.SelectToken("items[0].statistics.commentCount");
+            //Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+            Comments = 0;
 
             JToken pub = record.SelectToken("items[0].snippet.publishedAt");
             Timestamp = pub != null ? (pub.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;

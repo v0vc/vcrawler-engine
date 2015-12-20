@@ -552,7 +552,7 @@ namespace DataAPI.Videos
 
                 zap =
                     string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}", 
+                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}", 
                         url, 
                         ids, 
                         key, 
@@ -813,7 +813,7 @@ namespace DataAPI.Videos
 
                 string det =
                     string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}", 
+                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{3}", 
                         url, 
                         ids, 
                         key, 
@@ -923,7 +923,7 @@ namespace DataAPI.Videos
 
                 string det =
                     string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}", 
+                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}", 
                         url, 
                         ids, 
                         key, 
@@ -999,7 +999,7 @@ namespace DataAPI.Videos
 
             string zap =
                 string.Format(
-                              "{0}videos?&id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount,commentCount))&{3}", 
+                              "{0}videos?&id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount))&{3}", 
                     url, 
                     videoid, 
                     key, 
@@ -1019,7 +1019,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsAsync(List<string> ids)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsAsync(IEnumerable<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
 
@@ -1034,7 +1034,7 @@ namespace DataAPI.Videos
 
             string zap =
                 string.Format(
-                              "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount,commentCount),status(privacyStatus))&{3}", 
+                              "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}", 
                     url, 
                     res, 
                     key, 
@@ -1089,7 +1089,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(List<string> ids)
+        public async Task<IEnumerable<IVideoItemPOCO>> GetVideosListByIdsLiteAsync(IEnumerable<string> ids)
         {
             var lst = new List<IVideoItemPOCO>();
 
@@ -1269,7 +1269,7 @@ namespace DataAPI.Videos
 
                 string det =
                     string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount))&{3}", 
+                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{3}", 
                         url, 
                         ids, 
                         key, 
