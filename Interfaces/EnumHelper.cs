@@ -5,6 +5,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection;
 
 namespace Interfaces
@@ -12,6 +13,14 @@ namespace Interfaces
     public static class EnumHelper
     {
         #region Static Methods
+
+        public static string GetAttributeOfType(Enum value)
+        {
+            var attribute =
+                value.GetType().GetField(value.ToString()).GetCustomAttributes(typeof(DescriptionAttribute), false).SingleOrDefault() as
+                    DescriptionAttribute;
+            return attribute == null ? value.ToString() : attribute.Description;
+        }
 
         public static T GetValueFromDescription<T>(string description)
         {

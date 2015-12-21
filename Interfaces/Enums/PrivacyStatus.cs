@@ -7,13 +7,13 @@ using System.ComponentModel;
 
 namespace Interfaces.Enums
 {
-    public enum PrivacyStatus
+    public enum PrivacyStatus : byte
     {
         [Description("public")]
-        Public,
+        Public = 0,
         [Description("unlisted")]
-        Unlisted,
+        Unlisted = 1,
         [Description("private")]
-        Private
+        Private = 2
     }
 }

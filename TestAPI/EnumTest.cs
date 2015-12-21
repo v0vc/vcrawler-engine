@@ -20,6 +20,10 @@ namespace TestAPI
             Assert.AreEqual(PrivacyStatus.Private, EnumHelper.GetValueFromDescription<PrivacyStatus>("private"));
             Assert.AreEqual(PrivacyStatus.Public, EnumHelper.GetValueFromDescription<PrivacyStatus>("public"));
             Assert.AreEqual(PrivacyStatus.Unlisted, EnumHelper.GetValueFromDescription<PrivacyStatus>("unlisted"));
+
+            Assert.AreEqual("private", EnumHelper.GetAttributeOfType(PrivacyStatus.Private));
+            Assert.AreEqual("public", EnumHelper.GetAttributeOfType(PrivacyStatus.Public));
+            Assert.AreEqual("unlisted", EnumHelper.GetAttributeOfType(PrivacyStatus.Unlisted));
         }
 
         #endregion
