@@ -8,7 +8,7 @@ using System.Windows.Media.Imaging;
 
 namespace Extensions.Helpers
 {
-    public class ImageHelper
+    public static class ImageHelper
     {
         #region Static Methods
 

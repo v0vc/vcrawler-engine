@@ -62,18 +62,13 @@
     <Compile Include="POCO\TagPOCO.cs" />
     <Compile Include="POCO\VideoItemPOCO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SiteHelper.cs" />
     <Compile Include="Trackers\CommonTracker.cs" />
     <Compile Include="Trackers\RutrackerSite.cs" />
     <Compile Include="Trackers\TapochekSite.cs" />
     <Compile Include="Videos\YouTubeSite.cs" />
-    <Compile Include="WebClientEx.cs">
-      <SubType>Component</SubType>
-    </Compile>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <EmbeddedResource Include="Images\err404.png" />
     <Content Include="Schema\sqlite.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

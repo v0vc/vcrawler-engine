@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
 using System.Xml;
+using Extensions.Helpers;
 using HtmlAgilityPack;
 using Interfaces.Enums;
 using Interfaces.POCO;

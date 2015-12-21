@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -10,7 +11,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DataAPI
+namespace Extensions.Helpers
 {
     public static class SiteHelper
     {
@@ -36,7 +37,7 @@ namespace DataAPI
         {
             string res = null;
 
-            var cancelledOrError = false;
+            bool cancelledOrError = false;
 
             using (var client = new WebClient())
             {
@@ -98,25 +99,34 @@ namespace DataAPI
             }
             catch
             {
-                Stream b = Assembly.GetExecutingAssembly().GetManifestResourceStream("DataAPI.Images.err404.png");
-                return ReadFully(b);
+                Stream b = Assembly.GetExecutingAssembly().GetManifestResourceStream("Extensions.Images.err404.png");
+                return StreamHelper.ReadFully(b);
             }
 
             return imageData;
         }
 
-        public static byte[] ReadFully(Stream input)
+        public static bool IsUrlExist(string url)
         {
-            var buffer = new byte[16 * 1024];
-            using (var ms = new MemoryStream())
+            try
             {
-                int read;
-                while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+                var request = WebRequest.Create(url) as HttpWebRequest;
+                if (request != null)
                 {
-                    ms.Write(buffer, 0, read);
+                    request.Method = "HEAD";
+                    var response = request.GetResponse() as HttpWebResponse;
+                    if (response != null)
+                    {
+                        response.Close();
+                        return response.StatusCode == HttpStatusCode.OK;
+                    }
                 }
-                return ms.ToArray();
             }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
         #endregion

@@ -15,6 +15,16 @@ namespace Interfaces.Enums
         [Description("tapochek.net")]
         Tapochek,
         [Description("rutracker.org")]
-        RuTracker
+        RuTracker,
+        [Description("vimeo.com")]
+        Vimeo,
+        [Description("nnm-club.me")]
+        Nnmclub,
+        [Description("novafilm.tv")]
+        Novafilm,
+        [Description("livejournal.com")]
+        LiveJournal,
+        [Description("kinozal.tv")]
+        Kinozal
     }
 }

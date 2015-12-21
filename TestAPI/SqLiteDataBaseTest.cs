@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Autofac;
 using DataAPI;
 using DataAPI.Database;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

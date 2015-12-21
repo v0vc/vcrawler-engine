@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using Crawler.Common;
 using DataAPI;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -365,7 +366,7 @@ namespace Crawler.ViewModels
             {
                 Cred = cred;
                 Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcepic);
-                Thumbnail = SiteHelper.ReadFully(img);
+                Thumbnail = StreamHelper.ReadFully(img);
             }
 
             #endregion

@@ -5,7 +5,7 @@
 using System;
 using System.Net;
 
-namespace DataAPI
+namespace Extensions
 {
     public class WebClientEx : WebClient
     {
