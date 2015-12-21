@@ -18,7 +18,7 @@ namespace Interfaces.POCO
         string ID { get; }
         string ParentID { get; }
         SiteType Site { get; }
-        string Status { get; }
+        PrivacyStatus Status { get; }
         byte[] Thumbnail { get; }
         DateTime Timestamp { get; }
         string Title { get; }

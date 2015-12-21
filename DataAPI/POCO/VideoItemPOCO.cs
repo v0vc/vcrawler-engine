@@ -245,7 +245,7 @@ namespace DataAPI.POCO
         public string ID { get; private set; }
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
-        public string Status { get; set; }
+        public PrivacyStatus Status { get; set; }
         public byte[] Thumbnail { get; private set; }
         public DateTime Timestamp { get; private set; }
         public string Title { get; private set; }

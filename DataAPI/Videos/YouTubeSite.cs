@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DataAPI.POCO;
 using Extensions;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -24,9 +25,6 @@ namespace DataAPI.Videos
         private const int itemsPerPage = 50;
         private const string key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
         private const string printType = "prettyPrint=false";
-        private const string privacyDef = "other";
-        private const string privacyPub = "public";
-        private const string privacyUnList = "unlisted";
         private const string token = "nextPageToken";
         private const string url = "https://www.googleapis.com/youtube/v3/";
         private const string youChannel = "channel";
@@ -322,7 +320,8 @@ namespace DataAPI.Videos
                         continue;
                     }
                     var prstatus = pr.Value<string>();
-                    if (prstatus == privacyPub || prstatus == privacyUnList)
+                    if (prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Public)
+                        || prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Unlisted))
                     {
                         res.Add(id);
                     }
@@ -578,21 +577,8 @@ namespace DataAPI.Videos
                     }
 
                     JToken pr = pair.SelectToken("status.privacyStatus");
-                    if (pr == null)
-                    {
-                        item.Status = privacyDef;
-                    }
-
                     var prstatus = pr.Value<string>();
-                    if (prstatus == privacyPub || prstatus == privacyUnList)
-                    {
-                        item.Status = prstatus;
-                    }
-                    else
-                    {
-                        item.Status = privacyDef;
-                    }
-
+                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(prstatus);
                     item.FillFieldsFromDetails(pair);
                 }
 
@@ -608,7 +594,7 @@ namespace DataAPI.Videos
             }
             while (pagetoken != null);
 
-            return res.Where(x => x.Status != privacyDef).ToList();
+            return res.Where(x => x.Status != PrivacyStatus.Private).ToList();
         }
 
         /// <summary>
@@ -719,16 +705,17 @@ namespace DataAPI.Videos
                     }
 
                     var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
-                    if (item != null)
+                    if (item == null)
                     {
-                        JToken pr = pair.SelectToken("status.privacyStatus");
-                        if (pr == null)
-                        {
-                            continue;
-                        }
-
-                        item.Status = pr.Value<string>();
+                        continue;
                     }
+                    JToken pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                    {
+                        continue;
+                    }
+                    var status = pr.Value<string>();
+                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(status);
                 }
 
                 zap =
@@ -743,7 +730,7 @@ namespace DataAPI.Videos
             }
             while (pagetoken != null);
 
-            return res.Where(x => x.Status == privacyPub).Select(x => x.ID).ToList();
+            return res.Where(x => x.Status == PrivacyStatus.Public).Select(x => x.ID).ToList();
         }
 
         /// <summary>
@@ -797,7 +784,8 @@ namespace DataAPI.Videos
                     }
 
                     var prstatus = pr.Value<string>();
-                    if (prstatus != privacyPub && prstatus != privacyUnList)
+                    if (prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Public)
+                       || prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Unlisted))
                     {
                         continue;
                     }
@@ -1059,29 +1047,15 @@ namespace DataAPI.Videos
                 item.FillFieldsFromDetails(pair);
 
                 JToken pr = pair.SelectToken("status.privacyStatus");
-                if (pr == null)
-                {
-                    item.Status = privacyDef;
-                }
-
                 var prstatus = pr.Value<string>();
-
-                if (prstatus == privacyPub || prstatus == privacyUnList)
-                {
-                    item.Status = prstatus;
-                }
-                else
-                {
-                    item.Status = privacyDef;
-                }
-
+                item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(prstatus);
                 if (!lst.Select(x => x.ID).Contains(item.ID))
                 {
                     lst.Add(item);
                 }
             }
 
-            return lst.Where(x => x.Status != privacyDef).ToList();
+            return lst.Where(x => x.Status != PrivacyStatus.Private).ToList();
         }
 
         /// <summary>
