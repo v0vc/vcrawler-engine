@@ -249,10 +249,10 @@
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.InWork}">
-                                    <Setter Property="Background" Value="PaleGreen" />
+                                    <Setter Property="Background" Value="PaleTurquoise" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.HasDownload}">
-                                    <Setter Property="Background" Value="GreenYellow" />
+                                    <Setter Property="Background" Value="PaleGreen" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
                                     <Setter Property="Background" Value="LightSkyBlue" />
