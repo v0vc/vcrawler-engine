@@ -3,7 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using Interfaces;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

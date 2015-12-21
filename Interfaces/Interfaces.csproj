@@ -41,7 +41,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EnumHelper.cs" />
     <Compile Include="Enums\ChannelMenuItem.cs" />
     <Compile Include="Enums\ChannelState.cs" />
     <Compile Include="Enums\ItemState.cs" />

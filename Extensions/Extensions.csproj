@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="CommonExtensions.cs" />
     <Compile Include="EnumerableExtensions.cs" />
+    <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\ImageHelper.cs" />
     <Compile Include="Helpers\NetHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
