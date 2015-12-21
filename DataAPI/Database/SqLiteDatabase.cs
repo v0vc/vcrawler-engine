@@ -15,6 +15,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataAPI.POCO;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -965,9 +966,10 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="site">site ID</param>
         /// <returns></returns>
-        public async Task<ICredPOCO> GetCredAsync(string site)
+        public async Task<ICredPOCO> GetCredAsync(SiteType site)
         {
-            string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, site);
+            var url = EnumHelper.GetAttributeOfType(site);
+            string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, url);
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -982,7 +984,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Commit();
-                                throw new KeyNotFoundException("No item: " + site);
+                                throw new KeyNotFoundException("No item: " + url);
                             }
 
                             if (!await reader.ReadAsync())

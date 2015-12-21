@@ -6,6 +6,7 @@
 using System;
 using System.Threading.Tasks;
 using Extensions;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -116,7 +117,7 @@ namespace Models.Factories
                 Cookie = poco.Cookie,
                 Expired = poco.Expired,
                 Autorization = poco.Autorization,
-                Site = CommonExtensions.GetSiteType(poco.Site)
+                Site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site)
             };
             return cred;
         }
@@ -129,7 +130,7 @@ namespace Models.Factories
 
             try
             {
-                ICredPOCO poco = await fb.GetCredAsync(CommonExtensions.GetSiteAdress(site));
+                ICredPOCO poco = await fb.GetCredAsync(site);
                 ICred cred = cf.CreateCred(poco);
                 return cred;
             }

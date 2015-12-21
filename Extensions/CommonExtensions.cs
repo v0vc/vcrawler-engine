@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Threading;
-using Interfaces.Enums;
 
 namespace Extensions
 {
@@ -52,36 +51,6 @@ namespace Extensions
             // Assembly assembly = Assembly.GetExecutingAssembly();
             FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
             return "Crawler v" + fvi.FileVersion;
-        }
-
-        public static string GetSiteAdress(SiteType site)
-        {
-            switch (site)
-            {
-                case SiteType.YouTube:
-                    return "youtube.com";
-                case SiteType.Tapochek:
-                    return "tapochek.net";
-                case SiteType.RuTracker:
-                    return "rutracker.org";
-                default:
-                    return string.Empty;
-            }
-        }
-
-        public static SiteType GetSiteType(string site)
-        {
-            switch (site)
-            {
-                case "youtube.com":
-                    return SiteType.YouTube;
-                case "tapochek.net":
-                    return SiteType.Tapochek;
-                case "rutracker.org":
-                    return SiteType.RuTracker;
-                default:
-                    return SiteType.NotSet;
-            }
         }
 
         public static bool RenameFile(FileInfo oldFile, FileInfo newFile)

@@ -13,6 +13,7 @@ using DataAPI.Database;
 using DataAPI.Trackers;
 using DataAPI.Videos;
 using Extensions;
+using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -53,7 +54,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    channel = new YouChannel(this) { Site = site, SiteAdress = CommonExtensions.GetSiteAdress(site) };
+                    channel = new YouChannel(this) { Site = site, SiteAdress = EnumHelper.GetAttributeOfType(site) };
                     break;
             }
 
@@ -68,7 +69,7 @@ namespace Models.Factories
 
         public IChannel CreateChannel(IChannelPOCO poco)
         {
-            SiteType site = CommonExtensions.GetSiteType(poco.Site);
+            SiteType site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site);
             IChannel channel = null;
 
             switch (site)

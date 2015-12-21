@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using DataAPI.Videos;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -226,7 +227,7 @@ namespace TestAPI
         private async void FillCred()
         {
             var cf = fabric.CreateCredFactory();
-            ICredPOCO poco = await fabric.CreateSqLiteDatabase().GetCredAsync("youtube.com");
+            ICredPOCO poco = await fabric.CreateSqLiteDatabase().GetCredAsync(SiteType.YouTube);
             cred = cf.CreateCred(poco);
         }
 

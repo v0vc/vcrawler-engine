@@ -129,7 +129,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // GetCredAsync
-            t = db.GetCredAsync(cred.SiteAdress);
+            t = db.GetCredAsync(cred.Site);
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdateLoginAsync
