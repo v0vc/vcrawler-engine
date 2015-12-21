@@ -431,7 +431,7 @@ namespace Models.Factories
 
                 // cобираем новые
                 List<string> trueids = netids.Where(netid => !dbids.Contains(netid)).ToList();
-                IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids);
+                IEnumerable<List<string>> tchanks = trueids.SplitList();
                 foreach (List<string> list in tchanks)
                 {
                     IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом

@@ -48,7 +48,7 @@ namespace Crawler.ViewModels
             var text = Clipboard.GetData(DataFormats.Text) as string;
             if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
             {
-                text = CommonExtensions.RemoveSpecialCharacters(text);
+                text = text.RemoveSpecialCharacters();
             }
             Link = text;
         }
@@ -158,7 +158,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (!CommonExtensions.IsValidUrl(Link))
+            if (!Link.IsValidUrl())
             {
                 MessageBox.Show("Can't parse URL");
                 return;

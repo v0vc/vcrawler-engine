@@ -44,7 +44,7 @@ namespace Crawler.ViewModels
                 var text = Clipboard.GetData(DataFormats.Text) as string;
                 if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
                 {
-                    ChannelLink = CommonExtensions.RemoveSpecialCharacters(text);
+                    ChannelLink = text.RemoveSpecialCharacters();
                 }
                 else
                 {
