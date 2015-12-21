@@ -248,12 +248,15 @@
                         <Style TargetType="{x:Type DataGridRow}">
                             <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Downloading}">
+                                <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.InWork}">
                                     <Setter Property="Background" Value="PaleGreen" />
                                 </DataTrigger>
-                                <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
+                                <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.HasDownload}">
                                     <Setter Property="Background" Value="GreenYellow" />
-                                </DataTrigger>                 
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
+                                    <Setter Property="Background" Value="LightSkyBlue" />
+                                </DataTrigger>
                             </Style.Triggers>
                         </Style>
                     </DataGrid.RowStyle>

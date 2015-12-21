@@ -684,13 +684,13 @@ namespace Crawler.ViewModels
             }
 
             channel.DirPath = SettingsViewModel.DirPath;
-            channel.ChannelState = ChannelState.Added;
             Channels.Add(channel);
             SelectedChannel = channel;
-            channel.IsInWork = true;
+            channel.ChannelState = ChannelState.InWork;
             await cf.InsertChannelAsync(channel);
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
+            channel.ChannelState = ChannelState.Added;
             SetStatus(0);
         }
 
@@ -848,9 +848,14 @@ namespace Crawler.ViewModels
 
         private async Task DeleteItems()
         {
+            IChannel channel = SelectedChannel;
+            if (channel == null)
+            {
+                return;
+            }
             var sb = new StringBuilder();
 
-            foreach (IVideoItem item in SelectedChannel.SelectedItems)
+            foreach (IVideoItem item in channel.SelectedItems)
             {
                 if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
                 {
@@ -870,9 +875,9 @@ namespace Crawler.ViewModels
 
             if (boxResult == MessageBoxResult.OK)
             {
-                for (int i = SelectedChannel.SelectedItems.Count; i > 0; i--)
+                for (int i = channel.SelectedItems.Count; i > 0; i--)
                 {
-                    IVideoItem item = SelectedChannel.SelectedItems[i - 1];
+                    IVideoItem item = channel.SelectedItems[i - 1];
 
                     var fn = new FileInfo(item.LocalFilePath);
                     try
@@ -898,21 +903,27 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+            var channel = SelectedChannel as YouChannel;
+            if (channel == null)
+            {
+                return;
+            }
             switch (item)
             {
                 case VideoMenuItem.Audio:
 
-                    SelectedChannel.ChannelState = ChannelState.Downloading;
-                    await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
-
+                    channel.ChannelState = ChannelState.InWork;
+                    await channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true);
+                    channel.ChannelState = ChannelState.HasDownload;
                     break;
 
                 case VideoMenuItem.HD:
 
                     if (SettingsViewModel.IsFfmegExist())
                     {
-                        SelectedChannel.ChannelState = ChannelState.Downloading;
-                        await SelectedChannel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
+                        channel.ChannelState = ChannelState.InWork;
+                        await channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false);
+                        channel.ChannelState = ChannelState.HasDownload;
                     }
                     else
                     {
@@ -1050,13 +1061,13 @@ namespace Crawler.ViewModels
                 return;
             }
             SetStatus(1);
-            channel.IsInWork = true;
+            channel.ChannelState = ChannelState.InWork;
             IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(count);
             foreach (IVideoItem item in lst)
             {
                 channel.AddNewItem(item);
             }
-            channel.IsInWork = false;
+            channel.ChannelState = ChannelState.Notset;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             SetStatus(0);
         }
@@ -1559,8 +1570,9 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                SelectedChannel.ChannelState = ChannelState.Downloading;
+                SelectedChannel.ChannelState = ChannelState.InWork;
                 await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, false, false);
+                SelectedChannel.ChannelState = ChannelState.HasDownload;
             }
         }
 
@@ -1624,12 +1636,8 @@ namespace Crawler.ViewModels
 
         private async Task SubscribeOnRelated()
         {
-            if (SelectedChannel.IsInWork)
-            {
-                return;
-            }
             var channel = SelectedChannel as YouChannel;
-            if (channel == null)
+            if (channel == null || channel.ChannelState == ChannelState.InWork)
             {
                 return;
             }
@@ -1665,13 +1673,8 @@ namespace Crawler.ViewModels
 
         private async Task SyncChannelPlaylist()
         {
-            if (SelectedChannel.IsInWork)
-            {
-                return;
-            }
-
             var channel = SelectedChannel as YouChannel;
-            if (channel == null)
+            if (channel == null || channel.ChannelState == ChannelState.InWork)
             {
                 return;
             }

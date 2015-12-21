@@ -7,6 +7,7 @@ namespace Interfaces.Enums
     {
         Notset, 
         Added, 
-        Downloading
+        InWork,
+        HasDownload
     }
 }

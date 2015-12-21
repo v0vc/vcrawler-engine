@@ -438,9 +438,6 @@ namespace Crawler.ViewModels
                 YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), link.Split('/').Last());
             }
 
-            // ViewModel.Model.IsWorking = true;
-
-            // ViewModel.Model.Info = CommonExtensions.GetConsoleOutput(ViewModel.Model.YouPath, "--rm-cache-dir", false);
             if (CheckForInternetConnection(link))
             {
                 YouHeader = "Youtube-dl (update in progress..)";
@@ -454,7 +451,6 @@ namespace Crawler.ViewModels
             }
             else
             {
-                // ViewModel.Model.IsWorking = false;
                 MessageBox.Show(link + " is not available");
             }
         }

@@ -395,8 +395,7 @@ namespace Models.Factories
 
         public async Task SyncChannelAsync(IChannel channel)
         {
-            channel.IsInWork = true;
-
+            channel.ChannelState = ChannelState.InWork;
             if (channel is YouChannel)
             {
                 var sb = new StringBuilder(channel.ID);
@@ -422,6 +421,7 @@ namespace Models.Factories
 
                 List<string> netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
                 List<string> dbids = (await sql.GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
+                channel.CountNew = 0;
 
                 // проставляем в базе признак того, что видео больше нет на канале
                 foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
@@ -452,7 +452,7 @@ namespace Models.Factories
                 channel.ChannelItemsCount = netids.Count;
             }
 
-            channel.IsInWork = false;
+            channel.ChannelState = ChannelState.Notset;
         }
 
         // public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)

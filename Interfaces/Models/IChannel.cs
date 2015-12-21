@@ -25,7 +25,6 @@ namespace Interfaces.Models
         string DirPath { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
-        bool IsInWork { get; set; }
         bool IsShowSynced { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }

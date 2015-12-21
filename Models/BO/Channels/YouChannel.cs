@@ -31,7 +31,6 @@ namespace Models.BO.Channels
         private int countNew;
         private List<string> deleted;
         private string filterVideoKey;
-        private bool isInWork;
         private bool isShowSynced;
         private int playlistCount;
         private IVideoItem selectedItem;
@@ -265,19 +264,6 @@ namespace Models.BO.Channels
         }
 
         public string ID { get; set; }
-
-        public bool IsInWork
-        {
-            get
-            {
-                return isInWork;
-            }
-            set
-            {
-                isInWork = value;
-                OnPropertyChanged();
-            }
-        }
 
         public bool IsShowSynced
         {
