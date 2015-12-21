@@ -857,7 +857,7 @@ namespace Crawler.ViewModels
 
             foreach (IVideoItem item in channel.SelectedItems)
             {
-                if (item.IsHasLocalFile & !string.IsNullOrEmpty(item.LocalFilePath))
+                if (item.FileState == ItemState.LocalYes & !string.IsNullOrEmpty(item.LocalFilePath))
                 {
                     sb.Append(item.Title).Append(Environment.NewLine);
                 }
@@ -885,7 +885,6 @@ namespace Crawler.ViewModels
                         fn.Delete();
                         await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
                         item.LocalFilePath = string.Empty;
-                        item.IsHasLocalFile = false;
                         item.FileState = ItemState.LocalNo;
                         item.Subtitles.Clear();
                     }
@@ -1552,7 +1551,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            if (item.IsHasLocalFile)
+            if (item.FileState == ItemState.LocalYes)
             {
                 if (SettingsViewModel.IsMpcExist())
                 {

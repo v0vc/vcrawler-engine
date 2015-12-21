@@ -36,7 +36,6 @@ namespace Models.BO.Items
         private double downloadPercentage;
         private ItemState fileState;
         private bool isAudio;
-        private bool isHasLocalFile;
         private bool isProxyReady;
         private byte[] largeThumb;
         private string logText;
@@ -56,12 +55,6 @@ namespace Models.BO.Items
         private YouTubeItem()
         {
         }
-
-        #endregion
-
-        #region Properties
-
-        public bool IsNewItem { get; set; }
 
         #endregion
 
@@ -110,7 +103,6 @@ namespace Models.BO.Items
             DownloadPercentage = 0;
             taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
             FileState = ItemState.LocalNo;
-            IsHasLocalFile = false;
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -145,13 +137,11 @@ namespace Models.BO.Items
                 if (fn.Exists)
                 {
                     FileState = ItemState.LocalYes;
-                    IsHasLocalFile = true;
                     LocalFilePath = fn.FullName;
                 }
                 else
                 {
                     FileState = ItemState.LocalNo;
-                    IsHasLocalFile = false;
                 }
             }
             else
@@ -166,13 +156,11 @@ namespace Models.BO.Items
                 if (CommonExtensions.RenameFile(fn, fnn))
                 {
                     FileState = ItemState.LocalYes;
-                    IsHasLocalFile = true;
                     LocalFilePath = fnn.FullName;
                 }
                 else
                 {
                     FileState = ItemState.LocalNo;
-                    IsHasLocalFile = false;
                 }
             }
         }
@@ -237,24 +225,6 @@ namespace Models.BO.Items
         }
 
         public string ID { get; set; }
-
-        public bool IsHasLocalFile
-        {
-            get
-            {
-                return isHasLocalFile;
-            }
-            set
-            {
-                if (value == isHasLocalFile)
-                {
-                    return;
-                }
-                isHasLocalFile = value;
-                OnPropertyChanged();
-            }
-        }
-
         public bool IsSelected { get; set; }
 
         public byte[] LargeThumb
@@ -427,8 +397,7 @@ namespace Models.BO.Items
                 string cleartitle = Title.MakeValidFileName();
                 string pathvid = Path.Combine(dir, ParentID, string.Format("{0}.{1}", cleartitle, ext));
                 var fnvid = new FileInfo(pathvid);
-                IsHasLocalFile = fnvid.Exists;
-                if (IsHasLocalFile)
+                if (fnvid.Exists)
                 {
                     FileState = ItemState.LocalYes;
                     LocalFilePath = fnvid.FullName;
@@ -455,7 +424,7 @@ namespace Models.BO.Items
                 throw new Exception("Path to MPC not set");
             }
 
-            if (IsHasLocalFile)
+            if (FileState == ItemState.LocalYes)
             {
                 if (string.IsNullOrEmpty(LocalFilePath))
                 {
@@ -539,7 +508,9 @@ namespace Models.BO.Items
 
         private async void EncodeOnProcessExited(object sender, EventArgs e)
         {
-            string logdata = IsHasLocalFile ? string.Format("{0} DOWNLOADED!", Title) : string.Format("ERROR DOWNLOADING: {0}", ID);
+            string logdata = FileState == ItemState.LocalYes
+                ? string.Format("{0} DOWNLOADED!", Title)
+                : string.Format("ERROR DOWNLOADING: {0}", ID);
             await Log(logdata);
             var proc = sender as Process;
             if (proc == null)

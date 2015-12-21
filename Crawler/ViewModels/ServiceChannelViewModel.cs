@@ -334,7 +334,6 @@ namespace Crawler.ViewModels
         public void AddNewItem(IVideoItem item)
         {
             item.FileState = ItemState.LocalNo;
-            item.IsHasLocalFile = false;
 
             if (item.SyncState == SyncState.Added)
             {
