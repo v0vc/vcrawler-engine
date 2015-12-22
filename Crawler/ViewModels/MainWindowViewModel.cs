@@ -24,12 +24,12 @@ using Autofac;
 using Crawler.Common;
 using Crawler.Views;
 using DataAPI.Database;
+using DataAPI.POCO;
 using DataAPI.Trackers;
 using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO.Channels;
 using Models.BO.Items;
@@ -720,9 +720,9 @@ namespace Crawler.ViewModels
             if (res == DialogResult.OK)
             {
                 SqLiteDatabase fb = BaseFactory.CreateSqLiteDatabase();
-                List<IChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
+                List<ChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
                 var sb = new StringBuilder();
-                foreach (IChannelPOCO poco in lst)
+                foreach (ChannelPOCO poco in lst)
                 {
                     sb.Append(poco.Title).Append("|").Append(poco.ID).Append("|").Append(poco.Site).Append(Environment.NewLine);
                 }
@@ -1208,7 +1208,7 @@ namespace Crawler.ViewModels
         private async Task<IEnumerable<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
-            IEnumerable<IChannelPOCO> fbres = await df.GetChannelsListAsync();
+            IEnumerable<ChannelPOCO> fbres = await df.GetChannelsListAsync();
             lst.AddRange(fbres.Select(poco => cf.CreateChannel(poco)));
             return lst;
         }

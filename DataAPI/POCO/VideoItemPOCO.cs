@@ -12,12 +12,11 @@ using System.Xml;
 using Extensions.Helpers;
 using HtmlAgilityPack;
 using Interfaces.Enums;
-using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
 namespace DataAPI.POCO
 {
-    public class VideoItemPOCO : IVideoItemPOCO
+    public class VideoItemPOCO
     {
         #region Constructors
 

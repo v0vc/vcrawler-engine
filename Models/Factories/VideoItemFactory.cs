@@ -8,11 +8,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using DataAPI.Database;
+using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO.Items;
 
 namespace Models.Factories
@@ -109,7 +109,7 @@ namespace Models.Factories
             }
         }
 
-        public IVideoItem CreateVideoItem(IVideoItemPOCO poco)
+        public IVideoItem CreateVideoItem(VideoItemPOCO poco)
         {
             var vi = new YouTubeItem(this)
             {
@@ -142,7 +142,7 @@ namespace Models.Factories
             // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
-                IVideoItemPOCO poco = await fb.GetVideoItemAsync(id);
+                VideoItemPOCO poco = await fb.GetVideoItemAsync(id);
                 IVideoItem vi = CreateVideoItem(poco);
                 return vi;
             }
@@ -156,7 +156,7 @@ namespace Models.Factories
         {
             try
             {
-                IVideoItemPOCO poco = null;
+                VideoItemPOCO poco = null;
                 switch (site)
                 {
                     case SiteType.YouTube:
@@ -176,7 +176,7 @@ namespace Models.Factories
         {
             SubtitleFactory cf = commonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
-            IEnumerable<ISubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            IEnumerable<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
             res.AddRange(poco.Select(cf.CreateSubtitle));
             if (res.Any())
             {

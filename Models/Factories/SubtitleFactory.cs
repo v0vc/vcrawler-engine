@@ -2,8 +2,8 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using DataAPI.POCO;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -17,7 +17,7 @@ namespace Models.Factories
             return new Subtitle();
         }
 
-        public ISubtitle CreateSubtitle(ISubtitlePOCO poco)
+        public ISubtitle CreateSubtitle(SubtitlePOCO poco)
         {
             return new Subtitle { Language = poco.Language, IsEnabled = true };
         }

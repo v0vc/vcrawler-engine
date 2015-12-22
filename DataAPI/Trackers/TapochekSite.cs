@@ -16,7 +16,6 @@ using DataAPI.POCO;
 using Extensions.Helpers;
 using HtmlAgilityPack;
 using Interfaces.Models;
-using Interfaces.POCO;
 
 namespace DataAPI.Trackers
 {
@@ -125,9 +124,9 @@ namespace DataAPI.Trackers
         /// <param name="channel"></param>
         /// <param name="maxresult"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
+        public async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
-            var lst = new List<IVideoItemPOCO>();
+            var lst = new List<VideoItemPOCO>();
             string zap = string.Format("{0}={1}", _userUrl, channel.ID);
 
             string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
@@ -233,7 +232,7 @@ namespace DataAPI.Trackers
             return cc;
         }
 
-        public Task<IChannelPOCO> GetChannelNetAsync(string channelID)
+        public Task<ChannelPOCO> GetChannelNetAsync(string channelID)
         {
             throw new NotImplementedException();
         }

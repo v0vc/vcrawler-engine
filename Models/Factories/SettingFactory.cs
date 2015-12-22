@@ -6,8 +6,8 @@
 using System;
 using System.Threading.Tasks;
 using DataAPI.Database;
+using DataAPI.POCO;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -57,7 +57,7 @@ namespace Models.Factories
 
             try
             {
-                ISettingPOCO fbres = await fb.GetSettingAsync(key);
+                SettingPOCO fbres = await fb.GetSettingAsync(key);
                 ISetting set = sf.CreateSetting(fbres);
                 return set;
             }
@@ -93,7 +93,7 @@ namespace Models.Factories
             }
         }
 
-        private ISetting CreateSetting(ISettingPOCO poco)
+        private ISetting CreateSetting(SettingPOCO poco)
         {
             var set = new Setting(this) { Key = poco.Key, Value = poco.Value };
             return set;

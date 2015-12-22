@@ -10,13 +10,13 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using DataAPI.Database;
+using DataAPI.POCO;
 using DataAPI.Trackers;
 using DataAPI.Videos;
 using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO.Channels;
 
 namespace Models.Factories
@@ -67,7 +67,7 @@ namespace Models.Factories
             return channel;
         }
 
-        public IChannel CreateChannel(IChannelPOCO poco)
+        public IChannel CreateChannel(ChannelPOCO poco)
         {
             SiteType site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site);
             IChannel channel = null;
@@ -89,7 +89,7 @@ namespace Models.Factories
 
                     if (poco.Items != null)
                     {
-                        foreach (IVideoItemPOCO item in poco.Items)
+                        foreach (VideoItemPOCO item in poco.Items)
                         {
                             channel.AddNewItem(vf.CreateVideoItem(item));
                         }
@@ -97,7 +97,7 @@ namespace Models.Factories
 
                     if (poco.Playlists != null)
                     {
-                        foreach (IPlaylistPOCO playlist in poco.Playlists)
+                        foreach (PlaylistPOCO playlist in poco.Playlists)
                         {
                             channel.ChannelPlaylists.Add(pf.CreatePlaylist(playlist));
                         }
@@ -228,7 +228,7 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    IEnumerable<IVideoItemPOCO> youres =
+                    IEnumerable<VideoItemPOCO> youres =
                         await commonFactory.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
                     lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
@@ -236,7 +236,7 @@ namespace Models.Factories
 
                 case SiteType.Tapochek:
 
-                    IEnumerable<IVideoItemPOCO> tapres = await commonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
+                    IEnumerable<VideoItemPOCO> tapres = await commonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
@@ -250,7 +250,7 @@ namespace Models.Factories
 
         public async Task<IChannel> GetChannelNetAsync(string channelID, SiteType site)
         {
-            IChannelPOCO poco = null;
+            ChannelPOCO poco = null;
             try
             {
                 switch (site)
@@ -291,7 +291,7 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<IPlaylistPOCO> fbres = await sql.GetChannelPlaylistAsync(channelID);
+                IEnumerable<PlaylistPOCO> fbres = await sql.GetChannelPlaylistAsync(channelID);
                 lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
@@ -306,7 +306,7 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<IPlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
+                IEnumerable<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
                 lst.AddRange(fbres.Select(poco => pf.CreatePlaylist(poco)));
                 return lst;
             }
@@ -323,7 +323,7 @@ namespace Models.Factories
 
             try
             {
-                IEnumerable<ITagPOCO> fbres = await sql.GetChannelTagsAsync(id);
+                IEnumerable<TagPOCO> fbres = await sql.GetChannelTagsAsync(id);
                 lst.AddRange(fbres.Select(poco => tf.CreateTag(poco)));
                 return lst;
             }
@@ -335,7 +335,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(IChannel channel)
         {
-            IEnumerable<IChannelPOCO> related = null;
+            IEnumerable<ChannelPOCO> related = null;
             if (channel is YouChannel)
             {
                 related = await YouTubeSite.GetRelatedChannelsByIdAsync(channel.ID);
@@ -440,7 +440,7 @@ namespace Models.Factories
                 IEnumerable<List<string>> tchanks = trueids.SplitList();
                 foreach (List<string> list in tchanks)
                 {
-                    IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
+                    IEnumerable<VideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
                     foreach (IVideoItem vi in res.Select(poco => vf.CreateVideoItem(poco)).Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;

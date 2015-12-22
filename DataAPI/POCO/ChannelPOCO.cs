@@ -6,12 +6,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Extensions.Helpers;
-using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
 namespace DataAPI.POCO
 {
-    public class ChannelPOCO : IChannelPOCO
+    public class ChannelPOCO
     {
         #region Constructors
 
@@ -34,7 +33,7 @@ namespace DataAPI.POCO
 
         public static async Task<ChannelPOCO> CreatePoco(string id, JObject record)
         {
-            var ch = new ChannelPOCO { ID = id, Items = new List<IVideoItemPOCO>(), Playlists = new List<IPlaylistPOCO>() };
+            var ch = new ChannelPOCO { ID = id, Items = new List<VideoItemPOCO>(), Playlists = new List<PlaylistPOCO>() };
 
             JToken ttitle = record.SelectToken("items[0].snippet.title");
             ch.Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
@@ -61,8 +60,8 @@ namespace DataAPI.POCO
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
         public int Countnew { get; private set; }
-        public List<IPlaylistPOCO> Playlists { get; private set; }
-        public List<IVideoItemPOCO> Items { get; private set; }
+        public List<PlaylistPOCO> Playlists { get; private set; }
+        public List<VideoItemPOCO> Items { get; private set; }
 
         #endregion
     }

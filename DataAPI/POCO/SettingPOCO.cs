@@ -3,11 +3,10 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using Interfaces.POCO;
 
 namespace DataAPI.POCO
 {
-    public class SettingPOCO : ISettingPOCO
+    public class SettingPOCO
     {
         #region Constructors
 

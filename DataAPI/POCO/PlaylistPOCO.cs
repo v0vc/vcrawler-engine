@@ -7,12 +7,11 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Extensions.Helpers;
 using Interfaces.Enums;
-using Interfaces.POCO;
 using Newtonsoft.Json.Linq;
 
 namespace DataAPI.POCO
 {
-    public class PlaylistPOCO : IPlaylistPOCO
+    public class PlaylistPOCO
     {
         #region Constructors
 

@@ -9,10 +9,10 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Autofac;
+using DataAPI.POCO;
 using DataAPI.Trackers;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Models;
 using Models.BO.Channels;
@@ -104,7 +104,7 @@ namespace TestAPI
                 await ch.FillChannelCookieNetAsync();
                 //ch.StoreCookies();
             }
-            IEnumerable<IVideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
+            IEnumerable<VideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
                 await ch.FillChannelCookieNetAsync();

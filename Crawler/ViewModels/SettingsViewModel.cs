@@ -18,10 +18,10 @@ using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Properties;
 using Crawler.Views;
+using DataAPI.POCO;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.Factories;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
@@ -256,7 +256,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadCredsFromDb()
         {
-            IEnumerable<ICredPOCO> fbres = await baseFactory.CreateSqLiteDatabase().GetCredListAsync();
+            IEnumerable<CredPOCO> fbres = await baseFactory.CreateSqLiteDatabase().GetCredListAsync();
             SupportedCreds.AddRange(fbres.Select(poco => baseFactory.CreateCredFactory().CreateCred(poco)));
         }
 
@@ -319,7 +319,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadTagsFromDb()
         {
-            IEnumerable<ITagPOCO> fbres = (await baseFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
+            IEnumerable<TagPOCO> fbres = (await baseFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
             IEnumerable<ITag> lst = fbres.Select(poco => baseFactory.CreateTagFactory().CreateTag(poco));
             foreach (ITag tag in lst)
             {

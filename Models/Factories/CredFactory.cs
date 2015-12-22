@@ -5,12 +5,10 @@
 
 using System;
 using System.Threading.Tasks;
-using Extensions;
+using DataAPI.POCO;
 using Extensions.Helpers;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -108,7 +106,7 @@ namespace Models.Factories
             return new Cred(this);
         }
 
-        public ICred CreateCred(ICredPOCO poco)
+        public ICred CreateCred(CredPOCO poco)
         {
             var cred = new Cred(this)
             {
@@ -131,7 +129,7 @@ namespace Models.Factories
 
             try
             {
-                ICredPOCO poco = await fb.GetCredAsync(site);
+                CredPOCO poco = await fb.GetCredAsync(site);
                 ICred cred = cf.CreateCred(poco);
                 return cred;
             }

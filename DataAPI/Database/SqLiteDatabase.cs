@@ -16,10 +16,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataAPI.POCO;
 using Extensions.Helpers;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 
 namespace DataAPI.Database
 {
@@ -180,7 +178,7 @@ namespace DataAPI.Database
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
         }
 
-        private static IVideoItemPOCO CreateVideoItem(IDataRecord reader)
+        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
         {
             return new VideoItemPOCO((string)reader[itemId],
                 (string)reader[parentID],
@@ -193,7 +191,7 @@ namespace DataAPI.Database
                 Convert.ToByte(reader[syncstate]));
         }
 
-        private static IChannelPOCO CreateChannel(IDataRecord reader)
+        private static ChannelPOCO CreateChannel(IDataRecord reader)
         {
             return new ChannelPOCO((string)reader[channelId],
                 (string)reader[channelTitle],
@@ -202,12 +200,12 @@ namespace DataAPI.Database
                 Convert.ToInt32(reader[newcount]));
         }
 
-        private static ITagPOCO CreateTag(IDataRecord reader, string field)
+        private static TagPOCO CreateTag(IDataRecord reader, string field)
         {
             return new TagPOCO((string)reader[field]);
         }
 
-        private static IPlaylistPOCO CreatePlaylist(IDataRecord reader)
+        private static PlaylistPOCO CreatePlaylist(IDataRecord reader)
         {
             return new PlaylistPOCO((string)reader[playlistID],
                 (string)reader[playlistTitle],
@@ -217,12 +215,12 @@ namespace DataAPI.Database
 
         }
 
-        private static ICredPOCO CreateCred(IDataRecord reader)
+        private static CredPOCO CreateCred(IDataRecord reader)
         {
             return new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
         }
 
-        private static ISettingPOCO CreateSetting(IDataRecord reader)
+        private static SettingPOCO CreateSetting(IDataRecord reader)
         {
             return new SettingPOCO((string)reader[setKey], (string)reader[setVal]);
         }
@@ -389,9 +387,9 @@ namespace DataAPI.Database
         ///     Get all tags
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<ITagPOCO>> GetAllTagsAsync()
+        public async Task<IEnumerable<TagPOCO>> GetAllTagsAsync()
         {
-            var res = new List<ITagPOCO>();
+            var res = new List<TagPOCO>();
 
             string zap = string.Format(@"SELECT * FROM {0}", tabletags);
             using (SQLiteCommand command = GetCommand(zap))
@@ -431,7 +429,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id">channel ID</param>
         /// <returns></returns>
-        public async Task<IChannelPOCO> GetChannelAsync(string id)
+        public async Task<ChannelPOCO> GetChannelAsync(string id)
         {
             string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} WHERE {6}='{7}' LIMIT 1", 
                 channelId, 
@@ -513,9 +511,9 @@ namespace DataAPI.Database
         /// <param name="count"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
+        public async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
         {
-            var res = new List<IVideoItemPOCO>();
+            var res = new List<VideoItemPOCO>();
 
             string zap = count == 0
                 ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {6} DESC",
@@ -565,7 +563,7 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                IVideoItemPOCO vi = CreateVideoItem(reader);
+                                VideoItemPOCO vi = CreateVideoItem(reader);
                                 res.Add(vi);
                             }
                             transaction.Commit();
@@ -671,9 +669,9 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="channelID">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<IPlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
+        public async Task<IEnumerable<PlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
-            var res = new List<IPlaylistPOCO>();
+            var res = new List<PlaylistPOCO>();
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, channelID);
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -703,7 +701,7 @@ namespace DataAPI.Database
                     }
                 }
             }
-            foreach (IPlaylistPOCO poco in res)
+            foreach (PlaylistPOCO poco in res)
             {
                 poco.PlaylistItems.AddRange(await GetPlaylistItemsIdsListDbAsync(poco.ID));
             }
@@ -748,9 +746,9 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="tag">tag ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<IChannelPOCO>> GetChannelsByTagAsync(string tag)
+        public async Task<IEnumerable<ChannelPOCO>> GetChannelsByTagAsync(string tag)
         {
-            var res = new List<IChannelPOCO>();
+            var res = new List<ChannelPOCO>();
 
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, tagIdF, tag);
 
@@ -877,9 +875,9 @@ namespace DataAPI.Database
         ///     Get channels list
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<IChannelPOCO>> GetChannelsListAsync()
+        public async Task<IEnumerable<ChannelPOCO>> GetChannelsListAsync()
         {
-            var res = new List<IChannelPOCO>();
+            var res = new List<ChannelPOCO>();
 
             string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} ORDER BY {6} ASC", 
                 channelId, 
@@ -927,9 +925,9 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<ITagPOCO>> GetChannelTagsAsync(string id)
+        public async Task<IEnumerable<TagPOCO>> GetChannelTagsAsync(string id)
         {
-            var res = new List<ITagPOCO>();
+            var res = new List<TagPOCO>();
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, channelIdF, id);
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -967,7 +965,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="site">site ID</param>
         /// <returns></returns>
-        public async Task<ICredPOCO> GetCredAsync(SiteType site)
+        public async Task<CredPOCO> GetCredAsync(SiteType site)
         {
             var url = EnumHelper.GetAttributeOfType(site);
             string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, url);
@@ -1006,9 +1004,9 @@ namespace DataAPI.Database
         ///     Get credentials
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<ICredPOCO>> GetCredListAsync()
+        public async Task<IEnumerable<CredPOCO>> GetCredListAsync()
         {
-            var res = new List<ICredPOCO>();
+            var res = new List<CredPOCO>();
             string zap = string.Format("SELECT * FROM {0}", tablecredentials);
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1047,7 +1045,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id">playlist ID</param>
         /// <returns></returns>
-        public async Task<IPlaylistPOCO> GetPlaylistAsync(string id)
+        public async Task<PlaylistPOCO> GetPlaylistAsync(string id)
         {
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tableplaylists, playlistID, id);
             using (SQLiteCommand command = GetCommand(zap))
@@ -1087,9 +1085,9 @@ namespace DataAPI.Database
         /// <param name="id">playlist ID</param>
         /// <param name="channelID">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<IVideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
+        public async Task<IEnumerable<VideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
         {
-            var res = new List<IVideoItemPOCO>();
+            var res = new List<VideoItemPOCO>();
             var lst = new List<string>();
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'", 
                 tableplaylistitems, 
@@ -1183,7 +1181,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="key">setting ID</param>
         /// <returns></returns>
-        public async Task<ISettingPOCO> GetSettingAsync(string key)
+        public async Task<SettingPOCO> GetSettingAsync(string key)
         {
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablesettings, setKey, key);
             using (SQLiteCommand command = GetCommand(zap))
@@ -1223,7 +1221,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<IVideoItemPOCO> GetVideoItemAsync(string id)
+        public async Task<VideoItemPOCO> GetVideoItemAsync(string id)
         {
             string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' LIMIT 1",
                 itemId,
@@ -1261,7 +1259,7 @@ namespace DataAPI.Database
                                 transaction.Commit();
                                 throw new Exception(zap);
                             }
-                            IVideoItemPOCO vi = CreateVideoItem(reader);
+                            VideoItemPOCO vi = CreateVideoItem(reader);
                             transaction.Commit();
                             return vi;
                         }

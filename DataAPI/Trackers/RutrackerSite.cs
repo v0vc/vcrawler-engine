@@ -9,8 +9,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using DataAPI.POCO;
 using Interfaces.Models;
-using Interfaces.POCO;
 
 namespace DataAPI.Trackers
 {
@@ -52,7 +52,7 @@ namespace DataAPI.Trackers
             throw new NotImplementedException();
         }
 
-        public Task<IEnumerable<IVideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
+        public Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             throw new NotImplementedException();
         }
@@ -100,7 +100,7 @@ namespace DataAPI.Trackers
             return cc;
         }
 
-        public Task<IChannelPOCO> GetChannelNetAsync(string channelID)
+        public Task<ChannelPOCO> GetChannelNetAsync(string channelID)
         {
             throw new NotImplementedException();
         }

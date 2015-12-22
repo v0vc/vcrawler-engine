@@ -59,13 +59,6 @@
     <Compile Include="Models\ISetting.cs" />
     <Compile Include="Models\ITag.cs" />
     <Compile Include="Models\IVideoItem.cs" />
-    <Compile Include="POCO\IChannelPOCO.cs" />
-    <Compile Include="POCO\ISubtitlePOCO.cs" />
-    <Compile Include="POCO\ICredPOCO.cs" />
-    <Compile Include="POCO\IPlaylistPOCO.cs" />
-    <Compile Include="POCO\ISettingPOCO.cs" />
-    <Compile Include="POCO\ITagPOCO.cs" />
-    <Compile Include="POCO\IVideoItemPOCO.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup />

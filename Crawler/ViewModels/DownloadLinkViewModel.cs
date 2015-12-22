@@ -13,11 +13,11 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Crawler.Common;
+using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 
 namespace Crawler.ViewModels
 {
@@ -208,7 +208,7 @@ namespace Crawler.ViewModels
             }
 
             var cf = mv.BaseFactory.CreateSubtitleFactory();
-            IEnumerable<ISubtitlePOCO> res = (await YouTubeSite.GetVideoSubtitlesByIdAsync(youId)).ToList();
+            IEnumerable<SubtitlePOCO> res = (await YouTubeSite.GetVideoSubtitlesByIdAsync(youId)).ToList();
             if (res.Any())
             {
                 Subtitles.Clear();

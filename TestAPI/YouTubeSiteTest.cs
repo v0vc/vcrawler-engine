@@ -7,10 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
+using DataAPI.POCO;
 using DataAPI.Videos;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Models;
 using Models.Factories;
@@ -79,7 +79,7 @@ namespace TestAPI
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
             const int count = 2;
-            IEnumerable<IVideoItemPOCO> lst = await you.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
+            IEnumerable<VideoItemPOCO> lst = await you.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
             Assert.AreEqual(count, lst.Count());
         }
 
@@ -104,7 +104,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelNetAsync()
         {
-            IChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
+            ChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
 
             Assert.AreEqual(res.Title, "Vlad RT");
         }
@@ -112,7 +112,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelPlaylistNetAsync()
         {
-            IEnumerable<IPlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
+            IEnumerable<PlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
 
             Assert.IsTrue(res.Any());
         }
@@ -120,7 +120,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelRelatedPlaylistsNetAsync()
         {
-            IEnumerable<IPlaylistPOCO> lst = await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            IEnumerable<PlaylistPOCO> lst = await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
             Assert.AreEqual(lst.Count(), 3);
         }
 
@@ -131,7 +131,7 @@ namespace TestAPI
 
             var lst = new List<string> { "-wA6Qj4oF2E" };
 
-            IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(lst);
+            IEnumerable<VideoItemPOCO> res = await you.GetVideosListByIdsAsync(lst);
 
             Assert.AreEqual(res.Count(), 1);
         }
@@ -159,7 +159,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IEnumerable<IVideoItemPOCO> lst = await you.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+            IEnumerable<VideoItemPOCO> lst = await you.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(lst.Any());
         }
@@ -167,7 +167,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistNetAsync()
         {
-            IPlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            PlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
 
             Assert.AreEqual(res.Title, "Creating Windows Services");
 
@@ -183,7 +183,7 @@ namespace TestAPI
             var testindex = new[] { 2 };
             foreach (int i in testindex)
             {
-                IEnumerable<IVideoItemPOCO> lst = await you.GetPopularItemsAsync("ru", i);
+                IEnumerable<VideoItemPOCO> lst = await you.GetPopularItemsAsync("ru", i);
                 Assert.AreEqual(lst.Count(), i);
             }
         }
@@ -191,7 +191,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetRelatedChannelsByIdAsync()
         {
-            IEnumerable<IChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
+            IEnumerable<ChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
             Assert.IsTrue(res.Any());
         }
 
@@ -200,7 +200,7 @@ namespace TestAPI
         {
             var you = GetYouFabric();
 
-            IVideoItemPOCO res = await you.GetVideoItemNetAsync("lHgIpxQac3w"); // 
+            VideoItemPOCO res = await you.GetVideoItemNetAsync("lHgIpxQac3w"); // 
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -208,7 +208,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoSubtitlesByIdAsync()
         {
-            IEnumerable<ISubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
+            IEnumerable<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
             Assert.IsTrue(res.Any());
         }
 
@@ -219,7 +219,7 @@ namespace TestAPI
             var testindex = new[] { 5 };
             foreach (int i in testindex)
             {
-                IEnumerable<IVideoItemPOCO> lst = await you.SearchItemsAsync("russia", "RU", i);
+                IEnumerable<VideoItemPOCO> lst = await you.SearchItemsAsync("russia", "RU", i);
                 Assert.AreEqual(lst.Count(), i);
             }
         }
@@ -227,7 +227,7 @@ namespace TestAPI
         private async void FillCred()
         {
             var cf = fabric.CreateCredFactory();
-            ICredPOCO poco = await fabric.CreateSqLiteDatabase().GetCredAsync(SiteType.YouTube);
+            CredPOCO poco = await fabric.CreateSqLiteDatabase().GetCredAsync(SiteType.YouTube);
             cred = cf.CreateCred(poco);
         }
 

@@ -13,11 +13,10 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using Crawler.Common;
-using DataAPI;
+using DataAPI.POCO;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Interfaces.POCO;
 
 namespace Crawler.ViewModels
 {
@@ -159,7 +158,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<IVideoItemPOCO> lst =
+                    List<VideoItemPOCO> lst =
                         (await mainVm.BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
                     if (lst.Any())
                     {
@@ -238,10 +237,10 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    IEnumerable<IVideoItemPOCO> lst =
+                    IEnumerable<VideoItemPOCO> lst =
                         await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
-                    foreach (IVideoItemPOCO poco in lst)
+                    foreach (VideoItemPOCO poco in lst)
                     {
                         IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
                         AddNewItem(item);

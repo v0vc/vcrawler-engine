@@ -4,11 +4,10 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
-using Interfaces.POCO;
 
 namespace DataAPI.POCO
 {
-    public class CredPOCO : ICredPOCO
+    public class CredPOCO
     {
         #region Constructors
 

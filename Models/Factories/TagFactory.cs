@@ -5,8 +5,8 @@
 
 using System;
 using System.Threading.Tasks;
+using DataAPI.POCO;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -67,7 +67,7 @@ namespace Models.Factories
             return new Tag(this);
         }
 
-        public ITag CreateTag(ITagPOCO poco)
+        public ITag CreateTag(TagPOCO poco)
         {
             var tag = new Tag(this) { Title = poco.Title };
             return tag;

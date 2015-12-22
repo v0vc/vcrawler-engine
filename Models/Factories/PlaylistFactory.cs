@@ -7,9 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAPI.POCO;
 using DataAPI.Videos;
 using Interfaces.Models;
-using Interfaces.POCO;
 using Models.BO;
 
 namespace Models.Factories
@@ -53,7 +53,7 @@ namespace Models.Factories
             try
             {
                 var lst = new List<IVideoItem>();
-                IEnumerable<IVideoItemPOCO> fbres = await fb.GetPlaylistItemsAsync(id, channelID);
+                IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsAsync(id, channelID);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
@@ -96,7 +96,7 @@ namespace Models.Factories
             try
             {
                 var lst = new List<IVideoItem>();
-                IEnumerable<IVideoItemPOCO> fbres = await fb.GetPlaylistItemsNetAsync(playlist.ID);
+                IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsNetAsync(playlist.ID);
                 lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
                 return lst;
             }
@@ -142,7 +142,7 @@ namespace Models.Factories
             return pl;
         }
 
-        public IPlaylist CreatePlaylist(IPlaylistPOCO poco)
+        public IPlaylist CreatePlaylist(PlaylistPOCO poco)
         {
             if (poco == null)
             {
@@ -168,7 +168,7 @@ namespace Models.Factories
 
             try
             {
-                IPlaylistPOCO poco = await fb.GetPlaylistAsync(id);
+                PlaylistPOCO poco = await fb.GetPlaylistAsync(id);
                 IPlaylist pl = pf.CreatePlaylist(poco);
                 return pl;
             }
@@ -180,11 +180,10 @@ namespace Models.Factories
 
         public async Task<IPlaylist> GetPlaylistNetAsync(string id)
         {
-            var fb = commonFactory.CreateYouTubeSite();
             var pf = commonFactory.CreatePlaylistFactory();
             try
             {
-                IPlaylistPOCO fbres = await YouTubeSite.GetPlaylistNetAsync(id);
+                PlaylistPOCO fbres = await YouTubeSite.GetPlaylistNetAsync(id);
                 IPlaylist pl = pf.CreatePlaylist(fbres);
                 return pl;
             }
