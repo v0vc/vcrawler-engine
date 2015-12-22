@@ -363,6 +363,7 @@ namespace Models.BO.Channels
 
         public void AddNewItem(IVideoItem item)
         {
+            item.Site = Site;
             item.FileState = ItemState.LocalNo;
             item.Site = Site;
 

@@ -14,7 +14,6 @@ using DataAPI.Trackers;
 using DataAPI.Videos;
 using Extensions;
 using Extensions.Helpers;
-using Interfaces;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Interfaces.POCO;
@@ -84,6 +83,7 @@ namespace Models.Factories
                         SubTitle = poco.SubTitle, // .WordWrap(80);
                         Thumbnail = poco.Thumbnail,
                         SiteAdress = poco.Site,
+                        Site = SiteType.YouTube,
                         CountNew = poco.Countnew
                     };
 
@@ -209,6 +209,7 @@ namespace Models.Factories
                     foreach (string id in lst)
                     {
                         IVideoItem vid = await vf.GetVideoItemDbAsync(id);
+                        vid.Site = channel.Site; // TODO rework
                         channel.ChannelItems.Add(vid);
                         vid.IsHasLocalFileFound(dir);
                     }
