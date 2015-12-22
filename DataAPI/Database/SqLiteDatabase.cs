@@ -1734,6 +1734,24 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Update channel items state
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="idChannel"></param>
+        /// <returns></returns>
+        public async Task UpdateItemSyncState(SyncState state, string idChannel)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {1}='1'",
+                tableitems,
+                syncstate,
+                (byte)state,
+                parentID,
+                idChannel);
+
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
         ///     Update SyncState on group of items
         /// </summary>
         /// <param name="items"></param>

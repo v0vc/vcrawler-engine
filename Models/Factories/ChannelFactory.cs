@@ -418,7 +418,10 @@ namespace Models.Factories
                 if (preds.Any())
                 {
                     preds.ForEach(x => x.SyncState = SyncState.Notset);
-                    await sql.UpdateItemSyncState(preds, SyncState.Notset);
+                }
+                if (channel.CountNew > 0)
+                {
+                    await sql.UpdateItemSyncState(SyncState.Notset, channel.ID);
                     await sql.UpdateChannelNewCountAsync(channel.ID, 0);
                 }
 
