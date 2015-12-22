@@ -331,7 +331,6 @@ namespace Models.BO.Channels
         }
 
         public SiteType Site { get; set; }
-        public string SiteAdress { get; set; }
 
         public string SubTitle
         {

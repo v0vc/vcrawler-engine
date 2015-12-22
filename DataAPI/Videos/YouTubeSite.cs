@@ -139,7 +139,7 @@ namespace DataAPI.Videos
 
             ChannelPOCO ch = await ChannelPOCO.CreatePoco(channelID, jsvideo);
 
-            ch.Site = site;
+            ch.Site = SiteType.YouTube;
 
             return ch;
         }

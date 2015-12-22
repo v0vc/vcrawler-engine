@@ -1315,7 +1315,7 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
                 command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                 command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
-                command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+                command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
                 command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
                 await ExecuteNonQueryAsync(command);
@@ -1387,7 +1387,7 @@ namespace DataAPI.Database
                         command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
                         command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
                         command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
-                        command.Parameters.AddWithValue("@" + channelSite, channel.SiteAdress);
+                        command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
                         command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
                         await command.ExecuteNonQueryAsync();
@@ -1846,7 +1846,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="site"></param>
         /// <returns></returns>
-        public CookieContainer ReadCookies(string site)
+        public CookieContainer ReadCookies(SiteType site)
         {
             if (FileBase.DirectoryName == null)
             {
@@ -1854,7 +1854,7 @@ namespace DataAPI.Database
             }
 
             var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
-            var fn = new FileInfo(Path.Combine(folder.Name, site));
+            var fn = new FileInfo(Path.Combine(folder.Name, EnumHelper.GetAttributeOfType(site)));
             if (!fn.Exists)
             {
                 return null;

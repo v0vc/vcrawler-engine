@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Autofac;
 using DataAPI.POCO;
 using DataAPI.Trackers;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -131,7 +132,7 @@ namespace TestAPI
             if (c.FileBase.DirectoryName != null)
             {
                 var folder = new DirectoryInfo(Path.Combine(c.FileBase.DirectoryName, "Cookie"));
-                var fn = new FileInfo(Path.Combine(folder.FullName, ch.SiteAdress));
+                var fn = new FileInfo(Path.Combine(folder.FullName, EnumHelper.GetAttributeOfType(ch.Site)));
                 Assert.IsTrue(fn.Exists);
             }
         }

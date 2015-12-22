@@ -30,7 +30,6 @@ namespace Interfaces.Models
         IVideoItem SelectedItem { get; set; }
         IList<IVideoItem> SelectedItems { get; }
         SiteType Site { get; set; }
-        string SiteAdress { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }

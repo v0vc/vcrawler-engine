@@ -200,7 +200,7 @@ namespace DataAPI.Trackers
             var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
             req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
-            req.Host = channel.SiteAdress;
+            req.Host = EnumHelper.GetAttributeOfType(channel.Site);
             req.KeepAlive = true;
             string postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4",
                 Uri.EscapeDataString(Cred.Login),

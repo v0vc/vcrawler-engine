@@ -54,7 +54,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    channel = new YouChannel(this) { Site = site, SiteAdress = EnumHelper.GetAttributeOfType(site) };
+                    channel = new YouChannel(this) { Site = site };
                     break;
             }
 
@@ -69,7 +69,7 @@ namespace Models.Factories
 
         public IChannel CreateChannel(ChannelPOCO poco)
         {
-            SiteType site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site);
+            SiteType site = poco.Site;
             IChannel channel = null;
 
             switch (site)
@@ -82,8 +82,6 @@ namespace Models.Factories
                         Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
                         Thumbnail = poco.Thumbnail,
-                        SiteAdress = poco.Site,
-                        Site = SiteType.YouTube,
                         CountNew = poco.Countnew
                     };
 
@@ -114,11 +112,14 @@ namespace Models.Factories
                     break;
             }
 
+            
+
             if (channel == null)
             {
                 throw new Exception(poco.ID);
             }
 
+            channel.Site = site;
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
         }
@@ -167,7 +168,7 @@ namespace Models.Factories
         {
             try
             {
-                channel.ChannelCookies = sql.ReadCookies(channel.SiteAdress);
+                channel.ChannelCookies = sql.ReadCookies(channel.Site);
             }
             catch (Exception ex)
             {
@@ -242,7 +243,7 @@ namespace Models.Factories
                     break;
 
                 default:
-                    throw new Exception(channel.SiteAdress + " is not implemented yet");
+                    throw new Exception(EnumHelper.GetAttributeOfType(channel.Site) + " is not implemented yet");
             }
 
             return lst;

@@ -6,6 +6,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Extensions.Helpers;
+using Interfaces.Enums;
 using Newtonsoft.Json.Linq;
 
 namespace DataAPI.POCO
@@ -19,7 +20,7 @@ namespace DataAPI.POCO
             ID = id;
             Title = title;
             Thumbnail = thumbnail;
-            Site = site;
+            Site = EnumHelper.GetValueFromDescription<SiteType>(site);
             Countnew = countnew;
         }
 
@@ -55,7 +56,7 @@ namespace DataAPI.POCO
         #region IChannelPOCO Members
 
         public string ID { get; private set; }
-        public string Site { get; set; }
+        public SiteType Site { get; set; }
         public string SubTitle { get; private set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
