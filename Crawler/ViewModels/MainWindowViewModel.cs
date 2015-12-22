@@ -1388,21 +1388,27 @@ namespace Crawler.ViewModels
                 return;
             }
 
+            var channel = SelectedChannel as YouChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
             SetStatus(1);
 
-            SelectedChannel.ChannelItemsCollectionView.Filter = null;
+            channel.ChannelItemsCollectionView.Filter = null;
 
             List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
 
-            foreach (string id in pls.Where(id => !SelectedChannel.ChannelItems.Select(x => x.ID).Contains(id)))
+            foreach (string id in pls.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)))
             {
                 IVideoItem vi = await vf.GetVideoItemNetAsync(id, pl.Site);
-                SelectedChannel.AddNewItem(vi);
+                channel.AddNewItem(vi);
                 if (!pl.PlItems.Contains(id))
                 {
                     pl.PlItems.Add(id);
                 }
-                if (vi.ParentID == SelectedChannel.ID)
+                if (vi.ParentID == channel.ID)
                 {
                     await pl.UpdatePlaylistAsync(id);
                 }
@@ -1569,9 +1575,14 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                SelectedChannel.ChannelState = ChannelState.InWork;
+                var channel = SelectedChannel;
+                if (channel == null)
+                {
+                    return;
+                }
+                channel.ChannelState = ChannelState.InWork;
                 await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, false, false);
-                SelectedChannel.ChannelState = ChannelState.HasDownload;
+                channel.ChannelState = ChannelState.HasDownload;
             }
         }
 
@@ -1627,9 +1638,10 @@ namespace Crawler.ViewModels
 
         private async Task SubscribeOnPopular()
         {
-            if (SelectedChannel is ServiceChannelViewModel)
+            var channel = SelectedChannel as ServiceChannelViewModel;
+            if (channel != null)
             {
-                await AddNewChannel(SelectedChannel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+                await AddNewChannel(channel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
             }
         }
 
