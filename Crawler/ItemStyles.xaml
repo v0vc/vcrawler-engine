@@ -3,40 +3,6 @@
                     xmlns:local="clr-namespace:Crawler.Controls"
                     xmlns:converters="clr-namespace:Crawler.Converters">
 
-    <!--<Style TargetType="{x:Type DataGrid}">
-        <Setter Property="RowBackground" Value="#badeee"/>
-        <Setter Property="AlternationCount" Value="2" />
-        <Setter Property="AlternatingRowBackground" Value="#92cce5"/>
-    </Style>
-
-    <Style TargetType="{x:Type DataGridCell}">
-        <Style.Triggers>
-
-            <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="Transparent"/>
-                <Setter Property="BorderBrush" Value="Transparent"/>
-                <Setter Property="Foreground" Value="Black"/>
-            </Trigger>
-        </Style.Triggers>
-
-
-    </Style>
-
-    <Style TargetType="{x:Type DataGridRow}">
-
-        <Style.Triggers>
-            <Trigger Property="ItemsControl.AlternationIndex" Value="0">
-                <Setter Property="Background" Value="#badeee"></Setter>
-                <Setter Property="BorderBrush" Value="#badeee"></Setter>
-            </Trigger>
-            <Trigger Property="ItemsControl.AlternationIndex" Value="1">
-                <Setter Property="Background" Value="#92cce5"></Setter>
-                <Setter Property="BorderBrush" Value="#92cce5"></Setter>
-            </Trigger>
-
-        </Style.Triggers>
-    </Style>-->
-
     <Style x:Key="RoundButtonTemplate" TargetType="Button">
         <Setter Property="Background" Value="Lavender"/>
         <!--<Setter Property="Foreground" Value="White" />-->
@@ -106,5 +72,7 @@
 
     <converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
     <converters:MultiParamConverter x:Key="MultiParamConverter" />
-    <converters:SiteTypeToVisibilityConverter x:Key="SiteTypeToVisibilityConverter" />
+    <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    <converters:InvertBoolToVisibilityConverter x:Key="InvertBoolToVisibilityConverter" />
+    
 </ResourceDictionary>

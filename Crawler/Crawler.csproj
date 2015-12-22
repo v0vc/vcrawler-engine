@@ -85,9 +85,10 @@
     <Compile Include="Controls\BusyDecorator.cs" />
     <Compile Include="Controls\CustomDataGrid.cs" />
     <Compile Include="Controls\VisualTargetPresentationSource.cs" />
+    <Compile Include="Converters\BoolToVisibilityConverter.cs" />
     <Compile Include="Converters\InvertBooleanConverter.cs" />
+    <Compile Include="Converters\InvertBoolToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiParamConverter.cs" />
-    <Compile Include="Converters\SiteTypeToVisibilityConverter.cs" />
     <Compile Include="ViewModels\AddChannelViewModel.cs" />
     <Compile Include="ViewModels\AddNewTagViewModel.cs" />
     <Compile Include="ViewModels\AddTagViewModel.cs" />

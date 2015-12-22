@@ -92,7 +92,7 @@
                             </Grid.ColumnDefinitions>
                             <StackPanel>
                                 <TextBox Text="{Binding YouPath}" VerticalAlignment="Center" FontSize="14" 
-                                    Margin="0,0" VerticalContentAlignment="Center" IsReadOnly="True"
+                                    Margin="0,6,0,0" VerticalContentAlignment="Center" IsReadOnly="True" Height="25"
                                     >
                                     <TextBox.Resources>
                                         <VisualBrush x:Key="HelpBrush" TileMode="None" Opacity="0.4" Stretch="None" AlignmentX="Left" AlignmentY="Bottom">
@@ -117,7 +117,7 @@
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>
-                                <ProgressBar Value="{Binding PrValue}" Height="10"/>
+                                <ProgressBar Value="{Binding PrValue}" Height="5" Visibility="{Binding IsUpdateButtonEnable, Converter={StaticResource InvertBoolToVisibilityConverter}}"/>
                             </StackPanel>
                             
                             <Button Grid.Column="1" Command="{Binding UpdateYouDlCommand, Mode=OneTime}" Height="25" Margin="10,0,0,0" IsEnabled="{Binding IsUpdateButtonEnable}">
