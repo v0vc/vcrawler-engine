@@ -63,6 +63,8 @@ namespace Crawler.ViewModels
         private RelayCommand updateYouDlCommand;
         private string youHeader;
         private string youPath;
+        private double prValue;
+        private bool isUpdateButtonEnable = true;
 
         #endregion
 
@@ -79,6 +81,32 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Properties
+
+        public bool IsUpdateButtonEnable
+        {
+            get
+            {
+                return isUpdateButtonEnable;
+            }
+            set
+            {
+                isUpdateButtonEnable = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public double PrValue
+        {
+            get
+            {
+                return prValue;
+            }
+            private set
+            {
+                prValue = value;
+                OnPropertyChanged();
+            }
+        }
 
         public RelayCommand AddNewTagCommand
         {
@@ -440,6 +468,7 @@ namespace Crawler.ViewModels
 
             if (CheckForInternetConnection(link))
             {
+                IsUpdateButtonEnable = false;
                 YouHeader = "Youtube-dl (update in progress..)";
 
                 using (var client = new WebClient())
@@ -467,11 +496,10 @@ namespace Crawler.ViewModels
 
         private void ClientDownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
+            IsUpdateButtonEnable = true;
+            PrValue = 0;
             YouHeader = string.Format("{0} ({1})", youheader, CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim());
 
-            // ViewModel.Model.PrValue = 0;
-            // ViewModel.Model.IsWorking = false;
-            // ViewModel.Model.Info = e.Error == null ? "Youtube-dl has been updated" : e.Error.InnerException.Message;
             var webClient = sender as WebClient;
             if (webClient == null)
             {
@@ -485,8 +513,7 @@ namespace Crawler.ViewModels
         {
             double bytesIn = double.Parse(e.BytesReceived.ToString(CultureInfo.InvariantCulture));
             double totalBytes = double.Parse(e.TotalBytesToReceive.ToString(CultureInfo.InvariantCulture));
-
-            // ViewModel.Model.PrValue = bytesIn / totalBytes * 100;
+            PrValue = bytesIn / totalBytes * 100;
         }
 
         #endregion
