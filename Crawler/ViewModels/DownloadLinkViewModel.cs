@@ -18,6 +18,7 @@ using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
+using Models.Factories;
 
 namespace Crawler.ViewModels
 {
@@ -171,7 +172,7 @@ namespace Crawler.ViewModels
 
             if (IsYouTube)
             {
-                IVideoItem vi = await mv.BaseFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
+                IVideoItem vi = await CommonFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
                 foreach (ISubtitle subtitle in Subtitles.Where(subtitle => subtitle.IsChecked))
                 {
                     vi.Subtitles.Add(subtitle);
@@ -207,7 +208,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var cf = mv.BaseFactory.CreateSubtitleFactory();
+            var cf = CommonFactory.CreateSubtitleFactory();
             IEnumerable<SubtitlePOCO> res = (await YouTubeSite.GetVideoSubtitlesByIdAsync(youId)).ToList();
             if (res.Any())
             {

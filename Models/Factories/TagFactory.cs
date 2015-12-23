@@ -15,16 +15,16 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly CommonFactory commonFactory;
+        //private readonly CommonFactory commonFactory;
 
         #endregion
 
         #region Constructors
 
-        public TagFactory(CommonFactory commonFactory)
-        {
-            this.commonFactory = commonFactory;
-        }
+        //public TagFactory(CommonFactory commonFactory)
+        //{
+        //    this.commonFactory = commonFactory;
+        //}
 
         #endregion
 
@@ -32,7 +32,7 @@ namespace Models.Factories
 
         public async Task DeleteTagAsync(string tag)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
 
             // var fb = ServiceLocator.SqLiteDatabase;
             try
@@ -47,7 +47,7 @@ namespace Models.Factories
 
         public async Task InsertTagAsync(ITag tag)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);

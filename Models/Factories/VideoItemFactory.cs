@@ -21,18 +21,18 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly CommonFactory commonFactory;
-        private readonly SqLiteDatabase fb;
+        //private readonly CommonFactory commonFactory;
+        //private readonly SqLiteDatabase fb;
 
-        #endregion
+        //#endregion
 
-        #region Constructors
+        //#region Constructors
 
-        public VideoItemFactory(CommonFactory commonFactory)
-        {
-            this.commonFactory = commonFactory;
-            fb = commonFactory.CreateSqLiteDatabase();
-        }
+        //public VideoItemFactory(CommonFactory commonFactory)
+        //{
+        //    this.commonFactory = commonFactory;
+        //    fb = CommonFactory.CreateSqLiteDatabase();
+        //}
 
         #endregion
 
@@ -133,7 +133,7 @@ namespace Models.Factories
 
         public async Task FillDescriptionAsync(IVideoItem videoItem)
         {
-            string res = await fb.GetVideoItemDescriptionAsync(videoItem.ID);
+            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(videoItem.ID);
             videoItem.Description = res.WordWrap(150);
         }
 
@@ -142,7 +142,7 @@ namespace Models.Factories
             // var fb = ServiceLocator.SqLiteDatabase;
             try
             {
-                VideoItemPOCO poco = await fb.GetVideoItemAsync(id);
+                VideoItemPOCO poco = await CommonFactory.CreateSqLiteDatabase().GetVideoItemAsync(id);
                 IVideoItem vi = CreateVideoItem(poco);
                 return vi;
             }
@@ -160,7 +160,7 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await commonFactory.CreateYouTubeSite().GetVideoItemNetAsync(id);
+                        poco = await CommonFactory.CreateYouTubeSite().GetVideoItemNetAsync(id);
                         break;
                 }
                 IVideoItem vi = CreateVideoItem(poco);
@@ -174,7 +174,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
-            SubtitleFactory cf = commonFactory.CreateSubtitleFactory();
+            SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
             IEnumerable<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
             res.AddRange(poco.Select(cf.CreateSubtitle));
@@ -194,7 +194,7 @@ namespace Models.Factories
         {
             try
             {
-                await fb.InsertItemAsync(item);
+                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(item);
             }
             catch (Exception ex)
             {

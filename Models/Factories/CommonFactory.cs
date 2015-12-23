@@ -10,11 +10,11 @@ using DataAPI.Videos;
 
 namespace Models.Factories
 {
-    public class CommonFactory
+    public static class CommonFactory
     {
         #region Methods
 
-        public ChannelFactory CreateChannelFactory()
+        public static ChannelFactory CreateChannelFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -22,7 +22,7 @@ namespace Models.Factories
             }
         }
 
-        public CredFactory CreateCredFactory()
+        public static CredFactory CreateCredFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -30,7 +30,7 @@ namespace Models.Factories
             }
         }
 
-        public PlaylistFactory CreatePlaylistFactory()
+        public static PlaylistFactory CreatePlaylistFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -38,7 +38,7 @@ namespace Models.Factories
             }
         }
 
-        public RutrackerSite CreateRutrackerSite()
+        public static RutrackerSite CreateRutrackerSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -46,7 +46,7 @@ namespace Models.Factories
             }
         }
 
-        public SettingFactory CreateSettingFactory()
+        public static SettingFactory CreateSettingFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -54,7 +54,7 @@ namespace Models.Factories
             }
         }
 
-        public SqLiteDatabase CreateSqLiteDatabase()
+        public static SqLiteDatabase CreateSqLiteDatabase()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -62,7 +62,7 @@ namespace Models.Factories
             }
         }
 
-        public SubtitleFactory CreateSubtitleFactory()
+        public static SubtitleFactory CreateSubtitleFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -70,7 +70,7 @@ namespace Models.Factories
             }
         }
 
-        public TagFactory CreateTagFactory()
+        public static TagFactory CreateTagFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -78,7 +78,7 @@ namespace Models.Factories
             }
         }
 
-        public TapochekSite CreateTapochekSite()
+        public static TapochekSite CreateTapochekSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -86,7 +86,7 @@ namespace Models.Factories
             }
         }
 
-        public VideoItemFactory CreateVideoItemFactory()
+        public static VideoItemFactory CreateVideoItemFactory()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
@@ -94,7 +94,7 @@ namespace Models.Factories
             }
         }
 
-        public YouTubeSite CreateYouTubeSite()
+        public static YouTubeSite CreateYouTubeSite()
         {
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {

@@ -17,6 +17,7 @@ using DataAPI.POCO;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
+using Models.Factories;
 
 namespace Crawler.ViewModels
 {
@@ -159,7 +160,7 @@ namespace Crawler.ViewModels
                 case SiteType.YouTube:
 
                     List<VideoItemPOCO> lst =
-                        (await mainVm.BaseFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
+                        (await CommonFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
                     if (lst.Any())
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)
@@ -171,7 +172,7 @@ namespace Crawler.ViewModels
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
-                        foreach (IVideoItem item in lst.Select(poco => mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
+                        foreach (IVideoItem item in lst.Select(poco => CommonFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
                         {
                             AddNewItem(item);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
@@ -238,11 +239,11 @@ namespace Crawler.ViewModels
                 case SiteType.YouTube:
 
                     IEnumerable<VideoItemPOCO> lst =
-                        await mainVm.BaseFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
+                        await CommonFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
                     foreach (VideoItemPOCO poco in lst)
                     {
-                        IVideoItem item = mainVm.BaseFactory.CreateVideoItemFactory().CreateVideoItem(poco);
+                        IVideoItem item = CommonFactory.CreateVideoItemFactory().CreateVideoItem(poco);
                         AddNewItem(item);
                         item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))

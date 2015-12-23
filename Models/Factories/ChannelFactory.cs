@@ -25,24 +25,15 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly CommonFactory commonFactory;
-        private readonly PlaylistFactory pf;
-        private readonly SqLiteDatabase sql;
-        private readonly VideoItemFactory vf;
-        private readonly YouTubeSite you;
+        private readonly PlaylistFactory pf = CommonFactory.CreatePlaylistFactory();
+        private readonly SqLiteDatabase sql = CommonFactory.CreateSqLiteDatabase();
+        private readonly VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
+        private readonly YouTubeSite you = CommonFactory.CreateYouTubeSite();
 
         #endregion
 
         #region Constructors
 
-        public ChannelFactory(CommonFactory commonFactory)
-        {
-            this.commonFactory = commonFactory;
-            you = commonFactory.CreateYouTubeSite();
-            vf = commonFactory.CreateVideoItemFactory();
-            sql = commonFactory.CreateSqLiteDatabase();
-            pf = commonFactory.CreatePlaylistFactory();
-        }
 
         #endregion
 
@@ -182,7 +173,7 @@ namespace Models.Factories
             {
                 case SiteType.Tapochek:
 
-                    TapochekSite fb = commonFactory.CreateTapochekSite();
+                    TapochekSite fb = CommonFactory.CreateTapochekSite();
                     channel.ChannelCookies = await fb.GetCookieNetAsync(channel);
 
                     break;
@@ -230,14 +221,14 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     IEnumerable<VideoItemPOCO> youres =
-                        await commonFactory.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
+                        await CommonFactory.CreateYouTubeSite().GetChannelItemsAsync(channel.ID, maxresult);
                     lst.AddRange(youres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
 
                 case SiteType.Tapochek:
 
-                    IEnumerable<VideoItemPOCO> tapres = await commonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
+                    IEnumerable<VideoItemPOCO> tapres = await CommonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     lst.AddRange(tapres.Select(poco => vf.CreateVideoItem(poco)));
 
                     break;
@@ -257,13 +248,13 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await commonFactory.CreateYouTubeSite().GetChannelFullNetAsync(channelID);
+                        poco = await CommonFactory.CreateYouTubeSite().GetChannelFullNetAsync(channelID);
                         break;
                     case SiteType.RuTracker:
-                        poco = await commonFactory.CreateRutrackerSite().GetChannelNetAsync(channelID);
+                        poco = await CommonFactory.CreateRutrackerSite().GetChannelNetAsync(channelID);
                         break;
                     case SiteType.Tapochek:
-                        poco = await commonFactory.CreateTapochekSite().GetChannelNetAsync(channelID);
+                        poco = await CommonFactory.CreateTapochekSite().GetChannelNetAsync(channelID);
                         break;
                 }
                 IChannel channel = CreateChannel(poco);
@@ -319,7 +310,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<ITag>> GetChannelTagsAsync(string id)
         {
-            TagFactory tf = commonFactory.CreateTagFactory();
+            TagFactory tf = CommonFactory.CreateTagFactory();
             var lst = new List<ITag>();
 
             try

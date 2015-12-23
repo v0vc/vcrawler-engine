@@ -12,73 +12,47 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using DataAPI.Database;
 using DataAPI.POCO;
 using Extensions.Helpers;
 using HtmlAgilityPack;
+using Interfaces.Enums;
 using Interfaces.Models;
 
 namespace DataAPI.Trackers
 {
     public class TapochekSite : CommonTracker
     {
+        #region Static and Readonly Fields
+
+        private readonly SqLiteDatabase sql;
+
+        #endregion
+
         #region Fields
 
-        private ICred cred;
+        private CredPOCO cred;
+
+        #endregion
+
+        #region Constructors
+
+        public TapochekSite(SqLiteDatabase sql)
+        {
+            this.sql = sql;
+            hostUrl = string.Format("http://{0}", EnumHelper.GetAttributeOfType(SiteType.Tapochek));
+            _indexUrl = string.Format("{0}/index.php", hostUrl);
+            _loginUrl = string.Format("{0}/login.php", hostUrl);
+            _profileUrl = string.Format("{0}/profile.php", hostUrl);
+            _searchUrl = string.Format("{0}/tracker.php?nm", hostUrl);
+            _topicUrl = string.Format("{0}/viewtopic.php?t", hostUrl);
+            _userUrl = string.Format("{0}/tracker.php?rid", hostUrl);
+            GetCred();
+        }
 
         #endregion
 
         #region Methods
-
-        private IEnumerable<string> GetAllSearchLinks(HtmlDocument doc)
-        {
-            var hrefTags = new List<string>();
-
-            List<HtmlNode> block =
-                doc.DocumentNode.Descendants("div")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("nav"))
-                    .ToList();
-
-            if (block.Count == 2)
-            {
-                IEnumerable<HtmlNode> hr = block[1].Descendants("a");
-                foreach (HtmlNode link in hr)
-                {
-                    HtmlAttribute att = link.Attributes["href"];
-                    if (att.Value != null && !hrefTags.Contains(att.Value) && att.Value.StartsWith("tracker"))
-                    {
-                        hrefTags.Add(att.Value);
-                    }
-                }
-            }
-            return hrefTags.Select(link => string.Format("{0}/{1}", hostUrl, link)).ToList();
-        }
-
-        #endregion
-
-        #region ITapochekSite Members
-
-        public ICred Cred
-        {
-            get
-            {
-                return cred;
-            }
-            set
-            {
-                cred = value;
-                if (cred == null)
-                {
-                    return;
-                }
-                hostUrl = string.Format("http://{0}", cred.SiteAdress);
-                _indexUrl = string.Format("{0}/index.php", hostUrl);
-                _loginUrl = string.Format("{0}/login.php", hostUrl);
-                _profileUrl = string.Format("{0}/profile.php", hostUrl);
-                _searchUrl = string.Format("{0}/tracker.php?nm", hostUrl);
-                _topicUrl = string.Format("{0}/viewtopic.php?t", hostUrl);
-                _userUrl = string.Format("{0}/tracker.php?rid", hostUrl);
-            }
-        }
 
         /// <summary>
         ///     Заполнить канал элементами
@@ -142,7 +116,7 @@ namespace DataAPI.Trackers
 
             foreach (HtmlNode node in links)
             {
-                var item = new VideoItemPOCO(node, hostUrl) { Site = Cred.Site };
+                var item = new VideoItemPOCO(node, hostUrl) { Site = SiteType.Tapochek };
                 if (!string.IsNullOrEmpty(item.ID))
                 {
                     lst.Add(item);
@@ -170,7 +144,7 @@ namespace DataAPI.Trackers
 
                     foreach (HtmlNode node in links)
                     {
-                        var item = new VideoItemPOCO(node, hostUrl) { Site = Cred.Site };
+                        var item = new VideoItemPOCO(node, hostUrl) { Site = SiteType.Tapochek };
                         if (!string.IsNullOrEmpty(item.ID))
                         {
                             lst.Add(item);
@@ -184,6 +158,11 @@ namespace DataAPI.Trackers
             return lst;
         }
 
+        public Task<ChannelPOCO> GetChannelNetAsync(string channelID)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         ///     Получить куки пользователя с сайта
         /// </summary>
@@ -191,7 +170,7 @@ namespace DataAPI.Trackers
         /// <returns></returns>
         public async Task<CookieContainer> GetCookieNetAsync(IChannel channel)
         {
-            if (string.IsNullOrEmpty(Cred.Login) || string.IsNullOrEmpty(Cred.Pass))
+            if (string.IsNullOrEmpty(cred.Login) || string.IsNullOrEmpty(cred.Pass))
             {
                 throw new Exception("Please, set login and password");
             }
@@ -203,8 +182,8 @@ namespace DataAPI.Trackers
             req.Host = EnumHelper.GetAttributeOfType(channel.Site);
             req.KeepAlive = true;
             string postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4",
-                Uri.EscapeDataString(Cred.Login),
-                Uri.EscapeDataString(Cred.Pass));
+                Uri.EscapeDataString(cred.Login),
+                Uri.EscapeDataString(cred.Pass));
             byte[] data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
             req.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
@@ -232,9 +211,33 @@ namespace DataAPI.Trackers
             return cc;
         }
 
-        public Task<ChannelPOCO> GetChannelNetAsync(string channelID)
+        private IEnumerable<string> GetAllSearchLinks(HtmlDocument doc)
         {
-            throw new NotImplementedException();
+            var hrefTags = new List<string>();
+
+            List<HtmlNode> block =
+                doc.DocumentNode.Descendants("div")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("nav"))
+                    .ToList();
+
+            if (block.Count == 2)
+            {
+                IEnumerable<HtmlNode> hr = block[1].Descendants("a");
+                foreach (HtmlNode link in hr)
+                {
+                    HtmlAttribute att = link.Attributes["href"];
+                    if (att.Value != null && !hrefTags.Contains(att.Value) && att.Value.StartsWith("tracker"))
+                    {
+                        hrefTags.Add(att.Value);
+                    }
+                }
+            }
+            return hrefTags.Select(link => string.Format("{0}/{1}", hostUrl, link)).ToList();
+        }
+
+        private async void GetCred()
+        {
+            cred = await sql.GetCredAsync(SiteType.Tapochek);
         }
 
         #endregion

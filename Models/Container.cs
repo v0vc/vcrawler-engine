@@ -11,7 +11,7 @@ using Models.Factories;
 
 namespace Models
 {
-    public class Container
+    public static class Container
     {
         //#region Static and Readonly Fields
 
@@ -57,45 +57,31 @@ namespace Models
 
         //#endregion
 
-        private static IContainer _kernel;
+        private static IContainer kernel;
 
         public static IContainer Kernel
         {
             get
             {
-                return _kernel ?? (_kernel = GetKernel());
+                return kernel ?? (kernel = GetKernel());
             }
         }
 
         private static IContainer GetKernel()
         {
             var builder = new ContainerBuilder();
-            //builder.RegisterType<SqLiteDatabase>().As<ISqLiteDatabase>().SingleInstance();
             builder.RegisterType<SqLiteDatabase>().AsSelf().SingleInstance();
-            //builder.RegisterType<YouTubeSite>().As<IYouTubeSite>().SingleInstance();
             builder.RegisterType<YouTubeSite>().AsSelf().SingleInstance();
-            //builder.RegisterType<TapochekSite>().As<ITapochekSite>().SingleInstance();
             builder.RegisterType<TapochekSite>().AsSelf().SingleInstance();
-            //builder.RegisterType<RutrackerSite>().As<IRutrackerSite>().SingleInstance();
             builder.RegisterType<RutrackerSite>().AsSelf().SingleInstance();
 
-            //builder.RegisterType<ChannelFactory>().As<IChannelFactory>().SingleInstance();
             builder.RegisterType<ChannelFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<VideoItemFactory>().As<IVideoItemFactory>().SingleInstance();
             builder.RegisterType<VideoItemFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<PlaylistFactory>().As<IPlaylistFactory>().SingleInstance();
             builder.RegisterType<PlaylistFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<TagFactory>().As<ITagFactory>().SingleInstance();
             builder.RegisterType<TagFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<CredFactory>().As<ICredFactory>().SingleInstance();
             builder.RegisterType<CredFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<SettingFactory>().As<ISettingFactory>().SingleInstance();
             builder.RegisterType<SettingFactory>().AsSelf().SingleInstance();
-            //builder.RegisterType<SubtitleFactory>().As<ISubtitleFactory>().SingleInstance();
             builder.RegisterType<SubtitleFactory>().AsSelf().SingleInstance();
-
-            //builder.RegisterType<CommonFactory>().As<ICommonFactory>().SingleInstance();
-            builder.RegisterType<CommonFactory>().AsSelf().SingleInstance();
 
             return builder.Build();
         }

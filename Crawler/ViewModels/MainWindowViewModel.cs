@@ -20,12 +20,10 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
-using Autofac;
 using Crawler.Common;
 using Crawler.Views;
 using DataAPI.Database;
 using DataAPI.POCO;
-using DataAPI.Trackers;
 using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
@@ -36,7 +34,6 @@ using Models.BO.Items;
 using Models.Factories;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
-using Container = Models.Container;
 using DataGrid = System.Windows.Controls.DataGrid;
 using MessageBox = System.Windows.MessageBox;
 
@@ -53,13 +50,11 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
-        private readonly ChannelFactory cf;
+        private readonly ChannelFactory cf = CommonFactory.CreateChannelFactory();
         private readonly ICollectionView channelCollectionView;
         private readonly SqLiteDatabase df;
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
-        private readonly TapochekSite tf;
-        private readonly VideoItemFactory vf;
-        private readonly YouTubeSite yf;
+        private readonly VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
 
         #endregion
 
@@ -108,12 +103,8 @@ namespace Crawler.ViewModels
 
         public MainWindowViewModel()
         {
-            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
-            {
-                BaseFactory = scope.Resolve<CommonFactory>();
-            }
             ParseCommandLineArguments();
-            df = BaseFactory.CreateSqLiteDatabase();
+            df = CommonFactory.CreateSqLiteDatabase();
             if (launchParam.Any())
             {
                 // через параметры запуска указали путь к своей базе
@@ -124,7 +115,7 @@ namespace Crawler.ViewModels
                 }
             }
 
-            SettingsViewModel = new SettingsViewModel(BaseFactory, Channels);
+            SettingsViewModel = new SettingsViewModel(Channels);
 
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
@@ -133,11 +124,6 @@ namespace Crawler.ViewModels
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
-
-            cf = BaseFactory.CreateChannelFactory();
-            vf = BaseFactory.CreateVideoItemFactory();
-            yf = BaseFactory.CreateYouTubeSite();
-            tf = BaseFactory.CreateTapochekSite();
         }
 
         #endregion
@@ -151,8 +137,6 @@ namespace Crawler.ViewModels
                 return addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem()));
             }
         }
-
-        public CommonFactory BaseFactory { get; private set; }
 
         public RelayCommand ChannelDoubleClickCommand
         {
@@ -589,7 +573,7 @@ namespace Crawler.ViewModels
             switch (site)
             {
                 case SiteType.YouTube:
-                    parsedId = await yf.ParseChannelLink(channelId);
+                    parsedId = await YouTubeSite.ParseChannelLink(channelId);
 
                     break;
 
@@ -719,7 +703,7 @@ namespace Crawler.ViewModels
             DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                SqLiteDatabase fb = BaseFactory.CreateSqLiteDatabase();
+                SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
                 List<ChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
                 var sb = new StringBuilder();
                 foreach (ChannelPOCO poco in lst)
@@ -1019,7 +1003,7 @@ namespace Crawler.ViewModels
                 Info = ex.Message;
                 return;
             }
-            
+
             foreach (IChannel ch in lst)
             {
                 ch.DirPath = SettingsViewModel.DirPath;
@@ -1311,7 +1295,7 @@ namespace Crawler.ViewModels
             {
                 CurrentTags.Add(tag);
             }
-            CurrentTags.Add(BaseFactory.CreateTagFactory().CreateTag()); // empty tag
+            CurrentTags.Add(CommonFactory.CreateTagFactory().CreateTag()); // empty tag
         }
 
         private void OpenSettings()
@@ -1575,7 +1559,7 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                var channel = SelectedChannel;
+                IChannel channel = SelectedChannel;
                 if (channel == null)
                 {
                     return;
@@ -1743,7 +1727,7 @@ namespace Crawler.ViewModels
 
         private async Task Vacuumdb()
         {
-            SqLiteDatabase db = BaseFactory.CreateSqLiteDatabase();
+            SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
             long sizebefore = db.FileBase.Length;
             await db.VacuumAsync();
             long sizeafter = new FileInfo(db.FileBase.FullName).Length;
@@ -1824,23 +1808,6 @@ namespace Crawler.ViewModels
 
                 await SettingsViewModel.LoadTagsFromDb();
                 await SettingsViewModel.LoadCredsFromDb();
-                foreach (ICred cred in SettingsViewModel.SupportedCreds)
-                {
-                    switch (cred.Site)
-                    {
-                        case SiteType.Tapochek:
-                            tf.Cred = cred;
-                            break;
-
-                        case SiteType.YouTube:
-                            yf.Cred = cred;
-                            break;
-
-                        case SiteType.RuTracker:
-
-                            break;
-                    }
-                }
                 ServiceChannel.Init(this);
                 ServiceChannels.Add(ServiceChannel);
                 SetStatus(0);

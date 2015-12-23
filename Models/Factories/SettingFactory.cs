@@ -16,16 +16,16 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly CommonFactory commonFactory;
+        //private readonly CommonFactory commonFactory;
 
-        #endregion
+        //#endregion
 
-        #region Constructors
+        //#region Constructors
 
-        public SettingFactory(CommonFactory commonFactory)
-        {
-            this.commonFactory = commonFactory;
-        }
+        //public SettingFactory(CommonFactory commonFactory)
+        //{
+        //    this.commonFactory = commonFactory;
+        //}
 
         #endregion
 
@@ -38,7 +38,7 @@ namespace Models.Factories
 
         public async Task DeleteSettingAsync(string key)
         {
-            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteSettingAsync(key);
@@ -52,8 +52,8 @@ namespace Models.Factories
         public async Task<ISetting> GetSettingDbAsync(string key)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
-            SettingFactory sf = commonFactory.CreateSettingFactory();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
+            SettingFactory sf = CommonFactory.CreateSettingFactory();
 
             try
             {
@@ -69,7 +69,7 @@ namespace Models.Factories
 
         public async Task InsertSettingAsync(Setting setting)
         {
-            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertSettingAsync(setting);
@@ -82,7 +82,7 @@ namespace Models.Factories
 
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            SqLiteDatabase fb = commonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateSettingAsync(key, newvalue);

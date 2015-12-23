@@ -44,9 +44,10 @@ namespace Crawler.ViewModels
 
         #endregion
 
+        //private readonly CommonFactory baseFactory;
+
         #region Static and Readonly Fields
 
-        private readonly CommonFactory baseFactory;
         private readonly ObservableCollection<IChannel> channels;
 
         #endregion
@@ -57,22 +58,21 @@ namespace Crawler.ViewModels
         private RelayCommand deleteTagCommand;
         private string dirPath;
         private RelayCommand fillYouHeaderCommand;
+        private bool isUpdateButtonEnable = true;
         private string mpcPath;
         private RelayCommand openDirCommand;
+        private double prValue;
         private RelayCommand saveSettingsCommand;
         private RelayCommand updateYouDlCommand;
         private string youHeader;
         private string youPath;
-        private double prValue;
-        private bool isUpdateButtonEnable = true;
 
         #endregion
 
         #region Constructors
 
-        public SettingsViewModel(CommonFactory baseFactory, ObservableCollection<IChannel> channels)
+        public SettingsViewModel(ObservableCollection<IChannel> channels)
         {
-            this.baseFactory = baseFactory;
             this.channels = channels;
             SupportedTags = new ObservableCollection<ITag>();
             SupportedCreds = new List<ICred>();
@@ -81,32 +81,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Properties
-
-        public bool IsUpdateButtonEnable
-        {
-            get
-            {
-                return isUpdateButtonEnable;
-            }
-            set
-            {
-                isUpdateButtonEnable = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public double PrValue
-        {
-            get
-            {
-                return prValue;
-            }
-            private set
-            {
-                prValue = value;
-                OnPropertyChanged();
-            }
-        }
 
         public RelayCommand AddNewTagCommand
         {
@@ -145,6 +119,19 @@ namespace Crawler.ViewModels
             }
         }
 
+        public bool IsUpdateButtonEnable
+        {
+            get
+            {
+                return isUpdateButtonEnable;
+            }
+            set
+            {
+                isUpdateButtonEnable = value;
+                OnPropertyChanged();
+            }
+        }
+
         public string MpcPath
         {
             get
@@ -163,6 +150,19 @@ namespace Crawler.ViewModels
             get
             {
                 return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
+            }
+        }
+
+        public double PrValue
+        {
+            get
+            {
+                return prValue;
+            }
+            private set
+            {
+                prValue = value;
+                OnPropertyChanged();
             }
         }
 
@@ -256,13 +256,13 @@ namespace Crawler.ViewModels
 
         public async Task LoadCredsFromDb()
         {
-            IEnumerable<CredPOCO> fbres = await baseFactory.CreateSqLiteDatabase().GetCredListAsync();
-            SupportedCreds.AddRange(fbres.Select(poco => baseFactory.CreateCredFactory().CreateCred(poco)));
+            IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
+            SupportedCreds.AddRange(fbres.Select(poco => CommonFactory.CreateCredFactory().CreateCred(poco)));
         }
 
         public async Task LoadSettingsFromDb()
         {
-            SettingFactory sf = baseFactory.CreateSettingFactory();
+            SettingFactory sf = CommonFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             DirPath = savedir.Value;
@@ -319,8 +319,8 @@ namespace Crawler.ViewModels
 
         public async Task LoadTagsFromDb()
         {
-            IEnumerable<TagPOCO> fbres = (await baseFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
-            IEnumerable<ITag> lst = fbres.Select(poco => baseFactory.CreateTagFactory().CreateTag(poco));
+            IEnumerable<TagPOCO> fbres = (await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
+            IEnumerable<ITag> lst = fbres.Select(poco => CommonFactory.CreateTagFactory().CreateTag(poco));
             foreach (ITag tag in lst)
             {
                 SupportedTags.Add(tag);
@@ -329,7 +329,7 @@ namespace Crawler.ViewModels
 
         private void AddNewTag()
         {
-            var advm = new AddNewTagViewModel(this) { Tag = baseFactory.CreateTagFactory().CreateTag() };
+            var advm = new AddNewTagViewModel(this) { Tag = CommonFactory.CreateTagFactory().CreateTag() };
             var antv = new AddNewTagView
             {
                 DataContext = advm,
@@ -418,7 +418,7 @@ namespace Crawler.ViewModels
 
         private async Task SaveSettingsToDb()
         {
-            SettingFactory sf = baseFactory.CreateSettingFactory();
+            SettingFactory sf = CommonFactory.CreateSettingFactory();
 
             ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
             if (savedir.Value != DirPath)

@@ -12,7 +12,6 @@ using DataAPI.POCO;
 using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
-using Interfaces.Models;
 using Newtonsoft.Json.Linq;
 
 namespace DataAPI.Videos
@@ -28,38 +27,6 @@ namespace DataAPI.Videos
         private const string url = "https://www.googleapis.com/youtube/v3/";
         private const string youChannel = "channel";
         private const string youUser = "user";
-
-        #endregion
-
-        #region Static and Readonly Fields
-
-        private static string site;
-
-        #endregion
-
-        #region Fields
-
-        private ICred cred;
-
-        #endregion
-
-        #region Properties
-
-        public ICred Cred
-        {
-            private get
-            {
-                return cred;
-            }
-            set
-            {
-                cred = value;
-                if (cred != null)
-                {
-                    site = cred.SiteAdress;
-                }
-            }
-        }
 
         #endregion
 
@@ -533,7 +500,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, Cred.Site);
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
                     await item.FillFieldsFromGetting(pair);
                     res.Add(item);
 
@@ -670,7 +637,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, Cred.Site);
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
 
                     res.Add(item);
 
@@ -789,7 +756,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, Cred.Site);
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
 
                     item.FillFieldsFromPlaylist(pair);
                     res.Add(item);
@@ -893,7 +860,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, Cred.Site);
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
                     await item.FillFieldsFromGetting(pair);
                     res.Add(item);
 
@@ -954,9 +921,9 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<VideoItemPOCO> GetVideoItemLiteNetAsync(string id)
+        private static async Task<VideoItemPOCO> GetVideoItemLiteNetAsync(string id)
         {
-            var item = new VideoItemPOCO(id, Cred.Site);
+            var item = new VideoItemPOCO(id, SiteType.YouTube);
 
             string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}", 
                 url, 
@@ -982,7 +949,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public async Task<VideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {
-            var item = new VideoItemPOCO(videoid, Cred.Site);
+            var item = new VideoItemPOCO(videoid, SiteType.YouTube);
 
             string zap =
                 string.Format(
@@ -1039,7 +1006,7 @@ namespace DataAPI.Videos
                     continue;
                 }
 
-                var item = new VideoItemPOCO(id.Value<string>(), Cred.Site);
+                var item = new VideoItemPOCO(id.Value<string>(), SiteType.YouTube);
 
                 await item.FillFieldsFromGetting(pair);
 
@@ -1093,7 +1060,7 @@ namespace DataAPI.Videos
                     continue;
                 }
 
-                var v = new VideoItemPOCO(id.Value<string>(), Cred.Site);
+                var v = new VideoItemPOCO(id.Value<string>(), SiteType.YouTube);
 
                 JToken pid = pair.SelectToken("snippet.channelId");
 
@@ -1116,7 +1083,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="inputChannelLink"></param>
         /// <returns></returns>
-        public async Task<string> ParseChannelLink(string inputChannelLink)
+        public static async Task<string> ParseChannelLink(string inputChannelLink)
         {
             string parsedChannelId = string.Empty;
             string[] sp = inputChannelLink.Split('/');
@@ -1225,7 +1192,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, Cred.Site);
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
                     await item.FillFieldsFromGetting(pair);
                     res.Add(item);
 

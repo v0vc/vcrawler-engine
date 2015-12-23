@@ -18,16 +18,16 @@ namespace Models.Factories
     {
         #region Static and Readonly Fields
 
-        private readonly CommonFactory commonFactory;
+        //private readonly CommonFactory commonFactory;
 
-        #endregion
+        //#endregion
 
-        #region Constructors
+        //#region Constructors
 
-        public PlaylistFactory(CommonFactory commonFactory)
-        {
-            this.commonFactory = commonFactory;
-        }
+        //public PlaylistFactory(CommonFactory commonFactory)
+        //{
+        //    this.commonFactory = commonFactory;
+        //}
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace Models.Factories
 
         public async Task DeletePlaylistAsync(string id)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeletePlaylistAsync(id);
@@ -48,8 +48,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
-            var vf = commonFactory.CreateVideoItemFactory();
+            var fb = CommonFactory.CreateSqLiteDatabase();
+            var vf = CommonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -65,7 +65,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetPlaylistItemsIdsListDbAsync(id);
@@ -78,7 +78,7 @@ namespace Models.Factories
 
         public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id, int maxResult)
         {
-            var fb = commonFactory.CreateYouTubeSite();
+            var fb = CommonFactory.CreateYouTubeSite();
             try
             {
                 return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id, maxResult);
@@ -91,8 +91,8 @@ namespace Models.Factories
 
         public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
-            var fb = commonFactory.CreateYouTubeSite();
-            var vf = commonFactory.CreateVideoItemFactory();
+            var fb = CommonFactory.CreateYouTubeSite();
+            var vf = CommonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
@@ -108,7 +108,7 @@ namespace Models.Factories
 
         public async Task InsertPlaylistAsync(Playlist playlist)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertPlaylistAsync(playlist);
@@ -121,7 +121,7 @@ namespace Models.Factories
 
         public async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
         {
-            var fb = commonFactory.CreateSqLiteDatabase();
+            var fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePlaylistAsync(plid, itemid, channelid);
@@ -163,8 +163,8 @@ namespace Models.Factories
         public async Task<IPlaylist> GetPlaylistDbAsync(string id)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
-            var fb = commonFactory.CreateSqLiteDatabase();
-            var pf = commonFactory.CreatePlaylistFactory();
+            var fb = CommonFactory.CreateSqLiteDatabase();
+            var pf = CommonFactory.CreatePlaylistFactory();
 
             try
             {
@@ -180,7 +180,7 @@ namespace Models.Factories
 
         public async Task<IPlaylist> GetPlaylistNetAsync(string id)
         {
-            var pf = commonFactory.CreatePlaylistFactory();
+            var pf = CommonFactory.CreatePlaylistFactory();
             try
             {
                 PlaylistPOCO fbres = await YouTubeSite.GetPlaylistNetAsync(id);

@@ -1,19 +1,17 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Autofac;
-using DataAPI;
 using DataAPI.Database;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Models;
 using Models.Factories;
 
 namespace TestAPI
@@ -37,18 +35,13 @@ namespace TestAPI
 
         public SqLiteDataBaseTest()
         {
-            CommonFactory factory;
-            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
-            {
-                factory = scope.Resolve<CommonFactory>();
-            }
-            vf = factory.CreateVideoItemFactory();
-            db = factory.CreateSqLiteDatabase();
-            cf = factory.CreateChannelFactory();
-            crf = factory.CreateCredFactory();
-            pf = factory.CreatePlaylistFactory();
-            tf = factory.CreateTagFactory();
-            sf = factory.CreateSettingFactory();
+            vf = CommonFactory.CreateVideoItemFactory();
+            db = CommonFactory.CreateSqLiteDatabase();
+            cf = CommonFactory.CreateChannelFactory();
+            crf = CommonFactory.CreateCredFactory();
+            pf = CommonFactory.CreatePlaylistFactory();
+            tf = CommonFactory.CreateTagFactory();
+            sf = CommonFactory.CreateSettingFactory();
         }
 
         #endregion
