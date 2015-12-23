@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -48,11 +49,6 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public async Task DeleteChannelPlaylistsAsync()
-        {
-            await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(ID);
-        }
-
         public async Task DeleteChannelTagAsync(string tag)
         {
             await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(ID, tag);
@@ -70,7 +66,7 @@ namespace Models.BO.Channels
 
         public async Task FillChannelDescriptionAsync()
         {
-            var text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(ID);
+            string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(ID);
             SubTitle = text.WordWrap(80);
         }
 
@@ -107,11 +103,6 @@ namespace Models.BO.Channels
         public async Task InsertChannelTagAsync(string tag)
         {
             await CommonFactory.CreateSqLiteDatabase().InsertChannelTagsAsync(ID, tag);
-        }
-
-        public async Task RenameChannelAsync(string newName)
-        {
-            await CommonFactory.CreateSqLiteDatabase().RenameChannelAsync(ID, newName);
         }
 
         public async void RestoreFullChannelItems(string dirPath)

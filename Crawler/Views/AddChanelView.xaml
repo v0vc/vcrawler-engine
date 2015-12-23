@@ -24,7 +24,7 @@
                     <TextBlock Text="Link:" FontSize="16" Padding="5 0 8 0" Width="45" HorizontalAlignment="Center" VerticalAlignment="Center" 
                                />
                     <TextBox Text="{Binding ChannelLink}" Padding="0 2 0 2" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                             FontSize="16" Width="235" IsEnabled="{Binding IsLinkEnabled}" IsReadOnly="{Binding IsLinkReadonly}"
+                             FontSize="16" Width="235" IsReadOnly="{Binding IsEditMode}"
                              behaviors:TextBoxBehavior.IsFocused="{Binding IsEditMode, Mode=OneWay, Converter={StaticResource InvertBooleanConverter}}"
                              />
                     <Image Source="../Images/user-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0">
@@ -59,10 +59,10 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock Text="Site:" FontSize="16" Padding="5 0 8 0" Width="45" HorizontalAlignment="Center" VerticalAlignment="Center" />
                     <ComboBox Width="235" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="15" HorizontalContentAlignment="Left"
-                              ItemsSource="{Binding MvModel.SettingsViewModel.SupportedCreds}"
+                              ItemsSource="{Binding SupportedCreds}"
                               SelectedItem="{Binding SelectedCred}"
                               DisplayMemberPath="Site"          
-                              IsEnabled="{Binding IsSitiesEnabled}"
+                              IsEnabled="{Binding IsEditMode, Converter={StaticResource InvertBooleanConverter}}"
                               />
                     <Image Source="../Images/site-32.png" Width="32" Height="32" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,0,0"/>
                 </StackPanel>

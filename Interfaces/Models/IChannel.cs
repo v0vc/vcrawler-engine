@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Net;
+using System.Threading.Tasks;
 using Interfaces.Enums;
 
 namespace Interfaces.Models

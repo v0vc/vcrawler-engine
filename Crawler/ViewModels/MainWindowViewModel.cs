@@ -562,7 +562,7 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public async Task AddNewChannel(string channelId, string channelTitle, SiteType site)
+        public async void AddNewChannel(string channelId, string channelTitle, SiteType site)
         {
             SetStatus(1);
             string parsedId = null;
@@ -649,11 +649,6 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (string.IsNullOrEmpty(channel.Title))
-            {
-                throw new Exception("Can't get Channel: " + channel.ID);
-            }
-
             if (!string.IsNullOrEmpty(channeltitle))
             {
                 channel.Title = channeltitle;
@@ -677,7 +672,7 @@ namespace Crawler.ViewModels
 
         private void AddNewItem()
         {
-            var edvm = new AddChannelViewModel(false, this);
+            var edvm = new AddChannelViewModel(false, SettingsViewModel.SupportedCreds, AddNewChannel);
             var addview = new AddChanelView
             {
                 DataContext = edvm,
@@ -922,7 +917,7 @@ namespace Crawler.ViewModels
 
         private void EditChannel()
         {
-            var edvm = new AddChannelViewModel(true, this);
+            var edvm = new AddChannelViewModel(true, SettingsViewModel.SupportedCreds, null, SelectedChannel);
             var addview = new AddChanelView
             {
                 DataContext = edvm,
@@ -1617,12 +1612,12 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task SubscribeOnPopular()
+        private void SubscribeOnPopular()
         {
             var channel = SelectedChannel as ServiceChannelViewModel;
             if (channel != null)
             {
-                await AddNewChannel(channel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+                AddNewChannel(channel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
             }
         }
 
@@ -1635,7 +1630,7 @@ namespace Crawler.ViewModels
             }
 
             var lst = new List<IVideoItem>();
-            channel.ChannelItems.ForEach(x => lst.Add(x));
+            channel.ChannelItems.ForEach(lst.Add);
             Channels.Add(channel);
             foreach (IVideoItem item in lst)
             {
@@ -1768,7 +1763,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Subscribe:
-                    await SubscribeOnPopular();
+                    SubscribeOnPopular();
                     break;
             }
         }

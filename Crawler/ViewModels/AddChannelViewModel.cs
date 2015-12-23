@@ -1,19 +1,29 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Crawler.Common;
 using Extensions;
+using Interfaces.Enums;
 using Interfaces.Models;
-using Models.BO.Channels;
+using Models.Factories;
 
 namespace Crawler.ViewModels
 {
     public class AddChannelViewModel
     {
+        #region Static and Readonly Fields
+
+        private readonly IChannel channel;
+        private readonly Action<string, string, SiteType> onAddNewChannel;
+
+        #endregion
+
         #region Fields
 
         private RelayCommand saveNewItemCommand;
@@ -22,21 +32,23 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public AddChannelViewModel(bool isEditMode, MainWindowViewModel mvModel)
+        public AddChannelViewModel(bool isEditMode,
+            List<ICred> supportedCreds,
+            Action<string, string, SiteType> onAddNewChannel = null,
+            IChannel channel = null)
         {
+            this.channel = channel;
+            this.onAddNewChannel = onAddNewChannel;
             IsEditMode = isEditMode;
-            MvModel = mvModel;
+            SupportedCreds = supportedCreds;
 
-            if (IsEditMode)
+            if (IsEditMode && channel != null)
             {
-                ChannelLink = mvModel.SelectedChannel.ID;
-                ChannelTitle = mvModel.SelectedChannel.Title;
-                IsLinkEnabled = true;
-                IsLinkReadonly = true;
-                IsSitiesEnabled = false;
-                if (MvModel.SettingsViewModel.SupportedCreds.Any())
+                ChannelLink = channel.ID;
+                ChannelTitle = channel.Title;
+                if (SupportedCreds.Any())
                 {
-                    SelectedCred = MvModel.SettingsViewModel.SupportedCreds.FirstOrDefault(x => x.Site == MvModel.SelectedChannel.Site);
+                    SelectedCred = SupportedCreds.FirstOrDefault(x => x.Site == channel.Site);
                 }
             }
             else
@@ -50,15 +62,10 @@ namespace Crawler.ViewModels
                 {
                     ChannelLink = text;
                 }
-
                 ChannelTitle = string.Empty;
-                IsLinkEnabled = true;
-                IsLinkReadonly = false;
-                IsSitiesEnabled = true;
-
-                if (MvModel.SettingsViewModel.SupportedCreds.Any())
+                if (SupportedCreds.Any())
                 {
-                    SelectedCred = MvModel.SettingsViewModel.SupportedCreds.First();
+                    SelectedCred = SupportedCreds.First();
                 }
             }
         }
@@ -78,10 +85,6 @@ namespace Crawler.ViewModels
         public string ChannelLink { get; set; }
         public string ChannelTitle { get; set; }
         public bool IsEditMode { get; private set; }
-        public bool IsLinkEnabled { get; set; }
-        public bool IsLinkReadonly { get; set; }
-        public bool IsSitiesEnabled { get; set; }
-        public MainWindowViewModel MvModel { get; set; }
 
         public RelayCommand SaveNewItemCommand
         {
@@ -92,6 +95,7 @@ namespace Crawler.ViewModels
         }
 
         public ICred SelectedCred { get; set; }
+        public List<ICred> SupportedCreds { get; set; }
 
         public string TitleContent
         {
@@ -114,14 +118,10 @@ namespace Crawler.ViewModels
             }
             window.Close();
 
-            if (IsEditMode)
+            if (IsEditMode && channel != null)
             {
-                MvModel.SelectedChannel.Title = ChannelTitle;
-                var channel = MvModel.SelectedChannel as YouChannel;
-                if (channel != null)
-                {
-                    await channel.RenameChannelAsync(ChannelTitle);
-                }
+                channel.Title = ChannelTitle;
+                await CommonFactory.CreateSqLiteDatabase().RenameChannelAsync(channel.ID, ChannelTitle);
             }
             else
             {
@@ -130,14 +130,9 @@ namespace Crawler.ViewModels
                     MessageBox.Show("Fill channel link");
                     return;
                 }
-                try
+                if (onAddNewChannel != null)
                 {
-                    await MvModel.AddNewChannel(ChannelLink, ChannelTitle, SelectedCred.Site);
-                }
-                catch (Exception ex)
-                {
-                    MvModel.SetStatus(3);
-                    MessageBox.Show(ex.Message);
+                    onAddNewChannel.Invoke(ChannelLink, ChannelTitle, SelectedCred.Site);
                 }
             }
         }

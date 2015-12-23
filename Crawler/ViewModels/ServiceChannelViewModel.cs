@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -117,7 +118,7 @@ namespace Crawler.ViewModels
             {
                 return selectedSite;
             }
-            set
+            private set
             {
                 if (Equals(value, selectedSite))
                 {
@@ -135,7 +136,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public List<CredImage> SupportedSites { get; set; }
+        public List<CredImage> SupportedSites { get; private set; }
 
         #endregion
 
@@ -172,7 +173,7 @@ namespace Crawler.ViewModels
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
-                        foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco)))
+                        foreach (IVideoItem item in lst.Select(VideoItemFactory.CreateVideoItem))
                         {
                             AddNewItem(item);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);

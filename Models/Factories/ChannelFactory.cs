@@ -432,7 +432,7 @@ namespace Models.Factories
 
             if (pls.Any())
             {
-                await channel.DeleteChannelPlaylistsAsync();
+                await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(channel.ID);
                 channel.ChannelPlaylists.Clear();
             }
             channel.PlaylistCount = pls.Count;
