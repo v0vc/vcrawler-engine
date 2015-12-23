@@ -359,6 +359,12 @@ namespace DataAPI.Database
             await RunSqlCodeAsync(zap);
         }
 
+        public async Task DeleteChannelPlaylistsAsync(string id)
+        {
+            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
         /// <summary>
         ///     Delete setting
         /// </summary>

@@ -50,7 +50,7 @@ namespace Models.BO.Channels
 
         public async Task DeleteChannelPlaylistsAsync()
         {
-            await ChannelFactory.DeleteChannelPlaylistsAsync(ID);
+            await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(ID);
         }
 
         public async Task DeleteChannelTagAsync(string tag)

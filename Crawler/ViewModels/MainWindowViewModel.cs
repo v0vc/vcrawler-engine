@@ -660,7 +660,7 @@ namespace Crawler.ViewModels
 
             if (Channels.Select(x => x.ID).Contains(channel.ID))
             {
-                await ChannelFactory.DeleteChannelAsync(channel.ID);
+                await CommonFactory.CreateSqLiteDatabase().DeleteChannelAsync(channel.ID);
             }
 
             channel.DirPath = SettingsViewModel.DirPath;
@@ -814,7 +814,7 @@ namespace Crawler.ViewModels
                     }
 
                     Channels.Remove(channel);
-                    await ChannelFactory.DeleteChannelAsync(channel.ID);
+                    await CommonFactory.CreateSqLiteDatabase().DeleteChannelAsync(channel.ID);
                     channelCollectionView.Filter = null;
                     FilterChannelKey = string.Empty;
                 }

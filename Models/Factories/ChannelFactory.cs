@@ -97,34 +97,6 @@ namespace Models.Factories
             return channel;
         }
 
-        public static async Task DeleteChannelAsync(string channelID)
-        {
-            try
-            {
-                await CommonFactory.CreateSqLiteDatabase().DeleteChannelAsync(channelID);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task DeleteChannelPlaylistsAsync(string channelID)
-        {
-            try
-            {
-                IEnumerable<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelsPlaylistsIdsListDbAsync(channelID);
-                foreach (string id in lst)
-                {
-                    await CommonFactory.CreateSqLiteDatabase().DeletePlaylistAsync(id);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public static async Task FillChannelCookieNetAsync(IChannel channel)
         {
             switch (channel.Site)
@@ -167,7 +139,7 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(YouChannel channel, int maxresult)
+        public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(IChannel channel, int maxresult)
         {
             var lst = new List<IVideoItem>();
             switch (channel.Site)
