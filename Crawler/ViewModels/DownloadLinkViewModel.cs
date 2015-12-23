@@ -22,7 +22,7 @@ using Models.Factories;
 
 namespace Crawler.ViewModels
 {
-    public class DownloadLinkViewModel : INotifyPropertyChanged
+    public sealed class DownloadLinkViewModel : INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -136,15 +136,6 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
         private async void DownloadLink(object obj)
         {
             var window = obj as Window;
@@ -172,7 +163,7 @@ namespace Crawler.ViewModels
 
             if (IsYouTube)
             {
-                IVideoItem vi = await CommonFactory.CreateVideoItemFactory().GetVideoItemNetAsync(youId, SiteType.YouTube);
+                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube);
                 foreach (ISubtitle subtitle in Subtitles.Where(subtitle => subtitle.IsChecked))
                 {
                     vi.Subtitles.Add(subtitle);
@@ -208,15 +199,23 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var cf = CommonFactory.CreateSubtitleFactory();
             IEnumerable<SubtitlePOCO> res = (await YouTubeSite.GetVideoSubtitlesByIdAsync(youId)).ToList();
             if (res.Any())
             {
                 Subtitles.Clear();
-                foreach (ISubtitle sb in res.Select(poco => cf.CreateSubtitle(poco)))
+                foreach (ISubtitle sb in res.Select(poco => SubtitleFactory.CreateSubtitle(poco)))
                 {
                     Subtitles.Add(sb);
                 }
+            }
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
             }
         }
 

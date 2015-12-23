@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
@@ -13,28 +12,9 @@ namespace Models.BO
 {
     public sealed class Tag : ITag, INotifyPropertyChanged
     {
-        #region Static and Readonly Fields
-
-        private readonly TagFactory tagFactory;
-
-        #endregion
-
         #region Fields
 
         private bool isChecked;
-
-        #endregion
-
-        #region Constructors
-
-        public Tag(TagFactory tagFactory)
-        {
-            this.tagFactory = tagFactory;
-        }
-
-        private Tag()
-        {
-        }
 
         #endregion
 
@@ -76,12 +56,12 @@ namespace Models.BO
 
         public async Task DeleteTagAsync()
         {
-            await tagFactory.DeleteTagAsync(Title);
+            await TagFactory.DeleteTagAsync(Title);
         }
 
         public async Task InsertTagAsync()
         {
-            await tagFactory.InsertTagAsync(this);
+            await TagFactory.InsertTagAsync(this);
         }
 
         #endregion

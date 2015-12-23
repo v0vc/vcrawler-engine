@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using Crawler.Common;
 using DataAPI.POCO;
+using DataAPI.Videos;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -21,7 +22,7 @@ using Models.Factories;
 
 namespace Crawler.ViewModels
 {
-    public class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
+    public sealed class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -159,8 +160,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst =
-                        (await CommonFactory.CreateYouTubeSite().SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
+                    List<VideoItemPOCO> lst = (await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
                     if (lst.Any())
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)
@@ -172,7 +172,7 @@ namespace Crawler.ViewModels
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
-                        foreach (IVideoItem item in lst.Select(poco => CommonFactory.CreateVideoItemFactory().CreateVideoItem(poco)))
+                        foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco)))
                         {
                             AddNewItem(item);
                             item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
@@ -184,15 +184,6 @@ namespace Crawler.ViewModels
             // SelectedChannel = channel;
             mainVm.SelectedChannel.ChannelItemsCount = ChannelItems.Count;
             mainVm.SetStatus(0);
-        }
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
         }
 
         private void FillCredImages()
@@ -238,12 +229,11 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    IEnumerable<VideoItemPOCO> lst =
-                        await CommonFactory.CreateYouTubeSite().GetPopularItemsAsync(SelectedCountry, 30);
+                    IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
                     foreach (VideoItemPOCO poco in lst)
                     {
-                        IVideoItem item = CommonFactory.CreateVideoItemFactory().CreateVideoItem(poco);
+                        IVideoItem item = VideoItemFactory.CreateVideoItem(poco);
                         AddNewItem(item);
                         item.IsHasLocalFileFound(mainVm.SettingsViewModel.DirPath);
                         if (mainVm.Channels.Select(x => x.ID).Contains(item.ParentID))
@@ -275,6 +265,15 @@ namespace Crawler.ViewModels
             return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
         }
 
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
         private void SiteChanged()
         {
             mainVm.SelectedChannel = this;
@@ -289,8 +288,10 @@ namespace Crawler.ViewModels
         public ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
+        public ChannelState ChannelState { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
         public int CountNew { get; set; }
+        public string DirPath { get; set; }
 
         public string FilterVideoKey
         {
@@ -312,7 +313,7 @@ namespace Crawler.ViewModels
         }
 
         public string ID { get; set; }
-        public ChannelState ChannelState { get; set; }
+        public bool IsShowSynced { get; set; }
         public int PlaylistCount { get; set; }
         public IVideoItem SelectedItem { get; set; }
 
@@ -325,12 +326,9 @@ namespace Crawler.ViewModels
         }
 
         public SiteType Site { get; set; }
-        public string SiteAdress { get; set; }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
-        public string DirPath { get; set; }
-        public bool IsShowSynced { get; set; }
 
         public void AddNewItem(IVideoItem item)
         {
@@ -373,8 +371,8 @@ namespace Crawler.ViewModels
 
             #region Properties
 
-            public ICred Cred { get; set; }
-            public byte[] Thumbnail { get; set; }
+            public ICred Cred { get; private set; }
+            public byte[] Thumbnail { get; private set; }
 
             #endregion
         }

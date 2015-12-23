@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -14,29 +13,14 @@ namespace Models.Factories
 {
     public class SettingFactory
     {
-        #region Static and Readonly Fields
+        #region Static Methods
 
-        //private readonly CommonFactory commonFactory;
-
-        //#endregion
-
-        //#region Constructors
-
-        //public SettingFactory(CommonFactory commonFactory)
-        //{
-        //    this.commonFactory = commonFactory;
-        //}
-
-        #endregion
-
-        #region Methods
-
-        public ISetting CreateSetting()
+        public static ISetting CreateSetting()
         {
-            return new Setting(this);
+            return new Setting();
         }
 
-        public async Task DeleteSettingAsync(string key)
+        public static async Task DeleteSettingAsync(string key)
         {
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
@@ -49,7 +33,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task<ISetting> GetSettingDbAsync(string key)
+        public static async Task<ISetting> GetSettingDbAsync(string key)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
@@ -58,7 +42,7 @@ namespace Models.Factories
             try
             {
                 SettingPOCO fbres = await fb.GetSettingAsync(key);
-                ISetting set = sf.CreateSetting(fbres);
+                ISetting set = CreateSetting(fbres);
                 return set;
             }
             catch (Exception ex)
@@ -67,7 +51,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task InsertSettingAsync(Setting setting)
+        public static async Task InsertSettingAsync(Setting setting)
         {
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
@@ -80,7 +64,7 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdateSettingAsync(string key, string newvalue)
+        public static async Task UpdateSettingAsync(string key, string newvalue)
         {
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
@@ -93,9 +77,9 @@ namespace Models.Factories
             }
         }
 
-        private ISetting CreateSetting(SettingPOCO poco)
+        private static ISetting CreateSetting(SettingPOCO poco)
         {
-            var set = new Setting(this) { Key = poco.Key, Value = poco.Value };
+            var set = new Setting { Key = poco.Key, Value = poco.Value };
             return set;
         }
 

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
@@ -19,24 +18,114 @@ namespace Models.Factories
 {
     public class VideoItemFactory
     {
-        #region Static and Readonly Fields
-
-        //private readonly CommonFactory commonFactory;
-        //private readonly SqLiteDatabase fb;
-
-        //#endregion
-
-        //#region Constructors
-
-        //public VideoItemFactory(CommonFactory commonFactory)
-        //{
-        //    this.commonFactory = commonFactory;
-        //    fb = CommonFactory.CreateSqLiteDatabase();
-        //}
-
-        #endregion
-
         #region Static Methods
+
+        public static IVideoItem CreateVideoItem(SiteType site)
+        {
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    return new YouTubeItem { Site = SiteType.YouTube };
+                case SiteType.Tapochek:
+                    return new TapochekItem { Site = SiteType.Tapochek };
+                case SiteType.RuTracker:
+                    return new RuTrackerItem { Site = SiteType.RuTracker };
+                default:
+                    return null;
+            }
+        }
+
+        public static IVideoItem CreateVideoItem(VideoItemPOCO poco)
+        {
+            var vi = new YouTubeItem
+            {
+                ID = poco.ID, 
+                Title = poco.Title, 
+                ParentID = poco.ParentID, 
+                Description = poco.Description, // .WordWrap(80);
+                ViewCount = poco.ViewCount, 
+                Duration = poco.Duration, 
+                Comments = poco.Comments, 
+                Thumbnail = poco.Thumbnail, 
+                Timestamp = poco.Timestamp, 
+                SyncState = (SyncState)poco.SyncState, 
+                Site = poco.Site, 
+                DurationString = IntTostrTime(poco.Duration), 
+                DateTimeAgo = TimeAgo(poco.Timestamp), 
+                Subtitles = new ObservableCollection<ISubtitle>()
+            };
+            return vi;
+        }
+
+        public static async Task FillDescriptionAsync(IVideoItem videoItem)
+        {
+            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(videoItem.ID);
+            videoItem.Description = res.WordWrap(150);
+        }
+
+        public static async Task<IVideoItem> GetVideoItemDbAsync(string id)
+        {
+            // var fb = ServiceLocator.SqLiteDatabase;
+            try
+            {
+                VideoItemPOCO poco = await CommonFactory.CreateSqLiteDatabase().GetVideoItemAsync(id);
+                IVideoItem vi = CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
+        {
+            try
+            {
+                VideoItemPOCO poco = null;
+                switch (site)
+                {
+                    case SiteType.YouTube:
+                        poco = await YouTubeSite.GetVideoItemNetAsync(id);
+                        break;
+                }
+                IVideoItem vi = CreateVideoItem(poco);
+                return vi;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
+        public static async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
+        {
+            SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
+            var res = new List<ISubtitle>();
+            IEnumerable<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            res.AddRange(poco.Select(SubtitleFactory.CreateSubtitle));
+            if (res.Any())
+            {
+                return res;
+            }
+            ISubtitle chap = SubtitleFactory.CreateSubtitle();
+            chap.IsEnabled = false;
+            chap.Language = "Auto";
+            res.Add(chap);
+            return res;
+        }
+
+        public static async Task InsertItemAsync(IVideoItem item)
+        {
+            try
+            {
+                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(item);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
 
         private static string IntTostrTime(int duration)
         {
@@ -88,118 +177,6 @@ namespace Models.Factories
                 return "just now";
             }
             return string.Empty;
-        }
-
-        #endregion
-
-        #region Methods
-
-        public IVideoItem CreateVideoItem(SiteType site)
-        {
-            switch (site)
-            {
-                case SiteType.YouTube:
-                    return new YouTubeItem(this) { Site = SiteType.YouTube };
-                case SiteType.Tapochek:
-                    return new TapochekItem { Site = SiteType.Tapochek };
-                case SiteType.RuTracker:
-                    return new RuTrackerItem { Site = SiteType.RuTracker };
-                default:
-                    return null;
-            }
-        }
-
-        public IVideoItem CreateVideoItem(VideoItemPOCO poco)
-        {
-            var vi = new YouTubeItem(this)
-            {
-                ID = poco.ID, 
-                Title = poco.Title, 
-                ParentID = poco.ParentID, 
-                Description = poco.Description, // .WordWrap(80);
-                ViewCount = poco.ViewCount, 
-                Duration = poco.Duration, 
-                Comments = poco.Comments, 
-                Thumbnail = poco.Thumbnail, 
-                Timestamp = poco.Timestamp, 
-                SyncState = (SyncState)poco.SyncState,
-                Site = poco.Site, 
-                DurationString = IntTostrTime(poco.Duration), 
-                DateTimeAgo = TimeAgo(poco.Timestamp), 
-                Subtitles = new ObservableCollection<ISubtitle>()
-            };
-            return vi;
-        }
-
-        public async Task FillDescriptionAsync(IVideoItem videoItem)
-        {
-            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(videoItem.ID);
-            videoItem.Description = res.WordWrap(150);
-        }
-
-        public async Task<IVideoItem> GetVideoItemDbAsync(string id)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            try
-            {
-                VideoItemPOCO poco = await CommonFactory.CreateSqLiteDatabase().GetVideoItemAsync(id);
-                IVideoItem vi = CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
-        {
-            try
-            {
-                VideoItemPOCO poco = null;
-                switch (site)
-                {
-                    case SiteType.YouTube:
-                        poco = await CommonFactory.CreateYouTubeSite().GetVideoItemNetAsync(id);
-                        break;
-                }
-                IVideoItem vi = CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
-        {
-            SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
-            var res = new List<ISubtitle>();
-            IEnumerable<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
-            res.AddRange(poco.Select(cf.CreateSubtitle));
-            if (res.Any())
-            {
-                return res;
-            }
-            ISubtitle chap = cf.CreateSubtitle();
-            chap.IsEnabled = false;
-            chap.Language = "Auto";
-            res.Add(chap);
-            return res;
-
-        }
-
-        public async Task InsertItemAsync(IVideoItem item)
-        {
-            try
-            {
-                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(item);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
 
         #endregion

@@ -257,24 +257,24 @@ namespace Crawler.ViewModels
         public async Task LoadCredsFromDb()
         {
             IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
-            SupportedCreds.AddRange(fbres.Select(poco => CommonFactory.CreateCredFactory().CreateCred(poco)));
+            SupportedCreds.AddRange(fbres.Select(poco => CredFactory.CreateCred(poco)));
         }
 
         public async Task LoadSettingsFromDb()
         {
             SettingFactory sf = CommonFactory.CreateSettingFactory();
 
-            ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
+            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
             DirPath = savedir.Value;
             if (string.IsNullOrEmpty(DirPath))
             {
                 DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
 
-            ISetting mpcdir = await sf.GetSettingDbAsync(pathToMpc);
+            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
             MpcPath = mpcdir.Value;
 
-            ISetting youpath = await sf.GetSettingDbAsync(pathToYoudl);
+            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
             YouPath = youpath.Value;
 
             if (string.IsNullOrEmpty(YouPath))
@@ -320,7 +320,7 @@ namespace Crawler.ViewModels
         public async Task LoadTagsFromDb()
         {
             IEnumerable<TagPOCO> fbres = (await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
-            IEnumerable<ITag> lst = fbres.Select(poco => CommonFactory.CreateTagFactory().CreateTag(poco));
+            IEnumerable<ITag> lst = fbres.Select(poco => TagFactory.CreateTag(poco));
             foreach (ITag tag in lst)
             {
                 SupportedTags.Add(tag);
@@ -329,7 +329,7 @@ namespace Crawler.ViewModels
 
         private void AddNewTag()
         {
-            var advm = new AddNewTagViewModel(this) { Tag = CommonFactory.CreateTagFactory().CreateTag() };
+            var advm = new AddNewTagViewModel(this) { Tag = TagFactory.CreateTag() };
             var antv = new AddNewTagView
             {
                 DataContext = advm,
@@ -420,7 +420,7 @@ namespace Crawler.ViewModels
         {
             SettingFactory sf = CommonFactory.CreateSettingFactory();
 
-            ISetting savedir = await sf.GetSettingDbAsync(pathToDownload);
+            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
             if (savedir.Value != DirPath)
             {
                 await savedir.UpdateSettingAsync(DirPath);
@@ -433,13 +433,13 @@ namespace Crawler.ViewModels
                 }
             }
 
-            ISetting mpcdir = await sf.GetSettingDbAsync(pathToMpc);
+            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
             if (mpcdir.Value != MpcPath)
             {
                 await mpcdir.UpdateSettingAsync(MpcPath);
             }
 
-            ISetting youpath = await sf.GetSettingDbAsync(pathToYoudl);
+            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
             if (youpath.Value != YouPath)
             {
                 await youpath.UpdateSettingAsync(YouPath);

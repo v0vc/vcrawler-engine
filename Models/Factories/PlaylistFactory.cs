@@ -1,12 +1,12 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Interfaces.Models;
@@ -16,26 +16,35 @@ namespace Models.Factories
 {
     public class PlaylistFactory
     {
-        #region Static and Readonly Fields
+        #region Static Methods
 
-        //private readonly CommonFactory commonFactory;
-
-        //#endregion
-
-        //#region Constructors
-
-        //public PlaylistFactory(CommonFactory commonFactory)
-        //{
-        //    this.commonFactory = commonFactory;
-        //}
-
-        #endregion
-
-        #region Methods
-
-        public async Task DeletePlaylistAsync(string id)
+        public static IPlaylist CreatePlaylist()
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            var pl = new Playlist();
+            return pl;
+        }
+
+        public static IPlaylist CreatePlaylist(PlaylistPOCO poco)
+        {
+            if (poco == null)
+            {
+                return null;
+            }
+            var pl = new Playlist()
+            {
+                ID = poco.ID, 
+                Title = poco.Title, 
+                SubTitle = poco.SubTitle, 
+                Thumbnail = poco.Thumbnail, 
+                ChannelId = poco.ChannelID, 
+                PlItems = poco.PlaylistItems
+            };
+            return pl;
+        }
+
+        public static async Task DeletePlaylistAsync(string id)
+        {
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeletePlaylistAsync(id);
@@ -46,15 +55,15 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
+        public static async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
-            var vf = CommonFactory.CreateVideoItemFactory();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
+            VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
                 IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsAsync(id, channelID);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -63,9 +72,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
+        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 return await fb.GetPlaylistItemsIdsListDbAsync(id);
@@ -76,9 +85,8 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id, int maxResult)
+        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id, int maxResult)
         {
-            var fb = CommonFactory.CreateYouTubeSite();
             try
             {
                 return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id, maxResult);
@@ -89,15 +97,14 @@ namespace Models.Factories
             }
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
+        public static async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
         {
-            var fb = CommonFactory.CreateYouTubeSite();
-            var vf = CommonFactory.CreateVideoItemFactory();
+            VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
-                IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsNetAsync(playlist.ID);
-                lst.AddRange(fbres.Select(poco => vf.CreateVideoItem(poco)));
+                IEnumerable<VideoItemPOCO> fbres = await YouTubeSite.GetPlaylistItemsNetAsync(playlist.ID);
+                lst.AddRange(fbres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
                 return lst;
             }
             catch (Exception ex)
@@ -106,9 +113,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task InsertPlaylistAsync(Playlist playlist)
+        public static async Task InsertPlaylistAsync(Playlist playlist)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertPlaylistAsync(playlist);
@@ -119,73 +126,12 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
+        public static async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePlaylistAsync(plid, itemid, channelid);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        #endregion
-
-        #region IPlaylistFactory Members
-
-        public IPlaylist CreatePlaylist()
-        {
-            var pl = new Playlist(this);
-            return pl;
-        }
-
-        public IPlaylist CreatePlaylist(PlaylistPOCO poco)
-        {
-            if (poco == null)
-            {
-                return null;
-            }
-            var pl = new Playlist(this)
-            {
-                ID = poco.ID,
-                Title = poco.Title,
-                SubTitle = poco.SubTitle,
-                Thumbnail = poco.Thumbnail,
-                ChannelId = poco.ChannelID,
-                PlItems = poco.PlaylistItems
-            };
-            return pl;
-        }
-
-        public async Task<IPlaylist> GetPlaylistDbAsync(string id)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            var fb = CommonFactory.CreateSqLiteDatabase();
-            var pf = CommonFactory.CreatePlaylistFactory();
-
-            try
-            {
-                PlaylistPOCO poco = await fb.GetPlaylistAsync(id);
-                IPlaylist pl = pf.CreatePlaylist(poco);
-                return pl;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public async Task<IPlaylist> GetPlaylistNetAsync(string id)
-        {
-            var pf = CommonFactory.CreatePlaylistFactory();
-            try
-            {
-                PlaylistPOCO fbres = await YouTubeSite.GetPlaylistNetAsync(id);
-                IPlaylist pl = pf.CreatePlaylist(fbres);
-                return pl;
             }
             catch (Exception ex)
             {

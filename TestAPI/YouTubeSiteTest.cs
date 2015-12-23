@@ -52,7 +52,7 @@ namespace TestAPI
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
             const int count = 2;
-            IEnumerable<VideoItemPOCO> lst = await you.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
+            IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
             Assert.AreEqual(count, lst.Count());
         }
 
@@ -67,7 +67,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsIdsListNetAsync()
         {
-            IEnumerable<string> res = await you.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
+            IEnumerable<string> res = await YouTubeSite.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
 
             Assert.AreEqual(res.Count(), 5);
         }
@@ -98,7 +98,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetFullChannel()
         {
-            ChannelPOCO channel = await you.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            ChannelPOCO channel = await YouTubeSite.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
             int count = await YouTubeSite.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
             Assert.IsTrue(channel.Items.Count == count);
             Assert.IsTrue(channel.Items.Any());
@@ -110,7 +110,7 @@ namespace TestAPI
         {
             var lst = new List<string> { "-wA6Qj4oF2E" };
 
-            IEnumerable<VideoItemPOCO> res = await you.GetVideosListByIdsAsync(lst);
+            IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lst);
 
             Assert.AreEqual(res.Count(), 1);
         }
@@ -136,7 +136,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsNetAsync()
         {
-            IEnumerable<VideoItemPOCO> lst = await you.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+            IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
 
             Assert.IsTrue(lst.Any());
         }
@@ -158,7 +158,7 @@ namespace TestAPI
             var testindex = new[] { 2 };
             foreach (int i in testindex)
             {
-                IEnumerable<VideoItemPOCO> lst = await you.GetPopularItemsAsync("ru", i);
+                IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync("ru", i);
                 Assert.AreEqual(lst.Count(), i);
             }
         }
@@ -173,7 +173,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoItemNetAsync()
         {
-            VideoItemPOCO res = await you.GetVideoItemNetAsync("lHgIpxQac3w"); // 
+            VideoItemPOCO res = await YouTubeSite.GetVideoItemNetAsync("lHgIpxQac3w"); // 
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -191,7 +191,7 @@ namespace TestAPI
             var testindex = new[] { 5 };
             foreach (int i in testindex)
             {
-                IEnumerable<VideoItemPOCO> lst = await you.SearchItemsAsync("russia", "RU", i);
+                IEnumerable<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync("russia", "RU", i);
                 Assert.AreEqual(lst.Count(), i);
             }
         }

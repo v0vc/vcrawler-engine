@@ -26,7 +26,6 @@ namespace Models.BO.Items
         #region Static and Readonly Fields
 
         private readonly string[] exts = { "mp4", "mkv", "mp3" };
-        private readonly VideoItemFactory videoItemFactory;
 
         #endregion
 
@@ -42,19 +41,6 @@ namespace Models.BO.Items
         private SyncState syncState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
-
-        #endregion
-
-        #region Constructors
-
-        public YouTubeItem(VideoItemFactory videoItemFactory)
-        {
-            this.videoItemFactory = videoItemFactory;
-        }
-
-        private YouTubeItem()
-        {
-        }
 
         #endregion
 
@@ -88,7 +74,7 @@ namespace Models.BO.Items
                 return;
             }
 
-            IEnumerable<ISubtitle> res = await videoItemFactory.GetVideoItemSubtitlesAsync(ID);
+            IEnumerable<ISubtitle> res = await VideoItemFactory.GetVideoItemSubtitlesAsync(ID);
 
             Subtitles.Clear();
 
@@ -377,12 +363,12 @@ namespace Models.BO.Items
 
         public async Task FillDescriptionAsync()
         {
-            await videoItemFactory.FillDescriptionAsync(this);
+            await VideoItemFactory.FillDescriptionAsync(this);
         }
 
         public async Task InsertItemAsync()
         {
-            await videoItemFactory.InsertItemAsync(this);
+            await VideoItemFactory.InsertItemAsync(this);
         }
 
         public void IsHasLocalFileFound(string dir)

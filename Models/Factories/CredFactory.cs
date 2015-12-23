@@ -1,10 +1,10 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Threading.Tasks;
+using DataAPI.Database;
 using DataAPI.POCO;
 using Extensions.Helpers;
 using Interfaces.Enums;
@@ -15,26 +15,31 @@ namespace Models.Factories
 {
     public class CredFactory
     {
-        #region Static and Readonly Fields
+        #region Static Methods
 
-        //private readonly CommonFactory commonFactory;
-
-        //#endregion
-
-        //#region Constructors
-
-        //public CredFactory(CommonFactory commonFactory)
-        //{
-        //    this.commonFactory = commonFactory;
-        //}
-
-        #endregion
-
-        #region Methods
-
-        public async Task DeleteCredAsync(string site)
+        public static ICred CreateCred()
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            return new Cred();
+        }
+
+        public static ICred CreateCred(CredPOCO poco)
+        {
+            var cred = new Cred()
+            {
+                SiteAdress = poco.Site, 
+                Login = poco.Login, 
+                Pass = poco.Pass, 
+                Cookie = poco.Cookie, 
+                Expired = poco.Expired, 
+                Autorization = poco.Autorization, 
+                Site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site)
+            };
+            return cred;
+        }
+
+        public static async Task DeleteCredAsync(string site)
+        {
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.DeleteCredAsync(site);
@@ -45,9 +50,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task InsertCredAsync(ICred cred)
+        public static async Task InsertCredAsync(ICred cred)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertCredAsync(cred);
@@ -58,9 +63,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdateAutorizationAsync(string site, short autorize)
+        public static async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateAutorizationAsync(site, autorize);
@@ -71,9 +76,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdateLoginAsync(string site, string newlogin)
+        public static async Task UpdateLoginAsync(string site, string newlogin)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdateLoginAsync(site, newlogin);
@@ -84,54 +89,12 @@ namespace Models.Factories
             }
         }
 
-        public async Task UpdatePasswordAsync(string site, string newpassword)
+        public static async Task UpdatePasswordAsync(string site, string newpassword)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.UpdatePasswordAsync(site, newpassword);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        #endregion
-
-        #region ICredFactory Members
-
-        public ICred CreateCred()
-        {
-            return new Cred(this);
-        }
-
-        public ICred CreateCred(CredPOCO poco)
-        {
-            var cred = new Cred(this)
-            {
-                SiteAdress = poco.Site,
-                Login = poco.Login,
-                Pass = poco.Pass,
-                Cookie = poco.Cookie,
-                Expired = poco.Expired,
-                Autorization = poco.Autorization,
-                Site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site)
-            };
-            return cred;
-        }
-
-        public async Task<ICred> GetCredDbAsync(SiteType site)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            var fb = CommonFactory.CreateSqLiteDatabase();
-            var cf = CommonFactory.CreateCredFactory();
-
-            try
-            {
-                CredPOCO poco = await fb.GetCredAsync(site);
-                ICred cred = cf.CreateCred(poco);
-                return cred;
             }
             catch (Exception ex)
             {

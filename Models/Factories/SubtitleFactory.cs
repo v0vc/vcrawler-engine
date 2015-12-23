@@ -10,14 +10,14 @@ namespace Models.Factories
 {
     public class SubtitleFactory
     {
-        #region ISubtitleFactory Members
+        #region Static Methods
 
-        public ISubtitle CreateSubtitle()
+        public static ISubtitle CreateSubtitle()
         {
             return new Subtitle();
         }
 
-        public ISubtitle CreateSubtitle(SubtitlePOCO poco)
+        public static ISubtitle CreateSubtitle(SubtitlePOCO poco)
         {
             return new Subtitle { Language = poco.Language, IsEnabled = true };
         }

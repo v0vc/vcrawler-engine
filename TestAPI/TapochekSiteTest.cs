@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -43,8 +42,7 @@ namespace TestAPI
         [TestMethod]
         public void FillChannelCookieDbAsync()
         {
-            ChannelFactory chf = CommonFactory.CreateChannelFactory();
-            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -56,8 +54,7 @@ namespace TestAPI
         [TestMethod]
         public async Task FillChannelNetAsync()
         {
-            ChannelFactory chf = CommonFactory.CreateChannelFactory();
-            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -71,8 +68,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelCookieNetAsync()
         {
-            ChannelFactory chf = CommonFactory.CreateChannelFactory();
-            IChannel ch = chf.CreateChannel(SiteType.Tapochek);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
             CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             Assert.IsTrue(cookie.Count > 0);
         }
@@ -80,8 +76,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            ChannelFactory chf = CommonFactory.CreateChannelFactory();
-            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -91,13 +86,15 @@ namespace TestAPI
             if (ch.ChannelCookies == null)
             {
                 await ch.FillChannelCookieNetAsync();
-                //ch.StoreCookies();
+
+                // ch.StoreCookies();
             }
             IEnumerable<VideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
                 await ch.FillChannelCookieNetAsync();
-                //ch.StoreCookies();
+
+                // ch.StoreCookies();
                 t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             }
             Assert.IsTrue(t.Any());
@@ -106,8 +103,7 @@ namespace TestAPI
         [TestMethod]
         public async Task StoreCookiesAsync()
         {
-            ChannelFactory chf = CommonFactory.CreateChannelFactory();
-            var ch = chf.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
             if (ch == null)
             {
                 return;
@@ -115,7 +111,7 @@ namespace TestAPI
             CookieContainer cookie = await tf.GetCookieNetAsync(ch);
             ch.ChannelCookies = cookie;
 
-            //ch.StoreCookies();
+            // ch.StoreCookies();
             SqLiteDatabase c = CommonFactory.CreateSqLiteDatabase();
             if (c.FileBase.DirectoryName != null)
             {

@@ -111,7 +111,7 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudCredentials()
         {
-            ICred cred = crf.CreateCred();
+            ICred cred = CredFactory.CreateCred();
             FillTestCred(cred);
 
             // DeleteCredAsync
@@ -150,15 +150,15 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudItems()
         {
-            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi, SyncState.Added);
-            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2, SyncState.Notset);
             vi2.ID = "vi2";
             var lst = new List<IVideoItem> { vi, vi2 };
-            ICred cred = crf.CreateCred();
+            ICred cred = CredFactory.CreateCred();
             FillTestCred(cred);
-            IChannel ch = cf.CreateChannel(SiteType.YouTube);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync
@@ -251,20 +251,20 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudPlaylists()
         {
-            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi, SyncState.Added);
 
-            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2, SyncState.Deleted);
             vi2.ID = "vi2";
 
-            ICred cred = crf.CreateCred();
+            ICred cred = CredFactory.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = cf.CreateChannel(SiteType.YouTube);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
-            IPlaylist pl = pf.CreatePlaylist();
+            IPlaylist pl = PlaylistFactory.CreatePlaylist();
             FillTestPl(pl, ch);
 
             // DeleteCredAsync
@@ -323,7 +323,7 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudSettings()
         {
-            ISetting setting = sf.CreateSetting();
+            ISetting setting = SettingFactory.CreateSetting();
             FillTestSetting(setting);
 
             // DeleteSettingAsync
@@ -350,7 +350,7 @@ namespace TestAPI
         [TestMethod]
         public void TestCrudTags()
         {
-            ITag tag = tf.CreateTag();
+            ITag tag = TagFactory.CreateTag();
             FillTestTag(tag);
 
             // DeleteTagAsync
@@ -361,17 +361,17 @@ namespace TestAPI
             t = db.InsertTagAsync(tag);
             Assert.IsTrue(!t.IsFaulted);
 
-            IVideoItem vi = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi, SyncState.Notset);
 
-            IVideoItem vi2 = vf.CreateVideoItem(SiteType.YouTube);
+            IVideoItem vi2 = VideoItemFactory.CreateVideoItem(SiteType.YouTube);
             FillTestVideoItem(vi2, SyncState.Deleted);
             vi2.ID = "vi2";
 
-            ICred cred = crf.CreateCred();
+            ICred cred = CredFactory.CreateCred();
             FillTestCred(cred);
 
-            IChannel ch = cf.CreateChannel(SiteType.YouTube);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2, cred);
 
             // DeleteCredAsync

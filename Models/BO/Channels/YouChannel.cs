@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -17,12 +18,6 @@ namespace Models.BO.Channels
 {
     public sealed class YouChannel : IChannel, INotifyPropertyChanged
     {
-        #region Static and Readonly Fields
-
-        private readonly ChannelFactory channelFactory;
-
-        #endregion
-
         #region Fields
 
         private List<string> added;
@@ -41,17 +36,12 @@ namespace Models.BO.Channels
 
         #region Constructors
 
-        public YouChannel(ChannelFactory channelFactory)
+        public YouChannel()
         {
-            this.channelFactory = channelFactory;
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
             ChannelCookies = new CookieContainer();
-        }
-
-        private YouChannel()
-        {
         }
 
         #endregion
@@ -60,67 +50,68 @@ namespace Models.BO.Channels
 
         public async Task DeleteChannelPlaylistsAsync()
         {
-            await channelFactory.DeleteChannelPlaylistsAsync(ID);
+            await ChannelFactory.DeleteChannelPlaylistsAsync(ID);
         }
 
         public async Task DeleteChannelTagAsync(string tag)
         {
-            await channelFactory.DeleteChannelTagAsync(ID, tag);
+            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(ID, tag);
         }
 
         public void FillChannelCookieDb()
         {
-            channelFactory.FillChannelCookieDb(this);
+            ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(Site);
         }
 
         public async Task FillChannelCookieNetAsync()
         {
-            await channelFactory.FillChannelCookieNetAsync(this);
+            await ChannelFactory.FillChannelCookieNetAsync(this);
         }
 
         public async Task FillChannelDescriptionAsync()
         {
-            await channelFactory.FillChannelDescriptionAsync(this);
+            var text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(ID);
+            SubTitle = text.WordWrap(80);
         }
 
         public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
         {
-            return await channelFactory.GetChannelItemsNetAsync(this, maxresult);
+            return await ChannelFactory.GetChannelItemsNetAsync(this, maxresult);
         }
 
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
         {
-            return await channelFactory.GetChannelPlaylistsAsync(ID);
+            return await ChannelFactory.GetChannelPlaylistsAsync(ID);
         }
 
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
         {
-            return await channelFactory.GetChannelPlaylistsNetAsync(ID);
+            return await ChannelFactory.GetChannelPlaylistsNetAsync(ID);
         }
 
         public async Task<IEnumerable<ITag>> GetChannelTagsAsync()
         {
-            return await channelFactory.GetChannelTagsAsync(ID);
+            return await ChannelFactory.GetChannelTagsAsync(ID);
         }
 
-        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(string id, SiteType site)
+        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync()
         {
-            return await channelFactory.GetRelatedChannelNetAsync(this);
+            return await ChannelFactory.GetRelatedChannelNetAsync(this);
         }
 
         public async Task InsertChannelItemsAsync()
         {
-            await channelFactory.InsertChannelItemsAsync(this);
+            await CommonFactory.CreateSqLiteDatabase().InsertChannelItemsAsync(this);
         }
 
         public async Task InsertChannelTagAsync(string tag)
         {
-            await channelFactory.InsertChannelTagAsync(ID, tag);
+            await CommonFactory.CreateSqLiteDatabase().InsertChannelTagsAsync(ID, tag);
         }
 
         public async Task RenameChannelAsync(string newName)
         {
-            await channelFactory.RenameChannelAsync(ID, newName);
+            await CommonFactory.CreateSqLiteDatabase().RenameChannelAsync(ID, newName);
         }
 
         public async void RestoreFullChannelItems(string dirPath)
@@ -134,12 +125,12 @@ namespace Models.BO.Channels
 
         public async Task SyncChannelPlaylistsAsync()
         {
-            await channelFactory.SyncChannelPlaylistsAsync(this);
+            await ChannelFactory.SyncChannelPlaylistsAsync(this);
         }
 
         private async Task FillChannelItemsDbAsync(string dir, int count, int offset)
         {
-            await channelFactory.FillChannelItemsFromDbAsync(this, dir, count, offset);
+            await ChannelFactory.FillChannelItemsFromDbAsync(this, dir, count, offset);
         }
 
         private bool FilterVideoBySynced(object item)

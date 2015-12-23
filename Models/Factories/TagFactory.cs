@@ -1,10 +1,10 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Threading.Tasks;
+using DataAPI.Database;
 using DataAPI.POCO;
 using Interfaces.Models;
 using Models.BO;
@@ -13,28 +13,23 @@ namespace Models.Factories
 {
     public class TagFactory
     {
-        #region Static and Readonly Fields
+        #region Static Methods
 
-        //private readonly CommonFactory commonFactory;
-
-        #endregion
-
-        #region Constructors
-
-        //public TagFactory(CommonFactory commonFactory)
-        //{
-        //    this.commonFactory = commonFactory;
-        //}
-
-        #endregion
-
-        #region Methods
-
-        public async Task DeleteTagAsync(string tag)
+        public static ITag CreateTag()
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            return new Tag();
+        }
 
-            // var fb = ServiceLocator.SqLiteDatabase;
+        public static ITag CreateTag(TagPOCO poco)
+        {
+            var tag = new Tag { Title = poco.Title };
+            return tag;
+        }
+
+        public static async Task DeleteTagAsync(string tag)
+        {
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
+
             try
             {
                 await fb.DeleteTagAsync(tag);
@@ -45,9 +40,9 @@ namespace Models.Factories
             }
         }
 
-        public async Task InsertTagAsync(ITag tag)
+        public static async Task InsertTagAsync(ITag tag)
         {
-            var fb = CommonFactory.CreateSqLiteDatabase();
+            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
                 await fb.InsertTagAsync(tag);
@@ -56,21 +51,6 @@ namespace Models.Factories
             {
                 throw new Exception(ex.Message);
             }
-        }
-
-        #endregion
-
-        #region ITagFactory Members
-
-        public ITag CreateTag()
-        {
-            return new Tag(this);
-        }
-
-        public ITag CreateTag(TagPOCO poco)
-        {
-            var tag = new Tag(this) { Title = poco.Title };
-            return tag;
         }
 
         #endregion

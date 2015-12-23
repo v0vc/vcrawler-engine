@@ -33,6 +33,47 @@ namespace DataAPI.Videos
         #region Static Methods
 
         /// <summary>
+        ///     Get full channel
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public static async Task<ChannelPOCO> GetChannelFullNetAsync(string channelID)
+        {
+            ChannelPOCO ch = await GetChannelNetAsync(channelID);
+
+            List<PlaylistPOCO> relatedpls = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
+
+            PlaylistPOCO uploads = relatedpls.SingleOrDefault(x => x.SubTitle == "uploads");
+
+            if (uploads == null)
+            {
+                return ch;
+            }
+
+            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
+
+            // ch.Playlists.AddRange(relatedpls.Where(x => x != uploads)); // Liked, favorites and other
+            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
+
+            foreach (PlaylistPOCO pl in ch.Playlists)
+            {
+                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID, 0);
+                foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
+                {
+                    pl.PlaylistItems.Add(id);
+                }
+            }
+
+            // uploads.PlaylistItems.AddRange(ch.Items.Select(x => x.ID));
+            // foreach (IPlaylistPOCO poco in ch.Playlists.Where(poco => poco.SubTitle == "uploads"))
+            // {
+            // poco.SubTitle = string.Empty;
+            // }
+            // ch.Playlists.Add(uploads);
+            return ch;
+        }
+
+        /// <summary>
         ///     Get channel ID by username
         /// </summary>
         /// <param name="username"></param>
@@ -60,6 +101,143 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
+        ///     Get channel items, 0 - all items
+        /// </summary>
+        /// <param name="channelID">channel ID</param>
+        /// <param name="maxResult">count</param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            int itemsppage = itemsPerPage;
+
+            if (maxResult < itemsPerPage & maxResult != 0)
+            {
+                itemsppage = maxResult;
+            }
+
+            string zap =
+                string.Format(
+                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", 
+                    url, 
+                    channelID, 
+                    key, 
+                    itemsppage, 
+                    printType);
+
+            object pagetoken;
+
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    JToken tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                    {
+                        continue;
+                    }
+
+                    var id = tid.Value<string>();
+                    if (res.Select(x => x.ID).Contains(id))
+                    {
+                        continue;
+                    }
+
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    await item.FillFieldsFromGetting(pair);
+                    res.Add(item);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
+                }
+
+                string ids = sb.ToString().TrimEnd(',');
+
+                zap =
+                    string.Format(
+                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}", 
+                        url, 
+                        ids, 
+                        key, 
+                        printType);
+
+                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                jsvideo = JObject.Parse(det);
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    JToken id = pair.SelectToken("id");
+                    if (id == null)
+                    {
+                        continue;
+                    }
+
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    JToken pr = pair.SelectToken("status.privacyStatus");
+                    var prstatus = pr.Value<string>();
+                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(prstatus);
+                    item.FillFieldsFromDetails(pair);
+                }
+
+                zap =
+                    string.Format(
+                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}", 
+                        url, 
+                        channelID, 
+                        key, 
+                        itemsppage, 
+                        pagetoken, 
+                        printType);
+            }
+            while (pagetoken != null);
+
+            return res.Where(x => x.Status != PrivacyStatus.Private).ToList();
+        }
+
+        /// <summary>
+        ///     Get channel items count using search (can include hidden items)
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public static async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
+        {
+            string zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken total = jsvideo.SelectToken("pageInfo.totalResults");
+
+            if (total == null)
+            {
+                throw new Exception(zap);
+            }
+            return total.Value<int>();
+        }
+
+        /// <summary>
         ///     Get channel items count
         /// </summary>
         /// <param name="channelID">channel ID</param>
@@ -83,6 +261,120 @@ namespace DataAPI.Videos
                 throw new Exception(zap);
             }
             return total.Value<int>();
+        }
+
+        /// <summary>
+        ///     Get channel items IDs
+        /// </summary>
+        /// <param name="channelID">channel ID</param>
+        /// <param name="maxResult">Count</param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            int itemsppage = itemsPerPage;
+
+            if (maxResult < itemsPerPage & maxResult != 0)
+            {
+                itemsppage = maxResult;
+            }
+
+            string zap =
+                string.Format(
+                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id)&{4}", 
+                    url, 
+                    channelID, 
+                    key, 
+                    itemsppage, 
+                    printType);
+
+            object pagetoken;
+
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+                var sb = new StringBuilder();
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    JToken tid = pair.SelectToken("id.videoId");
+                    if (tid == null)
+                    {
+                        continue;
+                    }
+
+                    var id = tid.Value<string>();
+                    if (res.Select(x => x.ID).Contains(id))
+                    {
+                        continue;
+                    }
+
+                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+
+                    res.Add(item);
+
+                    sb.Append(id).Append(',');
+
+                    if (res.Count == maxResult)
+                    {
+                        pagetoken = null;
+                        break;
+                    }
+                }
+
+                string ids = sb.ToString().TrimEnd(',');
+
+                zap = string.Format("{0}videos?id={1}&key={2}&part=status&fields=items(id,status(privacyStatus))&{3}", 
+                    url, 
+                    ids, 
+                    key, 
+                    printType);
+
+                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                jsvideo = JObject.Parse(det);
+
+                foreach (JToken pair in jsvideo["items"])
+                {
+                    JToken id = pair.SelectToken("id");
+                    if (id == null)
+                    {
+                        continue;
+                    }
+
+                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    if (item == null)
+                    {
+                        continue;
+                    }
+                    JToken pr = pair.SelectToken("status.privacyStatus");
+                    if (pr == null)
+                    {
+                        continue;
+                    }
+                    var status = pr.Value<string>();
+                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(status);
+                }
+
+                zap =
+                    string.Format(
+                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id)&{5}", 
+                        url, 
+                        channelID, 
+                        key, 
+                        itemsppage, 
+                        pagetoken, 
+                        printType);
+            }
+            while (pagetoken != null);
+
+            return res.Where(x => x.Status == PrivacyStatus.Public).Select(x => x.ID).ToList();
         }
 
         /// <summary>
@@ -254,7 +546,7 @@ namespace DataAPI.Videos
                               "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}", 
                     url, 
                     key, 
-                    plid,
+                    plid, 
                     itemsppage, 
                     printType);
 
@@ -315,396 +607,11 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Get playlist by ID
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static async Task<PlaylistPOCO> GetPlaylistNetAsync(string id)
-        {
-            var pl = new PlaylistPOCO(id, SiteType.YouTube);
-
-            string zap =
-                string.Format(
-                              "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}", 
-                    url, 
-                    id, 
-                    key, 
-                    printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            await pl.FillFieldsFromSingle(jsvideo);
-
-            return pl;
-        }
-
-        /// <summary>
-        ///     Get channel related channels
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static async Task<IEnumerable<ChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
-        {
-            var lst = new List<ChannelPOCO>();
-
-            string zap =
-                string.Format(
-                              "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}", 
-                    url, 
-                    id, 
-                    key, 
-                    printType);
-
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(det);
-
-            JToken par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
-
-            if (par != null)
-            {
-                foreach (JToken jToken in par)
-                {
-                    ChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>());
-                    if (!string.IsNullOrEmpty(ch.Title))
-                    {
-                        lst.Add(ch);
-                    }
-                }
-            }
-
-            return lst;
-        }
-
-        /// <summary>
-        ///     Get video subtitles
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static async Task<IEnumerable<SubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
-        {
-            string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
-                url, 
-                id, 
-                key, 
-                printType);
-
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(det);
-
-            return (from pair in jsvideo["items"]
-                select pair.SelectToken("snippet.language")
-                into lang
-                where lang != null
-                select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<SubtitlePOCO>().ToList();
-        }
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///     Get full channel
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<ChannelPOCO> GetChannelFullNetAsync(string channelID)
-        {
-            ChannelPOCO ch = await GetChannelNetAsync(channelID);
-
-            List<PlaylistPOCO> relatedpls = (await GetChannelRelatedPlaylistsNetAsync(channelID)).ToList();
-
-            PlaylistPOCO uploads = relatedpls.SingleOrDefault(x => x.SubTitle == "uploads");
-
-            if (uploads == null)
-            {
-                return ch;
-            }
-
-            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
-
-            // ch.Playlists.AddRange(relatedpls.Where(x => x != uploads)); // Liked, favorites and other
-            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
-
-            foreach (PlaylistPOCO pl in ch.Playlists)
-            {
-                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID, 0);
-                foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
-                {
-                    pl.PlaylistItems.Add(id);
-                }
-            }
-
-            //uploads.PlaylistItems.AddRange(ch.Items.Select(x => x.ID));
-            //foreach (IPlaylistPOCO poco in ch.Playlists.Where(poco => poco.SubTitle == "uploads"))
-            //{
-            //    poco.SubTitle = string.Empty;
-            //}
-            //ch.Playlists.Add(uploads);
-
-            return ch;
-        }
-
-        /// <summary>
-        ///     Get channel items, 0 - all items
-        /// </summary>
-        /// <param name="channelID">channel ID</param>
-        /// <param name="maxResult">count</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
-        {
-            var res = new List<VideoItemPOCO>();
-
-            int itemsppage = itemsPerPage;
-
-            if (maxResult < itemsPerPage & maxResult != 0)
-            {
-                itemsppage = maxResult;
-            }
-
-            string zap =
-                string.Format(
-                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}", 
-                    url, 
-                    channelID, 
-                    key, 
-                    itemsppage, 
-                    printType);
-
-            object pagetoken;
-
-            do
-            {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                JObject jsvideo = JObject.Parse(str);
-
-                pagetoken = jsvideo.SelectToken(token);
-
-                var sb = new StringBuilder();
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    JToken tid = pair.SelectToken("id.videoId");
-                    if (tid == null)
-                    {
-                        continue;
-                    }
-
-                    var id = tid.Value<string>();
-                    if (res.Select(x => x.ID).Contains(id))
-                    {
-                        continue;
-                    }
-
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    await item.FillFieldsFromGetting(pair);
-                    res.Add(item);
-
-                    sb.Append(id).Append(',');
-
-                    if (res.Count == maxResult)
-                    {
-                        pagetoken = null;
-                        break;
-                    }
-                }
-
-                string ids = sb.ToString().TrimEnd(',');
-
-                zap =
-                    string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}", 
-                        url, 
-                        ids, 
-                        key, 
-                        printType);
-
-                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                jsvideo = JObject.Parse(det);
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    JToken id = pair.SelectToken("id");
-                    if (id == null)
-                    {
-                        continue;
-                    }
-
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
-
-                    if (item == null)
-                    {
-                        continue;
-                    }
-
-                    JToken pr = pair.SelectToken("status.privacyStatus");
-                    var prstatus = pr.Value<string>();
-                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(prstatus);
-                    item.FillFieldsFromDetails(pair);
-                }
-
-                zap =
-                    string.Format(
-                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}", 
-                        url, 
-                        channelID, 
-                        key, 
-                        itemsppage, 
-                        pagetoken, 
-                        printType);
-            }
-            while (pagetoken != null);
-
-            return res.Where(x => x.Status != PrivacyStatus.Private).ToList();
-        }
-
-        /// <summary>
-        ///     Get channel items count using search (can include hidden items)
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
-        {
-            string zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
-
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-            JObject jsvideo = JObject.Parse(str);
-
-            JToken total = jsvideo.SelectToken("pageInfo.totalResults");
-
-            if (total == null)
-            {
-                throw new Exception(zap);
-            }
-            return total.Value<int>();
-        }
-
-        /// <summary>
-        ///     Get channel items IDs
-        /// </summary>
-        /// <param name="channelID">channel ID</param>
-        /// <param name="maxResult">Count</param>
-        /// <returns></returns>
-        public async Task<IEnumerable<string>> GetChannelItemsIdsListNetAsync(string channelID, int maxResult)
-        {
-            var res = new List<VideoItemPOCO>();
-
-            int itemsppage = itemsPerPage;
-
-            if (maxResult < itemsPerPage & maxResult != 0)
-            {
-                itemsppage = maxResult;
-            }
-
-            string zap =
-                string.Format(
-                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id)&{4}", 
-                    url, 
-                    channelID, 
-                    key, 
-                    itemsppage, 
-                    printType);
-
-            object pagetoken;
-
-            do
-            {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                JObject jsvideo = JObject.Parse(str);
-
-                pagetoken = jsvideo.SelectToken(token);
-
-                var sb = new StringBuilder();
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    JToken tid = pair.SelectToken("id.videoId");
-                    if (tid == null)
-                    {
-                        continue;
-                    }
-
-                    var id = tid.Value<string>();
-                    if (res.Select(x => x.ID).Contains(id))
-                    {
-                        continue;
-                    }
-
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
-
-                    res.Add(item);
-
-                    sb.Append(id).Append(',');
-
-                    if (res.Count == maxResult)
-                    {
-                        pagetoken = null;
-                        break;
-                    }
-                }
-
-                string ids = sb.ToString().TrimEnd(',');
-
-                zap = string.Format("{0}videos?id={1}&key={2}&part=status&fields=items(id,status(privacyStatus))&{3}", 
-                    url, 
-                    ids, 
-                    key, 
-                    printType);
-
-                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                jsvideo = JObject.Parse(det);
-
-                foreach (JToken pair in jsvideo["items"])
-                {
-                    JToken id = pair.SelectToken("id");
-                    if (id == null)
-                    {
-                        continue;
-                    }
-
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
-                    if (item == null)
-                    {
-                        continue;
-                    }
-                    JToken pr = pair.SelectToken("status.privacyStatus");
-                    if (pr == null)
-                    {
-                        continue;
-                    }
-                    var status = pr.Value<string>();
-                    item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(status);
-                }
-
-                zap =
-                    string.Format(
-                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id)&{5}", 
-                        url, 
-                        channelID, 
-                        key, 
-                        itemsppage, 
-                        pagetoken, 
-                        printType);
-            }
-            while (pagetoken != null);
-
-            return res.Where(x => x.Status == PrivacyStatus.Public).Select(x => x.ID).ToList();
-        }
-
-        /// <summary>
         ///     Get playlist items
         /// </summary>
         /// <param name="plid"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
+        public static async Task<IEnumerable<VideoItemPOCO>> GetPlaylistItemsNetAsync(string plid)
         {
             var res = new List<VideoItemPOCO>();
 
@@ -750,14 +657,13 @@ namespace DataAPI.Videos
                     }
 
                     var prstatus = pr.Value<string>();
-                    if (prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Public)
-                       || prstatus == EnumHelper.GetAttributeOfType(PrivacyStatus.Unlisted))
+                    if (prstatus != EnumHelper.GetAttributeOfType(PrivacyStatus.Public)
+                        && prstatus != EnumHelper.GetAttributeOfType(PrivacyStatus.Unlisted))
                     {
                         continue;
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-
                     item.FillFieldsFromPlaylist(pair);
                     res.Add(item);
                     sb.Append(id).Append(',');
@@ -808,12 +714,38 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
+        ///     Get playlist by ID
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<PlaylistPOCO> GetPlaylistNetAsync(string id)
+        {
+            var pl = new PlaylistPOCO(id, SiteType.YouTube);
+
+            string zap =
+                string.Format(
+                              "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}", 
+                    url, 
+                    id, 
+                    key, 
+                    printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            await pl.FillFieldsFromSingle(jsvideo);
+
+            return pl;
+        }
+
+        /// <summary>
         ///     Get popular by country
         /// </summary>
         /// <param name="regionID">Country code</param>
         /// <param name="maxResult">count</param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
+        public static async Task<IEnumerable<VideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
             int itemsppage = itemsPerPage;
 
@@ -917,29 +849,41 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
-        ///     Get lite video
+        ///     Get channel related channels
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        private static async Task<VideoItemPOCO> GetVideoItemLiteNetAsync(string id)
+        public static async Task<IEnumerable<ChannelPOCO>> GetRelatedChannelsByIdAsync(string id)
         {
-            var item = new VideoItemPOCO(id, SiteType.YouTube);
+            var lst = new List<ChannelPOCO>();
 
-            string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}", 
-                url, 
-                id, 
-                key, 
-                printType);
+            string zap =
+                string.Format(
+                              "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}", 
+                    url, 
+                    id, 
+                    key, 
+                    printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
 
-            JObject jsvideo = JObject.Parse(str);
+            JObject jsvideo = JObject.Parse(det);
 
-            JToken par = jsvideo.SelectToken("items[0].snippet.channelId");
+            JToken par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
 
-            item.ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
+            if (par != null)
+            {
+                foreach (JToken jToken in par)
+                {
+                    ChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>());
+                    if (!string.IsNullOrEmpty(ch.Title))
+                    {
+                        lst.Add(ch);
+                    }
+                }
+            }
 
-            return item;
+            return lst;
         }
 
         /// <summary>
@@ -947,7 +891,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="videoid">video ID</param>
         /// <returns></returns>
-        public async Task<VideoItemPOCO> GetVideoItemNetAsync(string videoid)
+        public static async Task<VideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {
             var item = new VideoItemPOCO(videoid, SiteType.YouTube);
 
@@ -973,7 +917,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetVideosListByIdsAsync(IEnumerable<string> ids)
+        public static async Task<IEnumerable<VideoItemPOCO>> GetVideosListByIdsAsync(IEnumerable<string> ids)
         {
             var lst = new List<VideoItemPOCO>();
 
@@ -1029,7 +973,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetVideosListByIdsLiteAsync(IEnumerable<string> ids)
+        public static async Task<IEnumerable<VideoItemPOCO>> GetVideosListByIdsLiteAsync(IEnumerable<string> ids)
         {
             var lst = new List<VideoItemPOCO>();
 
@@ -1076,6 +1020,30 @@ namespace DataAPI.Videos
             }
 
             return lst;
+        }
+
+        /// <summary>
+        ///     Get video subtitles
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<SubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
+        {
+            string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}", 
+                url, 
+                id, 
+                key, 
+                printType);
+
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(det);
+
+            return (from pair in jsvideo["items"]
+                select pair.SelectToken("snippet.language")
+                into lang
+                where lang != null
+                select new SubtitlePOCO { Language = lang.Value<string>() }).Cast<SubtitlePOCO>().ToList();
         }
 
         /// <summary>
@@ -1144,7 +1112,7 @@ namespace DataAPI.Videos
         /// <param name="region">region</param>
         /// <param name="maxResult">count</param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
+        public static async Task<IEnumerable<VideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
             int itemsppage = itemsPerPage;
 
@@ -1248,6 +1216,32 @@ namespace DataAPI.Videos
             while (pagetoken != null);
 
             return res;
+        }
+
+        /// <summary>
+        ///     Get lite video
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private static async Task<VideoItemPOCO> GetVideoItemLiteNetAsync(string id)
+        {
+            var item = new VideoItemPOCO(id, SiteType.YouTube);
+
+            string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}", 
+                url, 
+                id, 
+                key, 
+                printType);
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken par = jsvideo.SelectToken("items[0].snippet.channelId");
+
+            item.ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
+
+            return item;
         }
 
         #endregion
