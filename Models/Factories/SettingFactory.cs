@@ -37,7 +37,6 @@ namespace Models.Factories
         {
             // var fb = ServiceLocator.SqLiteDatabase;
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            SettingFactory sf = CommonFactory.CreateSettingFactory();
 
             try
             {

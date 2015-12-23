@@ -129,6 +129,24 @@ namespace Extensions.Helpers
             return true;
         }
 
+        public static bool CheckForInternetConnection(string url)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    using (Stream stream = client.OpenRead(url))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         #endregion
     }
 }

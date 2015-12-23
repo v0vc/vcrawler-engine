@@ -20,6 +20,7 @@ using Crawler.Properties;
 using Crawler.Views;
 using DataAPI.POCO;
 using Extensions;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -41,14 +42,13 @@ namespace Crawler.ViewModels
         private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
         private const string youtubeDl = "youtube-dl.exe";
+        private readonly Action<string> onSaveAction;
 
         #endregion
 
-        //private readonly CommonFactory baseFactory;
-
         #region Static and Readonly Fields
 
-        private readonly ObservableCollection<IChannel> channels;
+        //private readonly ObservableCollection<IChannel> channels;
 
         #endregion
 
@@ -71,9 +71,9 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(ObservableCollection<IChannel> channels)
+        public SettingsViewModel(Action<string> onSaveAction)
         {
-            this.channels = channels;
+            this.onSaveAction = onSaveAction;
             SupportedTags = new ObservableCollection<ITag>();
             SupportedCreds = new List<ICred>();
         }
@@ -222,24 +222,6 @@ namespace Crawler.ViewModels
             return values != null && values.Split(';').Select(path => Path.Combine(path, ff)).Any(File.Exists);
         }
 
-        private static bool CheckForInternetConnection(string url)
-        {
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    using (Stream stream = client.OpenRead(url))
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
         #endregion
 
         #region Methods
@@ -257,7 +239,7 @@ namespace Crawler.ViewModels
         public async Task LoadCredsFromDb()
         {
             IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
-            SupportedCreds.AddRange(fbres.Select(poco => CredFactory.CreateCred(poco)));
+            SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
         public async Task LoadSettingsFromDb()
@@ -320,7 +302,7 @@ namespace Crawler.ViewModels
         public async Task LoadTagsFromDb()
         {
             IEnumerable<TagPOCO> fbres = (await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
-            IEnumerable<ITag> lst = fbres.Select(poco => TagFactory.CreateTag(poco));
+            IEnumerable<ITag> lst = fbres.Select(TagFactory.CreateTag);
             foreach (ITag tag in lst)
             {
                 SupportedTags.Add(tag);
@@ -418,18 +400,13 @@ namespace Crawler.ViewModels
 
         private async Task SaveSettingsToDb()
         {
-            SettingFactory sf = CommonFactory.CreateSettingFactory();
-
             ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
             if (savedir.Value != DirPath)
             {
                 await savedir.UpdateSettingAsync(DirPath);
-                if (channels != null && channels.Any())
+                if (onSaveAction != null)
                 {
-                    foreach (IChannel channel in channels)
-                    {
-                        channel.DirPath = DirPath;
-                    }
+                    onSaveAction.Invoke(DirPath);
                 }
             }
 
@@ -455,6 +432,11 @@ namespace Crawler.ViewModels
             {
                 await tag.InsertTagAsync();
             }
+
+            if (onSaveAction != null)
+            {
+                onSaveAction.Invoke(null);
+            }
         }
 
         private void UpdateYouDl()
@@ -466,7 +448,7 @@ namespace Crawler.ViewModels
                 YouPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), link.Split('/').Last());
             }
 
-            if (CheckForInternetConnection(link))
+            if (SiteHelper.CheckForInternetConnection(link))
             {
                 IsUpdateButtonEnable = false;
                 YouHeader = "Youtube-dl (update in progress..)";
