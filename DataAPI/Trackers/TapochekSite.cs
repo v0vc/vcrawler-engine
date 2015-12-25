@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -41,13 +40,102 @@ namespace DataAPI.Trackers
         {
             this.sql = sql;
             hostUrl = string.Format("http://{0}", EnumHelper.GetAttributeOfType(SiteType.Tapochek));
-            _indexUrl = string.Format("{0}/index.php", hostUrl);
-            _loginUrl = string.Format("{0}/login.php", hostUrl);
-            _profileUrl = string.Format("{0}/profile.php", hostUrl);
-            _searchUrl = string.Format("{0}/tracker.php?nm", hostUrl);
-            _topicUrl = string.Format("{0}/viewtopic.php?t", hostUrl);
-            _userUrl = string.Format("{0}/tracker.php?rid", hostUrl);
+            indexUrl = string.Format("{0}/index.php", hostUrl);
+            loginUrl = string.Format("{0}/login.php", hostUrl);
+            profileUrl = string.Format("{0}/profile.php", hostUrl);
+            searchUrl = string.Format("{0}/tracker.php?nm", hostUrl);
+            topicUrl = string.Format("{0}/viewtopic.php?t", hostUrl);
+            userUrl = string.Format("{0}/tracker.php?rid", hostUrl);
             GetCred();
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        private static void FillVideoItemPOCO(VideoItemPOCO item, HtmlNode node, string site)
+        {
+            IEnumerable<HtmlNode> dl =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
+            foreach (HtmlNode htmlNode in dl)
+            {
+                string videoLink = string.Format("{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+                string[] sp = videoLink.Split('=');
+                if (sp.Length == 2)
+                {
+                    item.ID = sp[1];
+                }
+
+                // Duration = GetTorrentSize(ScrubHtml(htmlNode.InnerText));
+                break;
+            }
+
+            IEnumerable<HtmlNode> counts =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            foreach (HtmlNode htmlNode in counts)
+            {
+                item.Title = HttpUtility.HtmlDecode(htmlNode.InnerText).Trim();
+                break;
+            }
+
+            IEnumerable<HtmlNode> prov =
+                node.Descendants("td")
+                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
+            foreach (HtmlNode htmlNode in prov)
+            {
+                List<HtmlNode> pdate = htmlNode.Descendants("p").ToList();
+                if (pdate.Count == 2)
+                {
+                    item.Timestamp = Convert.ToDateTime(pdate[1].InnerText);
+                    break;
+                }
+            }
+
+            IEnumerable<HtmlNode> seemed =
+                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
+            foreach (HtmlNode htmlNode in seemed)
+            {
+                item.ViewCount = Convert.ToInt32(htmlNode.InnerText);
+                break;
+            }
+
+            IEnumerable<HtmlNode> med =
+                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
+            foreach (HtmlNode htmlNode in med)
+            {
+                item.Comments = Convert.ToInt32(htmlNode.InnerText);
+                break;
+            }
+
+            IEnumerable<HtmlNode> user =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
+            foreach (HtmlNode htmlNode in user)
+            {
+                string uid = htmlNode.Attributes["href"].Value;
+                string[] sp = uid.Split('=');
+                if (sp.Length == 2)
+                {
+                    item.ParentID = sp[1];
+                }
+
+                // VideoOwnerName = htmlNode.InnerText;
+                break;
+            }
+
+            IEnumerable<HtmlNode> forum =
+                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
+            foreach (HtmlNode htmlNode in forum)
+            {
+                item.Description = htmlNode.InnerText;
+                break;
+            }
+
+            // var topic = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
+            // foreach (HtmlNode htmlNode in topic)
+            // {
+            // PlaylistID = string.Format("http://{0}/forum{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
+            // break;
+            // }
         }
 
         #endregion
@@ -55,13 +143,13 @@ namespace DataAPI.Trackers
         #region Methods
 
         /// <summary>
-        ///     Заполнить канал элементами
+        ///     Fill by elements
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
         public async Task FillChannelNetAsync(IChannel channel)
         {
-            string zap = string.Format("{0}?mode=viewprofile&u={1}", _profileUrl, channel.ID);
+            string zap = string.Format("{0}?mode=viewprofile&u={1}", profileUrl, channel.ID);
 
             string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
 
@@ -93,7 +181,7 @@ namespace DataAPI.Trackers
         }
 
         /// <summary>
-        ///     Получиить релизы пользователя, 0 - все релизы
+        ///     Get user releases. 0 - all
         /// </summary>
         /// <param name="channel"></param>
         /// <param name="maxresult"></param>
@@ -101,7 +189,7 @@ namespace DataAPI.Trackers
         public async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(IChannel channel, int maxresult)
         {
             var lst = new List<VideoItemPOCO>();
-            string zap = string.Format("{0}={1}", _userUrl, channel.ID);
+            string zap = string.Format("{0}={1}", userUrl, channel.ID);
 
             string page = await SiteHelper.DownloadStringWithCookieAsync(new Uri(zap), channel.ChannelCookies);
 
@@ -116,7 +204,8 @@ namespace DataAPI.Trackers
 
             foreach (HtmlNode node in links)
             {
-                var item = new VideoItemPOCO(node, hostUrl) { Site = SiteType.Tapochek };
+                var item = new VideoItemPOCO(SiteType.Tapochek);
+                FillVideoItemPOCO(item, node, hostUrl);
                 if (!string.IsNullOrEmpty(item.ID))
                 {
                     lst.Add(item);
@@ -144,7 +233,8 @@ namespace DataAPI.Trackers
 
                     foreach (HtmlNode node in links)
                     {
-                        var item = new VideoItemPOCO(node, hostUrl) { Site = SiteType.Tapochek };
+                        var item = new VideoItemPOCO(SiteType.Tapochek);
+                        FillVideoItemPOCO(item, node, hostUrl);
                         if (!string.IsNullOrEmpty(item.ID))
                         {
                             lst.Add(item);
@@ -164,7 +254,7 @@ namespace DataAPI.Trackers
         }
 
         /// <summary>
-        ///     Получить куки пользователя с сайта
+        ///     Get user cookie
         /// </summary>
         /// <param name="channel"></param>
         /// <returns></returns>
@@ -176,13 +266,13 @@ namespace DataAPI.Trackers
             }
 
             var cc = new CookieContainer();
-            var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
+            var req = (HttpWebRequest)WebRequest.Create(loginUrl);
             req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
             req.Host = EnumHelper.GetAttributeOfType(channel.Site);
             req.KeepAlive = true;
-            string postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4",
-                Uri.EscapeDataString(cred.Login),
+            string postData = string.Format("login_username={0}&login_password={1}&login=%C2%F5%EE%E4", 
+                Uri.EscapeDataString(cred.Login), 
                 Uri.EscapeDataString(cred.Pass));
             byte[] data = Encoding.ASCII.GetBytes(postData);
             req.ContentLength = data.Length;
@@ -194,7 +284,7 @@ namespace DataAPI.Trackers
             req.Headers.Add("Accept-Language", "en-US,en;q=0.8");
             req.Headers.Add("Accept-Encoding", "gzip,deflate,sdch");
             req.Headers.Add("DNT", "1");
-            req.Referer = _indexUrl;
+            req.Referer = indexUrl;
 
             using (Stream stream = await req.GetRequestStreamAsync())
             {

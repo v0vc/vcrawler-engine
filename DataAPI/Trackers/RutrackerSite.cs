@@ -38,12 +38,12 @@ namespace DataAPI.Trackers
                     return;
                 }
                 hostUrl = string.Format("http://{0}", cred.SiteAdress);
-                _indexUrl = string.Format("{0}/index.php", hostUrl);
-                _loginUrl = string.Format("http://login.{0}/forum/login.php", cred.SiteAdress);
-                _profileUrl = string.Format("{0}/profile.php", hostUrl);
-                _searchUrl = string.Format("{0}/forum/tracker.php?nm", hostUrl);
-                _topicUrl = string.Format("{0}/forum/viewtopic.php?t", hostUrl);
-                _userUrl = string.Format("{0}/forum/tracker.php?rid", hostUrl);
+                indexUrl = string.Format("{0}/index.php", hostUrl);
+                loginUrl = string.Format("http://login.{0}/forum/login.php", cred.SiteAdress);
+                profileUrl = string.Format("{0}/profile.php", hostUrl);
+                searchUrl = string.Format("{0}/forum/tracker.php?nm", hostUrl);
+                topicUrl = string.Format("{0}/forum/viewtopic.php?t", hostUrl);
+                userUrl = string.Format("{0}/forum/tracker.php?rid", hostUrl);
             }
         }
 
@@ -65,7 +65,7 @@ namespace DataAPI.Trackers
             }
 
             var cc = new CookieContainer();
-            var req = (HttpWebRequest)WebRequest.Create(_loginUrl);
+            var req = (HttpWebRequest)WebRequest.Create(loginUrl);
             req.CookieContainer = cc;
             req.Method = WebRequestMethods.Http.Post;
             req.Host = "login." + Cred.SiteAdress;
@@ -83,7 +83,7 @@ namespace DataAPI.Trackers
             req.Headers.Add("Accept-Language", "en-US,en;q=0.8");
             req.Headers.Add("Accept-Encoding", "gzip,deflate,sdch");
             req.Headers.Add("DNT", "1");
-            req.Referer = _indexUrl;
+            req.Referer = indexUrl;
 
             using (Stream stream = await req.GetRequestStreamAsync())
             {

@@ -9,12 +9,12 @@ namespace DataAPI.Trackers
     {
         #region Fields
 
-        protected string _indexUrl;
-        protected string _loginUrl;
-        protected string _profileUrl;
-        protected string _searchUrl;
-        protected string _topicUrl;
-        protected string _userUrl;
+        protected string indexUrl;
+        protected string loginUrl;
+        protected string profileUrl;
+        protected string searchUrl;
+        protected string topicUrl;
+        protected string userUrl;
         protected string hostUrl;
 
         #endregion

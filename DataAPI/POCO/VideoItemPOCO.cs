@@ -3,10 +3,6 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using HtmlAgilityPack;
 using Interfaces.Enums;
 
 namespace DataAPI.POCO
@@ -42,89 +38,9 @@ namespace DataAPI.POCO
             Site = site;
         }
 
-        public VideoItemPOCO(HtmlNode node, string site)
+        public VideoItemPOCO(SiteType siteType)
         {
-            IEnumerable<HtmlNode> dl =
-                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("small tr-dl"));
-            foreach (HtmlNode htmlNode in dl)
-            {
-                string videoLink = string.Format("{0}{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
-                string[] sp = videoLink.Split('=');
-                if (sp.Length == 2)
-                {
-                    ID = sp[1];
-                }
-
-                // Duration = GetTorrentSize(ScrubHtml(htmlNode.InnerText));
-                break;
-            }
-
-            IEnumerable<HtmlNode> counts =
-                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
-            foreach (HtmlNode htmlNode in counts)
-            {
-                Title = HttpUtility.HtmlDecode(htmlNode.InnerText).Trim();
-                break;
-            }
-
-            IEnumerable<HtmlNode> prov =
-                node.Descendants("td")
-                    .Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small nowrap"));
-            foreach (HtmlNode htmlNode in prov)
-            {
-                List<HtmlNode> pdate = htmlNode.Descendants("p").ToList();
-                if (pdate.Count == 2)
-                {
-                    Timestamp = Convert.ToDateTime(pdate[1].InnerText);
-                    break;
-                }
-            }
-
-            IEnumerable<HtmlNode> seemed =
-                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 seedmed"));
-            foreach (HtmlNode htmlNode in seemed)
-            {
-                ViewCount = Convert.ToInt32(htmlNode.InnerText);
-                break;
-            }
-
-            IEnumerable<HtmlNode> med =
-                node.Descendants("td").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("row4 small"));
-            foreach (HtmlNode htmlNode in med)
-            {
-                Comments = Convert.ToInt32(htmlNode.InnerText);
-                break;
-            }
-
-            IEnumerable<HtmlNode> user =
-                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("med"));
-            foreach (HtmlNode htmlNode in user)
-            {
-                string uid = htmlNode.Attributes["href"].Value;
-                string[] sp = uid.Split('=');
-                if (sp.Length == 2)
-                {
-                    ParentID = sp[1];
-                }
-
-                // VideoOwnerName = htmlNode.InnerText;
-                break;
-            }
-
-            IEnumerable<HtmlNode> forum =
-                node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("gen"));
-            foreach (HtmlNode htmlNode in forum)
-            {
-                Description = htmlNode.InnerText;
-                break;
-            }
-
-            // var topic = node.Descendants("a").Where(d => d.Attributes.Contains("class") && d.Attributes["class"].Value.Equals("genmed"));
-            // foreach (HtmlNode htmlNode in topic)
-            // {
-            // PlaylistID = string.Format("http://{0}/forum{1}", site, htmlNode.Attributes["href"].Value.TrimStart('.'));
-            // break;
-            // }
+            Site = siteType;
         }
 
         #endregion
@@ -134,7 +50,7 @@ namespace DataAPI.POCO
         public int Comments { get; set; }
         public string Description { get; set; }
         public int Duration { get; set; }
-        public string ID { get; private set; }
+        public string ID { get; set; }
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
         public PrivacyStatus Status { get; set; }
