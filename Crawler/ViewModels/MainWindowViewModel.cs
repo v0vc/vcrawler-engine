@@ -1185,7 +1185,7 @@ namespace Crawler.ViewModels
         {
             var lst = new List<IChannel>();
             IEnumerable<ChannelPOCO> fbres = await df.GetChannelsListAsync();
-            lst.AddRange(fbres.Select(poco => ChannelFactory.CreateChannel(poco)));
+            lst.AddRange(fbres.Select(ChannelFactory.CreateChannel));
             return lst;
         }
 
@@ -1617,7 +1617,9 @@ namespace Crawler.ViewModels
             var channel = SelectedChannel as ServiceChannelViewModel;
             if (channel != null)
             {
-                AddNewChannel(channel.SelectedItem.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+                IVideoItem item = channel.SelectedItem;
+                AddNewChannel(item.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+                item.SyncState = SyncState.Added;
             }
         }
 
