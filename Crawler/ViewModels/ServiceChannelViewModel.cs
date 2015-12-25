@@ -342,7 +342,6 @@ namespace Crawler.ViewModels
             }
             else
             {
-                item.SyncState = SyncState.Notset;
                 ChannelItems.Add(item);
             }
         }

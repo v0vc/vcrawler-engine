@@ -1,18 +1,13 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Web;
-using System.Xml;
-using Extensions.Helpers;
 using HtmlAgilityPack;
 using Interfaces.Enums;
-using Newtonsoft.Json.Linq;
 
 namespace DataAPI.POCO
 {
@@ -20,14 +15,14 @@ namespace DataAPI.POCO
     {
         #region Constructors
 
-        public VideoItemPOCO(string id,
-            string parentid,
-            string title,
-            int viewcount,
-            int duration,
-            int comments,
-            byte[] thumbnail,
-            DateTime timestamp,
+        public VideoItemPOCO(string id, 
+            string parentid, 
+            string title, 
+            int viewcount, 
+            int duration, 
+            int comments, 
+            byte[] thumbnail, 
+            DateTime timestamp, 
             byte syncstate)
         {
             ID = id;
@@ -134,123 +129,20 @@ namespace DataAPI.POCO
 
         #endregion
 
-        #region Methods
+        #region Properties
 
-        public void FillFieldsFromDetails(JToken record)
-        {
-            JToken desc = record.SelectToken("snippet.description");
-            Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken stat = record.SelectToken("statistics.viewCount");
-            ViewCount = stat != null ? (stat.Value<long?>() ?? 0) : 0;
-
-            JToken dur = record.SelectToken("contentDetails.duration");
-            if (dur != null)
-            {
-                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
-                Duration = (int)ts.TotalSeconds;
-            }
-            else
-            {
-                Duration = 0;
-            }
-
-            //JToken comm = record.SelectToken("statistics.commentCount");
-            //Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
-            Comments = 0;
-        }
-
-        public async Task FillFieldsFromGetting(JToken record)
-        {
-            JToken tpid = record.SelectToken("snippet.channelId");
-            ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
-
-            JToken ttitle = record.SelectToken("snippet.title");
-            Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken tm = record.SelectToken("snippet.publishedAt");
-            Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
-
-            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
-            if (tlink != null)
-            {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
-            }
-        }
-
-        public async void FillFieldsFromPlaylist(JToken record)
-        {
-            JToken tpid = record.SelectToken("snippet.channelId");
-            ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
-
-            JToken ttitle = record.SelectToken("snippet.title");
-            Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken tm = record.SelectToken("snippet.publishedAt");
-            Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
-
-            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
-            if (tlink != null)
-            {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
-            }
-        }
-
-        public async Task FillFieldsFromSingleVideo(JObject record)
-        {
-            JToken ttitle = record.SelectToken("items[0].snippet.title");
-            Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken par = record.SelectToken("items[0].snippet.channelId");
-            ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken desc = record.SelectToken("items[0].snippet.description");
-            Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
-
-            JToken view = record.SelectToken("items[0].statistics.viewCount");
-            ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
-
-            JToken dur = record.SelectToken("items[0].contentDetails.duration");
-            if (dur != null)
-            {
-                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
-                Duration = (int)ts.TotalSeconds;
-            }
-            else
-            {
-                Duration = 0;
-            }
-
-            //JToken comm = record.SelectToken("items[0].statistics.commentCount");
-            //Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
-            Comments = 0;
-
-            JToken pub = record.SelectToken("items[0].snippet.publishedAt");
-            Timestamp = pub != null ? (pub.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
-
-            JToken tlink = record.SelectToken("items[0].snippet.thumbnails.default.url");
-            if (tlink != null)
-            {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
-            }
-        }
-
-        #endregion
-
-        #region IVideoItemPOCO Members
-
-        public int Comments { get; private set; }
-        public string Description { get; private set; }
-        public int Duration { get; private set; }
+        public int Comments { get; set; }
+        public string Description { get; set; }
+        public int Duration { get; set; }
         public string ID { get; private set; }
         public string ParentID { get; set; }
         public SiteType Site { get; set; }
         public PrivacyStatus Status { get; set; }
-        public byte[] Thumbnail { get; private set; }
-        public DateTime Timestamp { get; private set; }
-        public string Title { get; private set; }
-        public long ViewCount { get; private set; }
         public byte SyncState { get; private set; }
+        public byte[] Thumbnail { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Title { get; set; }
+        public long ViewCount { get; set; }
 
         #endregion
     }

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml;
 using DataAPI.POCO;
 using Extensions;
 using Extensions.Helpers;
@@ -153,7 +154,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    await item.FillFieldsFromGetting(pair);
+                    await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -187,7 +188,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    VideoItemPOCO item = res.FirstOrDefault(x => x.ID == id.Value<string>());
 
                     if (item == null)
                     {
@@ -197,7 +198,7 @@ namespace DataAPI.Videos
                     JToken pr = pair.SelectToken("status.privacyStatus");
                     var prstatus = pr.Value<string>();
                     item.Status = EnumHelper.GetValueFromDescription<PrivacyStatus>(prstatus);
-                    item.FillFieldsFromDetails(pair);
+                    FillFieldsFromDetails(item, pair);
                 }
 
                 zap =
@@ -664,7 +665,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    item.FillFieldsFromPlaylist(pair);
+                    FillFieldsFromPlaylist(item, pair);
                     res.Add(item);
                     sb.Append(id).Append(',');
                 }
@@ -691,10 +692,10 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    VideoItemPOCO item = res.FirstOrDefault(x => x.ID == id.Value<string>());
                     if (item != null)
                     {
-                        item.FillFieldsFromDetails(pair);
+                        FillFieldsFromDetails(item, pair);
                     }
                 }
 
@@ -793,7 +794,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    await item.FillFieldsFromGetting(pair);
+                    await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -826,10 +827,10 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    VideoItemPOCO item = res.FirstOrDefault(x => x.ID == id.Value<string>());
                     if (item != null)
                     {
-                        item.FillFieldsFromDetails(pair);
+                        FillFieldsFromDetails(item, pair);
                     }
                 }
 
@@ -907,7 +908,7 @@ namespace DataAPI.Videos
 
             JObject jsvideo = JObject.Parse(str);
 
-            await item.FillFieldsFromSingleVideo(jsvideo);
+            await FillFieldsFromSingleVideo(item, jsvideo);
 
             return item;
         }
@@ -952,9 +953,9 @@ namespace DataAPI.Videos
 
                 var item = new VideoItemPOCO(id.Value<string>(), SiteType.YouTube);
 
-                await item.FillFieldsFromGetting(pair);
+                await FillFieldsFromGetting(item, pair);
 
-                item.FillFieldsFromDetails(pair);
+                FillFieldsFromDetails(item, pair);
 
                 JToken pr = pair.SelectToken("status.privacyStatus");
                 var prstatus = pr.Value<string>();
@@ -1161,7 +1162,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    await item.FillFieldsFromGetting(pair);
+                    await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -1195,10 +1196,10 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    VideoItemPOCO item = res.FirstOrDefault(x => x.ID == id.Value<string>());
                     if (item != null)
                     {
-                        item.FillFieldsFromDetails(pair);
+                        FillFieldsFromDetails(item, pair);
                     }
                 }
 
@@ -1216,6 +1217,103 @@ namespace DataAPI.Videos
             while (pagetoken != null);
 
             return res;
+        }
+
+        private static void FillFieldsFromDetails(VideoItemPOCO item, JToken record)
+        {
+            JToken desc = record.SelectToken("snippet.description");
+            item.Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken stat = record.SelectToken("statistics.viewCount");
+            item.ViewCount = stat != null ? (stat.Value<long?>() ?? 0) : 0;
+
+            JToken dur = record.SelectToken("contentDetails.duration");
+            if (dur != null)
+            {
+                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
+                item.Duration = (int)ts.TotalSeconds;
+            }
+            else
+            {
+                item.Duration = 0;
+            }
+
+            item.Comments = 0;
+        }
+
+        private static async Task FillFieldsFromGetting(VideoItemPOCO item, JToken record)
+        {
+            JToken tpid = record.SelectToken("snippet.channelId");
+            item.ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
+
+            JToken ttitle = record.SelectToken("snippet.title");
+            item.Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken tm = record.SelectToken("snippet.publishedAt");
+            item.Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
+
+            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
+            if (tlink != null)
+            {
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+            }
+        }
+
+        private static async void FillFieldsFromPlaylist(VideoItemPOCO item, JToken record)
+        {
+            JToken tpid = record.SelectToken("snippet.channelId");
+            item.ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;
+
+            JToken ttitle = record.SelectToken("snippet.title");
+            item.Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken tm = record.SelectToken("snippet.publishedAt");
+            item.Timestamp = tm != null ? (tm.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
+
+            JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
+            if (tlink != null)
+            {
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+            }
+        }
+
+        private static async Task FillFieldsFromSingleVideo(VideoItemPOCO item, JToken record)
+        {
+            JToken ttitle = record.SelectToken("items[0].snippet.title");
+            item.Title = ttitle != null ? (ttitle.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken par = record.SelectToken("items[0].snippet.channelId");
+            item.ParentID = par != null ? (par.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken desc = record.SelectToken("items[0].snippet.description");
+            item.Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
+
+            JToken view = record.SelectToken("items[0].statistics.viewCount");
+            item.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
+
+            JToken dur = record.SelectToken("items[0].contentDetails.duration");
+            if (dur != null)
+            {
+                TimeSpan ts = XmlConvert.ToTimeSpan(dur.Value<string>());
+                item.Duration = (int)ts.TotalSeconds;
+            }
+            else
+            {
+                item.Duration = 0;
+            }
+
+            // JToken comm = record.SelectToken("items[0].statistics.commentCount");
+            // Comments = comm != null ? (comm.Value<int?>() ?? 0) : 0;
+            item.Comments = 0;
+
+            JToken pub = record.SelectToken("items[0].snippet.publishedAt");
+            item.Timestamp = pub != null ? (pub.Value<DateTime?>() ?? DateTime.MinValue) : DateTime.MinValue;
+
+            JToken tlink = record.SelectToken("items[0].snippet.thumbnails.default.url");
+            if (tlink != null)
+            {
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+            }
         }
 
         /// <summary>
