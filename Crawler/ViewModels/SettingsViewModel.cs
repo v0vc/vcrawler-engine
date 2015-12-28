@@ -242,6 +242,23 @@ namespace Crawler.ViewModels
             SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
+        public bool IsYoutubeExist()
+        {
+            const string mess = "Please, select youtube-dl";
+            if (!string.IsNullOrEmpty(YouPath))
+            {
+                var fn = new FileInfo(YouPath);
+                if (fn.Exists)
+                {
+                    return true;
+                }
+                MessageBox.Show(mess);
+                return false;
+            }
+            MessageBox.Show(mess);
+            return false;
+        }
+
         public async Task LoadSettingsFromDb()
         {
             SettingFactory sf = CommonFactory.CreateSettingFactory();

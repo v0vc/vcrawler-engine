@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace Extensions
@@ -71,6 +72,18 @@ namespace Extensions
             return false;
         }
 
+        public static bool IsLinkYoutube(string text, out string videoId)
+        {
+            videoId = string.Empty;
+            var regex = new Regex(YouRegex);
+            Match match = regex.Match(text);
+            if (!match.Success)
+            {
+                return false;
+            }
+            videoId = match.Groups[1].Value;
+            return true;
+        }
         #endregion
     }
 }

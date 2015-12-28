@@ -600,15 +600,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public bool IsYoutubeExist()
-        {
-            if (!string.IsNullOrEmpty(SettingsViewModel.YouPath))
-            {
-                return true;
-            }
-            MessageBox.Show("Please, select youtube-dl");
-            return false;
-        }
+
 
         /// <summary>
         ///     0-Ready
@@ -874,7 +866,7 @@ namespace Crawler.ViewModels
 
         private async Task DownloadWithOptions(VideoMenuItem item)
         {
-            if (!IsYoutubeExist())
+            if (!SettingsViewModel.IsYoutubeExist())
             {
                 return;
             }
@@ -1251,8 +1243,12 @@ namespace Crawler.ViewModels
 
         private void OpenAddLink()
         {
-            var dlvm = new DownloadLinkViewModel(this);
+            if (!SettingsViewModel.IsYoutubeExist())
+            {
+                return;
+            }
 
+            var dlvm = new DownloadLinkViewModel(SettingsViewModel.YouPath, SettingsViewModel.DirPath, AddItemToDownloadToList);
             var adl = new DownloadLinkView
             {
                 DataContext = dlvm,
@@ -1260,6 +1256,13 @@ namespace Crawler.ViewModels
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
+        }
+
+        private void AddItemToDownloadToList(IVideoItem item)
+        {
+            SelectedChannel = ServiceChannel;
+            SelectedChannel.AddNewItem(item);
+            SelectedChannel.SelectedItem = item;
         }
 
         private async void OpenCurrentTags()
@@ -1542,7 +1545,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                if (!IsYoutubeExist())
+                if (!SettingsViewModel.IsYoutubeExist())
                 {
                     return;
                 }

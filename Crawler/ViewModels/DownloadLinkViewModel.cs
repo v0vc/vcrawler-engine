@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -9,7 +10,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using Crawler.Common;
@@ -26,7 +26,9 @@ namespace Crawler.ViewModels
     {
         #region Static and Readonly Fields
 
-        private readonly MainWindowViewModel mv;
+        private readonly string downloaddir;
+        private readonly Action<IVideoItem> onDownloadYouItem;
+        private readonly string youpath;
 
         #endregion
 
@@ -42,9 +44,11 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public DownloadLinkViewModel(MainWindowViewModel mv)
+        public DownloadLinkViewModel(string youpath, string downloaddir, Action<IVideoItem> onDownloadYouItem = null)
         {
-            this.mv = mv;
+            this.youpath = youpath;
+            this.downloaddir = downloaddir;
+            this.onDownloadYouItem = onDownloadYouItem;
             Subtitles = new ObservableCollection<ISubtitle>();
             var text = Clipboard.GetData(DataFormats.Text) as string;
             if (string.IsNullOrWhiteSpace(text) || text.Contains(Environment.NewLine))
@@ -117,23 +121,6 @@ namespace Crawler.ViewModels
 
         #endregion
 
-        #region Static Methods
-
-        private static bool IsLinkYoutube(string text, out string videoId)
-        {
-            videoId = string.Empty;
-            var regex = new Regex(CommonExtensions.YouRegex);
-            Match match = regex.Match(text);
-            if (match.Success)
-            {
-                videoId = match.Groups[1].Value;
-                return true;
-            }
-            return false;
-        }
-
-        #endregion
-
         #region Methods
 
         private async void DownloadLink(object obj)
@@ -156,11 +143,6 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (!mv.IsYoutubeExist())
-            {
-                return;
-            }
-
             if (IsYouTube)
             {
                 IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube);
@@ -169,21 +151,20 @@ namespace Crawler.ViewModels
                     vi.Subtitles.Add(subtitle);
                 }
                 vi.ParentID = null;
-                mv.SelectedChannel = mv.ServiceChannel;
-                mv.SelectedChannel.SelectedItem = vi;
-                mv.SelectedChannel.AddNewItem(vi);
-                await vi.DownloadItem(mv.SettingsViewModel.YouPath, mv.SettingsViewModel.DirPath, IsHd, IsAudio);
                 vi.SyncState = SyncState.Added;
+                if (onDownloadYouItem != null)
+                {
+                    onDownloadYouItem.Invoke(vi);
+                }
+                await vi.DownloadItem(youpath, downloaddir, IsHd, IsAudio);
             }
             else
             {
-                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", 
-                    mv.SettingsViewModel.DirPath, 
-                    Link);
+                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", downloaddir, Link);
 
                 await Task.Run(() =>
                 {
-                    Process process = Process.Start(mv.SettingsViewModel.YouPath, param);
+                    Process process = Process.Start(youpath, param);
                     if (process != null)
                     {
                         process.Close();
@@ -203,7 +184,7 @@ namespace Crawler.ViewModels
             if (res.Any())
             {
                 Subtitles.Clear();
-                foreach (ISubtitle sb in res.Select(poco => SubtitleFactory.CreateSubtitle(poco)))
+                foreach (ISubtitle sb in res.Select(SubtitleFactory.CreateSubtitle))
                 {
                     Subtitles.Add(sb);
                 }
@@ -222,7 +203,7 @@ namespace Crawler.ViewModels
         private void ParseYou(string text)
         {
             string id;
-            if (IsLinkYoutube(text, out id))
+            if (CommonExtensions.IsLinkYoutube(text, out id))
             {
                 IsYouTube = true;
                 youId = id;
