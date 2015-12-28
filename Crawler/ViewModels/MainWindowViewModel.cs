@@ -1656,7 +1656,7 @@ namespace Crawler.ViewModels
             Stopwatch watch = Stopwatch.StartNew();
             await ChannelFactory.SyncChannelAsync(channel);
             watch.Stop();
-            Info = string.Format("Time: {0} sec", watch.Elapsed.Seconds);
+            Info = watch.TakeLogMessage();
             SetStatus(0);
         }
 
@@ -1689,7 +1689,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
-
+            Stopwatch watch = Stopwatch.StartNew();
             foreach (IChannel channel in Channels)
             {
                 i += 1;
@@ -1711,7 +1711,8 @@ namespace Crawler.ViewModels
             prog.SetProgressState(TaskbarProgressBarState.NoProgress);
             PrValue = 0;
             SetStatus(0);
-            Info = "Total : " + i + ". New : " + Channels.Sum(x => x.CountNew);
+
+            Info = string.Format("Total: {0}. New: {1}. {2}", i, Channels.Sum(x => x.CountNew), watch.TakeLogMessage());
         }
 
         private void TagCheck()
