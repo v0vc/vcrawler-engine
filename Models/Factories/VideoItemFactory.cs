@@ -9,7 +9,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using DataAPI.POCO;
 using DataAPI.Videos;
-using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.BO.Items;
@@ -55,12 +54,6 @@ namespace Models.Factories
                 Subtitles = new ObservableCollection<ISubtitle>()
             };
             return vi;
-        }
-
-        public static async Task FillDescriptionAsync(IVideoItem videoItem)
-        {
-            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(videoItem.ID);
-            videoItem.Description = res.WordWrap(150);
         }
 
         public static async Task<IVideoItem> GetVideoItemDbAsync(string id)

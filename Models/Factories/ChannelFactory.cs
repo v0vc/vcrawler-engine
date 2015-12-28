@@ -57,6 +57,7 @@ namespace Models.Factories
                         Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
                         Thumbnail = poco.Thumbnail, 
+                        Site = poco.Site,
                         CountNew = poco.Countnew
                     };
 
