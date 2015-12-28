@@ -1,19 +1,19 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Crawler.Common;
-using DataAPI;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
-    public class EditDescriptionViewModel : INotifyPropertyChanged
+    public sealed class EditDescriptionViewModel : INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -49,7 +49,7 @@ namespace Crawler.ViewModels
             {
                 return description;
             }
-            set
+            private set
             {
                 if (value == description)
                 {
@@ -74,7 +74,7 @@ namespace Crawler.ViewModels
             {
                 return largeThumb;
             }
-            set
+            private set
             {
                 if (value == largeThumb)
                 {
@@ -91,7 +91,7 @@ namespace Crawler.ViewModels
             {
                 return title;
             }
-            set
+            private set
             {
                 if (value == title)
                 {
@@ -105,15 +105,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Methods
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
 
         private async Task FillData()
         {
@@ -134,6 +125,15 @@ namespace Crawler.ViewModels
             }
 
             LargeThumb = await SiteHelper.GetStreamFromUrl(link);
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
 
         #endregion
