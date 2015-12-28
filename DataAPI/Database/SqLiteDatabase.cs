@@ -1745,12 +1745,13 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateItemSyncState(SyncState state, string idChannel)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {1}='1'",
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {1}='{5}'",
                 tableitems,
                 syncstate,
                 (byte)state,
                 parentID,
-                idChannel);
+                idChannel,
+                (byte)SyncState.Added);
 
             await RunSqlCodeAsync(zap);
         }

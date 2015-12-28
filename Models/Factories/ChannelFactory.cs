@@ -147,14 +147,14 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     IEnumerable<VideoItemPOCO> youres = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult);
-                    lst.AddRange(youres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
+                    lst.AddRange(youres.Select(VideoItemFactory.CreateVideoItem));
 
                     break;
 
                 case SiteType.Tapochek:
 
                     IEnumerable<VideoItemPOCO> tapres = await CommonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
-                    lst.AddRange(tapres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
+                    lst.AddRange(tapres.Select(VideoItemFactory.CreateVideoItem));
 
                     break;
 
@@ -197,7 +197,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channelID);
-                lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco)));
+                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
                 return lst;
             }
             catch (Exception ex)
@@ -212,7 +212,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
-                lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco)));
+                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
                 return lst;
             }
             catch (Exception ex)
@@ -227,7 +227,7 @@ namespace Models.Factories
             try
             {
                 IEnumerable<TagPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
-                lst.AddRange(fbres.Select(poco => TagFactory.CreateTag(poco)));
+                lst.AddRange(fbres.Select(TagFactory.CreateTag));
                 return lst;
             }
             catch (Exception ex)
@@ -296,9 +296,7 @@ namespace Models.Factories
                 foreach (List<string> list in tchanks)
                 {
                     IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
-                    foreach (
-                        IVideoItem vi in res.Select(poco => VideoItemFactory.CreateVideoItem(poco)).Where(vi => vi.ParentID == channel.ID)
-                        )
+                    foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;
                         channel.AddNewItem(vi);
