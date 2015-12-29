@@ -7,7 +7,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         Title="{Binding TitleContent, Mode=OneWay}" Height="200" Width="350" ResizeMode="NoResize" WindowStyle="ToolWindow"
-        d:DataContext="{d:DesignInstance viewModels:AddChannelViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:AddChannelViewModel, IsDesignTimeCreatable=False}"
         >
     
     <Grid Background="AliceBlue">

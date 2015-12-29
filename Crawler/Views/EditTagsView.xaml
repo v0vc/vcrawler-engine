@@ -8,7 +8,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Height="300" Width="250" MinWidth="250" 
         WindowStyle="ToolWindow" 
-        d:DataContext="{d:DesignInstance viewModels:EditTagsViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:EditTagsViewModel, IsDesignTimeCreatable=False}"
         >
     
     <i:Interaction.Triggers>

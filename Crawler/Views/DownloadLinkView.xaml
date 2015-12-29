@@ -8,7 +8,7 @@
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Title="Add" Height="105" Width="380" ResizeMode="NoResize"
-        d:DataContext="{d:DesignInstance viewModels:DownloadLinkViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:DownloadLinkViewModel, IsDesignTimeCreatable=False}"
         >
     <Grid>
         <Grid.ColumnDefinitions>

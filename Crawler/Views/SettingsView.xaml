@@ -10,7 +10,7 @@
         Height="280" Width="380" ResizeMode="NoResize"
         WindowStyle="ToolWindow"
         Title="Settings"
-        d:DataContext="{d:DesignInstance viewModels:SettingsViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:SettingsViewModel, IsDesignTimeCreatable=False}"
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

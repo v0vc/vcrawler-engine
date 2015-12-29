@@ -13,7 +13,7 @@
         xmlns:models="clr-namespace:Interfaces.Models;assembly=Interfaces"
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
-        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel, IsDesignTimeCreatable=False}"
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

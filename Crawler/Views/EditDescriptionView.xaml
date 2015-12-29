@@ -8,7 +8,7 @@
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Title="{Binding Title, Mode=OneWay}" Height="500" Width="480" MinHeight="500" MinWidth="480"
         ResizeMode="CanResize" WindowStyle="ToolWindow"
-        d:DataContext="{d:DesignInstance viewModels:EditDescriptionViewModel}"
+        d:DataContext="{d:DesignInstance viewModels:EditDescriptionViewModel, IsDesignTimeCreatable=False}"
         >
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">

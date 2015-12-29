@@ -46,12 +46,6 @@ namespace Crawler.ViewModels
 
         #endregion
 
-        #region Static and Readonly Fields
-
-        //private readonly ObservableCollection<IChannel> channels;
-
-        #endregion
-
         #region Fields
 
         private RelayCommand addNewTagCommand;
