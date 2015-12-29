@@ -64,7 +64,7 @@ namespace Crawler.ViewModels
         }
 
         public ITag SelectedTag { get; set; }
-        public IList<ITag> Tags { get; set; }
+        public ObservableCollection<ITag> Tags { get; set; }
 
         #endregion
 
@@ -77,16 +77,8 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var atvm = new AddTagViewModel { ParentChannel = ParentChannel };
-            foreach (ITag tag in Tags)
-            {
-                atvm.Tags.Add(tag);
-            }
-
-            atvm.SelectedTag = atvm.Tags.First();
-
+            var atvm = new AddTagViewModel(false, ParentChannel, Tags);
             var atv = new AddTagView { DataContext = atvm, Owner = window, WindowStartupLocation = WindowStartupLocation.CenterOwner };
-
             atv.ShowDialog();
         }
 

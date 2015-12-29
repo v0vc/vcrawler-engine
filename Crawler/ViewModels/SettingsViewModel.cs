@@ -42,6 +42,11 @@ namespace Crawler.ViewModels
         private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
         private const string youtubeDl = "youtube-dl.exe";
+
+        #endregion
+
+        #region Static and Readonly Fields
+
         private readonly Action<string> onSaveAction;
 
         #endregion
@@ -230,12 +235,6 @@ namespace Crawler.ViewModels
             return false;
         }
 
-        public async Task LoadCredsFromDb()
-        {
-            IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
-            SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
-        }
-
         public bool IsYoutubeExist()
         {
             const string mess = "Please, select youtube-dl";
@@ -251,6 +250,12 @@ namespace Crawler.ViewModels
             }
             MessageBox.Show(mess);
             return false;
+        }
+
+        public async Task LoadCredsFromDb()
+        {
+            IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
+            SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
         public async Task LoadSettingsFromDb()
@@ -322,14 +327,13 @@ namespace Crawler.ViewModels
 
         private void AddNewTag()
         {
-            var advm = new AddNewTagViewModel(this) { Tag = TagFactory.CreateTag() };
-            var antv = new AddNewTagView
+            var advm = new AddTagViewModel(true, null, SupportedTags);
+            var antv = new AddTagView
             {
                 DataContext = advm,
                 Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
-
             antv.ShowDialog();
         }
 
