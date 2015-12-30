@@ -613,6 +613,111 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get channel count exclude specific state
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="excludeState"></param>
+        /// <returns></returns>
+        public async Task<int> GetChannelItemsCountDbAsync(string channelID, SyncState excludeState)
+        {
+            string zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}' AND {3}!='{4}'",
+                tableitems,
+                parentID,
+                channelID,
+                syncstate,
+                (byte)excludeState);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Commit();
+                            throw new Exception(zap);
+                        }
+
+                        transaction.Commit();
+                        return Convert.ToInt32(res);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Get channel items ids, except specific state, 0 - all
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="count"></param>
+        /// <param name="offset"></param>
+        /// <param name="excludedState"></param>
+        /// <returns></returns>
+        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID,
+            int count,
+            int offset,
+            SyncState excludedState)
+        {
+            var res = new List<string>();
+
+            string zap = count == 0
+                ? string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' AND {4}!='{5}' ORDER BY {6} DESC",
+                    itemId,
+                    tableitems,
+                    parentID,
+                    channelID,
+                    syncstate,
+                    (byte)excludedState,
+                    timestamp)
+                : string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' AND {4}!='{5}' ORDER BY {6} DESC LIMIT {7} OFFSET {8}",
+                    itemId,
+                    tableitems,
+                    parentID,
+                    channelID,
+                    syncstate,
+                    (byte)excludedState,
+                    timestamp,
+                    count,
+                    offset);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Commit();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync())
+                            {
+                                var vid = reader[itemId] as string;
+                                res.Add(vid);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
+        /// <summary>
         ///     Get channel items ids, 0 - all
         /// </summary>
         /// <param name="channelID"></param>
@@ -1741,9 +1846,10 @@ namespace DataAPI.Database
         ///     Update channel items state
         /// </summary>
         /// <param name="state"></param>
+        /// <param name="whereState"></param>
         /// <param name="idChannel"></param>
         /// <returns></returns>
-        public async Task UpdateItemSyncState(SyncState state, string idChannel)
+        public async Task UpdateItemSyncState(SyncState state, SyncState whereState, string idChannel)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {1}='{5}'",
                 tableitems,
@@ -1751,7 +1857,7 @@ namespace DataAPI.Database
                 (byte)state,
                 parentID,
                 idChannel,
-                (byte)SyncState.Added);
+                (byte)whereState);
 
             await RunSqlCodeAsync(zap);
         }

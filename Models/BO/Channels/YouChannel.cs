@@ -357,6 +357,7 @@ namespace Models.BO.Channels
             {
                 ChannelItems.Add(item);
             }
+            ChannelItemsCount += 1;
         }
 
         #endregion

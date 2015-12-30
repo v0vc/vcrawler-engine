@@ -57,7 +57,7 @@ namespace Models.Factories
                         Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
                         Thumbnail = poco.Thumbnail, 
-                        Site = poco.Site,
+                        Site = poco.Site, 
                         CountNew = poco.Countnew
                     };
 
@@ -252,7 +252,7 @@ namespace Models.Factories
             throw new Exception(channel.ID);
         }
 
-        public static async Task SyncChannelAsync(IChannel channel)
+        public static async Task SyncChannelAsync(IChannel channel, bool isFastSync)
         {
             channel.ChannelState = ChannelState.InWork;
             if (channel is YouChannel)
@@ -260,14 +260,6 @@ namespace Models.Factories
                 var sb = new StringBuilder(channel.ID);
                 sb[1] = 'U';
                 string pluploadsid = sb.ToString();
-
-                // теоретически, может не сработать (добавили одно, удалили одно), но в общем случае - быстрее
-                // int dbcount = await sql.GetChannelItemsCountDbAsync(channel.ID);
-                // int netCount = await YouTubeSite.GetPlaylistItemsCountNetAsync(pluploadsid);
-                // if (dbcount == netCount)
-                // {
-                // return;
-                // }
 
                 // убираем признак предыдущей синхронизации
                 List<IVideoItem> preds = channel.ChannelItems.Where(x => x.SyncState == SyncState.Added).ToList();
@@ -277,18 +269,41 @@ namespace Models.Factories
                 }
                 if (channel.CountNew > 0)
                 {
-                    await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(SyncState.Notset, channel.ID);
+                    channel.CountNew = 0;
+                    await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(SyncState.Notset, SyncState.Added, channel.ID);
                     await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, 0);
                 }
 
-                List<string> netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
-                List<string> dbids = (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
-                channel.CountNew = 0;
-
-                // проставляем в базе признак того, что видео больше нет на канале
-                foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
+                // получаем списки id в базе и в нете
+                List<string> netids;
+                List<string> dbids;
+                if (isFastSync)
                 {
-                    await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(dbid, SyncState.Deleted);
+                    dbids =
+                        (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted))
+                            .ToList();
+                    int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
+                    int resint = Math.Abs(netcount - dbids.Count);
+                    if (resint == 0)
+                    {
+                        channel.ChannelState = ChannelState.Notset;
+                        return;
+                    }
+                    netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint)).ToList();
+                }
+                else
+                {
+                    dbids = (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
+                    netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
+                }
+
+                if (!isFastSync)
+                {
+                    // проставляем в базе признак того, что видео больше нет на канале
+                    foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
+                    {
+                        await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(dbid, SyncState.Deleted);
+                    }
                 }
 
                 // cобираем новые
@@ -310,8 +325,6 @@ namespace Models.Factories
                 {
                     await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
                 }
-
-                channel.ChannelItemsCount = netids.Count;
             }
 
             channel.ChannelState = ChannelState.Notset;

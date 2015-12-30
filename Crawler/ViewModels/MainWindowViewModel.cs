@@ -1657,7 +1657,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
             Stopwatch watch = Stopwatch.StartNew();
-            await ChannelFactory.SyncChannelAsync(channel);
+            await ChannelFactory.SyncChannelAsync(channel, false);
             watch.Stop();
             Info = watch.TakeLogMessage();
             SetStatus(0);
@@ -1701,7 +1701,7 @@ namespace Crawler.ViewModels
                 Info = "Syncing: " + channel.Title;
                 try
                 {
-                    await ChannelFactory.SyncChannelAsync(channel);
+                    await ChannelFactory.SyncChannelAsync(channel, true);
                 }
                 catch (Exception ex)
                 {
