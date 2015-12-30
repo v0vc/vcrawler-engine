@@ -22,14 +22,12 @@
             <RowDefinition />
             <RowDefinition Height="40" />
         </Grid.RowDefinitions>
-        <DataGrid x:Name="dataGridTags"
-                  CanUserAddRows="False" 
+        <DataGrid CanUserAddRows="False" 
                   AutoGenerateColumns="False" 
                   CanUserDeleteRows="True"
                   HeadersVisibility="None"
                   RowHeaderWidth="0"
-                  ItemsSource="{Binding ParentChannel.ChannelTags}"
-                  SelectedItem="{Binding SelectedTag}"
+                  ItemsSource="{Binding Channel.ChannelTags}"
                   >
             <DataGrid.Columns>
                 <DataGridTextColumn Binding="{Binding Title}" Width="*" FontSize="16">
@@ -58,8 +56,12 @@
                     Command="{Binding AddCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"
                     >
                 <StackPanel Orientation="Horizontal">
-                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" Content="ADD" />
-                    <Image Source="../Images/add-48.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <Label Content="ADD" FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center"
+                           />
+                    <Image Source="../Images/add-48.png" Width="32" Height="32" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"
+                           />
                 </StackPanel>
             </Button>
             <Button Style="{StaticResource RoundButtonTemplate}" 
@@ -69,8 +71,12 @@
                     x:Name="buttonSave"
                     >
                 <StackPanel Orientation="Horizontal">
-                    <Label FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center">SAVE</Label>
-                    <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                    <Label Content="SAVE" FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center" 
+                           />
+                    <Image Source="../Images/ok-32.png" Width="32" Height="32" 
+                           HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"
+                           />
                 </StackPanel>
             </Button>
         </DockPanel>

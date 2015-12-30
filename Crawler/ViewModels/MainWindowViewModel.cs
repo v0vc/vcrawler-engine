@@ -600,8 +600,6 @@ namespace Crawler.ViewModels
             }
         }
 
-
-
         /// <summary>
         ///     0-Ready
         ///     1-Working..
@@ -631,6 +629,13 @@ namespace Crawler.ViewModels
                     IsWorking = false;
                     break;
             }
+        }
+
+        private void AddItemToDownloadToList(IVideoItem item)
+        {
+            SelectedChannel = ServiceChannel;
+            SelectedChannel.AddNewItem(item);
+            SelectedChannel.SelectedItem = item;
         }
 
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
@@ -756,6 +761,48 @@ namespace Crawler.ViewModels
                 case ChannelMenuItem.Update:
                     await SyncChannelPlaylist();
                     break;
+            }
+        }
+
+        private void ChannelTagDelete(string tag)
+        {
+            if (Channels.Any(x => x.ChannelTags.Select(y => y.Title).Contains(tag)))
+            {
+                return;
+            }
+            ITag ctag = CurrentTags.FirstOrDefault(x => x.Title == tag);
+            if (ctag != null)
+            {
+                CurrentTags.Remove(ctag);
+            }
+        }
+
+        private async void ChannelTagsSave(IChannel channel)
+        {
+            if (!CurrentTags.Any())
+            {
+                foreach (IChannel ch in Channels)
+                {
+                    IEnumerable<ITag> tags = await ChannelFactory.GetChannelTagsAsync(ch.ID);
+                    foreach (ITag tag in tags)
+                    {
+                        ch.ChannelTags.Add(tag);
+                        if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
+                        {
+                            CurrentTags.Add(tag);
+                        }
+                    }
+                }
+            }
+
+            foreach (ITag tag in channel.ChannelTags)
+            {
+                await CommonFactory.CreateSqLiteDatabase().InsertChannelTagsAsync(channel.ID, tag.Title);
+
+                if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
+                {
+                    CurrentTags.Insert(0, tag);
+                }
             }
         }
 
@@ -1205,7 +1252,7 @@ namespace Crawler.ViewModels
                         OpenSettings();
                         break;
 
-                        case MainMenuItem.Sync:
+                    case MainMenuItem.Sync:
                         await SyncData(false);
                         break;
 
@@ -1262,13 +1309,6 @@ namespace Crawler.ViewModels
             adl.ShowDialog();
         }
 
-        private void AddItemToDownloadToList(IVideoItem item)
-        {
-            SelectedChannel = ServiceChannel;
-            SelectedChannel.AddNewItem(item);
-            SelectedChannel.SelectedItem = item;
-        }
-
         private async void OpenCurrentTags()
         {
             if (CurrentTags.Any())
@@ -1277,9 +1317,9 @@ namespace Crawler.ViewModels
             }
 
             var tmptags = new List<ITag>();
-            foreach (YouChannel channel in Channels.OfType<YouChannel>())
+            foreach (IChannel channel in Channels)
             {
-                IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
+                IEnumerable<ITag> tags = await ChannelFactory.GetChannelTagsAsync(channel.ID);
 
                 foreach (ITag tag in tags)
                 {
@@ -1311,26 +1351,21 @@ namespace Crawler.ViewModels
 
         private void OpenTags()
         {
-            var channel = SelectedChannel as YouChannel;
+            IChannel channel = SelectedChannel;
             if (channel == null)
             {
                 return;
             }
-            var etvm = new EditTagsViewModel
-            {
-                ParentChannel = channel,
-                CurrentTags = CurrentTags,
-                Tags = SettingsViewModel.SupportedTags,
-                Channels = Channels
-            };
 
+            var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, ChannelTagDelete, ChannelTagsSave);
             var etv = new EditTagsView
             {
                 DataContext = etvm,
                 Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Title = string.Format("Tags: {0}", etvm.ParentChannel.Title)
+                Title = string.Format("Tags: {0}", channel.Title)
             };
+
             etv.ShowDialog();
         }
 
@@ -1371,7 +1406,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var channel = SelectedChannel as YouChannel;
+            var channel = SelectedChannel;
             if (channel == null)
             {
                 return;

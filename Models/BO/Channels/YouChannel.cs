@@ -49,11 +49,6 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public async Task DeleteChannelTagAsync(string tag)
-        {
-            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(ID, tag);
-        }
-
         public void FillChannelCookieDb()
         {
             ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(Site);
@@ -85,11 +80,6 @@ namespace Models.BO.Channels
             return await ChannelFactory.GetChannelPlaylistsNetAsync(ID);
         }
 
-        public async Task<IEnumerable<ITag>> GetChannelTagsAsync()
-        {
-            return await ChannelFactory.GetChannelTagsAsync(ID);
-        }
-
         public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync()
         {
             return await ChannelFactory.GetRelatedChannelNetAsync(this);
@@ -98,11 +88,6 @@ namespace Models.BO.Channels
         public async Task InsertChannelItemsAsync()
         {
             await CommonFactory.CreateSqLiteDatabase().InsertChannelItemsAsync(this);
-        }
-
-        public async Task InsertChannelTagAsync(string tag)
-        {
-            await CommonFactory.CreateSqLiteDatabase().InsertChannelTagsAsync(ID, tag);
         }
 
         public async void RestoreFullChannelItems(string dirPath)

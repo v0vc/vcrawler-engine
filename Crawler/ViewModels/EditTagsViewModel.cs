@@ -1,7 +1,9 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -9,18 +11,41 @@ using System.Windows;
 using Crawler.Common;
 using Crawler.Views;
 using Interfaces.Models;
-using Models.BO.Channels;
+using Models.Factories;
 
 namespace Crawler.ViewModels
 {
     public class EditTagsViewModel
     {
+        #region Static and Readonly Fields
+
+        private readonly Action<string> onTagDelete;
+        private readonly Action<IChannel> onTagsSave;
+        private readonly ObservableCollection<ITag> supportedTags;
+
+        #endregion
+
         #region Fields
 
         private RelayCommand addCommand;
         private RelayCommand deleteTagCommand;
         private RelayCommand fillTagsCommand;
         private RelayCommand saveCommand;
+
+        #endregion
+
+        #region Constructors
+
+        public EditTagsViewModel(IChannel channel,
+            ObservableCollection<ITag> supportedTags,
+            Action<string> onTagDelete,
+            Action<IChannel> onTagsSave)
+        {
+            this.supportedTags = supportedTags;
+            this.onTagDelete = onTagDelete;
+            this.onTagsSave = onTagsSave;
+            Channel = channel;
+        }
 
         #endregion
 
@@ -34,8 +59,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<IChannel> Channels { get; set; }
-        public ObservableCollection<ITag> CurrentTags { get; set; }
+        public IChannel Channel { get; set; }
 
         public RelayCommand DeleteTagCommand
         {
@@ -53,8 +77,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public YouChannel ParentChannel { get; set; }
-
         public RelayCommand SaveCommand
         {
             get
@@ -62,9 +84,6 @@ namespace Crawler.ViewModels
                 return saveCommand ?? (saveCommand = new RelayCommand(Save));
             }
         }
-
-        public ITag SelectedTag { get; set; }
-        public ObservableCollection<ITag> Tags { get; set; }
 
         #endregion
 
@@ -77,7 +96,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var atvm = new AddTagViewModel(false, ParentChannel, Tags);
+            var atvm = new AddTagViewModel(false, Channel, supportedTags);
             var atv = new AddTagView { DataContext = atvm, Owner = window, WindowStartupLocation = WindowStartupLocation.CenterOwner };
             atv.ShowDialog();
         }
@@ -90,34 +109,31 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            ParentChannel.ChannelTags.Remove(tag);
+            Channel.ChannelTags.Remove(tag);
 
-            await ParentChannel.DeleteChannelTagAsync(tag.Title);
-            if (!Channels.Any(x => x.ChannelTags.Select(y => y.Title).Contains(tag.Title)))
+            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(Channel.ID, tag.Title);
+
+            if (onTagDelete != null)
             {
-                ITag ctag = CurrentTags.FirstOrDefault(x => x.Title == tag.Title);
-                if (ctag != null)
-                {
-                    CurrentTags.Remove(ctag);
-                }
+                onTagDelete.Invoke(tag.Title);
             }
         }
 
         private async void FillTags()
         {
-            if (ParentChannel.ChannelTags.Any())
+            if (Channel.ChannelTags.Any())
             {
-                ParentChannel.ChannelTags.Clear();
+                Channel.ChannelTags.Clear();
             }
 
-            IEnumerable<ITag> lst = await ParentChannel.GetChannelTagsAsync();
+            IEnumerable<ITag> lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID);
             foreach (ITag tag in lst)
             {
-                ParentChannel.ChannelTags.Add(tag);
+                Channel.ChannelTags.Add(tag);
             }
         }
 
-        private async void Save(object obj)
+        private void Save(object obj)
         {
             var window = obj as Window;
             if (window == null)
@@ -125,30 +141,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (!CurrentTags.Any())
+            if (onTagsSave != null)
             {
-                foreach (YouChannel channel in Channels.OfType<YouChannel>())
-                {
-                    IEnumerable<ITag> tags = await channel.GetChannelTagsAsync();
-                    foreach (ITag tag in tags)
-                    {
-                        channel.ChannelTags.Add(tag);
-                        if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
-                        {
-                            CurrentTags.Add(tag);
-                        }
-                    }
-                }
-            }
-
-            foreach (ITag tag in ParentChannel.ChannelTags)
-            {
-                await ParentChannel.InsertChannelTagAsync(tag.Title);
-
-                if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
-                {
-                    CurrentTags.Add(tag);
-                }
+                onTagsSave.Invoke(Channel);
             }
 
             window.Close();
