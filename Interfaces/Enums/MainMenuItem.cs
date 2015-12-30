@@ -10,6 +10,7 @@ namespace Interfaces.Enums
         Backup,
         Restore,
         Settings,
+        Sync,
         Vacuum,
         Link,
         About

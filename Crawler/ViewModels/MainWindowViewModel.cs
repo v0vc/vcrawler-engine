@@ -452,7 +452,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData()));
+                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData(true)));
             }
         }
 
@@ -1205,6 +1205,10 @@ namespace Crawler.ViewModels
                         OpenSettings();
                         break;
 
+                        case MainMenuItem.Sync:
+                        await SyncData(false);
+                        break;
+
                     case MainMenuItem.Vacuum:
                         await Vacuumdb();
                         break;
@@ -1685,7 +1689,7 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async Task SyncData()
+        private async Task SyncData(bool isFastSync)
         {
             PrValue = 0;
             int i = 0;
@@ -1701,7 +1705,7 @@ namespace Crawler.ViewModels
                 Info = "Syncing: " + channel.Title;
                 try
                 {
-                    await ChannelFactory.SyncChannelAsync(channel, true);
+                    await ChannelFactory.SyncChannelAsync(channel, isFastSync);
                 }
                 catch (Exception ex)
                 {

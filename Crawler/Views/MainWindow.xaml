@@ -65,6 +65,7 @@
 
             <MenuItem Header="Tools">
                 <MenuItem Header="Settings" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Settings}"/>
+                <MenuItem Header="Synchronize" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Sync}"/>
                 <MenuItem Header="Vacuum" Command="{Binding MainMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:MainMenuItem.Vacuum}"/>
             </MenuItem>
 

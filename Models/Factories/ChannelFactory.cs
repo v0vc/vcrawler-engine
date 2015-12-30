@@ -283,22 +283,14 @@ namespace Models.Factories
                         (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted))
                             .ToList();
                     int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
-                    int resint = Math.Abs(netcount - dbids.Count);
-                    if (resint == 0)
-                    {
-                        channel.ChannelState = ChannelState.Notset;
-                        return;
-                    }
+                    int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
                     netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint)).ToList();
                 }
                 else
                 {
                     dbids = (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
                     netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
-                }
 
-                if (!isFastSync)
-                {
                     // проставляем в базе признак того, что видео больше нет на канале
                     foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                     {
