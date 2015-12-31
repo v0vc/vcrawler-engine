@@ -724,7 +724,7 @@ namespace DataAPI.Database
         /// <param name="count"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID, int count, int offset)
+        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID, int count, int offset)
         {
             var res = new List<string>();
 
@@ -944,7 +944,7 @@ namespace DataAPI.Database
         ///     Get all playlists id's
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
+        public async Task<List<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
         {
             var res = new List<string>();
 
@@ -1249,7 +1249,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id">playlist ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
+        public async Task<List<string>> GetPlaylistItemsIdsListDbAsync(string id)
         {
             var res = new List<string>();
 

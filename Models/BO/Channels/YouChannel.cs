@@ -70,11 +70,6 @@ namespace Models.BO.Channels
             return await ChannelFactory.GetChannelItemsNetAsync(this, maxresult);
         }
 
-        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsDbAsync()
-        {
-            return await ChannelFactory.GetChannelPlaylistsAsync(ID);
-        }
-
         public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
         {
             return await ChannelFactory.GetChannelPlaylistsNetAsync(ID);

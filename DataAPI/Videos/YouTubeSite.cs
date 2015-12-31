@@ -405,6 +405,41 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
+        ///     Get channel playlists ids
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public static async Task<List<string>> GetChannelPlaylistsIdsNetAsync(string channelID)
+        {
+            var res = new List<string>();
+
+            object pagetoken;
+
+            string zap = string.Format("{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id)&maxResults={3}&{4}",
+                url,
+                key,
+                channelID,
+                itemsPerPage,
+                printType);
+
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+                res.AddRange(from pair in jsvideo["items"]
+                    select pair.SelectToken("id")
+                    into tid where tid != null select tid.Value<string>());
+            }
+            while (pagetoken != null);
+
+            return res;
+        }
+
+        /// <summary>
         ///     Get channel playlists
         /// </summary>
         /// <param name="channelID">channel ID</param>
@@ -529,7 +564,7 @@ namespace DataAPI.Videos
         /// <param name="plid">playlist ID</param>
         /// <param name="maxResult"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string plid, int maxResult)
+        public static async Task<List<string>> GetPlaylistItemsIdsListNetAsync(string plid, int maxResult)
         {
             var res = new List<string>();
 
@@ -974,7 +1009,7 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="ids"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<VideoItemPOCO>> GetVideosListByIdsLiteAsync(IEnumerable<string> ids)
+        public static async Task<List<VideoItemPOCO>> GetVideosListByIdsLiteAsync(IEnumerable<string> ids)
         {
             var lst = new List<VideoItemPOCO>();
 

@@ -30,13 +30,13 @@ namespace Models.Factories
             {
                 return null;
             }
-            var pl = new Playlist()
+            var pl = new Playlist
             {
                 ID = poco.ID, 
                 Title = poco.Title, 
                 SubTitle = poco.SubTitle, 
                 Thumbnail = poco.Thumbnail, 
-                ChannelId = poco.ChannelID, 
+                ChannelId = poco.ChannelID,
                 PlItems = poco.PlaylistItems
             };
             return pl;
@@ -63,7 +63,7 @@ namespace Models.Factories
             {
                 var lst = new List<IVideoItem>();
                 IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsAsync(id, channelID);
-                lst.AddRange(fbres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
                 return lst;
             }
             catch (Exception ex)
@@ -104,7 +104,7 @@ namespace Models.Factories
             {
                 var lst = new List<IVideoItem>();
                 IEnumerable<VideoItemPOCO> fbres = await YouTubeSite.GetPlaylistItemsNetAsync(playlist.ID);
-                lst.AddRange(fbres.Select(poco => VideoItemFactory.CreateVideoItem(poco)));
+                lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
                 return lst;
             }
             catch (Exception ex)

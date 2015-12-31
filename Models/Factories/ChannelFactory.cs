@@ -252,7 +252,7 @@ namespace Models.Factories
             throw new Exception(channel.ID);
         }
 
-        public static async Task SyncChannelAsync(IChannel channel, bool isFastSync)
+        public static async Task SyncChannelAsync(IChannel channel, bool isFastSync, bool isSyncPls = false)
         {
             channel.ChannelState = ChannelState.InWork;
             if (channel is YouChannel)
@@ -284,12 +284,12 @@ namespace Models.Factories
                             .ToList();
                     int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
                     int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
-                    netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint)).ToList();
+                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint);
                 }
                 else
                 {
-                    dbids = (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0)).ToList();
-                    netids = (await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0)).ToList();
+                    dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0);
 
                     // проставляем в базе признак того, что видео больше нет на канале
                     foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
@@ -303,12 +303,15 @@ namespace Models.Factories
                 IEnumerable<List<string>> tchanks = trueids.SplitList();
                 foreach (List<string> list in tchanks)
                 {
-                    IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                    List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
+                    IEnumerable<string> lsttru = from poco in trlist where poco.ParentID == channel.ID select poco.ID;
+                    IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
                     foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;
                         channel.AddNewItem(vi);
                         await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
+                        dbids.Add(vi.ID);
                     }
                 }
 
@@ -316,6 +319,103 @@ namespace Models.Factories
                 if (channel.CountNew > 0)
                 {
                     await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
+                }
+
+                if (isSyncPls)
+                {
+                    List<string> plIdsNet = await YouTubeSite.GetChannelPlaylistsIdsNetAsync(channel.ID);
+                    List<string> plIdsDb = await CommonFactory.CreateSqLiteDatabase().GetChannelsPlaylistsIdsListDbAsync(channel.ID);
+                    foreach (string playlistId in plIdsDb)
+                    {
+                        if (plIdsNet.Contains(playlistId))
+                        {
+                            // обновим плейлисты, которые есть уже в базе
+                            List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
+                            List<string> plitemsIdsDb =
+                                await CommonFactory.CreateSqLiteDatabase().GetPlaylistItemsIdsListDbAsync(playlistId);
+
+                            List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
+                            if (!ids.Any())
+                            {
+                                continue;
+                            }
+                            var lstInDb = new List<string>();
+                            var lstNoInDb = new List<string>();
+                            foreach (string id in ids)
+                            {
+                                if (dbids.Contains(id))
+                                {
+                                    lstInDb.Add(id);
+                                }
+                                else
+                                {
+                                    lstNoInDb.Add(id);
+                                }
+                            }
+                            foreach (string id in lstInDb)
+                            {
+                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, id, channel.ID);
+                            }
+
+                            IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
+                            foreach (List<string> list in chanks)
+                            {
+                                List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
+                                List<string> lsttru = (from poco in trlist where poco.ParentID == channel.ID select poco.ID).ToList();
+                                if (!lsttru.Any())
+                                {
+                                    continue;
+                                }
+
+                                // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
+                                IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+                                foreach (
+                                    IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
+                                {
+                                    vi.SyncState = SyncState.Added;
+                                    channel.AddNewItem(vi);
+                                    await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
+                                    await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // просто удалим уже не существующий в инете плейлист из базы
+                            await CommonFactory.CreateSqLiteDatabase().DeletePlaylistAsync(playlistId);
+                        }
+                    }
+
+                    // новые плейлисты
+                    foreach (string playlistId in plIdsNet.Where(playlistId => !plIdsDb.Contains(playlistId)))
+                    {
+                        PlaylistPOCO plpoco = await YouTubeSite.GetPlaylistNetAsync(playlistId);
+                        List<string> plpocoitems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
+                        plpoco.PlaylistItems.AddRange(plpocoitems);
+                        IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
+                        channel.ChannelPlaylists.Add(pl);
+                        await CommonFactory.CreateSqLiteDatabase().InsertPlaylistAsync(pl);
+                        dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+
+                        List<string> ids = plpocoitems.Where(netid => !dbids.Contains(netid)).ToList();
+                        IEnumerable<List<string>> chanks = ids.SplitList();
+                        foreach (List<string> list in chanks)
+                        {
+                            IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                            foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
+                            {
+                                vi.SyncState = SyncState.Added;
+                                channel.AddNewItem(vi);
+                                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
+                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
+                            }
+                        }
+
+                        foreach (string plpocoitem in plpocoitems)
+                        {
+                            await pl.UpdatePlaylistAsync(plpocoitem);
+                        }
+                    }
                 }
             }
 

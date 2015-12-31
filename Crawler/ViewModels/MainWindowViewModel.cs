@@ -538,7 +538,7 @@ namespace Crawler.ViewModels
 
         private static async void PlaylistExpand(object obj)
         {
-            var ch = obj as YouChannel;
+            var ch = obj as IChannel;
             if (ch == null)
             {
                 return;
@@ -549,10 +549,11 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            IEnumerable<IPlaylist> pls = await ch.GetChannelPlaylistsDbAsync();
+            IEnumerable<IPlaylist> pls = await ChannelFactory.GetChannelPlaylistsAsync(ch.ID);
             {
                 foreach (IPlaylist pl in pls)
                 {
+                    pl.Site = ch.Site;
                     ch.ChannelPlaylists.Add(pl);
                 }
             }
@@ -1696,7 +1697,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
             Stopwatch watch = Stopwatch.StartNew();
-            await ChannelFactory.SyncChannelAsync(channel, false);
+            await ChannelFactory.SyncChannelAsync(channel, false, true);
             watch.Stop();
             Info = watch.TakeLogMessage();
             SetStatus(0);
