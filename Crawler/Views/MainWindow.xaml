@@ -393,7 +393,7 @@
 
                                         <i:Interaction.Triggers>
                                             <i:EventTrigger EventName="MouseDoubleClick">
-                                                <i:InvokeCommandAction Command="{Binding ServiceChannel.FillPopularCommand, Mode=OneTime}" />
+                                                <i:InvokeCommandAction Command="{Binding PopularFillCommand, Mode=OneTime}" />
                                             </i:EventTrigger>
                                             <i:EventTrigger EventName="MouseLeftButtonUp">
                                                 <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
@@ -415,7 +415,9 @@
 
                                                             <i:Interaction.Triggers>
                                                                 <i:EventTrigger EventName="SelectionChanged">
-                                                                    <i:InvokeCommandAction Command="{Binding SiteChangedCommand, Mode=OneTime}" />
+                                                                    <i:InvokeCommandAction Command="{Binding DataContext.SiteChangedCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
+                                                                                           CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}" 
+                                                                                           />
                                                                 </i:EventTrigger>
                                                             </i:Interaction.Triggers>
 
@@ -483,7 +485,7 @@
                                                                         </Style>
                                                                     </TextBox.Style>
                                                                 </TextBox>
-                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.ServiceChannel.SearchCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                                                <Button Width="25" Height="25" Content="OK" Command="{Binding DataContext.SearchCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                                                             </StackPanel>
                                                             <TextBlock Grid.Column="1" Text="{Binding Title, Mode=OneTime}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center"/>
                                                         </Grid>

@@ -81,15 +81,18 @@ namespace Crawler.ViewModels
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
+        private RelayCommand popularFillCommand;
         private RelayCommand popularSelectCommand;
         private double prValue;
         private string result;
         private RelayCommand scrollChangedCommand;
+        private RelayCommand searchCommand;
         private IChannel selectedChannel;
         private IList selectedChannels = new ArrayList();
         private IList selectedItems = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
+        private RelayCommand siteChangedCommand;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
         private RelayCommand videoClickCommand;
@@ -121,7 +124,7 @@ namespace Crawler.ViewModels
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
-            ServiceChannel = new ServiceChannelViewModel(this);
+            ServiceChannel = new ServiceChannelViewModel();
         }
 
         #endregion
@@ -348,6 +351,14 @@ namespace Crawler.ViewModels
             }
         }
 
+        public RelayCommand PopularFillCommand
+        {
+            get
+            {
+                return popularFillCommand ?? (popularFillCommand = new RelayCommand(x => FillPopular()));
+            }
+        }
+
         public RelayCommand PopularSelectCommand
         {
             get
@@ -389,6 +400,14 @@ namespace Crawler.ViewModels
             get
             {
                 return scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
+            }
+        }
+
+        public RelayCommand SearchCommand
+        {
+            get
+            {
+                return searchCommand ?? (searchCommand = new RelayCommand(async x => await SearchExecute()));
             }
         }
 
@@ -481,6 +500,14 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
         public SettingsViewModel SettingsViewModel { get; private set; }
+
+        public RelayCommand SiteChangedCommand
+        {
+            get
+            {
+                return siteChangedCommand ?? (siteChangedCommand = new RelayCommand(SiteChanged));
+            }
+        }
 
         public RelayCommand SyncDataCommand
         {
@@ -653,7 +680,6 @@ namespace Crawler.ViewModels
                 case 1:
                     Result = "Working..";
                     IsWorking = true;
-                    Info = string.Empty;
                     break;
                 case 3:
                     Result = "Error";
@@ -763,7 +789,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case KeyboardKey.Enter:
-                    await ServiceChannel.Search();
+                    await SearchExecute();
                     break;
             }
         }
@@ -854,6 +880,10 @@ namespace Crawler.ViewModels
             RelatedChannels.Clear();
         }
 
+        private void ColoringExisted()
+        {
+        }
+
         private async Task DeleteChannels()
         {
             var sb = new StringBuilder();
@@ -935,9 +965,13 @@ namespace Crawler.ViewModels
                 }
             }
 
-            string res = string.Format(isDeleteFromDbToo ? "Are you sure to delete FROM DB(!){0}Local file will not be deleted:{0}{1}?" : "Are you sure to delete:{0}{1}?",
-                Environment.NewLine,
-                sb);
+            string res =
+                string.Format(
+                              isDeleteFromDbToo
+                                  ? "Are you sure to delete FROM DB(!){0}Local file will not be deleted:{0}{1}?"
+                                  : "Are you sure to delete:{0}{1}?",
+                    Environment.NewLine,
+                    sb);
 
             MessageBoxResult boxResult = MessageBox.Show(res, "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
 
@@ -1124,6 +1158,16 @@ namespace Crawler.ViewModels
             selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
 
             channelGrid = null;
+        }
+
+        private async void FillPopular()
+        {
+            SetStatus(1);
+            var ids = new HashSet<string>(Channels.Select(x => x.ID));
+            await ServiceChannel.FillPopular(ids);
+
+            SelectedChannel.ChannelItemsCount = ServiceChannel.ChannelItems.Count;
+            SetStatus(0);
         }
 
         private async void FillRelated(object obj)
@@ -1693,6 +1737,15 @@ namespace Crawler.ViewModels
             channel.RestoreFullChannelItems(SettingsViewModel.DirPath);
         }
 
+        private async Task SearchExecute()
+        {
+            SetStatus(1);
+            var ids = new HashSet<string>(Channels.Select(x => x.ID));
+            await ServiceChannel.Search(ids);
+            SelectedChannel = ServiceChannel;
+            SetStatus(0);
+        }
+
         private void SelectPlaylist(object obj)
         {
             var pl = obj as IPlaylist;
@@ -1717,6 +1770,17 @@ namespace Crawler.ViewModels
             {
                 SelectedChannel = item;
             }
+        }
+
+        private void SiteChanged(object obj)
+        {
+            var item = obj as IChannel;
+            if (item != null)
+            {
+                SelectedChannel = item;
+            }
+
+            ServiceChannel.SiteChanged();
         }
 
         private void SubscribeOnPopular()
@@ -1835,6 +1899,7 @@ namespace Crawler.ViewModels
                 {
                     channel.DirPath = obj;
                 }
+                ServiceChannel.DirPath = obj;
             }
             else
             {
@@ -1929,7 +1994,7 @@ namespace Crawler.ViewModels
 
                 await SettingsViewModel.LoadTagsFromDb();
                 await SettingsViewModel.LoadCredsFromDb();
-                ServiceChannel.FillCredImages();
+                ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
                 ServiceChannels.Add(ServiceChannel);
                 SetStatus(0);
             }
