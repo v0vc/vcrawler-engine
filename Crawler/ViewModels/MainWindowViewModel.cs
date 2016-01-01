@@ -87,6 +87,7 @@ namespace Crawler.ViewModels
         private RelayCommand scrollChangedCommand;
         private IChannel selectedChannel;
         private IList selectedChannels = new ArrayList();
+        private IList selectedItems = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
         private RelayCommand syncDataCommand;
@@ -117,10 +118,10 @@ namespace Crawler.ViewModels
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
             channelCollectionView = CollectionViewSource.GetDefaultView(Channels);
-            ServiceChannel = new ServiceChannelViewModel();
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
+            ServiceChannel = new ServiceChannelViewModel(this);
         }
 
         #endregion
@@ -399,6 +400,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (Equals(value, selectedChannel))
+                {
+                    return;
+                }
                 selectedChannel = value;
                 OnPropertyChanged();
             }
@@ -412,7 +417,28 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (Equals(value, selectedChannels))
+                {
+                    return;
+                }
                 selectedChannels = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public IList SelectedItems
+        {
+            get
+            {
+                return selectedItems;
+            }
+            set
+            {
+                if (Equals(value, selectedItems))
+                {
+                    return;
+                }
+                selectedItems = value;
                 OnPropertyChanged();
             }
         }
@@ -425,6 +451,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (Equals(value, selectedPlaylist))
+                {
+                    return;
+                }
                 selectedPlaylist = value;
                 OnPropertyChanged();
             }
@@ -438,6 +468,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (Equals(value, selectedTag))
+                {
+                    return;
+                }
                 selectedTag = value;
                 channelCollectionView.Filter = FilterChannelsByTag;
                 OnPropertyChanged();
@@ -834,7 +868,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Delete:" + Environment.NewLine + sb + "?",
+            MessageBoxResult boxResult = MessageBox.Show(string.Format("Delete:{0}{1}?", Environment.NewLine, sb),
                 "Confirm",
                 MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
@@ -870,18 +904,38 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (!channel.SelectedItems.Any())
+            if (!SelectedItems.OfType<IVideoItem>().Any())
+            {
+                return;
+            }
+
+            if (channel is ServiceChannelViewModel && isDeleteFromDbToo)
+            {
+                return;
+            }
+
+            if (!isDeleteFromDbToo && SelectedItems.OfType<IVideoItem>().All(x => string.IsNullOrEmpty(x.LocalFilePath)))
             {
                 return;
             }
 
             var sb = new StringBuilder();
-            foreach (IVideoItem item in channel.SelectedItems)
+            foreach (IVideoItem item in SelectedItems)
             {
-                sb.Append(item.Title).Append(Environment.NewLine);
+                if (isDeleteFromDbToo)
+                {
+                    sb.Append(item.Title).Append(Environment.NewLine);
+                }
+                else
+                {
+                    if (item.FileState == ItemState.LocalYes && !string.IsNullOrEmpty(item.LocalFilePath))
+                    {
+                        sb.Append(item.Title).Append(Environment.NewLine);
+                    }
+                }
             }
 
-            string res = string.Format(isDeleteFromDbToo ? "Are you sure to delete from db:{0}{1}?" : "Are you sure to delete:{0}{1}?",
+            string res = string.Format(isDeleteFromDbToo ? "Are you sure to delete FROM DB(!){0}Local file will not be deleted:{0}{1}?" : "Are you sure to delete:{0}{1}?",
                 Environment.NewLine,
                 sb);
 
@@ -889,9 +943,14 @@ namespace Crawler.ViewModels
 
             if (boxResult == MessageBoxResult.OK)
             {
-                for (int i = channel.SelectedItems.Count; i > 0; i--)
+                for (int i = SelectedItems.Count; i > 0; i--)
                 {
-                    IVideoItem item = channel.SelectedItems[i - 1];
+                    var item = SelectedItems[i - 1] as IVideoItem;
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
                     try
                     {
                         if (isDeleteFromDbToo)
@@ -902,14 +961,11 @@ namespace Crawler.ViewModels
                         }
                         else
                         {
-                            if (item.FileState == ItemState.LocalYes && !string.IsNullOrEmpty(item.LocalFilePath))
-                            {
-                                var fn = new FileInfo(item.LocalFilePath);
-                                fn.Delete();
-                                item.LocalFilePath = string.Empty;
-                                item.FileState = ItemState.LocalNo;
-                                item.Subtitles.Clear();
-                            }
+                            var fn = new FileInfo(item.LocalFilePath);
+                            fn.Delete();
+                            item.LocalFilePath = string.Empty;
+                            item.FileState = ItemState.LocalNo;
+                            item.Subtitles.Clear();
                         }
                     }
                     catch (Exception ex)
@@ -1873,7 +1929,7 @@ namespace Crawler.ViewModels
 
                 await SettingsViewModel.LoadTagsFromDb();
                 await SettingsViewModel.LoadCredsFromDb();
-                ServiceChannel.Init(this);
+                ServiceChannel.FillCredImages();
                 ServiceChannels.Add(ServiceChannel);
                 SetStatus(0);
             }

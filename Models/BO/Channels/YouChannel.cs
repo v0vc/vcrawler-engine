@@ -284,14 +284,6 @@ namespace Models.BO.Channels
             }
         }
 
-        public IList<IVideoItem> SelectedItems
-        {
-            get
-            {
-                return ChannelItems.Where(x => x.IsSelected).ToList();
-            }
-        }
-
         public SiteType Site { get; set; }
 
         public string SubTitle

@@ -596,7 +596,7 @@
                 </Grid.RowDefinitions>
 
                 <controls:BusyDecorator IsBusyIndicatorShowing="{Binding IsWorking}">
-                    <DataGrid x:Name="videoGrid"
+                    <controls:CustomDataGrid x:Name="videoGrid"
                               CanUserAddRows="False"
                               CanUserDeleteRows="False"
                               AutoGenerateColumns="False"
@@ -605,11 +605,13 @@
                               GridLinesVisibility="Horizontal"
                               BorderThickness="1"
                               ItemsSource="{Binding SelectedChannel.ChannelItems}"
-                              SelectedItem="{Binding SelectedChannel.SelectedItem}"                          
+                              SelectedItem="{Binding SelectedChannel.SelectedItem}"   
+                              SelectedItemsList="{Binding SelectedItems, Mode=OneWayToSource}"
                               Sorting="VideoGrid_OnSorting"
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
                               SelectionMode="Extended"
+                              IsSynchronizedWithCurrentItem="True"
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
@@ -662,7 +664,6 @@
 
                         <DataGrid.RowStyle>
                             <Style TargetType="{x:Type DataGridRow}">
-                                <Setter Property="IsSelected" Value="{Binding Path=IsSelected, Mode=OneWayToSource}"/>
                                 <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding SyncState}" Value="{x:Static enums:SyncState.Added}">
@@ -810,7 +811,7 @@
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
                         </DataGrid.Columns>
-                    </DataGrid>
+                    </controls:CustomDataGrid>
                 </controls:BusyDecorator>          
 
                 <Border Grid.Row="1" CornerRadius="4" BorderBrush="Gray" BorderThickness="1" Background="Lavender" DockPanel.Dock="Top" Margin="0,1,0,0">

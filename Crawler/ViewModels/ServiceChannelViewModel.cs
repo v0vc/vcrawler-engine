@@ -27,6 +27,7 @@ namespace Crawler.ViewModels
     {
         #region Static and Readonly Fields
 
+        private readonly MainWindowViewModel mainVm;
         private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
 
         #endregion
@@ -35,9 +36,9 @@ namespace Crawler.ViewModels
 
         private RelayCommand fillPopularCommand;
         private string filterVideoKey;
-        private MainWindowViewModel mainVm;
         private RelayCommand searchCommand;
         private string selectedCountry;
+        private IVideoItem selectedItem;
         private CredImage selectedSite;
         private RelayCommand siteChangedCommand;
 
@@ -45,8 +46,9 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public ServiceChannelViewModel()
+        public ServiceChannelViewModel(MainWindowViewModel mainVm)
         {
+            this.mainVm = mainVm;
             Title = "#Popular";
             Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
@@ -142,10 +144,28 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public void Init(MainWindowViewModel mainWindowModel)
+        public void FillCredImages()
         {
-            mainVm = mainWindowModel;
-            FillCredImages();
+            foreach (ICred cred in mainVm.SettingsViewModel.SupportedCreds.Where(x => x.Site != SiteType.NotSet))
+            {
+                switch (cred.Site)
+                {
+                    case SiteType.YouTube:
+                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.pop.png"));
+                        break;
+
+                    case SiteType.RuTracker:
+
+                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.rt.png"));
+                        break;
+
+                    case SiteType.Tapochek:
+
+                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.tap.png"));
+                        break;
+                }
+            }
+            SelectedSite = SupportedSites.First();
         }
 
         public async Task Search()
@@ -185,30 +205,6 @@ namespace Crawler.ViewModels
             // SelectedChannel = channel;
             mainVm.SelectedChannel.ChannelItemsCount = ChannelItems.Count;
             mainVm.SetStatus(0);
-        }
-
-        private void FillCredImages()
-        {
-            foreach (ICred cred in mainVm.SettingsViewModel.SupportedCreds.Where(x => x.Site != SiteType.NotSet))
-            {
-                switch (cred.Site)
-                {
-                    case SiteType.YouTube:
-                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.pop.png"));
-                        break;
-
-                    case SiteType.RuTracker:
-
-                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.rt.png"));
-                        break;
-
-                    case SiteType.Tapochek:
-
-                        SupportedSites.Add(new CredImage(cred, "Crawler.Images.tap.png"));
-                        break;
-                }
-            }
-            SelectedSite = SupportedSites.First();
         }
 
         private async Task FillPopular()
@@ -316,13 +312,21 @@ namespace Crawler.ViewModels
         public string ID { get; set; }
         public bool IsShowSynced { get; set; }
         public int PlaylistCount { get; set; }
-        public IVideoItem SelectedItem { get; set; }
 
-        public IList<IVideoItem> SelectedItems
+        public IVideoItem SelectedItem
         {
             get
             {
-                return ChannelItems.Where(x => x.IsSelected).ToList();
+                return selectedItem;
+            }
+            set
+            {
+                if (Equals(value, selectedItem))
+                {
+                    return;
+                }
+                selectedItem = value;
+                OnPropertyChanged();
             }
         }
 

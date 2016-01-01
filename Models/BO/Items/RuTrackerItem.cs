@@ -21,7 +21,6 @@ namespace Models.BO.Items
         public int Duration { get; set; }
         public string DurationString { get; set; }
         public string ID { get; set; }
-        public bool IsSelected { get; set; }
         public string LocalFilePath { get; set; }
         public string LogText { get; set; }
         public string ParentID { get; set; }
