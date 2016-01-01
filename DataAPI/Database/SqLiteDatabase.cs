@@ -267,8 +267,9 @@ namespace DataAPI.Database
                 command.Connection = connection;
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
+                    command.Transaction = transaction;
                     await command.ExecuteNonQueryAsync();
-                    transaction.Commit();
+                    command.Transaction.Commit();
                 }
                 connection.Close();
             }

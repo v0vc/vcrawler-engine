@@ -36,7 +36,6 @@ namespace Models.BO.Items
         private ItemState fileState;
         private bool isAudio;
         private bool isProxyReady;
-        private byte[] largeThumb;
         private string logText;
         private SyncState syncState;
         private TaskbarManager taskbar;
@@ -212,23 +211,6 @@ namespace Models.BO.Items
 
         public string ID { get; set; }
         public bool IsSelected { get; set; }
-
-        public byte[] LargeThumb
-        {
-            get
-            {
-                return largeThumb;
-            }
-            set
-            {
-                if (value == largeThumb)
-                {
-                    return;
-                }
-                largeThumb = value;
-                OnPropertyChanged();
-            }
-        }
 
         public string LocalFilePath { get; set; }
 

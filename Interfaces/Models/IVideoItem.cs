@@ -21,9 +21,7 @@ namespace Interfaces.Models
         string DurationString { get; set; }
         ItemState FileState { get; set; }
         string ID { get; set; }
-        //bool IsHasLocalFile { get; set; }
         bool IsSelected { get; set; }
-        byte[] LargeThumb { get; set; }
         string LocalFilePath { get; set; }
         string LogText { get; set; }
         string ParentID { get; set; }

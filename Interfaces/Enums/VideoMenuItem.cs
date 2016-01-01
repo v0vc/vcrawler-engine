@@ -11,6 +11,7 @@ namespace Interfaces.Enums
         Audio,
         HD,
         Delete,
+        DeleteDb,
         Subscribe
     }
 }

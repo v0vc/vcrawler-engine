@@ -862,47 +862,55 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task DeleteItems()
+        private async Task DeleteItems(bool isDeleteFromDbToo = false)
         {
             IChannel channel = SelectedChannel;
             if (channel == null)
             {
                 return;
             }
-            var sb = new StringBuilder();
 
-            foreach (IVideoItem item in channel.SelectedItems)
-            {
-                if (item.FileState == ItemState.LocalYes & !string.IsNullOrEmpty(item.LocalFilePath))
-                {
-                    sb.Append(item.Title).Append(Environment.NewLine);
-                }
-            }
-
-            if (sb.Length == 0)
+            if (!channel.SelectedItems.Any())
             {
                 return;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show("Are you sure to delete:" + Environment.NewLine + sb + "?",
-                "Confirm",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Information);
+            var sb = new StringBuilder();
+            foreach (IVideoItem item in channel.SelectedItems)
+            {
+                sb.Append(item.Title).Append(Environment.NewLine);
+            }
+
+            string res = string.Format(isDeleteFromDbToo ? "Are you sure to delete from db:{0}{1}?" : "Are you sure to delete:{0}{1}?",
+                Environment.NewLine,
+                sb);
+
+            MessageBoxResult boxResult = MessageBox.Show(res, "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
 
             if (boxResult == MessageBoxResult.OK)
             {
                 for (int i = channel.SelectedItems.Count; i > 0; i--)
                 {
                     IVideoItem item = channel.SelectedItems[i - 1];
-
-                    var fn = new FileInfo(item.LocalFilePath);
                     try
                     {
-                        fn.Delete();
-                        await item.Log(string.Format("Deleted: {0}", item.LocalFilePath));
-                        item.LocalFilePath = string.Empty;
-                        item.FileState = ItemState.LocalNo;
-                        item.Subtitles.Clear();
+                        if (isDeleteFromDbToo)
+                        {
+                            channel.ChannelItems.Remove(item);
+                            await CommonFactory.CreateSqLiteDatabase().DeleteItemAsync(item.ID);
+                            channel.ChannelItemsCount -= 1;
+                        }
+                        else
+                        {
+                            if (item.FileState == ItemState.LocalYes && !string.IsNullOrEmpty(item.LocalFilePath))
+                            {
+                                var fn = new FileInfo(item.LocalFilePath);
+                                fn.Delete();
+                                item.LocalFilePath = string.Empty;
+                                item.FileState = ItemState.LocalNo;
+                                item.Subtitles.Clear();
+                            }
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -1407,7 +1415,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var channel = SelectedChannel;
+            IChannel channel = SelectedChannel;
             if (channel == null)
             {
                 return;
@@ -1794,6 +1802,10 @@ namespace Crawler.ViewModels
             {
                 case VideoMenuItem.Delete:
                     await DeleteItems();
+                    break;
+
+                case VideoMenuItem.DeleteDb:
+                    await DeleteItems(true);
                     break;
 
                 case VideoMenuItem.Audio:
