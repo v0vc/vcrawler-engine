@@ -700,7 +700,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id, SiteType.YouTube);
-                    FillFieldsFromPlaylist(item, pair);
+                    await FillFieldsFromPlaylist(item, pair);
                     res.Add(item);
                     sb.Append(id).Append(',');
                 }
@@ -1294,7 +1294,7 @@ namespace DataAPI.Videos
             }
         }
 
-        private static async void FillFieldsFromPlaylist(VideoItemPOCO item, JToken record)
+        private static async Task FillFieldsFromPlaylist(VideoItemPOCO item, JToken record)
         {
             JToken tpid = record.SelectToken("snippet.channelId");
             item.ParentID = tpid != null ? tpid.Value<string>() ?? string.Empty : string.Empty;

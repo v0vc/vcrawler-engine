@@ -192,12 +192,12 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
+        public static async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
         {
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channelID);
+                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channelID);
                 lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
                 return lst;
             }
@@ -222,12 +222,12 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<IEnumerable<ITag>> GetChannelTagsAsync(string id)
+        public static async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
             var lst = new List<ITag>();
             try
             {
-                IEnumerable<TagPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
+                var fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
                 lst.AddRange(fbres.Select(TagFactory.CreateTag));
                 return lst;
             }
@@ -279,9 +279,7 @@ namespace Models.Factories
                 List<string> dbids;
                 if (isFastSync)
                 {
-                    dbids =
-                        (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted))
-                            .ToList();
+                    dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
                     int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
                     int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
                     netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint);
@@ -544,7 +542,7 @@ namespace Models.Factories
             {
                 await playlist.InsertPlaylistAsync();
 
-                IEnumerable<string> plv = await playlist.GetPlaylistItemsIdsListNetAsync(0);
+                var plv = await playlist.GetPlaylistItemsIdsListNetAsync(0);
 
                 foreach (string id in plv)
                 {

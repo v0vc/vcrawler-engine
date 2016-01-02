@@ -610,7 +610,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            IEnumerable<IPlaylist> pls = await ChannelFactory.GetChannelPlaylistsAsync(ch.ID);
+            List<IPlaylist> pls = await ChannelFactory.GetChannelPlaylistsAsync(ch.ID);
             {
                 foreach (IPlaylist pl in pls)
                 {
@@ -624,7 +624,7 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public async void AddNewChannel(string channelId, string channelTitle, SiteType site)
+        private async void AddNewChannel(string channelId, string channelTitle, SiteType site)
         {
             SetStatus(1);
             string parsedId = null;
@@ -657,7 +657,14 @@ namespace Crawler.ViewModels
                 }
                 else
                 {
-                    await AddNewChannelAsync(parsedId, channelTitle, site);
+                    try
+                    {
+                        await AddNewChannelAsync(parsedId, channelTitle, site);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
                 }
             }
         }
@@ -754,7 +761,7 @@ namespace Crawler.ViewModels
             if (res == DialogResult.OK)
             {
                 SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-                List<ChannelPOCO> lst = (await fb.GetChannelsListAsync()).ToList();
+                List<ChannelPOCO> lst = await fb.GetChannelsListAsync();
                 var sb = new StringBuilder();
                 foreach (ChannelPOCO poco in lst)
                 {
@@ -844,7 +851,7 @@ namespace Crawler.ViewModels
             {
                 foreach (IChannel ch in Channels)
                 {
-                    IEnumerable<ITag> tags = await ChannelFactory.GetChannelTagsAsync(ch.ID);
+                    var tags = await ChannelFactory.GetChannelTagsAsync(ch.ID);
                     foreach (ITag tag in tags)
                     {
                         ch.ChannelTags.Add(tag);
@@ -1123,7 +1130,7 @@ namespace Crawler.ViewModels
 
         private async Task FillChannels()
         {
-            IEnumerable<IChannel> lst;
+            List<IChannel> lst;
             try
             {
                 lst = await GetChannelsListAsync(); // все каналы за раз
@@ -1329,10 +1336,10 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task<IEnumerable<IChannel>> GetChannelsListAsync()
+        private async Task<List<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
-            IEnumerable<ChannelPOCO> fbres = await df.GetChannelsListAsync();
+            var fbres = await df.GetChannelsListAsync();
             lst.AddRange(fbres.Select(ChannelFactory.CreateChannel));
             return lst;
         }
@@ -1428,7 +1435,7 @@ namespace Crawler.ViewModels
             var tmptags = new List<ITag>();
             foreach (IChannel channel in Channels)
             {
-                IEnumerable<ITag> tags = await ChannelFactory.GetChannelTagsAsync(channel.ID);
+                var tags = await ChannelFactory.GetChannelTagsAsync(channel.ID);
 
                 foreach (ITag tag in tags)
                 {
@@ -1525,7 +1532,7 @@ namespace Crawler.ViewModels
 
             channel.ChannelItemsCollectionView.Filter = null;
 
-            List<string> pls = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
+            List<string> pls = await pl.GetPlaylistItemsIdsListNetAsync(0);
 
             foreach (string id in pls.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)))
             {

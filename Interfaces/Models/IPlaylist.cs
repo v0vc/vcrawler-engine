@@ -25,17 +25,9 @@ namespace Interfaces.Models
 
         #region Methods
 
-        Task DeletePlaylistAsync();
-
         Task DownloadPlaylist();
 
-        Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync();
-
-        Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync();
-
-        Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(int maxResult);
-
-        Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync();
+        Task<List<string>> GetPlaylistItemsIdsListNetAsync(int maxResult);
 
         Task InsertPlaylistAsync();
 

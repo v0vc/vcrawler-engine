@@ -254,7 +254,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadCredsFromDb()
         {
-            IEnumerable<CredPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
+            var fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
             SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
@@ -317,7 +317,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadTagsFromDb()
         {
-            IEnumerable<TagPOCO> fbres = (await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync()).ToArray();
+            var fbres = await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync();
             IEnumerable<ITag> lst = fbres.Select(TagFactory.CreateTag);
             foreach (ITag tag in lst)
             {

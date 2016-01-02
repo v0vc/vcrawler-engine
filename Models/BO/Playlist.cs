@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DataAPI.Videos;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -23,35 +24,14 @@ namespace Models.BO
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
 
-        public async Task DeletePlaylistAsync()
-        {
-            // await ((PlaylistFactory) ServiceLocator.PlaylistFactory).DeletePlaylistAsync(ID);
-            await PlaylistFactory.DeletePlaylistAsync(ID);
-        }
-
         public Task DownloadPlaylist()
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync()
+        public async Task<List<string>> GetPlaylistItemsIdsListNetAsync(int maxResult)
         {
-            return await PlaylistFactory.GetPlaylistItemsDbAsync(ID, ChannelId);
-        }
-
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync()
-        {
-            return await PlaylistFactory.GetPlaylistItemsIdsListDbAsync(ID);
-        }
-
-        public async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(int maxResult)
-        {
-            return await PlaylistFactory.GetPlaylistItemsIdsListNetAsync(ID, maxResult);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync()
-        {
-            return await PlaylistFactory.GetPlaylistItemsNetAsync(this);
+            return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(ID, maxResult);
         }
 
         public async Task InsertPlaylistAsync()

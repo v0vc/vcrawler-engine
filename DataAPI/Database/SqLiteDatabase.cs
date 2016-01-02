@@ -394,7 +394,7 @@ namespace DataAPI.Database
         ///     Get all tags
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<TagPOCO>> GetAllTagsAsync()
+        public async Task<List<TagPOCO>> GetAllTagsAsync()
         {
             var res = new List<TagPOCO>();
 
@@ -518,7 +518,7 @@ namespace DataAPI.Database
         /// <param name="count"></param>
         /// <param name="offset"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
+        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
         {
             var res = new List<VideoItemPOCO>();
 
@@ -660,7 +660,7 @@ namespace DataAPI.Database
         /// <param name="offset"></param>
         /// <param name="excludedState"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GetChannelItemsIdListDbAsync(string channelID,
+        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID,
             int count,
             int offset,
             SyncState excludedState)
@@ -781,7 +781,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="channelID">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<PlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
+        public async Task<List<PlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
             var res = new List<PlaylistPOCO>();
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, channelID);
@@ -858,7 +858,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="tag">tag ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<ChannelPOCO>> GetChannelsByTagAsync(string tag)
+        public async Task<List<ChannelPOCO>> GetChannelsByTagAsync(string tag)
         {
             var res = new List<ChannelPOCO>();
 
@@ -903,7 +903,7 @@ namespace DataAPI.Database
         ///     Get all channels id's
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<string>> GetChannelsIdsListDbAsync()
+        public async Task<List<string>> GetChannelsIdsListDbAsync()
         {
             var res = new List<string>();
 
@@ -987,7 +987,7 @@ namespace DataAPI.Database
         ///     Get channels list
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<ChannelPOCO>> GetChannelsListAsync()
+        public async Task<List<ChannelPOCO>> GetChannelsListAsync()
         {
             var res = new List<ChannelPOCO>();
 
@@ -1037,7 +1037,7 @@ namespace DataAPI.Database
         /// </summary>
         /// <param name="id">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<TagPOCO>> GetChannelTagsAsync(string id)
+        public async Task<List<TagPOCO>> GetChannelTagsAsync(string id)
         {
             var res = new List<TagPOCO>();
             string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, channelIdF, id);
@@ -1116,7 +1116,7 @@ namespace DataAPI.Database
         ///     Get credentials
         /// </summary>
         /// <returns></returns>
-        public async Task<IEnumerable<CredPOCO>> GetCredListAsync()
+        public async Task<List<CredPOCO>> GetCredListAsync()
         {
             var res = new List<CredPOCO>();
             string zap = string.Format("SELECT * FROM {0}", tablecredentials);
@@ -1197,7 +1197,7 @@ namespace DataAPI.Database
         /// <param name="id">playlist ID</param>
         /// <param name="channelID">channel ID</param>
         /// <returns></returns>
-        public async Task<IEnumerable<VideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
+        public async Task<List<VideoItemPOCO>> GetPlaylistItemsAsync(string id, string channelID)
         {
             var res = new List<VideoItemPOCO>();
             var lst = new List<string>();
@@ -1425,8 +1425,10 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + channelId, channel.ID);
                 command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
                 command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-                command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
-                command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
+                if (channel.Thumbnail != null)
+                {
+                    command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
+                }
                 command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
                 command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
@@ -1462,7 +1464,10 @@ namespace DataAPI.Database
                             command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
                             command.Parameters.AddWithValue("@" + duration, item.Duration);
                             command.Parameters.AddWithValue("@" + comments, item.Comments);
-                            command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            if (item.Thumbnail != null)
+                            {
+                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            }
                             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
                             command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
@@ -1497,8 +1502,11 @@ namespace DataAPI.Database
                         command.Parameters.AddWithValue("@" + channelId, channel.ID);
                         command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
                         command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-                        command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
-                        command.Parameters.AddWithValue("@" + channelThumbnail, channel.Thumbnail);
+                        if (channel.Thumbnail != null)
+                        {
+                            command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value =
+                                channel.Thumbnail;
+                        }
                         command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
                         command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
@@ -1522,8 +1530,11 @@ namespace DataAPI.Database
                             command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
                             command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
                             command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-                            command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
-                                playlist.Thumbnail;
+                            if (playlist.Thumbnail != null)
+                            {
+                                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
+                                    playlist.Thumbnail;
+                            }
                             command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
 
                             await command.ExecuteNonQueryAsync();
@@ -1544,7 +1555,10 @@ namespace DataAPI.Database
                             command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
                             command.Parameters.AddWithValue("@" + duration, item.Duration);
                             command.Parameters.AddWithValue("@" + comments, item.Comments);
-                            command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            if (item.Thumbnail != null)
+                            {
+                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            }
                             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
                             command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
@@ -1647,7 +1661,10 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
                 command.Parameters.AddWithValue("@" + duration, item.Duration);
                 command.Parameters.AddWithValue("@" + comments, item.Comments);
-                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                if (item.Thumbnail != null)
+                {
+                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                }
                 command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
                 command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
 
@@ -1675,7 +1692,10 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
                 command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
                 command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value = playlist.Thumbnail;
+                if (playlist.Thumbnail != null)
+                {
+                    command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value = playlist.Thumbnail;
+                }
                 command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
 
                 await ExecuteNonQueryAsync(command);

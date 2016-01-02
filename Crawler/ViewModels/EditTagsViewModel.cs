@@ -126,7 +126,7 @@ namespace Crawler.ViewModels
                 Channel.ChannelTags.Clear();
             }
 
-            IEnumerable<ITag> lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID);
+            var lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID);
             foreach (ITag tag in lst)
             {
                 Channel.ChannelTags.Add(tag);

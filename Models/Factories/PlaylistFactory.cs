@@ -55,14 +55,13 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<IEnumerable<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
+        public static async Task<List<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
         {
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
             try
             {
                 var lst = new List<IVideoItem>();
-                IEnumerable<VideoItemPOCO> fbres = await fb.GetPlaylistItemsAsync(id, channelID);
+                var fbres = await fb.GetPlaylistItemsAsync(id, channelID);
                 lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
                 return lst;
             }
