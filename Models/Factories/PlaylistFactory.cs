@@ -102,7 +102,7 @@ namespace Models.Factories
             try
             {
                 var lst = new List<IVideoItem>();
-                IEnumerable<VideoItemPOCO> fbres = await YouTubeSite.GetPlaylistItemsNetAsync(playlist.ID);
+                var fbres = await YouTubeSite.GetPlaylistItemsNetAsync(playlist.ID);
                 lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
                 return lst;
             }

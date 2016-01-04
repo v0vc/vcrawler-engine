@@ -180,7 +180,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            IEnumerable<SubtitlePOCO> res = (await YouTubeSite.GetVideoSubtitlesByIdAsync(youId)).ToList();
+            var res = await YouTubeSite.GetVideoSubtitlesByIdAsync(youId);
             if (res.Any())
             {
                 Subtitles.Clear();

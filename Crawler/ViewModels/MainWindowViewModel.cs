@@ -26,6 +26,7 @@ using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -1619,49 +1620,53 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 int rest = 0;
+                var ids = Channels.Select(x => x.ID).ToHashSet();
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
                     if (sp.Length == 3)
                     {
-                        if (Channels.Select(x => x.ID).Contains(sp[1]))
+                        if (ids.Contains(sp[1]))
                         {
                             continue;
                         }
 
-                        switch (sp[2])
+                        SiteType backupSiteType;
+                        if (Enum.TryParse(sp[2], out backupSiteType))
                         {
-                            case "youtube.com":
-
-                                try
+                            try
+                            {
+                                switch (backupSiteType)
                                 {
-                                    SetStatus(1);
-                                    Info = "Restoring: " + sp[0];
-                                    await AddNewChannelAsync(sp[1], sp[0], SiteType.YouTube);
+                                    case SiteType.YouTube:
+                                        SetStatus(1);
+                                        Info = "Restoring: " + sp[0];
+                                        await AddNewChannelAsync(sp[1], sp[0], backupSiteType);
+                                        ids.Add(sp[1]);
+                                        break;
+
+                                    default:
+                                        MessageBox.Show("Unsupported site: " + sp[2]);
+                                        break;
                                 }
-                                catch (Exception ex)
-                                {
-                                    SetStatus(3);
-                                    Info = "Can't restore: " + sp[0];
-                                    MessageBox.Show(ex.Message);
-                                }
-
-                                rest++;
-                                PrValue = Math.Round((double)(100 * rest) / lst.Count());
-                                prog.SetProgressValue((int)PrValue, 100);
-                                break;
-
-                            default:
-
-                                Info = "Unsupported site: " + sp[2];
-
-                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                SetStatus(3);
+                                Info = "Can't restore: " + sp[0];
+                                MessageBox.Show(ex.Message);
+                            }
                         }
                     }
                     else
                     {
                         Info = "Check: " + s;
+                        MessageBox.Show(s);
                     }
+
+                    rest++;
+                    PrValue = Math.Round((double)(100 * rest) / lst.Count());
+                    prog.SetProgressValue((int)PrValue, 100);
                 }
 
                 prog.SetProgressState(TaskbarProgressBarState.NoProgress);

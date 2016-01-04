@@ -212,7 +212,7 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                IEnumerable<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
+                var fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
                 lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
                 return lst;
             }
@@ -303,7 +303,7 @@ namespace Models.Factories
                 {
                     List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
                     IEnumerable<string> lsttru = from poco in trlist where poco.ParentID == channel.ID select poco.ID;
-                    IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+                    var res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
                     foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;
@@ -366,7 +366,7 @@ namespace Models.Factories
                                 }
 
                                 // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
-                                IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+                                var res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
                                 foreach (
                                     IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                                 {
@@ -399,7 +399,7 @@ namespace Models.Factories
                         IEnumerable<List<string>> chanks = ids.SplitList();
                         foreach (List<string> list in chanks)
                         {
-                            IEnumerable<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                            var res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
                             foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                             {
                                 vi.SyncState = SyncState.Added;

@@ -132,11 +132,10 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
+                    var lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
-                    foreach (VideoItemPOCO poco in lst)
+                    foreach (IVideoItem item in lst.Select(VideoItemFactory.CreateVideoItem))
                     {
-                        IVideoItem item = VideoItemFactory.CreateVideoItem(poco);
                         AddNewItem(item);
                         item.IsHasLocalFileFound(DirPath);
                         if (ids.Contains(item.ParentID))
@@ -192,7 +191,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst = (await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50)).ToList();
+                    List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50);
                     if (lst.Any())
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)

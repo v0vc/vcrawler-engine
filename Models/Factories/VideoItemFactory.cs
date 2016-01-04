@@ -95,7 +95,7 @@ namespace Models.Factories
         {
             SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
-            IEnumerable<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            var poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
             res.AddRange(poco.Select(SubtitleFactory.CreateSubtitle));
             if (res.Any())
             {
