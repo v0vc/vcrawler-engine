@@ -66,6 +66,7 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
+                    var dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(selectedChannel.ID, 0, 0);
                     List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
                     List<string> plitemsIdsDb = await CommonFactory.CreateSqLiteDatabase().GetPlaylistItemsIdsListDbAsync(playlist.ID);
                     List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
@@ -73,7 +74,7 @@ namespace Models.Factories
                     var lstNoInDb = new List<string>();
                     foreach (string id in ids)
                     {
-                        if (plitemsIdsDb.Contains(id))
+                        if (dbids.Contains(id))
                         {
                             lstInDb.Add(id);
                         }
@@ -85,6 +86,7 @@ namespace Models.Factories
                     foreach (string id in lstInDb)
                     {
                         await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID);
+                        playlist.PlItems.Add(id);
                     }
 
                     IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
