@@ -241,7 +241,7 @@
                             <MenuItem Header="Related" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Related}" />
                             <MenuItem Header="Edit" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Edit}" />
                             <MenuItem Header="Tags" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Tags}" />
-                            <MenuItem Header="Update PL" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
+                            <MenuItem Header="Update" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
                         </ContextMenu>
                     </DataGrid.Resources> 
                     
@@ -918,7 +918,7 @@
                                     <i:InvokeCommandAction Command="{Binding PlaylistSelectCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                                 <i:EventTrigger EventName="MouseDoubleClick">
-                                    <i:InvokeCommandAction Command="{Binding PlaylistDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=plGrid, Path=SelectedItem}"/>
+                                    <i:InvokeCommandAction Command="{Binding PlaylistMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:PlaylistMenuItem.Update}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
                             
@@ -927,6 +927,7 @@
                                 <ContextMenu x:Key="DataRowContextMenu">
                                     <MenuItem Header="Copy Link" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Link}" />
                                     <MenuItem Header="Download" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Download}" />
+                                    <MenuItem Header="Update" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Update}" />
                                 </ContextMenu>
                             </DataGrid.Resources>
                             

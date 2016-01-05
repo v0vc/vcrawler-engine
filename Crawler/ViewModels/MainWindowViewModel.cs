@@ -26,7 +26,6 @@ using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
-using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
@@ -78,7 +77,6 @@ namespace Crawler.ViewModels
         private bool isWorking;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
-        private RelayCommand playlistDoubleClickCommand;
         private RelayCommand playlistExpandCommand;
         private RelayCommand playlistMenuCommand;
         private RelayCommand playlistSelectCommand;
@@ -320,14 +318,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand PlaylistDoubleClickCommand
-        {
-            get
-            {
-                return playlistDoubleClickCommand ?? (playlistDoubleClickCommand = new RelayCommand(PlaylistDoubleClick));
-            }
-        }
-
         public RelayCommand PlaylistExpandCommand
         {
             get
@@ -500,7 +490,6 @@ namespace Crawler.ViewModels
 
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
-        public SettingsViewModel SettingsViewModel { get; private set; }
 
         public RelayCommand SiteChangedCommand
         {
@@ -552,6 +541,8 @@ namespace Crawler.ViewModels
             }
         }
 
+        private SettingsViewModel SettingsViewModel { get; set; }
+
         #endregion
 
         #region Static Methods
@@ -573,10 +564,12 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                if (string.IsNullOrEmpty(channel.SubTitle))
+                if (!string.IsNullOrEmpty(channel.SubTitle))
                 {
-                    await channel.FillChannelDescriptionAsync();
+                    return;
                 }
+                string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(channel.ID);
+                channel.SubTitle = text.WordWrap(80);
             }
         }
 
@@ -625,9 +618,46 @@ namespace Crawler.ViewModels
 
         #region Methods
 
+        /// <summary>
+        ///     0-Ready
+        ///     1-Working..
+        ///     3-Error
+        ///     4-Saved
+        /// </summary>
+        /// <param name="res"></param>
+        public void SetStatus(int res)
+        {
+            switch (res)
+            {
+                case 0:
+                    Result = "Ready";
+                    IsWorking = false;
+                    break;
+                case 1:
+                    Result = "Working..";
+                    IsWorking = true;
+                    break;
+                case 3:
+                    Result = "Error";
+                    IsWorking = false;
+                    break;
+                case 4:
+                    Result = "Saved";
+                    IsWorking = false;
+                    break;
+            }
+        }
+
+        private void AddItemToDownloadToList(IVideoItem item)
+        {
+            SelectedChannel = ServiceChannel;
+            SelectedChannel.AddNewItem(item);
+            SelectedChannel.SelectedItem = item;
+        }
+
         private async void AddNewChannel(string channelId, string channelTitle, SiteType site)
         {
-            SetStatus(1);
+            
             string parsedId = null;
 
             switch (site)
@@ -670,45 +700,10 @@ namespace Crawler.ViewModels
             }
         }
 
-        /// <summary>
-        ///     0-Ready
-        ///     1-Working..
-        ///     3-Error
-        ///     4-Saved
-        /// </summary>
-        /// <param name="res"></param>
-        public void SetStatus(int res)
-        {
-            switch (res)
-            {
-                case 0:
-                    Result = "Ready";
-                    IsWorking = false;
-                    break;
-                case 1:
-                    Result = "Working..";
-                    IsWorking = true;
-                    break;
-                case 3:
-                    Result = "Error";
-                    IsWorking = false;
-                    break;
-                case 4:
-                    Result = "Saved";
-                    IsWorking = false;
-                    break;
-            }
-        }
-
-        private void AddItemToDownloadToList(IVideoItem item)
-        {
-            SelectedChannel = ServiceChannel;
-            SelectedChannel.AddNewItem(item);
-            SelectedChannel.SelectedItem = item;
-        }
-
         private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
         {
+            SetStatus(1);
+
             IChannel channel = await ChannelFactory.GetChannelNetAsync(channelid, site);
             if (channel == null)
             {
@@ -852,7 +847,7 @@ namespace Crawler.ViewModels
             {
                 foreach (IChannel ch in Channels)
                 {
-                    var tags = await ChannelFactory.GetChannelTagsAsync(ch.ID);
+                    List<ITag> tags = await ChannelFactory.GetChannelTagsAsync(ch.ID);
                     foreach (ITag tag in tags)
                     {
                         ch.ChannelTags.Add(tag);
@@ -1193,7 +1188,7 @@ namespace Crawler.ViewModels
             }
             SetStatus(1);
             channel.ChannelState = ChannelState.InWork;
-            IEnumerable<IVideoItem> lst = await channel.GetChannelItemsNetAsync(count);
+            IEnumerable<IVideoItem> lst = await ChannelFactory.GetChannelItemsNetAsync(channel, count);
             foreach (IVideoItem item in lst)
             {
                 channel.AddNewItem(item);
@@ -1303,7 +1298,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task FindRelatedChannels(YouChannel channel)
+        private async Task FindRelatedChannels(IChannel channel)
         {
             if (channel == null)
             {
@@ -1314,7 +1309,7 @@ namespace Crawler.ViewModels
 
             RelatedChannels.Clear();
 
-            IEnumerable<IChannel> lst = await channel.GetRelatedChannelNetAsync();
+            IEnumerable<IChannel> lst = await ChannelFactory.GetRelatedChannelNetAsync(channel);
 
             foreach (IChannel ch in lst)
             {
@@ -1340,7 +1335,7 @@ namespace Crawler.ViewModels
         private async Task<List<IChannel>> GetChannelsListAsync()
         {
             var lst = new List<IChannel>();
-            var fbres = await df.GetChannelsListAsync();
+            List<ChannelPOCO> fbres = await df.GetChannelsListAsync();
             lst.AddRange(fbres.Select(ChannelFactory.CreateChannel));
             return lst;
         }
@@ -1436,7 +1431,7 @@ namespace Crawler.ViewModels
             var tmptags = new List<ITag>();
             foreach (IChannel channel in Channels)
             {
-                var tags = await ChannelFactory.GetChannelTagsAsync(channel.ID);
+                List<ITag> tags = await ChannelFactory.GetChannelTagsAsync(channel.ID);
 
                 foreach (ITag tag in tags)
                 {
@@ -1515,43 +1510,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void PlaylistDoubleClick(object obj)
-        {
-            var pl = obj as IPlaylist;
-            if (pl == null)
-            {
-                return;
-            }
-
-            IChannel channel = SelectedChannel;
-            if (channel == null)
-            {
-                return;
-            }
-
-            SetStatus(1);
-
-            channel.ChannelItemsCollectionView.Filter = null;
-
-            List<string> pls = await pl.GetPlaylistItemsIdsListNetAsync(0);
-
-            foreach (string id in pls.Where(id => !channel.ChannelItems.Select(x => x.ID).Contains(id)))
-            {
-                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(id, pl.Site);
-                channel.AddNewItem(vi);
-                if (!pl.PlItems.Contains(id))
-                {
-                    pl.PlItems.Add(id);
-                }
-                if (vi.ParentID == channel.ID)
-                {
-                    await pl.UpdatePlaylistAsync(id);
-                }
-            }
-
-            SetStatus(0);
-        }
-
         private void PlaylistLinkToClipboard()
         {
             try
@@ -1574,6 +1532,11 @@ namespace Crawler.ViewModels
 
         private async void PlaylistMenuClick(object param)
         {
+            if (SelectedPlaylist == null)
+            {
+                return;
+            }
+            var playlist = SelectedPlaylist;
             var menu = (PlaylistMenuItem)param;
             switch (menu)
             {
@@ -1584,10 +1547,32 @@ namespace Crawler.ViewModels
                 case PlaylistMenuItem.Download:
                     try
                     {
-                        await SelectedPlaylist.DownloadPlaylist();
+                        await PlaylistFactory.DownloadPlaylist(playlist);
                     }
                     catch (Exception ex)
                     {
+                        Info = ex.Message;
+                    }
+
+                    break;
+
+                case PlaylistMenuItem.Update:
+
+                    if (SelectedChannel == null)
+                    {
+                        return;
+                    }
+
+                    SetStatus(1);
+                    try
+                    {
+                        await PlaylistFactory.UpdatePlaylist(playlist, SelectedChannel);
+                        SelectPlaylist(playlist);
+                        SetStatus(0);
+                    }
+                    catch (Exception ex)
+                    {
+                        SetStatus(3);
                         Info = ex.Message;
                     }
 
@@ -1620,7 +1605,7 @@ namespace Crawler.ViewModels
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
                 int rest = 0;
-                var ids = Channels.Select(x => x.ID).ToHashSet();
+                HashSet<string> ids = Channels.Select(x => x.ID).ToHashSet();
                 foreach (string s in lst)
                 {
                     string[] sp = s.Split('|');
@@ -1795,15 +1780,26 @@ namespace Crawler.ViewModels
             ServiceChannel.SiteChanged();
         }
 
-        private void SubscribeOnPopular()
+        private async void SubscribeOnPopular()
         {
-            var channel = SelectedChannel as ServiceChannelViewModel;
-            if (channel != null)
+            if (SelectedChannel == null)
             {
-                IVideoItem item = channel.SelectedItem;
-                AddNewChannel(item.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
-                item.SyncState = SyncState.Added;
+                return;
             }
+            var channel = SelectedChannel;
+            if (channel.SelectedItem == null)
+            {
+                return;
+            }
+            IVideoItem item = channel.SelectedItem;
+            var ids = Channels.Select(x => x.ID).ToHashSet();
+            if (ids.Contains(item.ParentID))
+            {
+                return;
+            }
+            await AddNewChannelAsync(item.ParentID, string.Empty, item.Site);
+            //AddNewChannel(item.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
+            item.SyncState = SyncState.Added;
         }
 
         private async Task SubscribeOnRelated()
@@ -1823,7 +1819,7 @@ namespace Crawler.ViewModels
             }
             lst.Clear();
             SelectedChannel = channel;
-            await channel.InsertChannelItemsAsync();
+            await CommonFactory.CreateSqLiteDatabase().InsertChannelItemsAsync(channel);
         }
 
         private async void SyncChannel(object obj)
@@ -1845,7 +1841,7 @@ namespace Crawler.ViewModels
 
         private async Task SyncChannelPlaylist()
         {
-            var channel = SelectedChannel as YouChannel;
+            IChannel channel = SelectedChannel;
             if (channel == null || channel.ChannelState == ChannelState.InWork)
             {
                 return;
@@ -1854,7 +1850,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             try
             {
-                await channel.SyncChannelPlaylistsAsync();
+                await ChannelFactory.SyncChannelPlaylistsAsync(channel);
             }
             catch (Exception ex)
             {

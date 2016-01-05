@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -9,6 +10,8 @@ using System.Threading.Tasks;
 using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
+using Extensions;
+using Interfaces.Enums;
 using Interfaces.Models;
 using Models.BO;
 
@@ -32,96 +35,80 @@ namespace Models.Factories
             }
             var pl = new Playlist
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
-                SubTitle = poco.SubTitle, 
-                Thumbnail = poco.Thumbnail, 
+                ID = poco.ID,
+                Title = poco.Title,
+                SubTitle = poco.SubTitle,
+                Thumbnail = poco.Thumbnail,
                 ChannelId = poco.ChannelID,
+                Site = poco.Site,
                 PlItems = poco.PlaylistItems
             };
             return pl;
         }
 
-        public static async Task DeletePlaylistAsync(string id)
+        public static async Task DownloadPlaylist(IPlaylist playlist)
         {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
+            switch (playlist.Site)
             {
-                await fb.DeletePlaylistAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
+                case SiteType.YouTube:
+
+                    throw new Exception();
+
+                    break;
             }
         }
 
-        public static async Task<List<IVideoItem>> GetPlaylistItemsDbAsync(string id, string channelID)
+        public static async Task UpdatePlaylist(IPlaylist playlist, IChannel selectedChannel)
         {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
-            {
-                var lst = new List<IVideoItem>();
-                var fbres = await fb.GetPlaylistItemsAsync(id, channelID);
-                lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+            //selectedChannel.ChannelItemsCollectionView.Filter = null;
 
-        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListDbAsync(string id)
-        {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
+            switch (playlist.Site)
             {
-                return await fb.GetPlaylistItemsIdsListDbAsync(id);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+                case SiteType.YouTube:
 
-        public static async Task<IEnumerable<string>> GetPlaylistItemsIdsListNetAsync(string id, int maxResult)
-        {
-            try
-            {
-                return await YouTubeSite.GetPlaylistItemsIdsListNetAsync(id, maxResult);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+                    List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
+                    List<string> plitemsIdsDb = await CommonFactory.CreateSqLiteDatabase().GetPlaylistItemsIdsListDbAsync(playlist.ID);
+                    List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
+                    var lstInDb = new List<string>();
+                    var lstNoInDb = new List<string>();
+                    foreach (string id in ids)
+                    {
+                        if (plitemsIdsDb.Contains(id))
+                        {
+                            lstInDb.Add(id);
+                        }
+                        else
+                        {
+                            lstNoInDb.Add(id);
+                        }
+                    }
+                    foreach (string id in lstInDb)
+                    {
+                        await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID);
+                    }
 
-        public static async Task<IEnumerable<IVideoItem>> GetPlaylistItemsNetAsync(Playlist playlist)
-        {
-            VideoItemFactory vf = CommonFactory.CreateVideoItemFactory();
-            try
-            {
-                var lst = new List<IVideoItem>();
-                var fbres = await YouTubeSite.GetPlaylistItemsNetAsync(playlist.ID);
-                lst.AddRange(fbres.Select(VideoItemFactory.CreateVideoItem));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+                    IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
+                    foreach (List<string> list in chanks)
+                    {
+                        List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                        foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem))
+                        {
+                            vi.SyncState = SyncState.Added;
+                            if (vi.ParentID == selectedChannel.ID)
+                            {
+                                selectedChannel.AddNewItem(vi);
+                                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
+                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlist.ID, vi.ID, selectedChannel.ID);
+                            }
+                            else
+                            {
+                                selectedChannel.ChannelItems.Add(vi);
+                            }
+                            playlist.PlItems.Add(vi.ID);
+                        }
+                    }
 
-        public static async Task InsertPlaylistAsync(Playlist playlist)
-        {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
-            {
-                await fb.InsertPlaylistAsync(playlist);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
+                    break;
             }
         }
 

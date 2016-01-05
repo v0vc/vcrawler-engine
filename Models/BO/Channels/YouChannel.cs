@@ -9,8 +9,6 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -49,59 +47,13 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public void FillChannelCookieDb()
-        {
-            ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(Site);
-        }
-
-        public async Task FillChannelCookieNetAsync()
-        {
-            await ChannelFactory.FillChannelCookieNetAsync(this);
-        }
-
-        public async Task FillChannelDescriptionAsync()
-        {
-            string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(ID);
-            SubTitle = text.WordWrap(80);
-        }
-
-        public async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(int maxresult)
-        {
-            return await ChannelFactory.GetChannelItemsNetAsync(this, maxresult);
-        }
-
-        public async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync()
-        {
-            return await ChannelFactory.GetChannelPlaylistsNetAsync(ID);
-        }
-
-        public async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync()
-        {
-            return await ChannelFactory.GetRelatedChannelNetAsync(this);
-        }
-
-        public async Task InsertChannelItemsAsync()
-        {
-            await CommonFactory.CreateSqLiteDatabase().InsertChannelItemsAsync(this);
-        }
-
         public async void RestoreFullChannelItems(string dirPath)
         {
             if (ChannelItemsCount <= ChannelItems.Count)
             {
                 return;
             }
-            await FillChannelItemsDbAsync(dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
-        }
-
-        public async Task SyncChannelPlaylistsAsync()
-        {
-            await ChannelFactory.SyncChannelPlaylistsAsync(this);
-        }
-
-        private async Task FillChannelItemsDbAsync(string dir, int count, int offset)
-        {
-            await ChannelFactory.FillChannelItemsFromDbAsync(this, dir, count, offset);
+            await ChannelFactory.FillChannelItemsFromDbAsync(this, dirPath, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
         }
 
         private bool FilterVideoBySynced(object item)

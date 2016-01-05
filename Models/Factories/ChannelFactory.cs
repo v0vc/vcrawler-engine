@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -53,11 +54,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID, 
-                        Title = poco.Title, 
+                        ID = poco.ID,
+                        Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail, 
-                        Site = poco.Site, 
+                        Thumbnail = poco.Thumbnail,
+                        Site = poco.Site,
                         CountNew = poco.Countnew
                     };
 
@@ -207,27 +208,12 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<IEnumerable<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
-        {
-            var lst = new List<IPlaylist>();
-            try
-            {
-                var fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
-                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public static async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
             var lst = new List<ITag>();
             try
             {
-                var fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
+                List<TagPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
                 lst.AddRange(fbres.Select(TagFactory.CreateTag));
                 return lst;
             }
@@ -303,7 +289,7 @@ namespace Models.Factories
                 {
                     List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
                     IEnumerable<string> lsttru = from poco in trlist where poco.ParentID == channel.ID select poco.ID;
-                    var res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+                    List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
                     foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;
@@ -366,7 +352,7 @@ namespace Models.Factories
                                 }
 
                                 // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
-                                var res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+                                List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
                                 foreach (
                                     IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                                 {
@@ -399,7 +385,7 @@ namespace Models.Factories
                         IEnumerable<List<string>> chanks = ids.SplitList();
                         foreach (List<string> list in chanks)
                         {
-                            var res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                            List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
                             foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
                             {
                                 vi.SyncState = SyncState.Added;
@@ -420,151 +406,64 @@ namespace Models.Factories
             channel.ChannelState = ChannelState.Notset;
         }
 
-        // public async Task SyncChannelAsync(YouChannel channel, bool isSyncPls)
-        // {
-        // channel.IsInWork = true;
-
-        // // получаем количество записей в базе
-        // // var dbCount = await GetChannelItemsCountDbAsync(YouChannel.ID);
-        // List<string> idsdb = (await GetChannelItemsIdsListDbAsync(channel.ID)).ToList();
-
-        // // получаем количество записей на канале
-        // // var lsids = await YouChannel.GetChannelItemsIdsListNetAsync(0);
-        // // var netCount = lsids.Count;
-        // int netCount = await GetChannelItemsCountNetAsync(channel.ID);
-
-        // if (netCount > idsdb.Count)
-        // {
-        // int nc = netCount - idsdb.Count + 1; // с запасом :)
-        // List<string> lsidNet = (await channel.GetChannelItemsIdsListNetAsync(nc)).ToList();
-
-        // if (lsidNet.Count != idsdb.Count && lsidNet.Any())
-        // {
-        // lsidNet.Reverse();
-        // List<string> trueids = lsidNet.Where(id => !idsdb.Contains(id)).ToList(); // id которых нет
-        // if (trueids.Any())
-        // {
-        // VideoItemFactory vf = commonFactory.CreateVideoItemFactory();
-        // YouTubeSite you = commonFactory.CreateYouTubeSite();
-
-        // IEnumerable<List<string>> tchanks = CommonExtensions.SplitList(trueids); // бьем на чанки - минимизируем запросы
-
-        // foreach (List<string> list in tchanks)
-        // {
-        // IEnumerable<IVideoItemPOCO> res = await you.GetVideosListByIdsAsync(list); // получим скопом
-
-        // foreach (IVideoItemPOCO poco in res)
-        // {
-        // IVideoItem vi = vf.CreateVideoItem(poco);
-        // channel.AddNewItem(vi, true);
-        // await vi.InsertItemAsync();
-        // }
-        // }
-        // }
-        // }
-        // }
-
-        // if (isSyncPls)
-        // {
-        // List<IPlaylist> dbpls = (await channel.GetChannelPlaylistsDbAsync()).ToList(); // получаем все плэйлисты из базы
-
-        // List<IPlaylist> pls = (await channel.GetChannelPlaylistsNetAsync()).ToList(); // получаем все плэйлисты из сети
-
-        // // в сети изменилось количество плэйлистов - тупо все удалим и запишем заново
-        // if (dbpls.Count != pls.Count)
-        // {
-        // foreach (IPlaylist pl in dbpls)
-        // {
-        // await pl.DeletePlaylistAsync();
-        // }
-
-        // foreach (IPlaylist pl in pls)
-        // {
-        // await pl.InsertPlaylistAsync();
-
-        // IEnumerable<string> plv = await pl.GetPlaylistItemsIdsListNetAsync(0);
-
-        // foreach (string id in plv)
-        // {
-        // if (channel.ChannelItems.Select(x => x.ID).Contains(id))
-        // {
-        // await pl.UpdatePlaylistAsync(id);
-        // }
-        // }
-        // }
-        // }
-        // else
-        // {
-        // // количество плэйлистов в базе и в сети одинаково - посмотрим на содержимое
-        // foreach (IPlaylist pl in pls)
-        // {
-        // // получим количество видюх плейлиста в сети
-        // List<string> plv = (await pl.GetPlaylistItemsIdsListNetAsync(0)).ToList();
-
-        // // получим количество видюх плэйлиста в базе
-        // IEnumerable<string> plvdb = await pl.GetPlaylistItemsIdsListDbAsync();
-
-        // // если равно - считаем что содержимое плейлиста не изменилось (не факт конечно, но да пох)
-        // if (plv.Count == plvdb.Count())
-        // {
-        // continue;
-        // }
-
-        // // изменилось содержимое плэйлиста - тупо удалим его (бд - каскад) и запишем с новыми данными
-        // await pl.DeletePlaylistAsync();
-
-        // await pl.InsertPlaylistAsync(); // запишем
-
-        // foreach (string id in plv)
-        // {
-        // // обновим
-        // if (channel.ChannelItems.Select(x => x.ID).Contains(id))
-        // {
-        // await pl.UpdatePlaylistAsync(id);
-        // }
-        // }
-        // }
-        // }
-        // }
-        // channel.IsInWork = false;
-        // }
-        public static async Task SyncChannelPlaylistsAsync(YouChannel channel)
+        public static async Task SyncChannelPlaylistsAsync(IChannel channel)
         {
-            List<IPlaylist> pls = (await channel.GetChannelPlaylistsNetAsync()).ToList();
-
-            if (pls.Any())
+            switch (channel.Site)
             {
-                await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(channel.ID);
-                channel.ChannelPlaylists.Clear();
-            }
-            channel.PlaylistCount = pls.Count;
-            foreach (IPlaylist playlist in pls)
-            {
-                await playlist.InsertPlaylistAsync();
+                case SiteType.YouTube:
 
-                var plv = await playlist.GetPlaylistItemsIdsListNetAsync(0);
-
-                foreach (string id in plv)
-                {
-                    if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+                    List<IPlaylist> pls = await GetChannelPlaylistsNetAsync(channel.ID);
+                    if (pls.Any())
                     {
-                        await playlist.UpdatePlaylistAsync(id);
+                        await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(channel.ID);
+                        channel.ChannelPlaylists.Clear();
                     }
-                    else
+                    channel.PlaylistCount = pls.Count;
+                    foreach (IPlaylist playlist in pls)
                     {
-                        IVideoItem item = await VideoItemFactory.GetVideoItemNetAsync(id, channel.Site);
-                        if (item.ParentID != channel.ID)
+                        await CommonFactory.CreateSqLiteDatabase().InsertPlaylistAsync(playlist);
+
+                        List<string> plv = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
+
+                        foreach (string id in plv)
                         {
-                            continue;
+                            if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+                            {
+                                await playlist.UpdatePlaylistAsync(id);
+                            }
+                            else
+                            {
+                                IVideoItem item = await VideoItemFactory.GetVideoItemNetAsync(id, channel.Site);
+                                if (item.ParentID != channel.ID)
+                                {
+                                    continue;
+                                }
+
+                                channel.AddNewItem(item);
+                                await item.InsertItemAsync();
+                                await playlist.UpdatePlaylistAsync(item.ID);
+                            }
                         }
 
-                        channel.AddNewItem(item);
-                        await item.InsertItemAsync();
-                        await playlist.UpdatePlaylistAsync(item.ID);
+                        channel.ChannelPlaylists.Add(playlist);
                     }
-                }
 
-                channel.ChannelPlaylists.Add(playlist);
+                    break;
+            }
+        }
+
+        private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
+        {
+            var lst = new List<IPlaylist>();
+            try
+            {
+                List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
+                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
+                return lst;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
         }
 

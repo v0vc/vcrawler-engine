@@ -15,7 +15,7 @@ namespace Interfaces.Models
 
         string ChannelId { get; set; }
         string ID { get; set; }
-        List<string> PlItems { get; set; }
+        List<string> PlItems { get; }
         SiteType Site { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
@@ -24,12 +24,6 @@ namespace Interfaces.Models
         #endregion
 
         #region Methods
-
-        Task DownloadPlaylist();
-
-        Task<List<string>> GetPlaylistItemsIdsListNetAsync(int maxResult);
-
-        Task InsertPlaylistAsync();
 
         Task UpdatePlaylistAsync(string videoId);
 

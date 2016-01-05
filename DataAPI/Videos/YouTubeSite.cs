@@ -52,7 +52,9 @@ namespace DataAPI.Videos
                 return ch;
             }
 
-            ch.Items.AddRange(await GetPlaylistItemsNetAsync(uploads.ID));
+            var items = await GetPlaylistItemsNetAsync(uploads.ID);
+
+            ch.Items.AddRange(items);
 
             // ch.Playlists.AddRange(relatedpls.Where(x => x != uploads)); // Liked, favorites and other
             ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));

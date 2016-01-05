@@ -6,6 +6,7 @@ namespace Interfaces.Enums
     public enum PlaylistMenuItem
     {
         Link, 
-        Download
+        Download,
+        Update
     }
 }

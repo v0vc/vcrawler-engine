@@ -42,12 +42,12 @@ namespace TestAPI
         [TestMethod]
         public void FillChannelCookieDbAsync()
         {
-            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
             if (ch == null)
             {
                 return;
             }
-            ch.FillChannelCookieDb();
+            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
             Assert.IsTrue(ch.ChannelCookies.Count > 0);
         }
 
@@ -60,7 +60,7 @@ namespace TestAPI
                 return;
             }
             ch.ID = "27253";
-            ch.FillChannelCookieDb();
+            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
             await tf.FillChannelNetAsync(ch);
             Assert.IsTrue(ch.ChannelItems.Any());
         }
@@ -76,25 +76,22 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek) as YouChannel;
+            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
             if (ch == null)
             {
                 return;
             }
             ch.ID = "27253";
-            ch.FillChannelCookieDb();
+            
+            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
             if (ch.ChannelCookies == null)
             {
-                await ch.FillChannelCookieNetAsync();
-
-                // ch.StoreCookies();
+                await ChannelFactory.FillChannelCookieNetAsync(ch);
             }
             IEnumerable<VideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             if (!t.Any())
             {
-                await ch.FillChannelCookieNetAsync();
-
-                // ch.StoreCookies();
+                await ChannelFactory.FillChannelCookieNetAsync(ch);
                 t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
             }
             Assert.IsTrue(t.Any());
