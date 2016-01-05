@@ -609,6 +609,7 @@
                               ItemsSource="{Binding SelectedChannel.ChannelItems}"
                               SelectedItem="{Binding SelectedChannel.SelectedItem}"   
                               SelectedItemsList="{Binding SelectedItems, Mode=OneWayToSource}"
+                              HorizontalScrollBarVisibility="Disabled"
                               Sorting="VideoGrid_OnSorting"
                               EnableColumnVirtualization="True"
                               EnableRowVirtualization="True"
@@ -898,8 +899,8 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        
-                        <GridSplitter Width="3"/>
+
+                        <GridSplitter Width="3" ResizeDirection="Columns"/>
 
                         <DataGrid Grid.Column="1" x:Name="plGrid"
                                   CanUserAddRows="False"
@@ -911,6 +912,12 @@
                                   BorderThickness="1"
                                   SelectedItem="{Binding SelectedPlaylist}"
                                   MinWidth="400"
+                                  EnableColumnVirtualization="True"
+                                  EnableRowVirtualization="True"
+                                  HorizontalScrollBarVisibility="Disabled"
+                                  SelectionUnit="FullRow"
+                                  SelectionMode="Extended"
+                                  IsSynchronizedWithCurrentItem="True"
                                   >
 
                             <i:Interaction.Triggers>
@@ -934,6 +941,8 @@
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
                                     <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
+                                    <Setter Property="Width" Value="Auto"/>
+                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
                                 </Style>
                             </DataGrid.RowStyle>
 
@@ -942,7 +951,7 @@
                                 <DataGridTemplateColumn CanUserResize="False">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IPlaylist}">
+                                            <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
                                                 <StackPanel.OpacityMask>
                                                     <VisualBrush Visual="{Binding ElementName=mask}" />
                                                 </StackPanel.OpacityMask>
@@ -967,10 +976,31 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn d:DataContext="{d:DesignInstance Type=models:IPlaylist}">
+                                <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Width="Auto"
+                                                       Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" 
+                                                       />
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+
+                                <DataGridTemplateColumn CanUserResize="False" Width="50" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding PlItems.Count, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property= "Foreground" Value="MediumSeaGreen" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding PlItems.Count}" Value="0">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>

@@ -66,10 +66,13 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    var dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(selectedChannel.ID, 0, 0);
+                    var dbids = selectedChannel.ChannelItems.Select(x => x.ID).ToHashSet();
                     List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
-                    List<string> plitemsIdsDb = await CommonFactory.CreateSqLiteDatabase().GetPlaylistItemsIdsListDbAsync(playlist.ID);
-                    List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
+                    List<string> ids = plitemsIdsNet.Where(netid => !playlist.PlItems.Contains(netid)).ToList();
+                    if (!ids.Any())
+                    {
+                        return;
+                    }
                     var lstInDb = new List<string>();
                     var lstNoInDb = new List<string>();
                     foreach (string id in ids)
