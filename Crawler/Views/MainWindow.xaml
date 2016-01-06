@@ -206,6 +206,7 @@
                           SelectionUnit="FullRow"
                           SelectionMode="Extended"
                           IsSynchronizedWithCurrentItem="True"
+                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           >
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>
@@ -386,6 +387,7 @@
                                               BorderThickness="1"
                                               ItemsSource="{Binding ServiceChannels}"
                                               SelectedItem="{Binding SelectedChannel}"
+                                              IsSynchronizedWithCurrentItem="True"
                                               >
                                         <DataGrid.InputBindings>
                                             <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
@@ -615,6 +617,7 @@
                               EnableRowVirtualization="True"
                               SelectionMode="Extended"
                               IsSynchronizedWithCurrentItem="True"
+                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                               >
                         <i:Interaction.Triggers>
                             <i:EventTrigger EventName="MouseDoubleClick">
@@ -881,11 +884,11 @@
 
             <Expander Grid.Column="3" IsExpanded="{Binding IsPlExpand, Mode=TwoWay}"
                       ExpandDirection="Left" 
-                      HorizontalAlignment="Right" 
+                      HorizontalAlignment="Stretch" 
                       Background="Lavender"
                       BorderThickness="1" 
                       BorderBrush="Gray" 
-                      Margin="0,0,2,0"                    
+                      Margin="0,0,2,0"
                       >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Expanded">
@@ -894,13 +897,14 @@
                 </i:Interaction.Triggers>
                 
                 <Expander.Content>
+
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="400"/>
                         </Grid.ColumnDefinitions>
 
-                        <GridSplitter Width="3" ResizeDirection="Columns"/>
+                        <GridSplitter Width="3" ResizeDirection="Columns" />
 
                         <DataGrid Grid.Column="1" x:Name="plGrid"
                                   CanUserAddRows="False"
@@ -911,13 +915,13 @@
                                   GridLinesVisibility="Horizontal"
                                   BorderThickness="1"
                                   SelectedItem="{Binding SelectedPlaylist}"
-                                  MinWidth="400"
                                   EnableColumnVirtualization="True"
                                   EnableRowVirtualization="True"
                                   HorizontalScrollBarVisibility="Disabled"
                                   SelectionUnit="FullRow"
                                   SelectionMode="Extended"
-                                  IsSynchronizedWithCurrentItem="True"
+                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                  HorizontalAlignment="Stretch"
                                   >
 
                             <i:Interaction.Triggers>
@@ -928,7 +932,7 @@
                                     <i:InvokeCommandAction Command="{Binding PlaylistMenuCommand, Mode=OneTime}" CommandParameter="{x:Static enums:PlaylistMenuItem.Update}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
-                            
+
                             <DataGrid.Resources>
                                 <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                                 <ContextMenu x:Key="DataRowContextMenu">
@@ -941,8 +945,6 @@
                             <DataGrid.RowStyle>
                                 <Style TargetType="{x:Type DataGridRow}">
                                     <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
-                                    <Setter Property="Width" Value="Auto"/>
-                                    <Setter Property="HorizontalAlignment" Value="Stretch"/>
                                 </Style>
                             </DataGrid.RowStyle>
 
@@ -976,23 +978,26 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
+                                <DataGridTemplateColumn Width="*" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" Width="Auto"
-                                                       Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" 
+                                            <TextBlock Text="{Binding Title}" Margin="10,0,5,0" 
+                                                       Width="Auto" Foreground="MidnightBlue"
+                                                       FontStretch="Normal" FontSize="22" 
+                                                       VerticalAlignment="Center" HorizontalAlignment="Stretch"
                                                        />
                                         </DataTemplate>
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
 
-                                <DataGridTemplateColumn CanUserResize="False" Width="50" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
+                                <DataGridTemplateColumn CanUserResize="False" Width="40" d:DataContext="{d:DesignInstance Type=models:IPlaylist, IsDesignTimeCreatable=False}">
                                     <DataGridTemplateColumn.CellTemplate>
                                         <DataTemplate>
-                                            <TextBlock Text="{Binding PlItems.Count, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
+                                            <TextBlock Text="{Binding PlItems.Count, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="18">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
-                                                        <Setter Property= "Foreground" Value="MediumSeaGreen" />
+                                                        <Setter Property="Foreground" Value="MidnightBlue" />
+                                                        <Setter Property="FontStyle" Value="Italic"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding PlItems.Count}" Value="0">
                                                                 <Setter Property="Visibility" Value="Collapsed" />

@@ -415,6 +415,8 @@ namespace Crawler.ViewModels
                     return;
                 }
                 selectedChannel = value;
+                IsLogExpand = false;
+                IsPlExpand = false;
                 OnPropertyChanged();
             }
         }
@@ -625,7 +627,7 @@ namespace Crawler.ViewModels
         ///     4-Saved
         /// </summary>
         /// <param name="res"></param>
-        public void SetStatus(int res)
+        private void SetStatus(int res)
         {
             switch (res)
             {
@@ -713,11 +715,6 @@ namespace Crawler.ViewModels
             if (!string.IsNullOrEmpty(channeltitle))
             {
                 channel.Title = channeltitle;
-            }
-
-            if (Channels.Select(x => x.ID).Contains(channel.ID))
-            {
-                await CommonFactory.CreateSqLiteDatabase().DeleteChannelAsync(channel.ID);
             }
 
             channel.DirPath = SettingsViewModel.DirPath;
@@ -1763,10 +1760,11 @@ namespace Crawler.ViewModels
         private void SelectPopular(object obj)
         {
             var item = obj as IChannel;
-            if (item != null)
+            if (item == null)
             {
-                SelectedChannel = item;
+                return;
             }
+            SelectedChannel = item;
         }
 
         private void SiteChanged(object obj)
@@ -1798,7 +1796,6 @@ namespace Crawler.ViewModels
                 return;
             }
             await AddNewChannelAsync(item.ParentID, string.Empty, item.Site);
-            //AddNewChannel(item.MakeLink(), string.Empty, SelectedChannel.SelectedItem.Site);
             item.SyncState = SyncState.Added;
         }
 
