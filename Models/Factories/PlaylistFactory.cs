@@ -74,12 +74,14 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => playlist.PlItems.Contains(item.ID)))
+                    foreach (IVideoItem item in
+                        selectedChannel.ChannelItems.Where(item => playlist.PlItems.Contains(item.ID))
+                            .Where(item => item.FileState == ItemState.LocalNo))
                     {
                         item.FileState = ItemState.Planned;
                     }
 
-                    foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => playlist.PlItems.Contains(item.ID)))
+                    foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => item.FileState == ItemState.Planned))
                     {
                         await item.DownloadItem(youPath, selectedChannel.DirPath, isHd, isAudio);
                     }

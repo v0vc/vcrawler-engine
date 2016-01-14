@@ -550,6 +550,13 @@ namespace Crawler.ViewModels
 
         #region Static Methods
 
+        private static void AddDefPlaylist(IChannel channel, List<string> ids)
+        {
+            Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
+            IPlaylist defpl = PlaylistFactory.CreateUploadPlaylist(channel, ids, StreamHelper.ReadFully(img));
+            channel.ChannelPlaylists.Add(defpl);
+        }
+
         private static async void FillDescription(object obj)
         {
             var video = obj as IVideoItem;
@@ -615,10 +622,8 @@ namespace Crawler.ViewModels
                 ch.ChannelPlaylists.Add(pl);
             }
 
-            Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
-            var lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
-            var defpl = PlaylistFactory.CreateUploadPlaylist(ch, lst, StreamHelper.ReadFully(img));
-            ch.ChannelPlaylists.Add(defpl);
+            List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
+            AddDefPlaylist(ch, lst);
         }
 
         #endregion
@@ -681,6 +686,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
 
             IChannel channel = await ChannelFactory.GetChannelNetAsync(channelid, site);
+
             if (channel == null)
             {
                 return;
@@ -696,6 +702,7 @@ namespace Crawler.ViewModels
             SelectedChannel = channel;
             channel.ChannelState = ChannelState.InWork;
             await CommonFactory.CreateSqLiteDatabase().InsertChannelFullAsync(channel);
+            AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
             channel.ChannelState = ChannelState.Added;
@@ -852,10 +859,6 @@ namespace Crawler.ViewModels
                 ch.ChannelItems.Clear();
             }
             RelatedChannels.Clear();
-        }
-
-        private void ColoringExisted()
-        {
         }
 
         private async Task DeleteChannels()
