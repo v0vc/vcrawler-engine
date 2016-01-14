@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using DataAPI.POCO;
@@ -243,9 +242,7 @@ namespace Models.Factories
             channel.ChannelState = ChannelState.InWork;
             if (channel is YouChannel)
             {
-                var sb = new StringBuilder(channel.ID);
-                sb[1] = 'U';
-                string pluploadsid = sb.ToString();
+                string pluploadsid = YouChannel.MakePlaylistUploadId(channel.ID);
 
                 // убираем признак предыдущей синхронизации
                 List<IVideoItem> preds = channel.ChannelItems.Where(x => x.SyncState == SyncState.Added).ToList();

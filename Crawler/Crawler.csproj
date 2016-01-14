@@ -211,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\add-48.png" />
+    <Resource Include="Images\clock_64.png" />
     <Resource Include="Images\label-32.png" />
     <Resource Include="Images\ok-32.png" />
     <Resource Include="Images\site-32.png" />

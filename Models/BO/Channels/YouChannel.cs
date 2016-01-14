@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -41,6 +42,17 @@ namespace Models.BO.Channels
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
             ChannelCookies = new CookieContainer();
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        public static string MakePlaylistUploadId(string id)
+        {
+            var sb = new StringBuilder(id);
+            sb[1] = 'U';
+            return sb.ToString();
         }
 
         #endregion

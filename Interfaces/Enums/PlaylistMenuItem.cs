@@ -7,6 +7,8 @@ namespace Interfaces.Enums
     {
         Link, 
         Download,
+        DownloadHd,
+        Audio,
         Update
     }
 }

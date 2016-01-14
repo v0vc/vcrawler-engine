@@ -14,6 +14,7 @@ using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.BO;
+using Models.BO.Channels;
 
 namespace Models.Factories
 {
@@ -41,18 +42,47 @@ namespace Models.Factories
                 Thumbnail = poco.Thumbnail,
                 ChannelId = poco.ChannelID,
                 Site = poco.Site,
-                PlItems = poco.PlaylistItems
+                PlItems = poco.PlaylistItems,
+                IsDefault = false
             };
             return pl;
         }
 
-        public static async Task DownloadPlaylist(IPlaylist playlist)
+        public static IPlaylist CreateUploadPlaylist(IChannel ch, List<string> channel, byte[] thumbnail)
+        {
+            var pl = new Playlist
+            {
+                Title = "Uploads",
+                PlItems = channel,
+                Thumbnail = thumbnail,
+                ChannelId = ch.ID,
+                ID = YouChannel.MakePlaylistUploadId(ch.ID),
+                Site = ch.Site,
+                SubTitle = "All items",
+                IsDefault = true
+            };
+            return pl;
+        }
+
+        public static async Task DownloadPlaylist(IPlaylist playlist,
+            IChannel selectedChannel,
+            string youPath,
+            bool isHd = false,
+            bool isAudio = false)
         {
             switch (playlist.Site)
             {
                 case SiteType.YouTube:
 
-                    throw new Exception();
+                    foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => playlist.PlItems.Contains(item.ID)))
+                    {
+                        item.FileState = ItemState.Planned;
+                    }
+
+                    foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => playlist.PlItems.Contains(item.ID)))
+                    {
+                        await item.DownloadItem(youPath, selectedChannel.DirPath, isHd, isAudio);
+                    }
 
                     break;
             }
@@ -66,7 +96,7 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    var dbids = selectedChannel.ChannelItems.Select(x => x.ID).ToHashSet();
+                    HashSet<string> dbids = selectedChannel.ChannelItems.Select(x => x.ID).ToHashSet();
                     List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
                     List<string> ids = plitemsIdsNet.Where(netid => !playlist.PlItems.Contains(netid)).ToList();
                     if (!ids.Any())

@@ -21,6 +21,7 @@ namespace Models.BO
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
+        public bool IsDefault { get; set; }
 
         public async Task UpdatePlaylistAsync(string videoId)
         {

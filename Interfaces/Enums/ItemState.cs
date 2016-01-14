@@ -7,6 +7,7 @@ namespace Interfaces.Enums
     {
         LocalNo,
         LocalYes,
-        Downloading
+        Downloading,
+        Planned
     }
 }
