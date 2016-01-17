@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -38,19 +39,19 @@ namespace Models.Factories
         {
             var vi = new YouTubeItem
             {
-                ID = poco.ID, 
-                Title = poco.Title, 
-                ParentID = poco.ParentID, 
+                ID = poco.ID,
+                Title = poco.Title,
+                ParentID = poco.ParentID,
                 Description = poco.Description, // .WordWrap(80);
-                ViewCount = poco.ViewCount, 
-                Duration = poco.Duration, 
-                Comments = poco.Comments, 
-                Thumbnail = poco.Thumbnail, 
-                Timestamp = poco.Timestamp, 
-                SyncState = (SyncState)poco.SyncState, 
-                Site = poco.Site, 
-                DurationString = IntTostrTime(poco.Duration), 
-                DateTimeAgo = TimeAgo(poco.Timestamp), 
+                ViewCount = poco.ViewCount,
+                Duration = poco.Duration,
+                Comments = poco.Comments,
+                Thumbnail = poco.Thumbnail,
+                Timestamp = poco.Timestamp,
+                SyncState = (SyncState)poco.SyncState,
+                Site = poco.Site,
+                DurationString = IntTostrTime(poco.Duration),
+                DateTimeAgo = TimeAgo(poco.Timestamp),
                 Subtitles = new ObservableCollection<ISubtitle>()
             };
             return vi;
@@ -95,7 +96,7 @@ namespace Models.Factories
         {
             SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
-            var poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            List<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
             res.AddRange(poco.Select(SubtitleFactory.CreateSubtitle));
             if (res.Any())
             {

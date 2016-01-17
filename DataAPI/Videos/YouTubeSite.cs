@@ -22,7 +22,7 @@ namespace DataAPI.Videos
     {
         #region Constants
 
-        private const int itemsPerPage = 50;
+        public const int ItemsPerPage = 50;
         private const string key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
         private const string printType = "prettyPrint=false";
         private const string token = "nextPageToken";
@@ -109,14 +109,15 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="channelID">channel ID</param>
         /// <param name="maxResult">count</param>
+        /// <param name="skipfirst"></param>
         /// <returns></returns>
-        public static async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult)
+        public static async Task<IEnumerable<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int maxResult, bool skipfirst = false)
         {
             var res = new List<VideoItemPOCO>();
 
-            int itemsppage = itemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            if (maxResult < itemsPerPage & maxResult != 0)
+            if (maxResult < ItemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -139,6 +140,21 @@ namespace DataAPI.Videos
                 JObject jsvideo = JObject.Parse(str);
 
                 pagetoken = jsvideo.SelectToken(token);
+
+                if (skipfirst)
+                {
+                    skipfirst = false;
+                    zap =
+                        string.Format(
+                                      "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
+                            url,
+                            channelID,
+                            key,
+                            itemsppage,
+                            pagetoken,
+                            printType);
+                    continue;
+                }
 
                 var sb = new StringBuilder();
 
@@ -277,9 +293,9 @@ namespace DataAPI.Videos
         {
             var res = new List<VideoItemPOCO>();
 
-            int itemsppage = itemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            if (maxResult < itemsPerPage & maxResult != 0)
+            if (maxResult < ItemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -422,7 +438,7 @@ namespace DataAPI.Videos
                 url,
                 key,
                 channelID,
-                itemsPerPage,
+                ItemsPerPage,
                 printType);
 
             do
@@ -459,7 +475,7 @@ namespace DataAPI.Videos
                     url,
                     key,
                     channelID,
-                    itemsPerPage,
+                    ItemsPerPage,
                     printType);
 
             do
@@ -571,9 +587,9 @@ namespace DataAPI.Videos
         {
             var res = new List<string>();
 
-            int itemsppage = itemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            if (maxResult < itemsPerPage & maxResult != 0)
+            if (maxResult < ItemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -637,7 +653,7 @@ namespace DataAPI.Videos
                         key,
                         plid,
                         pagetoken,
-                        itemsPerPage,
+                        ItemsPerPage,
                         printType);
             }
             while (pagetoken != null);
@@ -662,7 +678,7 @@ namespace DataAPI.Videos
                     url,
                     key,
                     plid,
-                    itemsPerPage,
+                    ItemsPerPage,
                     printType);
 
             do
@@ -744,7 +760,7 @@ namespace DataAPI.Videos
                         key,
                         plid,
                         pagetoken,
-                        itemsPerPage,
+                        ItemsPerPage,
                         printType);
             }
             while (pagetoken != null);
@@ -786,9 +802,9 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<List<VideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
-            int itemsppage = itemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            if (maxResult < itemsPerPage & maxResult != 0)
+            if (maxResult < ItemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -1153,9 +1169,9 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<List<VideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
-            int itemsppage = itemsPerPage;
+            int itemsppage = ItemsPerPage;
 
-            if (maxResult < itemsPerPage & maxResult != 0)
+            if (maxResult < ItemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }

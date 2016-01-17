@@ -793,7 +793,15 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Subscribe:
-                    await SubscribeOnRelated();
+                    try
+                    {
+                        await SubscribeOnRelated();
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message);
+                    }
+
                     break;
 
                 case ChannelMenuItem.Tags:
@@ -846,19 +854,6 @@ namespace Crawler.ViewModels
                     CurrentTags.Insert(0, tag);
                 }
             }
-        }
-
-        private void ClearRelated(IChannel channel)
-        {
-            if (!RelatedChannels.Any() || RelatedChannels.Contains(channel))
-            {
-                return;
-            }
-            foreach (IChannel ch in RelatedChannels)
-            {
-                ch.ChannelItems.Clear();
-            }
-            RelatedChannels.Clear();
         }
 
         private async Task DeleteChannels()
@@ -1065,7 +1060,7 @@ namespace Crawler.ViewModels
             IsLogExpand = false;
             IsPlExpand = false;
             channel.ChannelItemsCollectionView.Filter = null;
-            ClearRelated(channel);
+            //ClearRelated(channel);
 
             // есть новые элементы после синхронизации
             bool isHasNewFromSync = channel.ChannelItems.Any()
@@ -1154,7 +1149,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            int count = obj == null ? 0 : 25;
+            int count = obj == null ? 0 : YouTubeSite.ItemsPerPage;
 
             if (obj != null && channel.ChannelItems.Any())
             {
@@ -1167,9 +1162,9 @@ namespace Crawler.ViewModels
             {
                 channel.AddNewItem(item);
             }
-            channel.ChannelState = ChannelState.Notset;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             SetStatus(0);
+            channel.ChannelState = ChannelState.Notset;
         }
 
         private async void FillSubtitles(object obj)
@@ -1837,21 +1832,44 @@ namespace Crawler.ViewModels
         private async Task SubscribeOnRelated()
         {
             var channel = SelectedChannel as YouChannel;
-            if (channel == null || channel.ChannelState == ChannelState.InWork)
+            if (channel == null || channel.ChannelState == ChannelState.InWork || Channels.Select(x => x.ID).Contains(channel.ID))
             {
                 return;
             }
 
+            Channels.Add(channel);
+
+            IChannel ch = Channels[Channels.IndexOf(channel)];
+            ch.DirPath = SettingsViewModel.DirPath;
+
             var lst = new List<IVideoItem>();
             channel.ChannelItems.ForEach(lst.Add);
-            Channels.Add(channel);
+
             foreach (IVideoItem item in lst)
             {
-                Channels[Channels.IndexOf(channel)].AddNewItem(item);
+                ch.AddNewItem(item);
             }
-            lst.Clear();
-            SelectedChannel = channel;
-            await CommonFactory.CreateSqLiteDatabase().InsertChannelItemsAsync(channel);
+            SetStatus(1);
+
+            if (ch.ChannelItems.Count == YouTubeSite.ItemsPerPage)
+            {
+                IEnumerable<VideoItemPOCO> allitem = await YouTubeSite.GetChannelItemsAsync(channel.ID, 0, true);
+                foreach (IVideoItem item in allitem.Select(VideoItemFactory.CreateVideoItem))
+                {
+                    ch.AddNewItem(item);
+                }
+            }
+
+            List<PlaylistPOCO> pls = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID);
+            foreach (PlaylistPOCO poco in pls)
+            {
+                poco.PlaylistItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(poco.ID, 0);
+                ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco));
+            }
+
+            await CommonFactory.CreateSqLiteDatabase().InsertChannelFullAsync(channel);
+            channel.ChannelState = ChannelState.Added;
+            SetStatus(0);
         }
 
         private async void SyncChannel(object obj)
