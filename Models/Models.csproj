@@ -51,12 +51,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BO\Channels\YouChannel.cs" />
+    <Compile Include="BO\Playlists\YouPlaylist.cs" />
     <Compile Include="BO\Subtitle.cs" />
     <Compile Include="BO\Cred.cs" />
     <Compile Include="BO\Items\RuTrackerItem.cs" />
     <Compile Include="BO\Items\TapochekItem.cs" />
     <Compile Include="BO\Items\YouTubeItem.cs" />
-    <Compile Include="BO\YouPlaylist.cs" />
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />
     <Compile Include="Container.cs" />

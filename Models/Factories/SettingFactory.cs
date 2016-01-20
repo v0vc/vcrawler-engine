@@ -50,7 +50,7 @@ namespace Models.Factories
             }
         }
 
-        public static async Task InsertSettingAsync(Setting setting)
+        public static async Task InsertSettingAsync(ISetting setting)
         {
             SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try

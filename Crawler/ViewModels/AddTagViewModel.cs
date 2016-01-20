@@ -9,6 +9,7 @@ using System.Windows;
 using Crawler.Common;
 using Interfaces.Models;
 using Models.BO;
+using Models.Factories;
 
 namespace Crawler.ViewModels
 {
@@ -40,7 +41,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                SelectedTag = new Tag();
+                SelectedTag = TagFactory.CreateTag();
             }
         }
 

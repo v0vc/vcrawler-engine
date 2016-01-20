@@ -25,7 +25,7 @@ namespace Models.Factories
 
         public static ICred CreateCred(CredPOCO poco)
         {
-            var cred = new Cred()
+            var cred = new Cred
             {
                 SiteAdress = poco.Site,
                 Login = poco.Login,
