@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -58,7 +57,6 @@ namespace Crawler.ViewModels
         #region Properties
 
         public IEnumerable<string> Countries { get; private set; }
-
         public string SearchKey { get; set; }
 
         public string SelectedCountry
@@ -132,7 +130,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    var lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
+                    List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
                     foreach (IVideoItem item in lst.Select(VideoItemFactory.CreateVideoItem))
                     {
@@ -304,6 +302,11 @@ namespace Crawler.ViewModels
 
         public void AddNewItem(IVideoItem item)
         {
+            if (ChannelItems.Select(x => x.ID).Contains(item.ID))
+            {
+                ChannelItems.Remove(ChannelItems.First(x => x.ID == item.ID));
+            }
+
             item.FileState = ItemState.LocalNo;
 
             if (item.SyncState == SyncState.Added)

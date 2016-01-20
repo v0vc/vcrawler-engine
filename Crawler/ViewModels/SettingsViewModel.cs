@@ -260,8 +260,6 @@ namespace Crawler.ViewModels
 
         public async Task LoadSettingsFromDb()
         {
-            SettingFactory sf = CommonFactory.CreateSettingFactory();
-
             ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
             DirPath = savedir.Value;
             if (string.IsNullOrEmpty(DirPath))

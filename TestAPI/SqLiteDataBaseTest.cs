@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -21,13 +20,7 @@ namespace TestAPI
     {
         #region Static and Readonly Fields
 
-        private readonly ChannelFactory cf;
-        private readonly CredFactory crf;
         private readonly SqLiteDatabase db;
-        private readonly PlaylistFactory pf;
-        private readonly SettingFactory sf;
-        private readonly TagFactory tf;
-        private readonly VideoItemFactory vf;
 
         #endregion
 
@@ -35,13 +28,7 @@ namespace TestAPI
 
         public SqLiteDataBaseTest()
         {
-            vf = CommonFactory.CreateVideoItemFactory();
             db = CommonFactory.CreateSqLiteDatabase();
-            cf = CommonFactory.CreateChannelFactory();
-            crf = CommonFactory.CreateCredFactory();
-            pf = CommonFactory.CreatePlaylistFactory();
-            tf = CommonFactory.CreateTagFactory();
-            sf = CommonFactory.CreateSettingFactory();
         }
 
         #endregion

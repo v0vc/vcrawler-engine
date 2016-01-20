@@ -13,7 +13,7 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class CredFactory
+    public static class CredFactory
     {
         #region Static Methods
 

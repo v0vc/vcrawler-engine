@@ -523,26 +523,28 @@ namespace DataAPI.Database
             var res = new List<VideoItemPOCO>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {6} DESC",
+                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' LIMIT 1",
                     itemId,
                     parentID,
                     title,
                     viewCount,
                     duration,
                     comments,
+                    thumbnail,
                     timestamp,
                     syncstate,
                     tableitems,
                     parentID,
                     channelID)
                 : string.Format(
-                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7} FROM {8} WHERE {9}='{10}' ORDER BY {6} DESC LIMIT {11} OFFSET {12}",
+                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' ORDER BY {7} DESC LIMIT {12} OFFSET {13}",
                     itemId,
                     parentID,
                     title,
                     viewCount,
                     duration,
                     comments,
+                    thumbnail,
                     timestamp,
                     syncstate,
                     tableitems,

@@ -351,7 +351,7 @@ namespace Models.BO.Items
 
         public async Task InsertItemAsync()
         {
-            await VideoItemFactory.InsertItemAsync(this);
+            await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(this);
         }
 
         public void IsHasLocalFileFound(string dir)

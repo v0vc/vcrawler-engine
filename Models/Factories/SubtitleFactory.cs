@@ -8,7 +8,7 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class SubtitleFactory
+    public static class SubtitleFactory
     {
         #region Static Methods
 

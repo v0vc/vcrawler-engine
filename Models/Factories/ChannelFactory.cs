@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -19,7 +18,7 @@ using Models.BO.Channels;
 
 namespace Models.Factories
 {
-    public class ChannelFactory
+    public static class ChannelFactory
     {
         #region Static Methods
 
@@ -53,11 +52,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID,
-                        Title = poco.Title,
+                        ID = poco.ID, 
+                        Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail,
-                        Site = poco.Site,
+                        Thumbnail = poco.Thumbnail, 
+                        Site = poco.Site, 
                         CountNew = poco.Countnew
                     };
 
@@ -116,27 +115,12 @@ namespace Models.Factories
 
         public static async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
         {
-            try
+            channel.ChannelItemsCount = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsCountDbAsync(channel.ID);
+            List<VideoItemPOCO> items = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsAsync(channel.ID, count, offset);
+            foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
             {
-                channel.ChannelItemsCount = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsCountDbAsync(channel.ID);
-
-                List<string> lst =
-                    (await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, count, offset)).ToList();
-
-                if (lst.Any())
-                {
-                    foreach (string id in lst)
-                    {
-                        IVideoItem vid = await VideoItemFactory.GetVideoItemDbAsync(id);
-                        vid.Site = channel.Site; // TODO rework
-                        channel.ChannelItems.Add(vid);
-                        vid.IsHasLocalFileFound(dir);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
+                vi.IsHasLocalFileFound(dir);
+                channel.ChannelItems.Add(vi);
             }
         }
 

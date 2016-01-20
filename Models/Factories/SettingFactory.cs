@@ -11,7 +11,7 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class SettingFactory
+    public static class SettingFactory
     {
         #region Static Methods
 

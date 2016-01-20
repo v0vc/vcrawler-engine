@@ -16,7 +16,7 @@ using Models.BO.Items;
 
 namespace Models.Factories
 {
-    public class VideoItemFactory
+    public static class VideoItemFactory
     {
         #region Static Methods
 
@@ -57,21 +57,6 @@ namespace Models.Factories
             return vi;
         }
 
-        public static async Task<IVideoItem> GetVideoItemDbAsync(string id)
-        {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            try
-            {
-                VideoItemPOCO poco = await CommonFactory.CreateSqLiteDatabase().GetVideoItemAsync(id);
-                IVideoItem vi = CreateVideoItem(poco);
-                return vi;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public static async Task<IVideoItem> GetVideoItemNetAsync(string id, SiteType site)
         {
             try
@@ -94,7 +79,6 @@ namespace Models.Factories
 
         public static async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
-            SubtitleFactory cf = CommonFactory.CreateSubtitleFactory();
             var res = new List<ISubtitle>();
             List<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
             res.AddRange(poco.Select(SubtitleFactory.CreateSubtitle));
@@ -107,18 +91,6 @@ namespace Models.Factories
             chap.Language = "Auto";
             res.Add(chap);
             return res;
-        }
-
-        public static async Task InsertItemAsync(IVideoItem item)
-        {
-            try
-            {
-                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(item);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
         }
 
         private static string IntTostrTime(int duration)

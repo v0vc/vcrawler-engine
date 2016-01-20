@@ -11,7 +11,7 @@ using Models.BO;
 
 namespace Models.Factories
 {
-    public class TagFactory
+    public static class TagFactory
     {
         #region Static Methods
 

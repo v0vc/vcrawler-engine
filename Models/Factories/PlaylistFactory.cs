@@ -18,7 +18,7 @@ using Models.BO.Channels;
 
 namespace Models.Factories
 {
-    public class PlaylistFactory
+    public static class PlaylistFactory
     {
         #region Static Methods
 
