@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -26,12 +27,12 @@ namespace Models.Factories
         {
             var cred = new Cred()
             {
-                SiteAdress = poco.Site, 
-                Login = poco.Login, 
-                Pass = poco.Pass, 
-                Cookie = poco.Cookie, 
-                Expired = poco.Expired, 
-                Autorization = poco.Autorization, 
+                SiteAdress = poco.Site,
+                Login = poco.Login,
+                Pass = poco.Pass,
+                Cookie = poco.Cookie,
+                Expired = poco.Expired,
+                Autorization = poco.Autorization,
                 Site = EnumHelper.GetValueFromDescription<SiteType>(poco.Site)
             };
             return cred;

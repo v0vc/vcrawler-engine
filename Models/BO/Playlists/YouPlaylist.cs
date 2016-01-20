@@ -8,16 +8,24 @@ using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
 
-namespace Models.BO
+namespace Models.BO.Playlists
 {
-    public class Playlist : IPlaylist
+    public class YouPlaylist : IPlaylist
     {
         #region IPlaylist Members
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
         public List<string> PlItems { get; set; }
-        public SiteType Site { get; set; }
+
+        public SiteType Site
+        {
+            get
+            {
+                return SiteType.YouTube;
+            }
+        }
+
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }

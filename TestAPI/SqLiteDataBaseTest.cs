@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -35,21 +36,20 @@ namespace TestAPI
 
         #region Static Methods
 
-        private static async void FillTestChannel(IChannel ch, IVideoItem v1, IVideoItem v2, ICred cred)
+        private static async void FillTestChannel(IChannel ch, IVideoItem v1, IVideoItem v2)
         {
             ch.ChannelItems = new ObservableCollection<IVideoItem>();
             ch.ID = "testch";
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
             ch.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
-            ch.Site = cred.Site;
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
         }
 
         private static void FillTestCred(ICred cred)
         {
-            cred.SiteAdress = "testsite.com";
+            cred.SiteAdress = "youtube.com";
             cred.Login = "testlogin";
             cred.Pass = "testpass";
             cred.Cookie = "cookie";
@@ -146,7 +146,7 @@ namespace TestAPI
             ICred cred = CredFactory.CreateCred();
             FillTestCred(cred);
             IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
-            FillTestChannel(ch, vi, vi2, cred);
+            FillTestChannel(ch, vi, vi2);
 
             // DeleteCredAsync
             Task t = db.DeleteCredAsync(cred.SiteAdress);
@@ -249,7 +249,7 @@ namespace TestAPI
             FillTestCred(cred);
 
             IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
-            FillTestChannel(ch, vi, vi2, cred);
+            FillTestChannel(ch, vi, vi2);
 
             IPlaylist pl = PlaylistFactory.CreatePlaylist();
             FillTestPl(pl, ch);
@@ -359,7 +359,7 @@ namespace TestAPI
             FillTestCred(cred);
 
             IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
-            FillTestChannel(ch, vi, vi2, cred);
+            FillTestChannel(ch, vi, vi2);
 
             // DeleteCredAsync
             t = db.DeleteCredAsync(cred.SiteAdress);

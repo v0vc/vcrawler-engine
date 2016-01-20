@@ -13,8 +13,8 @@ using DataAPI.Videos;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Models.BO;
 using Models.BO.Channels;
+using Models.BO.Playlists;
 
 namespace Models.Factories
 {
@@ -24,7 +24,7 @@ namespace Models.Factories
 
         public static IPlaylist CreatePlaylist()
         {
-            var pl = new Playlist();
+            var pl = new YouPlaylist();
             return pl;
         }
 
@@ -34,14 +34,13 @@ namespace Models.Factories
             {
                 return null;
             }
-            var pl = new Playlist
+            var pl = new YouPlaylist
             {
                 ID = poco.ID,
                 Title = poco.Title,
                 SubTitle = poco.SubTitle,
                 Thumbnail = poco.Thumbnail,
                 ChannelId = poco.ChannelID,
-                Site = poco.Site,
                 PlItems = poco.PlaylistItems,
                 IsDefault = false
             };
@@ -50,14 +49,13 @@ namespace Models.Factories
 
         public static IPlaylist CreateUploadPlaylist(IChannel ch, List<string> channel, byte[] thumbnail)
         {
-            var pl = new Playlist
+            var pl = new YouPlaylist
             {
                 Title = "Uploads",
                 PlItems = channel,
                 Thumbnail = thumbnail,
                 ChannelId = ch.ID,
                 ID = YouChannel.MakePlaylistUploadId(ch.ID),
-                Site = ch.Site,
                 SubTitle = "All items",
                 IsDefault = true
             };

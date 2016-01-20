@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -48,7 +49,6 @@ namespace Crawler.ViewModels
             SelectedCountry = Countries.First();
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
-            Site = SiteType.NotSet;
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
         }
 
@@ -295,7 +295,14 @@ namespace Crawler.ViewModels
             }
         }
 
-        public SiteType Site { get; set; }
+        public SiteType Site
+        {
+            get
+            {
+                return SiteType.NotSet;
+            }
+        }
+
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }

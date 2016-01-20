@@ -56,7 +56,7 @@
     <Compile Include="BO\Items\RuTrackerItem.cs" />
     <Compile Include="BO\Items\TapochekItem.cs" />
     <Compile Include="BO\Items\YouTubeItem.cs" />
-    <Compile Include="BO\Playlist.cs" />
+    <Compile Include="BO\YouPlaylist.cs" />
     <Compile Include="BO\Setting.cs" />
     <Compile Include="BO\Tag.cs" />
     <Compile Include="Container.cs" />

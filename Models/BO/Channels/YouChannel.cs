@@ -248,7 +248,13 @@ namespace Models.BO.Channels
             }
         }
 
-        public SiteType Site { get; set; }
+        public SiteType Site
+        {
+            get
+            {
+                return SiteType.YouTube;
+            }
+        }
 
         public string SubTitle
         {

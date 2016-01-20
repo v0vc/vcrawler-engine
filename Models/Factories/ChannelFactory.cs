@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -28,7 +29,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    channel = new YouChannel { Site = site };
+                    channel = new YouChannel();
                     break;
             }
 
@@ -52,11 +53,10 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID, 
-                        Title = poco.Title, 
+                        ID = poco.ID,
+                        Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail, 
-                        Site = poco.Site, 
+                        Thumbnail = poco.Thumbnail,
                         CountNew = poco.Countnew
                     };
 
@@ -92,7 +92,6 @@ namespace Models.Factories
                 throw new Exception(poco.ID);
             }
 
-            channel.Site = site;
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
         }

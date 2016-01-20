@@ -16,7 +16,7 @@ namespace Interfaces.Models
         string ChannelId { get; set; }
         string ID { get; set; }
         List<string> PlItems { get; }
-        SiteType Site { get; set; }
+        SiteType Site { get; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }

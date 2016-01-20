@@ -28,7 +28,7 @@ namespace Interfaces.Models
         bool IsShowSynced { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }
-        SiteType Site { get; set; }
+        SiteType Site { get; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
