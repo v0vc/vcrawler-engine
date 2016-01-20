@@ -25,7 +25,6 @@ namespace Interfaces.Models
         string LogText { get; set; }
         string ParentID { get; set; }
         string ProxyUrl { get; set; }
-        SiteType Site { get; set; }
         ObservableCollection<ISubtitle> Subtitles { get; set; }
         SyncState SyncState { get; set; }
         byte[] Thumbnail { get; set; }

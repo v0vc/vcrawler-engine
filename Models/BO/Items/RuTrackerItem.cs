@@ -24,7 +24,6 @@ namespace Models.BO.Items
         public string LocalFilePath { get; set; }
         public string LogText { get; set; }
         public string ParentID { get; set; }
-        public SiteType Site { get; set; }
         public ItemState FileState { get; set; }
         public string ProxyUrl { get; set; }
         public SyncState SyncState { get; set; }

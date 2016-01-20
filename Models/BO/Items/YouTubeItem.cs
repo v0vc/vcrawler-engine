@@ -210,7 +210,6 @@ namespace Models.BO.Items
         }
 
         public string ID { get; set; }
-        public bool IsSelected { get; set; }
 
         public string LocalFilePath { get; set; }
 
@@ -233,7 +232,6 @@ namespace Models.BO.Items
 
         public string ParentID { get; set; }
         public string ProxyUrl { get; set; }
-        public SiteType Site { get; set; }
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
 
         public SyncState SyncState

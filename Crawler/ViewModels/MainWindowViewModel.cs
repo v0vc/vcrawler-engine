@@ -1828,7 +1828,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            await AddNewChannelAsync(item.ParentID, string.Empty, item.Site);
+            await AddNewChannelAsync(item.ParentID, string.Empty, SiteType.YouTube);
             item.SyncState = SyncState.Added;
         }
 

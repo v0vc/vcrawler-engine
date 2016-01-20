@@ -10,6 +10,7 @@ using Crawler.Common;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
+using Models.BO.Items;
 
 namespace Crawler.ViewModels
 {
@@ -117,14 +118,15 @@ namespace Crawler.ViewModels
 
             string link = null;
 
-            switch (item.Site)
+            if (item is YouTubeItem)
             {
-                case SiteType.YouTube:
-                    link = string.Format("http://img.youtube.com/vi/{0}/0.jpg", item.ID);
-                    break;
+                link = string.Format("http://img.youtube.com/vi/{0}/0.jpg", item.ID);
             }
 
-            LargeThumb = await SiteHelper.GetStreamFromUrl(link);
+            if (link != null)
+            {
+                LargeThumb = await SiteHelper.GetStreamFromUrl(link);
+            }
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -25,11 +25,11 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    return new YouTubeItem { Site = SiteType.YouTube };
+                    return new YouTubeItem();
                 case SiteType.Tapochek:
-                    return new TapochekItem { Site = SiteType.Tapochek };
+                    return new TapochekItem();
                 case SiteType.RuTracker:
-                    return new RuTrackerItem { Site = SiteType.RuTracker };
+                    return new RuTrackerItem();
                 default:
                     return null;
             }
@@ -49,7 +49,6 @@ namespace Models.Factories
                 Thumbnail = poco.Thumbnail,
                 Timestamp = poco.Timestamp,
                 SyncState = (SyncState)poco.SyncState,
-                Site = poco.Site,
                 DurationString = IntTostrTime(poco.Duration),
                 DateTimeAgo = TimeAgo(poco.Timestamp),
                 Subtitles = new ObservableCollection<ISubtitle>()

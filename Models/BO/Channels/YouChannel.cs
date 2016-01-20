@@ -284,9 +284,7 @@ namespace Models.BO.Channels
             {
                 return;
             }
-            item.Site = Site;
             item.FileState = ItemState.LocalNo;
-            item.Site = Site;
 
             if (item.SyncState == SyncState.Added)
             {
