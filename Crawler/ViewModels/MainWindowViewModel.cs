@@ -1886,10 +1886,18 @@ namespace Crawler.ViewModels
             SetStatus(1);
             Info = "Syncing: " + channel.Title;
             Stopwatch watch = Stopwatch.StartNew();
-            await ChannelFactory.SyncChannelAsync(channel, false, true);
-            watch.Stop();
-            Info = watch.TakeLogMessage();
-            SetStatus(0);
+            try
+            {
+                await ChannelFactory.SyncChannelAsync(channel, false, true);
+                watch.Stop();
+                Info = watch.TakeLogMessage();
+                SetStatus(0);
+            }
+            catch (Exception ex)
+            {
+                SetStatus(3);
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private async Task SyncChannelPlaylist()
@@ -1936,7 +1944,8 @@ namespace Crawler.ViewModels
                 {
                     SetStatus(3);
                     Info = ex.Message;
-                    MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
+
+                    // MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
                 }
             }
 
