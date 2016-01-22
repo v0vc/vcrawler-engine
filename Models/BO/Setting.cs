@@ -15,19 +15,9 @@ namespace Models.BO
         public string Key { get; set; }
         public string Value { get; set; }
 
-        public async Task DeleteSettingAsync()
-        {
-            await SettingFactory.DeleteSettingAsync(Key);
-        }
-
-        public async Task InsertSettingAsync()
-        {
-            // await ((SettingFactory) ServiceLocator.SettingFactory).InsertSettingAsync(this);
-            await SettingFactory.InsertSettingAsync(this);
-        }
-
         public async Task UpdateSettingAsync(string newvalue)
         {
+            // await ((SettingFactory) ServiceLocator.SettingFactory).UpdateSettingAsync(Key, newvalue);
             await SettingFactory.UpdateSettingAsync(Key, newvalue);
         }
 

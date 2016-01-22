@@ -8,7 +8,6 @@ using System.Linq;
 using System.Windows;
 using Crawler.Common;
 using Interfaces.Models;
-using Models.BO;
 using Models.Factories;
 
 namespace Crawler.ViewModels
@@ -93,7 +92,7 @@ namespace Crawler.ViewModels
                     return;
                 }
                 Tags.Add(SelectedTag);
-                await SelectedTag.InsertTagAsync();
+                await CommonFactory.CreateSqLiteDatabase().InsertTagAsync(SelectedTag);
             }
 
             window.Close();

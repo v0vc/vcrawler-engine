@@ -17,10 +17,6 @@ namespace Interfaces.Models
 
         #region Methods
 
-        Task DeleteSettingAsync();
-
-        Task InsertSettingAsync();
-
         Task UpdateSettingAsync(string newvalue);
 
         #endregion

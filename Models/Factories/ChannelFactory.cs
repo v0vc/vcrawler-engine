@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Trackers;
 using DataAPI.Videos;
@@ -21,6 +22,12 @@ namespace Models.Factories
 {
     public static class ChannelFactory
     {
+        #region Static and Readonly Fields
+
+        private static readonly SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
+
+        #endregion
+
         #region Static Methods
 
         public static IChannel CreateChannel(SiteType site)
@@ -114,8 +121,8 @@ namespace Models.Factories
 
         public static async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
         {
-            channel.ChannelItemsCount = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsCountDbAsync(channel.ID);
-            List<VideoItemPOCO> items = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsAsync(channel.ID, count, offset);
+            channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
+            List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
             foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
             {
                 vi.IsHasLocalFileFound(dir);
@@ -180,7 +187,7 @@ namespace Models.Factories
             var lst = new List<IPlaylist>();
             try
             {
-                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channelID);
+                List<PlaylistPOCO> fbres = await db.GetChannelPlaylistAsync(channelID);
                 lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
                 return lst;
             }
@@ -195,7 +202,7 @@ namespace Models.Factories
             var lst = new List<ITag>();
             try
             {
-                List<TagPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelTagsAsync(id);
+                List<TagPOCO> fbres = await db.GetChannelTagsAsync(id);
                 lst.AddRange(fbres.Select(TagFactory.CreateTag));
                 return lst;
             }
@@ -236,8 +243,8 @@ namespace Models.Factories
                 if (channel.CountNew > 0)
                 {
                     channel.CountNew = 0;
-                    await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(SyncState.Notset, SyncState.Added, channel.ID);
-                    await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, 0);
+                    await db.UpdateItemSyncState(SyncState.Notset, SyncState.Added, channel.ID);
+                    await db.UpdateChannelNewCountAsync(channel.ID, 0);
                 }
 
                 // получаем списки id в базе и в нете
@@ -245,20 +252,20 @@ namespace Models.Factories
                 List<string> dbids;
                 if (isFastSync)
                 {
-                    dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
+                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
                     int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
                     int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
                     netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint);
                 }
                 else
                 {
-                    dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
                     netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0);
 
                     // проставляем в базе признак того, что видео больше нет на канале
                     foreach (string dbid in dbids.Where(dbid => !netids.Contains(dbid)))
                     {
-                        await CommonFactory.CreateSqLiteDatabase().UpdateItemSyncState(dbid, SyncState.Deleted);
+                        await db.UpdateItemSyncState(dbid, SyncState.Deleted);
                     }
                 }
 
@@ -274,7 +281,7 @@ namespace Models.Factories
                     {
                         vi.SyncState = SyncState.Added;
                         channel.AddNewItem(vi);
-                        await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
+                        await db.InsertItemAsync(vi);
                         dbids.Add(vi.ID);
                     }
                 }
@@ -282,21 +289,20 @@ namespace Models.Factories
                 // обновим инфу о количестве новых после синхронизации
                 if (channel.CountNew > 0)
                 {
-                    await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
+                    await db.UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
                 }
 
                 if (isSyncPls)
                 {
                     List<string> plIdsNet = await YouTubeSite.GetChannelPlaylistsIdsNetAsync(channel.ID);
-                    List<string> plIdsDb = await CommonFactory.CreateSqLiteDatabase().GetChannelsPlaylistsIdsListDbAsync(channel.ID);
+                    List<string> plIdsDb = await db.GetChannelsPlaylistsIdsListDbAsync(channel.ID);
                     foreach (string playlistId in plIdsDb)
                     {
                         if (plIdsNet.Contains(playlistId))
                         {
                             // обновим плейлисты, которые есть уже в базе
                             List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
-                            List<string> plitemsIdsDb =
-                                await CommonFactory.CreateSqLiteDatabase().GetPlaylistItemsIdsListDbAsync(playlistId);
+                            List<string> plitemsIdsDb = await db.GetPlaylistItemsIdsListDbAsync(playlistId);
 
                             List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
                             if (!ids.Any())
@@ -318,7 +324,7 @@ namespace Models.Factories
                             }
                             foreach (string id in lstInDb)
                             {
-                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, id, channel.ID);
+                                await db.UpdatePlaylistAsync(playlistId, id, channel.ID);
                             }
 
                             IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
@@ -338,15 +344,15 @@ namespace Models.Factories
                                 {
                                     vi.SyncState = SyncState.Added;
                                     channel.AddNewItem(vi);
-                                    await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
-                                    await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
+                                    await db.InsertItemAsync(vi);
+                                    await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
                                 }
                             }
                         }
                         else
                         {
                             // просто удалим уже не существующий в инете плейлист из базы
-                            await CommonFactory.CreateSqLiteDatabase().DeletePlaylistAsync(playlistId);
+                            await db.DeletePlaylistAsync(playlistId);
                         }
                     }
 
@@ -358,8 +364,8 @@ namespace Models.Factories
                         plpoco.PlaylistItems.AddRange(plpocoitems);
                         IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
                         channel.ChannelPlaylists.Add(pl);
-                        await CommonFactory.CreateSqLiteDatabase().InsertPlaylistAsync(pl);
-                        dbids = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+                        await db.InsertPlaylistAsync(pl);
+                        dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
 
                         List<string> ids = plpocoitems.Where(netid => !dbids.Contains(netid)).ToList();
                         IEnumerable<List<string>> chanks = ids.SplitList();
@@ -370,8 +376,8 @@ namespace Models.Factories
                             {
                                 vi.SyncState = SyncState.Added;
                                 channel.AddNewItem(vi);
-                                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
-                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
+                                await db.InsertItemAsync(vi);
+                                await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
                             }
                         }
 
@@ -395,13 +401,13 @@ namespace Models.Factories
                     List<IPlaylist> pls = await GetChannelPlaylistsNetAsync(channel.ID);
                     if (pls.Any())
                     {
-                        await CommonFactory.CreateSqLiteDatabase().DeleteChannelPlaylistsAsync(channel.ID);
+                        await db.DeleteChannelPlaylistsAsync(channel.ID);
                         channel.ChannelPlaylists.Clear();
                     }
                     channel.PlaylistCount = pls.Count;
                     foreach (IPlaylist playlist in pls)
                     {
-                        await CommonFactory.CreateSqLiteDatabase().InsertPlaylistAsync(playlist);
+                        await db.InsertPlaylistAsync(playlist);
 
                         List<string> plv = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
 

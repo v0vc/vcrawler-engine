@@ -49,7 +49,7 @@ namespace TestAPI
 
         private static void FillTestCred(ICred cred)
         {
-            cred.SiteAdress = "youtube.com";
+            cred.Site = SiteType.YouTube;
             cred.Login = "testlogin";
             cred.Pass = "testpass";
             cred.Cookie = "cookie";

@@ -18,6 +18,7 @@ using System.Windows.Forms;
 using Crawler.Common;
 using Crawler.Properties;
 using Crawler.Views;
+using DataAPI.Database;
 using DataAPI.POCO;
 using Extensions;
 using Extensions.Helpers;
@@ -47,6 +48,7 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
+        private readonly SqLiteDatabase db;
         private readonly Action<string> onSaveAction;
 
         #endregion
@@ -75,6 +77,7 @@ namespace Crawler.ViewModels
             this.onSaveAction = onSaveAction;
             SupportedTags = new ObservableCollection<ITag>();
             SupportedCreds = new List<ICred>();
+            db = CommonFactory.CreateSqLiteDatabase();
         }
 
         #endregion
@@ -254,7 +257,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadCredsFromDb()
         {
-            var fbres = await CommonFactory.CreateSqLiteDatabase().GetCredListAsync();
+            List<CredPOCO> fbres = await db.GetCredListAsync();
             SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
@@ -315,7 +318,7 @@ namespace Crawler.ViewModels
 
         public async Task LoadTagsFromDb()
         {
-            var fbres = await CommonFactory.CreateSqLiteDatabase().GetAllTagsAsync();
+            List<TagPOCO> fbres = await db.GetAllTagsAsync();
             IEnumerable<ITag> lst = fbres.Select(TagFactory.CreateTag);
             foreach (ITag tag in lst)
             {
@@ -353,7 +356,7 @@ namespace Crawler.ViewModels
                 return;
             }
             SupportedTags.Remove(tag);
-            await tag.DeleteTagAsync();
+            await db.DeleteTagAsync(tag.Title);
         }
 
         private void FillYouHeader()
@@ -437,13 +440,13 @@ namespace Crawler.ViewModels
 
             foreach (ICred cred in SupportedCreds)
             {
-                await cred.UpdateLoginAsync(cred.Login);
-                await cred.UpdatePasswordAsync(cred.Pass);
+                await db.UpdateLoginAsync(cred.SiteAdress, cred.Login);
+                await db.UpdatePasswordAsync(cred.SiteAdress, cred.Pass);
             }
 
             foreach (ITag tag in SupportedTags)
             {
-                await tag.InsertTagAsync();
+                await db.InsertTagAsync(tag);
             }
 
             if (onSaveAction != null)

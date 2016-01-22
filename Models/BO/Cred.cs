@@ -3,10 +3,9 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
-using System.Threading.Tasks;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Models.BO
 {
@@ -20,32 +19,13 @@ namespace Models.BO
         public string Login { get; set; }
         public string Pass { get; set; }
         public SiteType Site { get; set; }
-        public string SiteAdress { get; set; }
 
-        public async Task DeleteCredAsync()
+        public string SiteAdress
         {
-            await CredFactory.DeleteCredAsync(SiteAdress);
-        }
-
-        public async Task InsertCredAsync()
-        {
-            // await ((CredFactory) ServiceLocator.CredFactory).InsertCRedAsync(this);
-            await CredFactory.InsertCredAsync(this);
-        }
-
-        public async Task UpdateAutorizationAsync(short autorize)
-        {
-            await CredFactory.UpdateAutorizationAsync(SiteAdress, autorize);
-        }
-
-        public async Task UpdateLoginAsync(string newlogin)
-        {
-            await CredFactory.UpdateLoginAsync(SiteAdress, newlogin);
-        }
-
-        public async Task UpdatePasswordAsync(string newpassword)
-        {
-            await CredFactory.UpdatePasswordAsync(SiteAdress, newpassword);
+            get
+            {
+                return EnumHelper.GetAttributeOfType(Site);
+            } 
         }
 
         #endregion

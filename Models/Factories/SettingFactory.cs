@@ -20,19 +20,6 @@ namespace Models.Factories
             return new Setting();
         }
 
-        public static async Task DeleteSettingAsync(string key)
-        {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
-            {
-                await fb.DeleteSettingAsync(key);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public static async Task<ISetting> GetSettingDbAsync(string key)
         {
             // var fb = ServiceLocator.SqLiteDatabase;
@@ -43,19 +30,6 @@ namespace Models.Factories
                 SettingPOCO fbres = await fb.GetSettingAsync(key);
                 ISetting set = CreateSetting(fbres);
                 return set;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task InsertSettingAsync(ISetting setting)
-        {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
-            {
-                await fb.InsertSettingAsync(setting);
             }
             catch (Exception ex)
             {

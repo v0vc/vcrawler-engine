@@ -1,12 +1,11 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Models.BO
 {
@@ -53,16 +52,6 @@ namespace Models.BO
         }
 
         public string Title { get; set; }
-
-        public async Task DeleteTagAsync()
-        {
-            await TagFactory.DeleteTagAsync(Title);
-        }
-
-        public async Task InsertTagAsync()
-        {
-            await TagFactory.InsertTagAsync(this);
-        }
 
         #endregion
     }
