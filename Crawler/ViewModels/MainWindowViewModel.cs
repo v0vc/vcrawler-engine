@@ -1083,14 +1083,11 @@ namespace Crawler.ViewModels
             if (isHasNewFromSync)
             {
                 await
-                    ChannelFactory.FillChannelItemsFromDbAsync(channel,
-                        SettingsViewModel.DirPath,
-                        basePage - channel.ChannelItems.Count,
-                        channel.ChannelItems.Count);
+                    ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
             }
             else
             {
-                await ChannelFactory.FillChannelItemsFromDbAsync(channel, SettingsViewModel.DirPath, basePage, 0);
+                await ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, 0);
             }
 
             if (channel.PlaylistCount == 0)
@@ -1735,7 +1732,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            channel.RestoreFullChannelItems(SettingsViewModel.DirPath);
+            channel.RestoreFullChannelItems();
         }
 
         private async Task SearchExecute()
@@ -1760,7 +1757,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            channel.RestoreFullChannelItems(SettingsViewModel.DirPath);
+            channel.RestoreFullChannelItems();
             channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
         }
 

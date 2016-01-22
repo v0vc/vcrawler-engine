@@ -123,13 +123,13 @@ namespace Models.Factories
             }
         }
 
-        public static async Task FillChannelItemsFromDbAsync(IChannel channel, string dir, int count, int offset)
+        public static async Task FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
         {
             channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
             List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
             foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
             {
-                vi.IsHasLocalFileFound(dir);
+                vi.IsHasLocalFileFound(channel.DirPath);
                 channel.ChannelItems.Add(vi);
             }
         }
