@@ -653,7 +653,6 @@ namespace Crawler.ViewModels
                     parsedId = string.Empty;
                     break;
             }
-
             if (string.IsNullOrEmpty(parsedId))
             {
                 Info = "Can't parse url";
@@ -661,8 +660,10 @@ namespace Crawler.ViewModels
             }
             else
             {
-                if (Channels.Select(x => x.ID).Contains(parsedId))
+                IChannel ch = Channels.FirstOrDefault(x => x.ID == parsedId);
+                if (ch != null)
                 {
+                    SelectedChannel = ch;
                     MessageBox.Show("Has already");
                     SetStatus(0);
                 }
