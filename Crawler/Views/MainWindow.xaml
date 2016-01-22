@@ -207,6 +207,7 @@
                           SelectionMode="Extended"
                           IsSynchronizedWithCurrentItem="True"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                          behaviors:SelectingItemAttachedProperty.SelectingItem="{Binding SelectedChannel}"
                           >
                     <DataGrid.InputBindings>
                         <KeyBinding Key="Delete" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Delete}"/>

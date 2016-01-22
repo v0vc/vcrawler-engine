@@ -79,6 +79,7 @@
     </ApplicationDefinition>
     <Compile Include="Behaviors\FocusExtension.cs" />
     <Compile Include="Behaviors\RoutedEventTrigger.cs" />
+    <Compile Include="Behaviors\SelectingItemAttachedProperty.cs" />
     <Compile Include="Behaviors\TextBoxBehavior.cs" />
     <Compile Include="Common\RelayCommand.cs" />
     <Compile Include="Controls\BackgroundVisualHost.cs" />
