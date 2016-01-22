@@ -49,7 +49,7 @@ namespace Models.Factories
             return channel;
         }
 
-        public static IChannel CreateChannel(ChannelPOCO poco)
+        public static IChannel CreateChannel(ChannelPOCO poco, string dirPath = null)
         {
             SiteType site = poco.Site;
             IChannel channel = null;
@@ -99,6 +99,10 @@ namespace Models.Factories
                 throw new Exception(poco.ID);
             }
 
+            if (dirPath != null)
+            {
+                channel.DirPath = dirPath;
+            }
             channel.ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(channel.ChannelItems);
             return channel;
         }
@@ -222,7 +226,7 @@ namespace Models.Factories
 
             if (related != null)
             {
-                return related.Select(CreateChannel);
+                return related.Select(poco => CreateChannel(poco, channel.DirPath));
             }
             throw new Exception(channel.ID);
         }

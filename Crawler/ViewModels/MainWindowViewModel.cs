@@ -126,6 +126,7 @@ namespace Crawler.ViewModels
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
             ServiceChannel = new ServiceChannelViewModel();
+            InitBase();
         }
 
         #endregion
@@ -176,7 +177,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(FillChannelItems));
+                return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
             }
         }
 
@@ -417,9 +418,8 @@ namespace Crawler.ViewModels
                     return;
                 }
                 selectedChannel = value;
-                IsLogExpand = false;
-                IsPlExpand = false;
                 OnPropertyChanged();
+                FillChannelItems(selectedChannel);
             }
         }
 
@@ -626,6 +626,20 @@ namespace Crawler.ViewModels
             AddDefPlaylist(ch, lst);
         }
 
+        private static void ScrollToTop(object obj)
+        {
+            var vGrid = obj as DataGrid;
+            if (vGrid == null)
+            {
+                return;
+            }
+            ScrollViewer scr = UiExtensions.GetScrollbar(vGrid);
+            if (scr != null)
+            {
+                scr.ScrollToTop();
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -701,7 +715,7 @@ namespace Crawler.ViewModels
             Channels.Add(channel);
             SelectedChannel = channel;
             channel.ChannelState = ChannelState.InWork;
-            await CommonFactory.CreateSqLiteDatabase().InsertChannelFullAsync(channel);
+            await df.InsertChannelFullAsync(channel);
             AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
@@ -734,8 +748,7 @@ namespace Crawler.ViewModels
             DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-                List<ChannelPOCO> lst = await fb.GetChannelsListAsync();
+                List<ChannelPOCO> lst = await df.GetChannelsListAsync();
                 var sb = new StringBuilder();
                 foreach (ChannelPOCO poco in lst)
                 {
@@ -847,7 +860,7 @@ namespace Crawler.ViewModels
 
             foreach (ITag tag in channel.ChannelTags)
             {
-                await CommonFactory.CreateSqLiteDatabase().InsertChannelTagsAsync(channel.ID, tag.Title);
+                await df.InsertChannelTagsAsync(channel.ID, tag.Title);
 
                 if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
                 {
@@ -886,7 +899,7 @@ namespace Crawler.ViewModels
                     }
 
                     Channels.Remove(channel);
-                    await CommonFactory.CreateSqLiteDatabase().DeleteChannelAsync(channel.ID);
+                    await df.DeleteChannelAsync(channel.ID);
                     channelCollectionView.Filter = null;
                     FilterChannelKey = string.Empty;
                 }
@@ -962,7 +975,7 @@ namespace Crawler.ViewModels
                         if (isDeleteFromDbToo)
                         {
                             channel.ChannelItems.Remove(item);
-                            await CommonFactory.CreateSqLiteDatabase().DeleteItemAsync(item.ID);
+                            await df.DeleteItemAsync(item.ID);
                             channel.ChannelItemsCount -= 1;
                         }
                         else
@@ -1038,27 +1051,16 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
-        private async void FillChannelItems(object obj)
+        private async void FillChannelItems(IChannel channel)
         {
-            var vGrid = obj as DataGrid;
-            if (vGrid != null)
-            {
-                ScrollViewer scr = UiExtensions.GetScrollbar(vGrid);
-                if (scr != null)
-                {
-                    scr.ScrollToTop();
-                }
-            }
-
-            IChannel channel = SelectedChannel;
+            IsLogExpand = false;
+            IsPlExpand = false;
 
             if (channel == null)
             {
                 return;
             }
 
-            IsLogExpand = false;
-            IsPlExpand = false;
             channel.ChannelItemsCollectionView.Filter = null;
 
             // если канал только что добавили - элементы там есть
@@ -1093,28 +1095,15 @@ namespace Crawler.ViewModels
 
             if (channel.PlaylistCount == 0)
             {
-                channel.PlaylistCount = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistCountDbAsync(channel.ID);
+                channel.PlaylistCount = await df.GetChannelPlaylistCountDbAsync(channel.ID);
             }
         }
 
         private async Task FillChannels()
         {
-            List<IChannel> lst;
-            try
-            {
-                lst = await GetChannelsListAsync(); // все каналы за раз
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
-                return;
-            }
+            List<ChannelPOCO> fbres = await df.GetChannelsListAsync();
+            fbres.ForEach(poco => Channels.Add(ChannelFactory.CreateChannel(poco, SettingsViewModel.DirPath)));
 
-            foreach (IChannel ch in lst)
-            {
-                ch.DirPath = SettingsViewModel.DirPath;
-                Channels.Add(ch);
-            }
             if (Channels.Any())
             {
                 SelectedChannel = Channels.First();
@@ -1309,12 +1298,21 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task<List<IChannel>> GetChannelsListAsync()
+        private async void InitBase()
         {
-            var lst = new List<IChannel>();
-            List<ChannelPOCO> fbres = await df.GetChannelsListAsync();
-            lst.AddRange(fbres.Select(ChannelFactory.CreateChannel));
-            return lst;
+            if (launchParam.Any())
+            {
+                SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
+            }
+            else
+            {
+                await SettingsViewModel.LoadSettingsFromDb();
+            }
+
+            await SettingsViewModel.LoadTagsFromDb();
+            await SettingsViewModel.LoadCredsFromDb();
+            ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
+            ServiceChannels.Add(ServiceChannel);
         }
 
         private async void MainMenuClick(object param)
@@ -1369,15 +1367,20 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void OnStartup(object obj)
+        private async void OnStartup(object obj)
         {
             channelGrid = obj as DataGrid;
+
             SetStatus(1);
-            using (var bgv = new BackgroundWorker())
+            try
             {
-                bgv.DoWork += BgvDoWork;
-                bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                bgv.RunWorkerAsync();
+                await FillChannels();
+                SetStatus(0);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                SetStatus(3);
             }
         }
 
@@ -1871,7 +1874,7 @@ namespace Crawler.ViewModels
                 ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco));
             }
 
-            await CommonFactory.CreateSqLiteDatabase().InsertChannelFullAsync(channel);
+            await df.InsertChannelFullAsync(channel);
             channel.ChannelState = ChannelState.Added;
             SetStatus(0);
         }
@@ -1945,8 +1948,6 @@ namespace Crawler.ViewModels
                 {
                     SetStatus(3);
                     Info = ex.Message;
-
-                    // MessageBox.Show(channel.Title + Environment.NewLine + ex.Message);
                 }
             }
 
@@ -1980,10 +1981,9 @@ namespace Crawler.ViewModels
 
         private async Task Vacuumdb()
         {
-            SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
-            long sizebefore = db.FileBase.Length;
-            await db.VacuumAsync();
-            long sizeafter = new FileInfo(db.FileBase.FullName).Length;
+            long sizebefore = df.FileBase.Length;
+            await df.VacuumAsync();
+            long sizeafter = new FileInfo(df.FileBase.FullName).Length;
             Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
         }
 
@@ -2035,41 +2035,6 @@ namespace Crawler.ViewModels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region Event Handling
-
-        private void BgvDoWork(object sender, DoWorkEventArgs e)
-        {
-            Application.Current.Dispatcher.InvokeAsync(new Action(async () => await FillChannels()));
-        }
-
-        private async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (e.Error != null)
-            {
-                MessageBox.Show(e.Error.Message);
-                SetStatus(3);
-            }
-            else
-            {
-                if (launchParam.Any())
-                {
-                    SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
-                }
-                else
-                {
-                    await SettingsViewModel.LoadSettingsFromDb();
-                }
-
-                await SettingsViewModel.LoadTagsFromDb();
-                await SettingsViewModel.LoadCredsFromDb();
-                ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
-                ServiceChannels.Add(ServiceChannel);
-                SetStatus(0);
-            }
-        }
 
         #endregion
     }
