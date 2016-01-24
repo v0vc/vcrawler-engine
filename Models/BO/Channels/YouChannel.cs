@@ -286,10 +286,6 @@ namespace Models.BO.Channels
 
         public void AddNewItem(IVideoItem item)
         {
-            if (ChannelItems.Select(x => x.ID).Contains(item.ID))
-            {
-                return;
-            }
             item.FileState = ItemState.LocalNo;
 
             if (item.SyncState == SyncState.Added)

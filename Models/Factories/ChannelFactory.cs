@@ -281,7 +281,7 @@ namespace Models.Factories
                     List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
                     IEnumerable<string> lsttru = from poco in trlist where poco.ParentID == channel.ID select poco.ID;
                     List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
-                    foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
+                    foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID))
                     {
                         vi.SyncState = SyncState.Added;
                         channel.AddNewItem(vi);
@@ -342,15 +342,7 @@ namespace Models.Factories
                                 }
 
                                 // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
-                                List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
-                                foreach (
-                                    IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
-                                {
-                                    vi.SyncState = SyncState.Added;
-                                    channel.AddNewItem(vi);
-                                    await db.InsertItemAsync(vi);
-                                    await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
-                                }
+                                await InsertNewItems(lsttru, channel, playlistId);
                             }
                         }
                         else
@@ -373,16 +365,9 @@ namespace Models.Factories
 
                         List<string> ids = plpocoitems.Where(netid => !dbids.Contains(netid)).ToList();
                         IEnumerable<List<string>> chanks = ids.SplitList();
-                        foreach (List<string> list in chanks)
+                        foreach (List<string> lsttru in chanks)
                         {
-                            List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
-                            foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Where(vi => vi.ParentID == channel.ID))
-                            {
-                                vi.SyncState = SyncState.Added;
-                                channel.AddNewItem(vi);
-                                await db.InsertItemAsync(vi);
-                                await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
-                            }
+                            await InsertNewItems(lsttru, channel, playlistId);
                         }
 
                         foreach (string plpocoitem in plpocoitems)
@@ -394,6 +379,18 @@ namespace Models.Factories
             }
 
             channel.ChannelState = ChannelState.Notset;
+        }
+
+        private static async Task InsertNewItems(IEnumerable<string> lsttru, IChannel channel, string playlistId)
+        {
+            List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lsttru); // получим скопом
+            foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID))
+            {
+                vi.SyncState = SyncState.Added;
+                channel.AddNewItem(vi);
+                await db.InsertItemAsync(vi);
+                await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
+            }
         }
 
         public static async Task SyncChannelPlaylistsAsync(IChannel channel)
