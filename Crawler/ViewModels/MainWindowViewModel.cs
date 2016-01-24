@@ -1095,30 +1095,15 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task FillChannels()
+        private void FillChannels()
         {
-            List<ChannelPOCO> fbres = await df.GetChannelsListAsync();
-            fbres.ForEach(poco => Channels.Add(ChannelFactory.CreateChannel(poco, SettingsViewModel.DirPath)));
-
-            if (Channels.Any())
+            var fbres = new List<ChannelPOCO>();
+            using (var bgv = new BackgroundWorker())
             {
-                SelectedChannel = Channels.First();
+                bgv.DoWork += GetPocoChannelsDoWork;
+                bgv.RunWorkerCompleted += GetPocoChannelsCompleted;
+                bgv.RunWorkerAsync(fbres);
             }
-
-            // focus
-            if (channelGrid == null || channelGrid.SelectedIndex < 0)
-            {
-                return;
-            }
-            channelGrid.UpdateLayout();
-            var selectedRow = (DataGridRow)channelGrid.ItemContainerGenerator.ContainerFromIndex(channelGrid.SelectedIndex);
-            if (selectedRow == null)
-            {
-                return;
-            }
-            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
-
-            channelGrid = null;
         }
 
         private async void FillPopular()
@@ -1126,7 +1111,6 @@ namespace Crawler.ViewModels
             SetStatus(1);
             var ids = new HashSet<string>(Channels.Select(x => x.ID));
             await ServiceChannel.FillPopular(ids);
-
             SelectedChannel.ChannelItemsCount = ServiceChannel.ChannelItems.Count;
             SetStatus(0);
         }
@@ -1363,14 +1347,14 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void OnStartup(object obj)
+        private void OnStartup(object obj)
         {
             channelGrid = obj as DataGrid;
 
             SetStatus(1);
             try
             {
-                await FillChannels();
+                FillChannels();
                 SetStatus(0);
             }
             catch (Exception ex)
@@ -2031,6 +2015,50 @@ namespace Crawler.ViewModels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Event Handling
+
+        private void GetPocoChannelsCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (e.Result != null)
+            {
+                var fbres = e.Result as List<ChannelPOCO>;
+                if (fbres != null)
+                {
+                    foreach (IChannel channel in fbres.Select(poco => ChannelFactory.CreateChannel(poco, SettingsViewModel.DirPath)))
+                    {
+                        Channels.Add(channel);
+                    }
+                }
+            }
+            if (Channels.Any())
+            {
+                SelectedChannel = Channels.First();
+            }
+
+            // focus
+            if (channelGrid == null || channelGrid.SelectedIndex < 0)
+            {
+                return;
+            }
+            channelGrid.UpdateLayout();
+            var selectedRow = (DataGridRow)channelGrid.ItemContainerGenerator.ContainerFromIndex(channelGrid.SelectedIndex);
+            if (selectedRow == null)
+            {
+                return;
+            }
+            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+
+            channelGrid = null;
+        }
+
+        private async void GetPocoChannelsDoWork(object sender, DoWorkEventArgs e)
+        {
+            List<ChannelPOCO> fbres = await df.GetChannelsListAsync();
+            e.Result = fbres;
+        }
 
         #endregion
     }
