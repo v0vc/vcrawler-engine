@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -125,12 +126,30 @@ namespace Models.Factories
 
         public static async Task FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
         {
-            channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
-            List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
-            foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
+            if (offset == 0)
             {
-                vi.IsHasLocalFileFound(channel.DirPath);
-                channel.ChannelItems.Add(vi);
+                MyChannel mc;
+                mc.Channel = channel;
+                mc.Count = count;
+                mc.Offcet = offset;
+                mc.Pocotems = null;
+
+                using (var bgv = new BackgroundWorker())
+                {
+                    bgv.DoWork += BgvDoWork;
+                    bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
+                    bgv.RunWorkerAsync(mc);
+                }
+            }
+            else
+            {
+                channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
+                List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
+                foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
+                {
+                    vi.IsHasLocalFileFound(channel.DirPath);
+                    channel.ChannelItems.Add(vi);
+                }
             }
         }
 
@@ -420,6 +439,32 @@ namespace Models.Factories
             }
         }
 
+        private static async void BgvDoWork(object sender, DoWorkEventArgs e)
+        {
+            if (!(e.Argument is MyChannel))
+            {
+                return;
+            }
+            var mc = (MyChannel)e.Argument;
+            mc.Pocotems = await db.GetChannelItemsAsync(mc.Channel.ID, mc.Count, mc.Offcet);
+            e.Result = mc;
+        }
+
+        private static async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            if (!(e.Result is MyChannel))
+            {
+                return;
+            }
+            var mc = (MyChannel)e.Result;
+            mc.Channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(mc.Channel.ID);
+            foreach (IVideoItem vi in mc.Pocotems.Select(VideoItemFactory.CreateVideoItem))
+            {
+                vi.IsHasLocalFileFound(mc.Channel.DirPath);
+                mc.Channel.ChannelItems.Add(vi);
+            }
+        }
+
         private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var lst = new List<IPlaylist>();
@@ -459,6 +504,22 @@ namespace Models.Factories
                 }
             }
         }
+
+        #endregion
+
+        #region Nested type: MyChannel
+
+        private struct MyChannel
+        {
+            #region Fields
+
+            public IChannel Channel;
+            public int Count;
+            public int Offcet;
+            public List<VideoItemPOCO> Pocotems;
+
+            #endregion
+        };
 
         #endregion
     }
