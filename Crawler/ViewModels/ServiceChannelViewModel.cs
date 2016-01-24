@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -309,6 +310,11 @@ namespace Crawler.ViewModels
 
         public void AddNewItem(IVideoItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentException("item");
+            }
+
             if (ChannelItems.Select(x => x.ID).Contains(item.ID))
             {
                 ChannelItems.Remove(ChannelItems.First(x => x.ID == item.ID));
@@ -324,6 +330,16 @@ namespace Crawler.ViewModels
             {
                 ChannelItems.Add(item);
             }
+        }
+
+        public void DeleteItem(IVideoItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentException("item");
+            }
+
+            ChannelItems.Remove(item);
         }
 
         #endregion

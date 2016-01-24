@@ -39,6 +39,8 @@ namespace Interfaces.Models
 
         void AddNewItem(IVideoItem item);
 
+        void DeleteItem(IVideoItem item);
+
         #endregion
     }
 }

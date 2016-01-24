@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -286,6 +287,11 @@ namespace Models.BO.Channels
 
         public void AddNewItem(IVideoItem item)
         {
+            if (item == null)
+            {
+                throw new ArgumentException("item");
+            }
+
             item.FileState = ItemState.LocalNo;
 
             if (item.SyncState == SyncState.Added)
@@ -298,6 +304,23 @@ namespace Models.BO.Channels
                 ChannelItems.Add(item);
             }
             ChannelItemsCount += 1;
+        }
+
+        public void DeleteItem(IVideoItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentException("item");
+            }
+
+            ChannelItems.Remove(item);
+
+            ChannelItemsCount -= 1;
+
+            if (item.SyncState == SyncState.Added)
+            {
+                CountNew -= 1;
+            }
         }
 
         #endregion

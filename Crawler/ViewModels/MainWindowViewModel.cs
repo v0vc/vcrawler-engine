@@ -974,9 +974,8 @@ namespace Crawler.ViewModels
                     {
                         if (isDeleteFromDbToo)
                         {
-                            channel.ChannelItems.Remove(item);
+                            channel.DeleteItem(item);
                             await df.DeleteItemAsync(item.ID);
-                            channel.ChannelItemsCount -= 1;
                         }
                         else
                         {
