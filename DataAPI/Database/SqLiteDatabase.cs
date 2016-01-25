@@ -1482,6 +1482,47 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Insert only channel items
+        /// </summary>
+        /// <param name="channelitems"></param>
+        /// <returns></returns>
+        public async Task InsertChannelItemsAsync(IEnumerable<IVideoItem> channelitems)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = itemsInsertString;
+                        command.CommandType = CommandType.Text;
+
+                        foreach (IVideoItem item in channelitems)
+                        {
+                            command.Parameters.AddWithValue("@" + itemId, item.ID);
+                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                            command.Parameters.AddWithValue("@" + title, item.Title);
+                            command.Parameters.AddWithValue("@" + description, item.Description);
+                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                            command.Parameters.AddWithValue("@" + duration, item.Duration);
+                            command.Parameters.AddWithValue("@" + comments, item.Comments);
+                            if (item.Thumbnail != null)
+                            {
+                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                            }
+                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
+
+                            await command.ExecuteNonQueryAsync();
+                        }
+                    }
+                    transaction.Commit();
+                }
+            }
+        }
+
+        /// <summary>
         ///     Full channel insert
         /// </summary>
         /// <param name="channel"></param>

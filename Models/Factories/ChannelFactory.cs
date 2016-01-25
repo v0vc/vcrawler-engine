@@ -486,21 +486,24 @@ namespace Models.Factories
             ICollection<string> dbIds = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом
-            foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID))
+            IEnumerable<IVideoItem> result =
+                res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID).ToList();
+            await db.InsertChannelItemsAsync(result);
+            foreach (IVideoItem vi in result)
             {
                 vi.SyncState = SyncState.Added;
                 channel.AddNewItem(vi);
-                await db.InsertItemAsync(vi);
                 if (playlistId != null)
                 {
                     await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID);
                 }
-                if (dbIds != null)
+                if (dbIds == null)
                 {
-                    if (!dbIds.Contains(vi.ID))
-                    {
-                        dbIds.Add(vi.ID);
-                    }
+                    continue;
+                }
+                if (!dbIds.Contains(vi.ID))
+                {
+                    dbIds.Add(vi.ID);
                 }
             }
         }
