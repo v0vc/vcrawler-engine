@@ -389,7 +389,8 @@ namespace Models.Factories
                     }
                 }
             }
-
+            channel.IsHasNewFromSync = channel.ChannelItems.Any()
+                                       && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.SyncState == SyncState.Added);
             channel.ChannelState = ChannelState.Notset;
         }
 
@@ -488,6 +489,7 @@ namespace Models.Factories
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом
             IEnumerable<IVideoItem> result =
                 res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID).ToList();
+            result.ForEach(x => x.SyncState = SyncState.Added);
             await db.InsertChannelItemsAsync(result);
             foreach (IVideoItem vi in result)
             {

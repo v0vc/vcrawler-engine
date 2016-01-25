@@ -1,11 +1,11 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Autofac;
 using DataAPI.Database;
 using DataAPI.Trackers;
-using DataAPI.Videos;
 
 namespace Models.Factories
 {
@@ -34,14 +34,6 @@ namespace Models.Factories
             using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
             {
                 return scope.Resolve<TapochekSite>();
-            }
-        }
-
-        public static YouTubeSite CreateYouTubeSite()
-        {
-            using (ILifetimeScope scope = Container.Kernel.BeginLifetimeScope())
-            {
-                return scope.Resolve<YouTubeSite>();
             }
         }
 

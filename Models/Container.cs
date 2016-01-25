@@ -78,7 +78,6 @@ namespace Models
         {
             var builder = new ContainerBuilder();
             builder.RegisterType<SqLiteDatabase>().AsSelf().SingleInstance();
-            builder.RegisterType<YouTubeSite>().AsSelf().SingleInstance();
             builder.RegisterType<TapochekSite>().AsSelf().SingleInstance();
             builder.RegisterType<RutrackerSite>().AsSelf().SingleInstance();
 

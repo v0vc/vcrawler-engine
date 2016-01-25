@@ -32,6 +32,7 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
+        bool IsHasNewFromSync { get; set; }
 
         #endregion
 

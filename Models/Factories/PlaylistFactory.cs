@@ -20,6 +20,7 @@ namespace Models.Factories
 {
     public static class PlaylistFactory
     {
+        private static readonly SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
         #region Static Methods
 
         public static IPlaylist CreatePlaylist()
@@ -118,7 +119,7 @@ namespace Models.Factories
                     }
                     foreach (string id in lstInDb)
                     {
-                        await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID);
+                        await db.UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID);
                         playlist.PlItems.Add(id);
                     }
 
@@ -132,8 +133,8 @@ namespace Models.Factories
                             if (vi.ParentID == selectedChannel.ID)
                             {
                                 selectedChannel.AddNewItem(vi);
-                                await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(vi);
-                                await CommonFactory.CreateSqLiteDatabase().UpdatePlaylistAsync(playlist.ID, vi.ID, selectedChannel.ID);
+                                await db.InsertItemAsync(vi);
+                                await db.UpdatePlaylistAsync(playlist.ID, vi.ID, selectedChannel.ID);
                             }
                             else
                             {
@@ -149,10 +150,9 @@ namespace Models.Factories
 
         public static async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
         {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
             try
             {
-                await fb.UpdatePlaylistAsync(plid, itemid, channelid);
+                await db.UpdatePlaylistAsync(plid, itemid, channelid);
             }
             catch (Exception ex)
             {

@@ -991,6 +991,10 @@ namespace Crawler.ViewModels
                         MessageBox.Show(ex.Message);
                     }
                 }
+                if (isDeleteFromDbToo && channel.CountNew >= 0)
+                {
+                    await CommonFactory.CreateSqLiteDatabase().UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
+                }
             }
         }
 
@@ -1068,21 +1072,19 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            // есть новые элементы после синхронизации
-            bool isHasNewFromSync = channel.ChannelItems.Any()
-                                    && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.SyncState == SyncState.Added);
-
+            // есть новые элементы после синхронизации - теперь проставляется в самой синхронизации
             // если канал заполнен элементами, но нет новых - уже загружали, не нужно больше
-            if (channel.ChannelItems.Any() && !isHasNewFromSync)
+            if (channel.ChannelItems.Any() && !channel.IsHasNewFromSync)
             {
                 return;
             }
 
             // заполняем только если либо ничего нет, либо одни новые
-            if (isHasNewFromSync)
+            if (channel.IsHasNewFromSync)
             {
                 await
                     ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
+                channel.IsHasNewFromSync = false;
             }
             else
             {

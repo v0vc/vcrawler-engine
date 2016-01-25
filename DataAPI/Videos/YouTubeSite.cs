@@ -18,7 +18,7 @@ using Newtonsoft.Json.Linq;
 
 namespace DataAPI.Videos
 {
-    public class YouTubeSite
+    public static class YouTubeSite
     {
         #region Constants
 
@@ -52,7 +52,7 @@ namespace DataAPI.Videos
                 return ch;
             }
 
-            var items = await GetPlaylistItemsNetAsync(uploads.ID);
+            List<VideoItemPOCO> items = await GetPlaylistItemsNetAsync(uploads.ID);
 
             ch.Items.AddRange(items);
 
