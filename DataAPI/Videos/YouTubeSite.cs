@@ -284,6 +284,47 @@ namespace DataAPI.Videos
         }
 
         /// <summary>
+        ///     Get video comments
+        /// </summary>
+        /// <param name="videoID"></param>
+        /// <param name="maxResult"></param>
+        /// <returns></returns>
+        public static async Task<List<string>> GetVideoCommentsNetAsync(string videoID, int maxResult)
+        {
+            var res = new List<string>();
+
+            int itemsppage = ItemsPerPage;
+
+            if (maxResult < ItemsPerPage & maxResult != 0)
+            {
+                itemsppage = maxResult;
+            }
+
+            string zap =
+                string.Format(
+                              "{0}commentThreads?videoId={1}&key={2}&maxResults={3}&part=snippet&fields=nextPageToken,items(snippet(topLevelComment(snippet(authorDisplayName,textDisplay,authorChannelUrl,authorProfileImageUrl,publishedAt))))&{4}",
+                    url,
+                    videoID,
+                    key,
+                    itemsppage,
+                    printType);
+
+            object pagetoken;
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+
+            }
+            while (pagetoken != null);
+
+            return res;
+        }
+
+        /// <summary>
         ///     Get channel items IDs
         /// </summary>
         /// <param name="channelID">channel ID</param>

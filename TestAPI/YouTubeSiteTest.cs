@@ -90,6 +90,13 @@ namespace TestAPI
         }
 
         [TestMethod]
+        public async Task GetVideoCommentsNetAsync()
+        {
+            List<string> res = await YouTubeSite.GetVideoCommentsNetAsync("-wA6Qj4oF2E", 0);
+            Assert.IsTrue(res.Any());
+        }
+
+        [TestMethod]
         public async Task GetListVideoByIdsAsync()
         {
             var lst = new List<string> { "-wA6Qj4oF2E" };
