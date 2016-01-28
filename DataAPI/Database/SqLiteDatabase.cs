@@ -267,9 +267,16 @@ namespace DataAPI.Database
                 command.Connection = connection;
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    command.Transaction = transaction;
-                    await command.ExecuteNonQueryAsync();
-                    command.Transaction.Commit();
+                    try
+                    {
+                        await command.ExecuteNonQueryAsync();
+                        command.Transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
                 connection.Close();
             }
@@ -412,13 +419,13 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
                             while (await reader.ReadAsync())
                             {
-                                var tag = CreateTag(reader, tagTitle);
+                                TagPOCO tag = CreateTag(reader, tagTitle);
                                 res.Add(tag);
                             }
 
@@ -460,16 +467,16 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new Exception(zap);
                             }
-                            var ch = CreateChannel(reader);
+                            ChannelPOCO ch = CreateChannel(reader);
                             transaction.Commit();
                             return ch;
                         }
@@ -500,7 +507,7 @@ namespace DataAPI.Database
 
                         if (res == null || res == DBNull.Value)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             return string.Empty;
                         }
 
@@ -566,7 +573,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -604,7 +611,7 @@ namespace DataAPI.Database
 
                         if (res == null || res == DBNull.Value)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             throw new Exception(zap);
                         }
 
@@ -643,7 +650,7 @@ namespace DataAPI.Database
 
                         if (res == null || res == DBNull.Value)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             throw new Exception(zap);
                         }
 
@@ -702,7 +709,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -716,7 +723,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -760,7 +766,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -774,7 +780,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -800,16 +805,15 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
                             while (await reader.ReadAsync())
                             {
-                                var pl = CreatePlaylist(reader);
+                                PlaylistPOCO pl = CreatePlaylist(reader);
                                 res.Add(pl);
                             }
-
                             transaction.Commit();
                         }
                     }
@@ -844,7 +848,7 @@ namespace DataAPI.Database
 
                         if (res == null || res == DBNull.Value)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             throw new Exception(zap);
                         }
 
@@ -879,7 +883,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -924,7 +928,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -939,7 +943,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -966,7 +969,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -981,7 +984,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -1015,13 +1017,13 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
                             while (await reader.ReadAsync())
                             {
-                                var ch = CreateChannel(reader);
+                                ChannelPOCO ch = CreateChannel(reader);
                                 res.Add(ch);
                             }
 
@@ -1030,7 +1032,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -1056,16 +1057,15 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
                             while (await reader.ReadAsync())
                             {
-                                var tag = CreateTag(reader, tagIdF);
+                                TagPOCO tag = CreateTag(reader, tagIdF);
                                 res.Add(tag);
                             }
-
                             transaction.Commit();
                         }
                     }
@@ -1081,7 +1081,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<CredPOCO> GetCredAsync(SiteType site)
         {
-            var url = EnumHelper.GetAttributeOfType(site);
+            string url = EnumHelper.GetAttributeOfType(site);
             string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, url);
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1096,16 +1096,16 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new KeyNotFoundException("No item: " + url);
                             }
 
                             if (!await reader.ReadAsync())
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new Exception(zap);
                             }
-                            var cred = CreateCred(reader);
+                            CredPOCO cred = CreateCred(reader);
                             transaction.Commit();
                             return cred;
                         }
@@ -1135,22 +1135,20 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
                             while (await reader.ReadAsync())
                             {
-                                var cred = CreateCred(reader);
+                                CredPOCO cred = CreateCred(reader);
                                 res.Add(cred);
                             }
-
                             transaction.Commit();
                         }
                     }
                 }
             }
-
             return res;
         }
 
@@ -1175,16 +1173,16 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new Exception(zap);
                             }
-                            var pl = CreatePlaylist(reader);
+                            PlaylistPOCO pl = CreatePlaylist(reader);
                             transaction.Commit();
                             return pl;
                         }
@@ -1223,7 +1221,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -1232,7 +1230,6 @@ namespace DataAPI.Database
                                 var r = reader[fItemId] as string;
                                 lst.Add(r);
                             }
-
                             transaction.Commit();
                         }
                     }
@@ -1271,7 +1268,7 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 return res;
                             }
 
@@ -1280,13 +1277,11 @@ namespace DataAPI.Database
                                 var vid = reader[fItemId] as string;
                                 res.Add(vid);
                             }
-
                             transaction.Commit();
                         }
                     }
                 }
             }
-
             return res;
         }
 
@@ -1311,17 +1306,17 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new KeyNotFoundException("No item: " + key);
                             }
 
                             if (!await reader.ReadAsync())
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new Exception(zap);
                             }
 
-                            var cred = CreateSetting(reader);
+                            SettingPOCO cred = CreateSetting(reader);
                             transaction.Commit();
                             return cred;
                         }
@@ -1364,13 +1359,13 @@ namespace DataAPI.Database
                         {
                             if (!reader.HasRows)
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
-                                transaction.Commit();
+                                transaction.Rollback();
                                 throw new Exception(zap);
                             }
                             VideoItemPOCO vi = CreateVideoItem(reader);
@@ -1404,7 +1399,7 @@ namespace DataAPI.Database
 
                         if (res == null || res == DBNull.Value)
                         {
-                            transaction.Commit();
+                            transaction.Rollback();
                             return string.Empty;
                         }
 
@@ -1456,27 +1451,33 @@ namespace DataAPI.Database
                     {
                         command.CommandText = itemsInsertString;
                         command.CommandType = CommandType.Text;
-
-                        foreach (IVideoItem item in channel.ChannelItems)
+                        try
                         {
-                            command.Parameters.AddWithValue("@" + itemId, item.ID);
-                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                            command.Parameters.AddWithValue("@" + title, item.Title);
-                            command.Parameters.AddWithValue("@" + description, item.Description);
-                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                            command.Parameters.AddWithValue("@" + duration, item.Duration);
-                            command.Parameters.AddWithValue("@" + comments, item.Comments);
-                            if (item.Thumbnail != null)
+                            foreach (IVideoItem item in channel.ChannelItems)
                             {
-                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                                command.Parameters.AddWithValue("@" + itemId, item.ID);
+                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                                command.Parameters.AddWithValue("@" + title, item.Title);
+                                command.Parameters.AddWithValue("@" + description, item.Description);
+                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                                command.Parameters.AddWithValue("@" + duration, item.Duration);
+                                command.Parameters.AddWithValue("@" + comments, item.Comments);
+                                if (item.Thumbnail != null)
+                                {
+                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                                }
+                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
+                                await command.ExecuteNonQueryAsync();
                             }
-                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-
-                            await command.ExecuteNonQueryAsync();
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
                         }
                     }
-                    transaction.Commit();
                 }
             }
         }
@@ -1497,27 +1498,32 @@ namespace DataAPI.Database
                     {
                         command.CommandText = itemsInsertString;
                         command.CommandType = CommandType.Text;
-
-                        foreach (IVideoItem item in channelitems)
+                        try
                         {
-                            command.Parameters.AddWithValue("@" + itemId, item.ID);
-                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                            command.Parameters.AddWithValue("@" + title, item.Title);
-                            command.Parameters.AddWithValue("@" + description, item.Description);
-                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                            command.Parameters.AddWithValue("@" + duration, item.Duration);
-                            command.Parameters.AddWithValue("@" + comments, item.Comments);
-                            if (item.Thumbnail != null)
+                            foreach (IVideoItem item in channelitems)
                             {
-                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                                command.Parameters.AddWithValue("@" + itemId, item.ID);
+                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                                command.Parameters.AddWithValue("@" + title, item.Title);
+                                command.Parameters.AddWithValue("@" + description, item.Description);
+                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                                command.Parameters.AddWithValue("@" + duration, item.Duration);
+                                command.Parameters.AddWithValue("@" + comments, item.Comments);
+                                if (item.Thumbnail != null)
+                                {
+                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                                }
+                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
+                                await command.ExecuteNonQueryAsync();
                             }
-                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-
-                            await command.ExecuteNonQueryAsync();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
                         }
                     }
-                    transaction.Commit();
                 }
             }
         }
@@ -1536,103 +1542,113 @@ namespace DataAPI.Database
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        command.CommandType = CommandType.Text;
-
-                        #region channel
-
-                        command.CommandText = channelsInsertString;
-
-                        command.Parameters.AddWithValue("@" + channelId, channel.ID);
-                        command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
-                        command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-                        if (channel.Thumbnail != null)
+                        try
                         {
-                            command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value =
-                                channel.Thumbnail;
-                        }
-                        command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
-                        command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
+                            command.CommandType = CommandType.Text;
 
-                        await command.ExecuteNonQueryAsync();
+                            #region channel
 
-                        #endregion
+                            command.CommandText = channelsInsertString;
 
-                        #region Playlists
-
-                        command.CommandText =
-                            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                                tableplaylists,
-                                playlistID,
-                                playlistTitle,
-                                playlistSubTitle,
-                                playlistThumbnail,
-                                playlistChannelId);
-
-                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
-                        {
-                            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
-                            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
-                            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-                            if (playlist.Thumbnail != null)
+                            command.Parameters.AddWithValue("@" + channelId, channel.ID);
+                            command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
+                            command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
+                            if (channel.Thumbnail != null)
                             {
-                                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
-                                    playlist.Thumbnail;
+                                command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value =
+                                    channel.Thumbnail;
                             }
-                            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
+                            command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
+                            command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
 
                             await command.ExecuteNonQueryAsync();
-                        }
 
-                        #endregion
+                            #endregion
 
-                        #region Items
+                            #region Playlists
 
-                        command.CommandText = itemsInsertString;
+                            command.CommandText =
+                                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                                    tableplaylists,
+                                    playlistID,
+                                    playlistTitle,
+                                    playlistSubTitle,
+                                    playlistThumbnail,
+                                    playlistChannelId);
 
-                        foreach (IVideoItem item in channel.ChannelItems)
-                        {
-                            command.Parameters.AddWithValue("@" + itemId, item.ID);
-                            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                            command.Parameters.AddWithValue("@" + title, item.Title);
-                            command.Parameters.AddWithValue("@" + description, item.Description);
-                            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                            command.Parameters.AddWithValue("@" + duration, item.Duration);
-                            command.Parameters.AddWithValue("@" + comments, item.Comments);
-                            if (item.Thumbnail != null)
+                            foreach (IPlaylist playlist in channel.ChannelPlaylists)
                             {
-                                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
-                            }
-                            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-
-                            await command.ExecuteNonQueryAsync();
-                        }
-
-                        #endregion
-
-                        #region Update Playlists items
-
-                        command.CommandText = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
-                            tableplaylistitems,
-                            fPlaylistId,
-                            fItemId,
-                            fChannelId);
-
-                        foreach (IPlaylist playlist in channel.ChannelPlaylists)
-                        {
-                            foreach (string plItem in playlist.PlItems)
-                            {
-                                command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
-                                command.Parameters.AddWithValue("@" + fItemId, plItem);
-                                command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
+                                command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
+                                command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
+                                command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
+                                if (playlist.Thumbnail != null)
+                                {
+                                    command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
+                                        playlist.Thumbnail;
+                                }
+                                command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
 
                                 await command.ExecuteNonQueryAsync();
                             }
-                        }
 
-                        #endregion
+                            #endregion
+
+                            #region Items
+
+                            command.CommandText = itemsInsertString;
+
+                            foreach (IVideoItem item in channel.ChannelItems)
+                            {
+                                command.Parameters.AddWithValue("@" + itemId, item.ID);
+                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+                                command.Parameters.AddWithValue("@" + title, item.Title);
+                                command.Parameters.AddWithValue("@" + description, item.Description);
+                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+                                command.Parameters.AddWithValue("@" + duration, item.Duration);
+                                command.Parameters.AddWithValue("@" + comments, item.Comments);
+                                if (item.Thumbnail != null)
+                                {
+                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                                }
+                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
+
+                                await command.ExecuteNonQueryAsync();
+                            }
+
+                            #endregion
+
+                            #region Update Playlists items
+
+                            command.CommandText = string.Format(
+                                                                @"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+                                tableplaylistitems,
+                                fPlaylistId,
+                                fItemId,
+                                fChannelId);
+
+                            foreach (IPlaylist playlist in channel.ChannelPlaylists)
+                            {
+                                foreach (string plItem in playlist.PlItems)
+                                {
+                                    command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
+                                    command.Parameters.AddWithValue("@" + fItemId, plItem);
+                                    command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
+
+                                    await command.ExecuteNonQueryAsync();
+                                }
+                            }
+
+                            #endregion
+
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
                     }
-                    transaction.Commit();
                 }
             }
         }
@@ -1941,20 +1957,27 @@ namespace DataAPI.Database
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        command.CommandType = CommandType.Text;
-
-                        foreach (IVideoItem item in items)
+                        try
                         {
-                            command.CommandText = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
-                                tableitems,
-                                syncstate,
-                                (byte)state,
-                                itemId,
-                                item.ID);
-                            await command.ExecuteNonQueryAsync();
+                            command.CommandType = CommandType.Text;
+                            foreach (IVideoItem item in items)
+                            {
+                                command.CommandText = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                                    tableitems,
+                                    syncstate,
+                                    (byte)state,
+                                    itemId,
+                                    item.ID);
+                                await command.ExecuteNonQueryAsync();
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
                         }
                     }
-                    transaction.Commit();
                 }
             }
         }
