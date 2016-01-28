@@ -267,6 +267,7 @@ namespace DataAPI.Database
                 command.Connection = connection;
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
+                    command.Transaction = transaction;
                     try
                     {
                         await command.ExecuteNonQueryAsync();
@@ -1517,6 +1518,7 @@ namespace DataAPI.Database
                                 command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
                                 await command.ExecuteNonQueryAsync();
                             }
+                            transaction.Commit();
                         }
                         catch (Exception)
                         {

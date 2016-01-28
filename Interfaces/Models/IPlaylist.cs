@@ -21,6 +21,8 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
         bool IsDefault { get; }
+
+        SyncState State { get; set; }
         #endregion
 
         #region Methods

@@ -371,7 +371,9 @@ namespace Models.Factories
                         List<string> plpocoitems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
                         plpoco.PlaylistItems.AddRange(plpocoitems);
                         IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
+                        pl.State = SyncState.Added;
                         channel.ChannelPlaylists.Add(pl);
+                        channel.PlaylistCount += 1;
                         await db.InsertPlaylistAsync(pl);
                         dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
 

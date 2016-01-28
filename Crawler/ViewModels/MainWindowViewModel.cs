@@ -610,7 +610,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (ch.ChannelPlaylists.Any())
+            if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
             {
                 return;
             }
@@ -1282,19 +1282,26 @@ namespace Crawler.ViewModels
 
         private async void InitBase()
         {
-            if (launchParam.Any())
+            try
             {
-                SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
-            }
-            else
-            {
-                await SettingsViewModel.LoadSettingsFromDb();
-            }
+                if (launchParam.Any())
+                {
+                    SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
+                }
+                else
+                {
+                    await SettingsViewModel.LoadSettingsFromDb();
+                }
 
-            await SettingsViewModel.LoadTagsFromDb();
-            await SettingsViewModel.LoadCredsFromDb();
-            ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
-            ServiceChannels.Add(ServiceChannel);
+                await SettingsViewModel.LoadTagsFromDb();
+                await SettingsViewModel.LoadCredsFromDb();
+                ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
+                ServiceChannels.Add(ServiceChannel);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
 
         private async void MainMenuClick(object param)
