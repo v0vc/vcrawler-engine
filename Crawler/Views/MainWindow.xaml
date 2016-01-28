@@ -693,11 +693,26 @@
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
-                                            <StackPanel.OpacityMask>
-                                                <VisualBrush Visual="{Binding ElementName=mask}" />
-                                            </StackPanel.OpacityMask>
-                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" 
+                                        <Border d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
+                                            <Border.InputBindings>
+                                                <MouseBinding Command="{Binding DataContext.ChangeWatchedCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" 
+                                                              Gesture="MiddleClick" 
+                                                              />
+                                            </Border.InputBindings>
+                                            <Border.Style>
+                                                <Style TargetType="Border">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsWatched}" Value="True">
+                                                            <Setter Property="Background" Value="SpringGreen" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
+                                                <StackPanel.OpacityMask>
+                                                    <VisualBrush Visual="{Binding ElementName=mask}" />
+                                                </StackPanel.OpacityMask>
+                                                <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
                                                    Stretch="Fill"
@@ -707,27 +722,28 @@
                                                    Margin="0"
                                                    HorizontalAlignment="Center"
                                                    >
-                                                <i:Interaction.Triggers>
-                                                    <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                    </i:EventTrigger>
-                                                    <i:EventTrigger EventName="ToolTipOpening" >
-                                                        <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                    </i:EventTrigger>
-                                                </i:Interaction.Triggers>
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                            <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                        </i:EventTrigger>
+                                                        <i:EventTrigger EventName="ToolTipOpening" >
+                                                            <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
 
-                                                <Image.ToolTip>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
-                                                        <TextBlock Margin="10,0,0,0" Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
-                                                    </StackPanel>
-                                                </Image.ToolTip>
-                                            </Image>
-                                        </StackPanel>
+                                                    <Image.ToolTip>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                            <TextBlock Margin="10,0,0,0" Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Image.ToolTip>
+                                                </Image>
+                                            </StackPanel>
+                                        </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-
+                           
                             <DataGridTemplateColumn CanUserResize="True" Width="*" Header="Title" SortMemberPath="Title">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader">
@@ -823,7 +839,9 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
+
                         </DataGrid.Columns>
+                        
                     </controls:CustomDataGrid>
                 </controls:BusyDecorator>          
 

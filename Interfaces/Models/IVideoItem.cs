@@ -32,6 +32,8 @@ namespace Interfaces.Models
         string Title { get; set; }
         long ViewCount { get; set; }
 
+        bool IsWatched { get; set; }
+
         #endregion
 
         #region Methods

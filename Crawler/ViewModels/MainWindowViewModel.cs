@@ -99,6 +99,7 @@ namespace Crawler.ViewModels
         private RelayCommand videoClickCommand;
         private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoItemMenuCommand;
+        private RelayCommand changeWatchedCommand;
 
         #endregion
 
@@ -138,6 +139,23 @@ namespace Crawler.ViewModels
             get
             {
                 return addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem()));
+            }
+        }
+
+        public RelayCommand ChangeWatchedCommand
+        {
+            get
+            {
+                return changeWatchedCommand ?? (changeWatchedCommand = new RelayCommand(ChangeWatchState));
+            }
+        }
+
+        private static void ChangeWatchState(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item != null)
+            {
+                item.IsWatched = !item.IsWatched;
             }
         }
 

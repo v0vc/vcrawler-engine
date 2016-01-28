@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace Models.BO.Playlists
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
+        public bool IsDefault { get; set; }
         public List<string> PlItems { get; set; }
 
         public SiteType Site
@@ -26,11 +28,11 @@ namespace Models.BO.Playlists
             }
         }
 
+        public SyncState State { get; set; }
+
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
-        public bool IsDefault { get; set; }
-        public SyncState State { get; set; }
 
         public async Task UpdatePlaylistAsync(string videoId)
         {

@@ -15,14 +15,14 @@ namespace Interfaces.Models
 
         string ChannelId { get; set; }
         string ID { get; set; }
+        bool IsDefault { get; }
         List<string> PlItems { get; }
         SiteType Site { get; }
+        SyncState State { get; set; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
-        bool IsDefault { get; }
 
-        SyncState State { get; set; }
         #endregion
 
         #region Methods

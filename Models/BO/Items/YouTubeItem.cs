@@ -40,6 +40,7 @@ namespace Models.BO.Items
         private SyncState syncState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
+        private bool isWatched;
 
         #endregion
 
@@ -255,6 +256,23 @@ namespace Models.BO.Items
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
         public long ViewCount { get; set; }
+
+        public bool IsWatched
+        {
+            get
+            {
+                return isWatched;
+            }
+            set
+            {
+                if (value == isWatched)
+                {
+                    return;
+                }
+                isWatched = value;
+                OnPropertyChanged();
+            }
+        }
 
         public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudiOnly)
         {

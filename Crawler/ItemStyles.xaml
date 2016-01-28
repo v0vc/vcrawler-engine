@@ -70,6 +70,71 @@
         </Setter>
     </Style>
 
+    <Style TargetType="CheckBox" x:Key="CircleCheckbox">
+        <Setter Property="Cursor" Value="Hand"></Setter>
+        <Setter Property="Content" Value=""></Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type CheckBox}">
+                    <Grid>
+                        <Ellipse x:Name="outerEllipse" Margin="6">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0" Color="Red"/>
+                                    <GradientStop Offset="0.88" Color="LightCoral"/>
+                                    <GradientStop Offset="1" Color="DarkRed"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <Ellipse Margin="11" x:Name="highlightCircle" >
+                            <Ellipse.Fill >
+                                <LinearGradientBrush >
+                                    <GradientStop Offset="0" Color="Green"/>
+                                    <GradientStop Offset="0.5" Color="LightGreen"/>
+                                    <GradientStop Offset="1" Color="DarkGreen"/>
+                                </LinearGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="highlightCircle" Property="Fill">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0.3,0" EndPoint="0.7,1">
+                                        <GradientStop Offset="0" Color="Green"/>
+                                        <GradientStop Offset="0.5" Color="LightGreen"/>
+                                        <GradientStop Offset="1" Color="DarkGreen"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="outerEllipse" Property="Fill">
+                                <Setter.Value>
+                                    <RadialGradientBrush>
+                                        <GradientStop Offset="0" Color="Green"/>
+                                        <GradientStop Offset="0.88" Color="LightGreen"/>
+                                        <GradientStop Offset="1" Color="DarkGreen"/>
+                                    </RadialGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="False">
+                            <Setter TargetName="highlightCircle" Property="Fill">
+                                <Setter.Value>
+                                    <LinearGradientBrush StartPoint="0.3,0" EndPoint="0.7,1">
+                                        <GradientStop Offset="0" Color="Red"/>
+                                        <GradientStop Offset="0.5" Color="LightCoral"/>
+                                        <GradientStop Offset="1" Color="DarkRed"/>
+                                    </LinearGradientBrush>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <converters:InvertBooleanConverter x:Key="InvertBooleanConverter" />
     <converters:MultiParamConverter x:Key="MultiParamConverter" />
     <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
