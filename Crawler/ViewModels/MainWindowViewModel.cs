@@ -153,9 +153,22 @@ namespace Crawler.ViewModels
         private static void ChangeWatchState(object obj)
         {
             var item = obj as IVideoItem;
-            if (item != null)
+            if (item == null)
             {
-                item.IsWatched = !item.IsWatched;
+                return;
+            }
+
+            switch (item.WatchState)
+            {
+                case WatchState.Notset:
+                    item.WatchState = WatchState.Watched;
+                    break;
+                case WatchState.Watched:
+                    item.WatchState = WatchState.Planned;
+                    break;
+                case WatchState.Planned:
+                    item.WatchState=WatchState.Notset;
+                    break;
             }
         }
 

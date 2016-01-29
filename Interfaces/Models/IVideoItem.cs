@@ -32,7 +32,7 @@ namespace Interfaces.Models
         string Title { get; set; }
         long ViewCount { get; set; }
 
-        bool IsWatched { get; set; }
+        WatchState WatchState { get; set; }
 
         #endregion
 

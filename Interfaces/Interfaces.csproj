@@ -52,6 +52,7 @@
     <Compile Include="Enums\SiteType.cs" />
     <Compile Include="Enums\SyncState.cs" />
     <Compile Include="Enums\VideoMenuItem.cs" />
+    <Compile Include="Enums\WatchState.cs" />
     <Compile Include="Models\IChannel.cs" />
     <Compile Include="Models\ISubtitle.cs" />
     <Compile Include="Models\ICred.cs" />

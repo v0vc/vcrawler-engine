@@ -702,8 +702,11 @@
                                             <Border.Style>
                                                 <Style TargetType="Border">
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding IsWatched}" Value="True">
+                                                        <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
                                                             <Setter Property="Background" Value="SpringGreen" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
+                                                            <Setter Property="Background" Value="CornflowerBlue" />
                                                         </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>

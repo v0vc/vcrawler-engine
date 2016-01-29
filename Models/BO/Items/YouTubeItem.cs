@@ -40,7 +40,7 @@ namespace Models.BO.Items
         private SyncState syncState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
-        private bool isWatched;
+        private WatchState watchState;
 
         #endregion
 
@@ -257,19 +257,19 @@ namespace Models.BO.Items
         public string Title { get; set; }
         public long ViewCount { get; set; }
 
-        public bool IsWatched
+        public WatchState WatchState
         {
             get
             {
-                return isWatched;
+                return watchState;
             }
             set
             {
-                if (value == isWatched)
+                if (value == watchState)
                 {
                     return;
                 }
-                isWatched = value;
+                watchState = value;
                 OnPropertyChanged();
             }
         }

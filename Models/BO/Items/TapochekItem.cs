@@ -32,7 +32,7 @@ namespace Models.BO.Items
         public string Title { get; set; }
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public long ViewCount { get; set; }
-        public bool IsWatched { get; set; }
+        public WatchState WatchState { get; set; }
 
         public IVideoItem CreateVideoItem()
         {
