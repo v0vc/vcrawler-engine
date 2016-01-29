@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -29,24 +30,8 @@ namespace DataAPI.Database
         private const string dbfile = "db.sqlite";
         private const string sqlFile = "sqlite.sql";
         private const string sqlSchemaFolder = "Schema";
-        private const string tablechannels = "channels";
-        private const string tablechanneltags = "channeltags";
-        private const string tablecredentials = "credentials";
-        private const string tableitems = "items";
-        private const string tableplaylistitems = "playlistitems";
-        private const string tableplaylists = "playlists";
-        private const string tablesettings = "settings";
-        private const string tabletags = "tags";
 
-        #endregion
-
-        #region Static and Readonly Fields
-
-        private readonly string appstartdir;
-        private string dbConnection;
-        private FileInfo fileBase;
-
-        #region items
+        #region Items
 
         private const string itemId = "id";
         private const string parentID = "parentid";
@@ -58,24 +43,11 @@ namespace DataAPI.Database
         private const string thumbnail = "thumbnail";
         private const string timestamp = "timestamp";
         private const string syncstate = "syncstate";
-        private readonly string itemsInsertString =
-            string.Format(
-                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10})",
-                tableitems,
-                itemId,
-                parentID,
-                title,
-                description,
-                viewCount,
-                duration,
-                comments,
-                thumbnail,
-                timestamp,
-                syncstate);
+        private const string watchstate = "watchstate";
 
         #endregion
 
-        #region channels
+        #region Channels
 
         private const string channelId = "id";
         private const string channelTitle = "title";
@@ -83,6 +55,102 @@ namespace DataAPI.Database
         private const string channelThumbnail = "thumbnail";
         private const string channelSite = "site";
         private const string newcount = "newcount";
+
+        #endregion
+
+        #region Channeltags
+
+        private const string tagIdF = "tagid";
+        private const string channelIdF = "channelid";
+
+        #endregion
+
+        #region Playlists
+
+        private const string playlistID = "id";
+        private const string playlistTitle = "title";
+        private const string playlistSubTitle = "subtitle";
+        private const string playlistThumbnail = "thumbnail";
+        private const string playlistChannelId = "channelid";
+
+        #endregion
+
+        #region PlaylistItems
+
+        private const string fPlaylistId = "playlistid";
+        private const string fItemId = "itemid";
+        private const string fChannelId = "channelid";
+
+        #endregion
+
+        #region Credentials
+
+        private const string credSite = "site";
+        private const string credLogin = "login";
+        private const string credPass = "pass";
+        private const string credCookie = "cookie";
+        private const string credExpired = "expired";
+        private const string credAutorization = "autorization";
+
+        #endregion
+
+        #region Settings
+
+        private const string setKey = "key";
+        private const string setVal = "val";
+
+        #endregion
+
+        #region Tags
+
+        private const string tagTitle = "title";
+
+        #endregion
+
+        #region Tables
+
+        private const string tablechannels = "channels";
+        private const string tablechanneltags = "channeltags";
+        private const string tablecredentials = "credentials";
+        private const string tableitems = "items";
+        private const string tableplaylistitems = "playlistitems";
+        private const string tableplaylists = "playlists";
+        private const string tablesettings = "settings";
+        private const string tabletags = "tags";
+
+        #endregion
+
+        #endregion
+
+        #region Static and Readonly Fields
+
+        private readonly string appstartdir;
+
+        private readonly string playlistItemsString =
+            string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+                tableplaylistitems,
+                fPlaylistId,
+                fItemId,
+                fChannelId);
+
+        private readonly string credInsertString =
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
+                tablecredentials,
+                credSite,
+                credLogin,
+                credPass,
+                credCookie,
+                credExpired,
+                credAutorization);
+
+        private readonly string playlistInsertString =
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                tableplaylists,
+                playlistID,
+                playlistTitle,
+                playlistSubTitle,
+                playlistThumbnail,
+                playlistChannelId);
 
         private readonly string channelsInsertString =
             string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
@@ -94,56 +162,28 @@ namespace DataAPI.Database
                 channelSite,
                 newcount);
 
-        #endregion
-
-        #region channeltags
-
-        private const string tagIdF = "tagid";
-        private const string channelIdF = "channelid";
-
-        #endregion
-
-        #region playlists
-
-        private const string playlistID = "id";
-        private const string playlistTitle = "title";
-        private const string playlistSubTitle = "subtitle";
-        private const string playlistThumbnail = "thumbnail";
-        private const string playlistChannelId = "channelid";
-
-        #endregion
-
-        #region playlistitems
-
-        private const string fPlaylistId = "playlistid";
-        private const string fItemId = "itemid";
-        private const string fChannelId = "channelid";
+        private readonly string itemsInsertString =
+            string.Format(
+                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10},@{11})",
+                tableitems,
+                itemId,
+                parentID,
+                title,
+                description,
+                viewCount,
+                duration,
+                comments,
+                thumbnail,
+                timestamp,
+                syncstate,
+                watchstate);
 
         #endregion
 
-        #region credentials
+        #region Fields
 
-        private const string credSite = "site";
-        private const string credLogin = "login";
-        private const string credPass = "pass";
-        private const string credCookie = "cookie";
-        private const string credExpired = "expired";
-        private const string credAutorization = "autorization";
-
-        #endregion
-
-        #region settings
-
-        private const string setKey = "key";
-        private const string setVal = "val";
-
-        #endregion
-
-        #region tags
-
-        private const string tagTitle = "title";
-
-        #endregion
+        private string dbConnection;
+        private FileInfo fileBase;
 
         #endregion
 
@@ -166,124 +206,7 @@ namespace DataAPI.Database
 
         #endregion
 
-        #region Static Methods
-
-        private static SQLiteCommand GetCommand(string sql)
-        {
-            if (string.IsNullOrEmpty(sql))
-            {
-                throw new ArgumentNullException("sql");
-            }
-
-            return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
-        }
-
-        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
-        {
-            return new VideoItemPOCO((string)reader[itemId],
-                (string)reader[parentID],
-                (string)reader[title],
-                Convert.ToInt32(reader[viewCount]),
-                Convert.ToInt32(reader[duration]),
-                Convert.ToInt32(reader[comments]),
-                (byte[])reader[thumbnail],
-                (DateTime)reader[timestamp],
-                Convert.ToByte(reader[syncstate]));
-        }
-
-        private static ChannelPOCO CreateChannel(IDataRecord reader)
-        {
-            return new ChannelPOCO((string)reader[channelId],
-                (string)reader[channelTitle],
-                (byte[])reader[channelThumbnail],
-                (string)reader[channelSite],
-                Convert.ToInt32(reader[newcount]));
-        }
-
-        private static TagPOCO CreateTag(IDataRecord reader, string field)
-        {
-            return new TagPOCO((string)reader[field]);
-        }
-
-        private static PlaylistPOCO CreatePlaylist(IDataRecord reader)
-        {
-            return new PlaylistPOCO((string)reader[playlistID],
-                (string)reader[playlistTitle],
-                (string)reader[playlistSubTitle],
-                (byte[])reader[playlistThumbnail],
-                (string)reader[playlistChannelId]);
-
-        }
-
-        private static CredPOCO CreateCred(IDataRecord reader)
-        {
-            return new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
-        }
-
-        private static SettingPOCO CreateSetting(IDataRecord reader)
-        {
-            return new SettingPOCO((string)reader[setKey], (string)reader[setVal]);
-        }
-
-        #endregion
-
-        #region Methods
-
-        private async void CreateDb()
-        {
-            string sqliteschema = Path.Combine(appstartdir, sqlSchemaFolder, sqlFile);
-            var fnsch = new FileInfo(sqliteschema);
-            if (fnsch.Exists)
-            {
-                string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
-                await RunSqlCodeAsync(sqltext);
-            }
-
-            // now can be set from launch param
-            // else
-            // {
-            //    throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
-            // }
-        }
-
-        private async Task RunSqlCodeAsync(string sqltext)
-        {
-            using (SQLiteCommand command = GetCommand(sqltext))
-            {
-                await ExecuteNonQueryAsync(command);
-            }
-        }
-
-        private async Task ExecuteNonQueryAsync(SQLiteCommand command)
-        {
-            if (command == null)
-            {
-                throw new ArgumentNullException("command");
-            }
-
-            using (var connection = new SQLiteConnection(dbConnection))
-            {
-                await connection.OpenAsync();
-                command.Connection = connection;
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    command.Transaction = transaction;
-                    try
-                    {
-                        await command.ExecuteNonQueryAsync();
-                        command.Transaction.Commit();
-                    }
-                    catch (Exception)
-                    {
-                        transaction.Rollback();
-                        throw;
-                    }
-                }
-                connection.Close();
-            }
-        }
-
-        #endregion
+        #region Properties
 
         /// <summary>
         ///     DB file
@@ -307,6 +230,140 @@ namespace DataAPI.Database
             }
         }
 
+        #endregion
+
+        #region Static Methods
+
+        private static ChannelPOCO CreateChannel(IDataRecord reader)
+        {
+            return new ChannelPOCO((string)reader[channelId],
+                (string)reader[channelTitle],
+                (byte[])reader[channelThumbnail],
+                (string)reader[channelSite],
+                Convert.ToInt32(reader[newcount]));
+        }
+
+        private static CredPOCO CreateCred(IDataRecord reader)
+        {
+            return new CredPOCO((string)reader[credSite], (string)reader[credLogin], (string)reader[credPass]);
+        }
+
+        private static PlaylistPOCO CreatePlaylist(IDataRecord reader)
+        {
+            return new PlaylistPOCO((string)reader[playlistID],
+                (string)reader[playlistTitle],
+                (string)reader[playlistSubTitle],
+                (byte[])reader[playlistThumbnail],
+                (string)reader[playlistChannelId]);
+        }
+
+        private static SettingPOCO CreateSetting(IDataRecord reader)
+        {
+            return new SettingPOCO((string)reader[setKey], (string)reader[setVal]);
+        }
+
+        private static TagPOCO CreateTag(IDataRecord reader, string field)
+        {
+            return new TagPOCO((string)reader[field]);
+        }
+
+        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
+        {
+            return new VideoItemPOCO((string)reader[itemId],
+                (string)reader[parentID],
+                (string)reader[title],
+                Convert.ToInt32(reader[viewCount]),
+                Convert.ToInt32(reader[duration]),
+                Convert.ToInt32(reader[comments]),
+                (byte[])reader[thumbnail],
+                (DateTime)reader[timestamp],
+                Convert.ToByte(reader[syncstate]),
+                Convert.ToByte(reader[watchstate]));
+        }
+
+        private static SQLiteCommand GetCommand(string sql)
+        {
+            if (string.IsNullOrEmpty(sql))
+            {
+                throw new ArgumentNullException("sql");
+            }
+
+            return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
+        }
+
+        private static async Task InsertPlaylistParam(SQLiteCommand command, IPlaylist playlist)
+        {
+            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
+            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
+            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
+            if (playlist.Thumbnail != null)
+            {
+                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
+                    playlist.Thumbnail;
+            }
+            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task InsertChannelParam(SQLiteCommand command, IChannel channel)
+        {
+            command.Parameters.AddWithValue("@" + channelId, channel.ID);
+            command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
+            command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
+            if (channel.Thumbnail != null)
+            {
+                command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
+            }
+            command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
+            command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task InsertItemParam(SQLiteCommand command, IVideoItem item)
+        {
+            command.Parameters.AddWithValue("@" + itemId, item.ID);
+            command.Parameters.AddWithValue("@" + parentID, item.ParentID);
+            command.Parameters.AddWithValue("@" + title, item.Title);
+            command.Parameters.AddWithValue("@" + description, item.Description);
+            command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
+            command.Parameters.AddWithValue("@" + duration, item.Duration);
+            command.Parameters.AddWithValue("@" + comments, item.Comments);
+            if (item.Thumbnail != null)
+            {
+                command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+            }
+            command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
+            command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
+            command.Parameters.AddWithValue("@" + watchstate, (byte)item.WatchState);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task InsertCredParam(SQLiteCommand command, ICred cred)
+        {
+            command.Parameters.AddWithValue("@" + credSite, cred.SiteAdress);
+            command.Parameters.AddWithValue("@" + credLogin, cred.Login);
+            command.Parameters.AddWithValue("@" + credPass, cred.Pass);
+            command.Parameters.AddWithValue("@" + credCookie, cred.Cookie);
+            command.Parameters.AddWithValue("@" + credExpired, cred.Expired);
+            command.Parameters.AddWithValue("@" + credAutorization, cred.Autorization);
+
+            await command.ExecuteNonQueryAsync();
+        }
+
+        private static async Task UpdatePlaylistItems(SQLiteCommand command, string playlistid, string itemid, string channelid)
+        {
+            command.Parameters.AddWithValue("@" + fPlaylistId, playlistid);
+            command.Parameters.AddWithValue("@" + fItemId, itemid);
+            command.Parameters.AddWithValue("@" + fChannelId, channelid);
+
+            await command.ExecuteNonQueryAsync();
+        }
+        #endregion
+
+        #region Methods
+
         /// <summary>
         ///     Delete
         /// </summary>
@@ -318,6 +375,12 @@ namespace DataAPI.Database
             await RunSqlCodeAsync(zap);
         }
 
+        public async Task DeleteChannelPlaylistsAsync(string id)
+        {
+            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
         /// <summary>
         ///     Delete channel tag
         /// </summary>
@@ -326,11 +389,11 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'", 
-                tablechanneltags, 
-                channelIdF, 
-                channelid, 
-                tagIdF, 
+            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'",
+                tablechanneltags,
+                channelIdF,
+                channelid,
+                tagIdF,
                 tag);
             await RunSqlCodeAsync(zap);
         }
@@ -365,12 +428,6 @@ namespace DataAPI.Database
         public async Task DeletePlaylistAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistID, id);
-            await RunSqlCodeAsync(zap);
-        }
-
-        public async Task DeleteChannelPlaylistsAsync(string id)
-        {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, id);
             await RunSqlCodeAsync(zap);
         }
 
@@ -435,7 +492,6 @@ namespace DataAPI.Database
                     }
                 }
             }
-
             return res;
         }
 
@@ -446,14 +502,14 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<ChannelPOCO> GetChannelAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} WHERE {6}='{7}' LIMIT 1", 
-                channelId, 
-                channelTitle, 
-                channelThumbnail, 
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} WHERE {6}='{7}' LIMIT 1",
+                channelId,
+                channelTitle,
+                channelThumbnail,
                 channelSite,
                 newcount,
-                tablechannels, 
-                channelId, 
+                tablechannels,
+                channelId,
                 id);
 
             using (SQLiteCommand command = GetCommand(zap))
@@ -531,7 +587,7 @@ namespace DataAPI.Database
             var res = new List<VideoItemPOCO>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' LIMIT 1",
+                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' LIMIT 1",
                     itemId,
                     parentID,
                     title,
@@ -541,11 +597,12 @@ namespace DataAPI.Database
                     thumbnail,
                     timestamp,
                     syncstate,
+                    watchstate,
                     tableitems,
                     parentID,
                     channelID)
                 : string.Format(
-                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' ORDER BY {7} DESC LIMIT {12} OFFSET {13}",
+                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' ORDER BY {7} DESC LIMIT {13} OFFSET {14}",
                     itemId,
                     parentID,
                     title,
@@ -555,6 +612,7 @@ namespace DataAPI.Database
                     thumbnail,
                     timestamp,
                     syncstate,
+                    watchstate,
                     tableitems,
                     parentID,
                     channelID,
@@ -670,10 +728,7 @@ namespace DataAPI.Database
         /// <param name="offset"></param>
         /// <param name="excludedState"></param>
         /// <returns></returns>
-        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID,
-            int count,
-            int offset,
-            SyncState excludedState)
+        public async Task<List<string>> GetChannelItemsIdListDbAsync(string channelID, int count, int offset, SyncState excludedState)
         {
             var res = new List<string>();
 
@@ -861,6 +916,45 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get channel tags
+        /// </summary>
+        /// <param name="id">channel ID</param>
+        /// <returns></returns>
+        public async Task<List<TagPOCO>> GetChannelTagsAsync(string id)
+        {
+            var res = new List<TagPOCO>();
+            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, channelIdF, id);
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Rollback();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync())
+                            {
+                                TagPOCO tag = CreateTag(reader, tagIdF);
+                                res.Add(tag);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
         ///     Get channels by tag
         /// </summary>
         /// <param name="tag">tag ID</param>
@@ -948,47 +1042,6 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get all playlists id's
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
-        {
-            var res = new List<string>();
-
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", playlistID, tableplaylists, playlistChannelId, id);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync();
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                return res;
-                            }
-
-                            while (await reader.ReadAsync())
-                            {
-                                var ch = reader[playlistID] as string;
-                                res.Add(ch);
-                            }
-
-                            transaction.Commit();
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
         ///     Get channels list
         /// </summary>
         /// <returns></returns>
@@ -996,13 +1049,13 @@ namespace DataAPI.Database
         {
             var res = new List<ChannelPOCO>();
 
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} ORDER BY {6} ASC", 
-                channelId, 
-                channelTitle, 
-                channelThumbnail, 
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} ORDER BY {6} ASC",
+                channelId,
+                channelTitle,
+                channelThumbnail,
                 channelSite,
                 newcount,
-                tablechannels, 
+                tablechannels,
                 channelTitle);
 
             using (SQLiteCommand command = GetCommand(zap))
@@ -1037,14 +1090,15 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get channel tags
+        ///     Get all playlists id's
         /// </summary>
-        /// <param name="id">channel ID</param>
         /// <returns></returns>
-        public async Task<List<TagPOCO>> GetChannelTagsAsync(string id)
+        public async Task<List<string>> GetChannelsPlaylistsIdsListDbAsync(string id)
         {
-            var res = new List<TagPOCO>();
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, channelIdF, id);
+            var res = new List<string>();
+
+            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", playlistID, tableplaylists, playlistChannelId, id);
+
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1064,9 +1118,10 @@ namespace DataAPI.Database
 
                             while (await reader.ReadAsync())
                             {
-                                TagPOCO tag = CreateTag(reader, tagIdF);
-                                res.Add(tag);
+                                var ch = reader[playlistID] as string;
+                                res.Add(ch);
                             }
+
                             transaction.Commit();
                         }
                     }
@@ -1202,11 +1257,11 @@ namespace DataAPI.Database
         {
             var res = new List<VideoItemPOCO>();
             var lst = new List<string>();
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'", 
-                tableplaylistitems, 
-                fPlaylistId, 
-                id, 
-                fChannelId, 
+            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'",
+                tableplaylistitems,
+                fPlaylistId,
+                id,
+                fChannelId,
                 channelID);
 
             using (SQLiteCommand command = GetCommand(zap))
@@ -1333,7 +1388,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<VideoItemPOCO> GetVideoItemAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8} FROM {9} WHERE {10}='{11}' LIMIT 1",
+            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' LIMIT 1",
                 itemId,
                 parentID,
                 title,
@@ -1343,6 +1398,7 @@ namespace DataAPI.Database
                 thumbnail,
                 timestamp,
                 syncstate,
+                watchstate,
                 tableitems,
                 itemId,
                 id);
@@ -1418,31 +1474,6 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelAsync(IChannel channel)
         {
-            using (SQLiteCommand command = GetCommand(channelsInsertString))
-            {
-                command.Parameters.AddWithValue("@" + channelId, channel.ID);
-                command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
-                command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-                if (channel.Thumbnail != null)
-                {
-                    command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value = channel.Thumbnail;
-                }
-                command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
-                command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
-
-                await ExecuteNonQueryAsync(command);
-            }
-        }
-
-        /// <summary>
-        ///     Insert channel with items
-        /// </summary>
-        /// <param name="channel"></param>
-        /// <returns></returns>
-        public async Task InsertChannelItemsAsync(IChannel channel)
-        {
-            await InsertChannelAsync(channel);
-
             using (var conn = new SQLiteConnection(dbConnection))
             {
                 await conn.OpenAsync();
@@ -1450,74 +1481,11 @@ namespace DataAPI.Database
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
                     {
-                        command.CommandText = itemsInsertString;
+                        command.CommandText = channelsInsertString;
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            foreach (IVideoItem item in channel.ChannelItems)
-                            {
-                                command.Parameters.AddWithValue("@" + itemId, item.ID);
-                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                                command.Parameters.AddWithValue("@" + title, item.Title);
-                                command.Parameters.AddWithValue("@" + description, item.Description);
-                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                                command.Parameters.AddWithValue("@" + duration, item.Duration);
-                                command.Parameters.AddWithValue("@" + comments, item.Comments);
-                                if (item.Thumbnail != null)
-                                {
-                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
-                                }
-                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-                                await command.ExecuteNonQueryAsync();
-                            }
-                            transaction.Commit();
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Insert only channel items
-        /// </summary>
-        /// <param name="channelitems"></param>
-        /// <returns></returns>
-        public async Task InsertChannelItemsAsync(IEnumerable<IVideoItem> channelitems)
-        {
-            using (var conn = new SQLiteConnection(dbConnection))
-            {
-                await conn.OpenAsync();
-                using (SQLiteTransaction transaction = conn.BeginTransaction())
-                {
-                    using (SQLiteCommand command = conn.CreateCommand())
-                    {
-                        command.CommandText = itemsInsertString;
-                        command.CommandType = CommandType.Text;
-                        try
-                        {
-                            foreach (IVideoItem item in channelitems)
-                            {
-                                command.Parameters.AddWithValue("@" + itemId, item.ID);
-                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                                command.Parameters.AddWithValue("@" + title, item.Title);
-                                command.Parameters.AddWithValue("@" + description, item.Description);
-                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                                command.Parameters.AddWithValue("@" + duration, item.Duration);
-                                command.Parameters.AddWithValue("@" + comments, item.Comments);
-                                if (item.Thumbnail != null)
-                                {
-                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
-                                }
-                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-                                await command.ExecuteNonQueryAsync();
-                            }
+                            await InsertChannelParam(command, channel);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -1551,46 +1519,16 @@ namespace DataAPI.Database
                             #region channel
 
                             command.CommandText = channelsInsertString;
-
-                            command.Parameters.AddWithValue("@" + channelId, channel.ID);
-                            command.Parameters.AddWithValue("@" + channelTitle, channel.Title);
-                            command.Parameters.AddWithValue("@" + channelSubTitle, channel.SubTitle);
-                            if (channel.Thumbnail != null)
-                            {
-                                command.Parameters.Add("@" + channelThumbnail, DbType.Binary, channel.Thumbnail.Length).Value =
-                                    channel.Thumbnail;
-                            }
-                            command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
-                            command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
-
-                            await command.ExecuteNonQueryAsync();
+                            await InsertChannelParam(command, channel);
 
                             #endregion
 
                             #region Playlists
 
-                            command.CommandText =
-                                string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                                    tableplaylists,
-                                    playlistID,
-                                    playlistTitle,
-                                    playlistSubTitle,
-                                    playlistThumbnail,
-                                    playlistChannelId);
-
+                            command.CommandText = playlistInsertString;
                             foreach (IPlaylist playlist in channel.ChannelPlaylists)
                             {
-                                command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
-                                command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
-                                command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-                                if (playlist.Thumbnail != null)
-                                {
-                                    command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
-                                        playlist.Thumbnail;
-                                }
-                                command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
-
-                                await command.ExecuteNonQueryAsync();
+                                await InsertPlaylistParam(command, playlist);
                             }
 
                             #endregion
@@ -1598,51 +1536,96 @@ namespace DataAPI.Database
                             #region Items
 
                             command.CommandText = itemsInsertString;
-
                             foreach (IVideoItem item in channel.ChannelItems)
                             {
-                                command.Parameters.AddWithValue("@" + itemId, item.ID);
-                                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                                command.Parameters.AddWithValue("@" + title, item.Title);
-                                command.Parameters.AddWithValue("@" + description, item.Description);
-                                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                                command.Parameters.AddWithValue("@" + duration, item.Duration);
-                                command.Parameters.AddWithValue("@" + comments, item.Comments);
-                                if (item.Thumbnail != null)
-                                {
-                                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
-                                }
-                                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-
-                                await command.ExecuteNonQueryAsync();
+                                await InsertItemParam(command, item);
                             }
 
                             #endregion
 
                             #region Update Playlists items
 
-                            command.CommandText = string.Format(
-                                                                @"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
-                                tableplaylistitems,
-                                fPlaylistId,
-                                fItemId,
-                                fChannelId);
-
+                            command.CommandText = playlistItemsString;
                             foreach (IPlaylist playlist in channel.ChannelPlaylists)
                             {
                                 foreach (string plItem in playlist.PlItems)
                                 {
-                                    command.Parameters.AddWithValue("@" + fPlaylistId, playlist.ID);
-                                    command.Parameters.AddWithValue("@" + fItemId, plItem);
-                                    command.Parameters.AddWithValue("@" + fChannelId, channel.ID);
-
-                                    await command.ExecuteNonQueryAsync();
+                                    await UpdatePlaylistItems(command, playlist.ID, plItem, channel.ID);
                                 }
                             }
 
                             #endregion
 
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Insert channel with items
+        /// </summary>
+        /// <param name="channel"></param>
+        /// <returns></returns>
+        public async Task InsertChannelItemsAsync(IChannel channel)
+        {
+            await InsertChannelAsync(channel);
+
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandType = CommandType.Text;
+                        command.CommandText = itemsInsertString;
+                        try
+                        {
+                            foreach (IVideoItem item in channel.ChannelItems)
+                            {
+                                await InsertItemParam(command, item);
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Insert only channel items
+        /// </summary>
+        /// <param name="channelitems"></param>
+        /// <returns></returns>
+        public async Task InsertChannelItemsAsync(IEnumerable<IVideoItem> channelitems)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = itemsInsertString;
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            foreach (IVideoItem item in channelitems)
+                            {
+                                await InsertItemParam(command, item);
+                            }
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -1663,9 +1646,9 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelTagsAsync(string channelid, string tag)
         {
-            string zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})", 
-                tablechanneltags, 
-                channelIdF, 
+            string zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
+                tablechanneltags,
+                channelIdF,
                 tagIdF);
 
             using (SQLiteCommand command = GetCommand(zap))
@@ -1684,25 +1667,27 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertCredAsync(ICred cred)
         {
-            string zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})", 
-                tablecredentials, 
-                credSite, 
-                credLogin, 
-                credPass, 
-                credCookie, 
-                credExpired, 
-                credAutorization);
-
-            using (SQLiteCommand command = GetCommand(zap))
+            using (var conn = new SQLiteConnection(dbConnection))
             {
-                command.Parameters.AddWithValue("@" + credSite, cred.SiteAdress);
-                command.Parameters.AddWithValue("@" + credLogin, cred.Login);
-                command.Parameters.AddWithValue("@" + credPass, cred.Pass);
-                command.Parameters.AddWithValue("@" + credCookie, cred.Cookie);
-                command.Parameters.AddWithValue("@" + credExpired, cred.Expired);
-                command.Parameters.AddWithValue("@" + credAutorization, cred.Autorization);
-
-                await ExecuteNonQueryAsync(command);
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = credInsertString;
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            await InsertCredParam(command, cred);
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
             }
         }
 
@@ -1713,23 +1698,27 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertItemAsync(IVideoItem item)
         {
-            using (SQLiteCommand command = GetCommand(itemsInsertString))
+            using (var conn = new SQLiteConnection(dbConnection))
             {
-                command.Parameters.AddWithValue("@" + itemId, item.ID);
-                command.Parameters.AddWithValue("@" + parentID, item.ParentID);
-                command.Parameters.AddWithValue("@" + title, item.Title);
-                command.Parameters.AddWithValue("@" + description, item.Description);
-                command.Parameters.AddWithValue("@" + viewCount, item.ViewCount);
-                command.Parameters.AddWithValue("@" + duration, item.Duration);
-                command.Parameters.AddWithValue("@" + comments, item.Comments);
-                if (item.Thumbnail != null)
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
-                    command.Parameters.Add("@" + thumbnail, DbType.Binary, item.Thumbnail.Length).Value = item.Thumbnail;
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = itemsInsertString;
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            await InsertItemParam(command, item);
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
                 }
-                command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
-                command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
-
-                await ExecuteNonQueryAsync(command);
             }
         }
 
@@ -1740,26 +1729,27 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertPlaylistAsync(IPlaylist playlist)
         {
-            string zap = string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})", 
-                tableplaylists, 
-                playlistID, 
-                playlistTitle, 
-                playlistSubTitle, 
-                playlistThumbnail, 
-                playlistChannelId);
-
-            using (SQLiteCommand command = GetCommand(zap))
+            using (var conn = new SQLiteConnection(dbConnection))
             {
-                command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
-                command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
-                command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-                if (playlist.Thumbnail != null)
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
-                    command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value = playlist.Thumbnail;
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = playlistInsertString;
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            await InsertPlaylistParam(command, playlist);
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
                 }
-                command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
-
-                await ExecuteNonQueryAsync(command);
             }
         }
 
@@ -1798,6 +1788,31 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get cookie
+        /// </summary>
+        /// <param name="site"></param>
+        /// <returns></returns>
+        public CookieContainer ReadCookies(SiteType site)
+        {
+            if (FileBase.DirectoryName == null)
+            {
+                throw new Exception("Check db directory");
+            }
+
+            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
+            var fn = new FileInfo(Path.Combine(folder.Name, EnumHelper.GetAttributeOfType(site)));
+            if (!fn.Exists)
+            {
+                return null;
+            }
+            using (Stream stream = File.Open(fn.FullName, FileMode.Open))
+            {
+                var formatter = new BinaryFormatter();
+                return (CookieContainer)formatter.Deserialize(stream);
+            }
+        }
+
+        /// <summary>
         ///     Rename channel
         /// </summary>
         /// <param name="id">channel ID</param>
@@ -1810,6 +1825,49 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Store cookie
+        /// </summary>
+        /// <param name="site"></param>
+        /// <param name="cookies"></param>
+        public void StoreCookies(string site, CookieContainer cookies)
+        {
+            if (FileBase.DirectoryName == null)
+            {
+                throw new Exception("Check db directory");
+            }
+
+            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
+            if (!folder.Exists)
+            {
+                folder.Create();
+            }
+            var fn = new FileInfo(Path.Combine(folder.Name, site));
+            if (fn.Exists)
+            {
+                try
+                {
+                    fn.Delete();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+            using (Stream stream = File.Create(fn.FullName))
+            {
+                var formatter = new BinaryFormatter();
+                try
+                {
+                    formatter.Serialize(stream, cookies);
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception(ex.Message);
+                }
+            }
+        }
+
+        /// <summary>
         ///     Update authorization
         /// </summary>
         /// <param name="site">site ID</param>
@@ -1817,98 +1875,12 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", 
-                tablecredentials, 
-                credAutorization, 
-                autorize, 
-                credSite, 
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                tablecredentials,
+                credAutorization,
+                autorize,
+                credSite,
                 site);
-            await RunSqlCodeAsync(zap);
-        }
-
-        /// <summary>
-        ///     Update site login
-        /// </summary>
-        /// <param name="site">site ID</param>
-        /// <param name="newlogin">New login</param>
-        /// <returns></returns>
-        public async Task UpdateLoginAsync(string site, string newlogin)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablecredentials, credLogin, newlogin, credSite, site);
-            await RunSqlCodeAsync(zap);
-        }
-
-        /// <summary>
-        ///     Update site pass
-        /// </summary>
-        /// <param name="site">site ID</param>
-        /// <param name="newpassword">New pass</param>
-        /// <returns></returns>
-        public async Task UpdatePasswordAsync(string site, string newpassword)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", 
-                tablecredentials, 
-                credPass, 
-                newpassword, 
-                credSite, 
-                site);
-            await RunSqlCodeAsync(zap);
-        }
-
-        /// <summary>
-        ///     Update playlist items references
-        /// </summary>
-        /// <param name="playlistid">playlist ID</param>
-        /// <param name="itemid">item ID</param>
-        /// <param name="channelid">channel ID</param>
-        /// <returns></returns>
-        public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
-        {
-            // OR IGNORE
-            string zap = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})", 
-                tableplaylistitems, 
-                fPlaylistId, 
-                fItemId, 
-                fChannelId);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                command.Parameters.AddWithValue("@" + fPlaylistId, playlistid);
-                command.Parameters.AddWithValue("@" + fItemId, itemid);
-                command.Parameters.AddWithValue("@" + fChannelId, channelid);
-
-                await ExecuteNonQueryAsync(command);
-            }
-
-            // zap = string.Format("UPDATE {0} SET {1}='{2}' WHERE {3}='{4}' AND {5}='{6}'", Tableplaylistitems,
-            // FPlaylistId, playlistid, FItemId, itemid, FChannelId, channelid);
-            // using (var command = GetCommand(zap))
-            // {
-            // await ExecuteNonQueryAsync(command);
-            // }
-        }
-
-        /// <summary>
-        ///     Update setting value
-        /// </summary>
-        /// <param name="key">setting ID</param>
-        /// <param name="newvalue">value</param>
-        /// <returns></returns>
-        public async Task UpdateSettingAsync(string key, string newvalue)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablesettings, setVal, newvalue, setKey, key);
-            await RunSqlCodeAsync(zap);
-        }
-
-        /// <summary>
-        ///     Update SyncState, 0-Notset,1-Added,2-Deleted
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
-        public async Task UpdateItemSyncState(string id, SyncState state)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, syncstate, (byte)state, itemId, id);
             await RunSqlCodeAsync(zap);
         }
 
@@ -1921,6 +1893,18 @@ namespace DataAPI.Database
         public async Task UpdateChannelNewCountAsync(string id, int count)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, newcount, count, channelId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update SyncState, 0-Notset,1-Added,2-Deleted
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public async Task UpdateItemSyncState(string id, SyncState state)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, syncstate, (byte)state, itemId, id);
             await RunSqlCodeAsync(zap);
         }
 
@@ -1985,6 +1969,92 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Update WatchState, 0-Notset,1-Watched,2-Planned
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public async Task UpdateItemWatchState(string id, WatchState state)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, watchstate, (byte)state, itemId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update site login
+        /// </summary>
+        /// <param name="site">site ID</param>
+        /// <param name="newlogin">New login</param>
+        /// <returns></returns>
+        public async Task UpdateLoginAsync(string site, string newlogin)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablecredentials, credLogin, newlogin, credSite, site);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update site pass
+        /// </summary>
+        /// <param name="site">site ID</param>
+        /// <param name="newpassword">New pass</param>
+        /// <returns></returns>
+        public async Task UpdatePasswordAsync(string site, string newpassword)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                tablecredentials,
+                credPass,
+                newpassword,
+                credSite,
+                site);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update playlist items references
+        /// </summary>
+        /// <param name="playlistid">playlist ID</param>
+        /// <param name="itemid">item ID</param>
+        /// <param name="channelid">channel ID</param>
+        /// <returns></returns>
+        public async Task UpdatePlaylistAsync(string playlistid, string itemid, string channelid)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandText = playlistItemsString;
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            await UpdatePlaylistItems(command, playlistid, itemid, channelid);
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Update setting value
+        /// </summary>
+        /// <param name="key">setting ID</param>
+        /// <param name="newvalue">value</param>
+        /// <returns></returns>
+        public async Task UpdateSettingAsync(string key, string newvalue)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablesettings, setVal, newvalue, setKey, key);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
         ///     Skukojit' db
         /// </summary>
         /// <returns></returns>
@@ -2000,72 +2070,60 @@ namespace DataAPI.Database
             }
         }
 
-        /// <summary>
-        ///     Store cookie
-        /// </summary>
-        /// <param name="site"></param>
-        /// <param name="cookies"></param>
-        public void StoreCookies(string site, CookieContainer cookies)
+        private async void CreateDb()
         {
-            if (FileBase.DirectoryName == null)
+            string sqliteschema = Path.Combine(appstartdir, sqlSchemaFolder, sqlFile);
+            var fnsch = new FileInfo(sqliteschema);
+            if (fnsch.Exists)
             {
-                throw new Exception("Check db directory");
+                string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
+                await RunSqlCodeAsync(sqltext);
             }
 
-            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
-            if (!folder.Exists)
+            // now can be set from launch param
+            // else
+            // {
+            //    throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
+            // }
+        }
+
+        private async Task ExecuteNonQueryAsync(SQLiteCommand command)
+        {
+            if (command == null)
             {
-                folder.Create();
+                throw new ArgumentNullException("command");
             }
-            var fn = new FileInfo(Path.Combine(folder.Name, site));
-            if (fn.Exists)
+
+            using (var connection = new SQLiteConnection(dbConnection))
             {
-                try
+                await connection.OpenAsync();
+                command.Connection = connection;
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    fn.Delete();
+                    command.Transaction = transaction;
+                    try
+                    {
+                        await command.ExecuteNonQueryAsync();
+                        command.Transaction.Commit();
+                    }
+                    catch (Exception)
+                    {
+                        transaction.Rollback();
+                        throw;
+                    }
                 }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
-            }
-            using (Stream stream = File.Create(fn.FullName))
-            {
-                var formatter = new BinaryFormatter();
-                try
-                {
-                    formatter.Serialize(stream, cookies);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
+                connection.Close();
             }
         }
 
-        /// <summary>
-        ///     Get cookie
-        /// </summary>
-        /// <param name="site"></param>
-        /// <returns></returns>
-        public CookieContainer ReadCookies(SiteType site)
+        private async Task RunSqlCodeAsync(string sqltext)
         {
-            if (FileBase.DirectoryName == null)
+            using (SQLiteCommand command = GetCommand(sqltext))
             {
-                throw new Exception("Check db directory");
-            }
-
-            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
-            var fn = new FileInfo(Path.Combine(folder.Name, EnumHelper.GetAttributeOfType(site)));
-            if (!fn.Exists)
-            {
-                return null;
-            }
-            using (Stream stream = File.Open(fn.FullName, FileMode.Open))
-            {
-                var formatter = new BinaryFormatter();
-                return (CookieContainer)formatter.Deserialize(stream);
+                await ExecuteNonQueryAsync(command);
             }
         }
+
+        #endregion
     }
 }

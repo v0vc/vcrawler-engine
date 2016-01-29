@@ -54,6 +54,7 @@ CREATE TABLE `items` (
 `thumbnail` BLOB  NULL,
 `timestamp` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
 `syncstate` INTEGER NOT NULL CHECK (syncstate IN (0,1,2)) DEFAULT '0',
+`watchstate` INTEGER NOT NULL CHECK (watchstate IN (0,1,2)) DEFAULT '0',
 FOREIGN KEY(`parentid`) REFERENCES channels(`id`) ON DELETE CASCADE
 );
 

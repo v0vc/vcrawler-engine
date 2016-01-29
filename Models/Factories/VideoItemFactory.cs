@@ -49,6 +49,7 @@ namespace Models.Factories
                 Thumbnail = poco.Thumbnail,
                 Timestamp = poco.Timestamp,
                 SyncState = (SyncState)poco.SyncState,
+                WatchState = (WatchState)poco.WatchState,
                 DurationString = IntTostrTime(poco.Duration),
                 DateTimeAgo = TimeAgo(poco.Timestamp),
                 Subtitles = new ObservableCollection<ISubtitle>()

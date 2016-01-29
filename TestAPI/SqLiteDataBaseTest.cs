@@ -89,6 +89,7 @@ namespace TestAPI
             vi.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
             vi.Timestamp = DateTime.Now;
             vi.SyncState = state;
+            vi.WatchState = WatchState.Notset;
         }
 
         #endregion
@@ -208,6 +209,10 @@ namespace TestAPI
 
             // InsertItemAsync
             t = db.InsertItemAsync(vi);
+            Assert.IsTrue(!t.IsFaulted);
+
+            // UpdateItemWatchState
+            t = db.UpdateItemWatchState(vi.ID, WatchState.Watched);
             Assert.IsTrue(!t.IsFaulted);
 
             // UpdateItemSyncState

@@ -61,6 +61,7 @@ namespace Crawler.ViewModels
         #region Fields
 
         private RelayCommand addNewItemCommand;
+        private RelayCommand changeWatchedCommand;
         private RelayCommand channelDoubleClickCommand;
         private DataGrid channelGrid;
         private RelayCommand channelGridFocusCommand;
@@ -99,7 +100,6 @@ namespace Crawler.ViewModels
         private RelayCommand videoClickCommand;
         private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoItemMenuCommand;
-        private RelayCommand changeWatchedCommand;
 
         #endregion
 
@@ -147,28 +147,6 @@ namespace Crawler.ViewModels
             get
             {
                 return changeWatchedCommand ?? (changeWatchedCommand = new RelayCommand(ChangeWatchState));
-            }
-        }
-
-        private static void ChangeWatchState(object obj)
-        {
-            var item = obj as IVideoItem;
-            if (item == null)
-            {
-                return;
-            }
-
-            switch (item.WatchState)
-            {
-                case WatchState.Notset:
-                    item.WatchState = WatchState.Watched;
-                    break;
-                case WatchState.Watched:
-                    item.WatchState = WatchState.Planned;
-                    break;
-                case WatchState.Planned:
-                    item.WatchState=WatchState.Notset;
-                    break;
             }
         }
 
@@ -797,6 +775,34 @@ namespace Crawler.ViewModels
                     SetStatus(3);
                 }
             }
+        }
+
+        private async void ChangeWatchState(object obj)
+        {
+            if (SelectedChannel is ServiceChannelViewModel)
+            {
+                return;
+            }
+
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+
+            switch (item.WatchState)
+            {
+                case WatchState.Notset:
+                    item.WatchState = WatchState.Watched;
+                    break;
+                case WatchState.Watched:
+                    item.WatchState = WatchState.Planned;
+                    break;
+                case WatchState.Planned:
+                    item.WatchState = WatchState.Notset;
+                    break;
+            }
+            await df.UpdateItemWatchState(item.ID, item.WatchState);
         }
 
         private async void ChannelKeyDown(object par)
