@@ -1041,7 +1041,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var channel = SelectedChannel as YouChannel;
+            var channel = SelectedChannel as IChannel;
             if (channel == null)
             {
                 return;
