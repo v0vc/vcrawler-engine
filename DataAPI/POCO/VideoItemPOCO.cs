@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -11,14 +12,14 @@ namespace DataAPI.POCO
     {
         #region Constructors
 
-        public VideoItemPOCO(string id, 
-            string parentid, 
-            string title, 
-            int viewcount, 
-            int duration, 
-            int comments, 
-            byte[] thumbnail, 
-            DateTime timestamp, 
+        public VideoItemPOCO(string id,
+            string parentid,
+            string title,
+            int viewcount,
+            int duration,
+            int comments,
+            byte[] thumbnail,
+            DateTime timestamp,
             byte syncstate,
             byte watchstate)
         {
@@ -34,26 +35,13 @@ namespace DataAPI.POCO
             WatchState = watchstate;
         }
 
-        public VideoItemPOCO(string id)
+        public VideoItemPOCO(string id = null)
         {
-            ID = id;
+            if (id != null)
+            {
+                ID = id;
+            }
         }
-
-        public VideoItemPOCO()
-        {
-            
-        }
-
-        //public VideoItemPOCO(string id, SiteType site)
-        //{
-        //    ID = id;
-        //    Site = site;
-        //}
-
-        //public VideoItemPOCO(SiteType siteType)
-        //{
-        //    Site = siteType;
-        //}
 
         #endregion
 
@@ -64,7 +52,6 @@ namespace DataAPI.POCO
         public int Duration { get; set; }
         public string ID { get; set; }
         public string ParentID { get; set; }
-        //public SiteType Site { get; private set; }
         public PrivacyStatus Status { get; set; }
         public byte SyncState { get; private set; }
         public byte[] Thumbnail { get; set; }
