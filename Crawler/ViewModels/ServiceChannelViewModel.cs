@@ -308,6 +308,7 @@ namespace Crawler.ViewModels
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
         public bool IsHasNewFromSync { get; set; }
+        public bool UseFast { get; set; }
 
         public void AddNewItem(IVideoItem item)
         {

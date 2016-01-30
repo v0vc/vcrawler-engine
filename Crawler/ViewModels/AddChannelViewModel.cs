@@ -46,6 +46,7 @@ namespace Crawler.ViewModels
             {
                 ChannelLink = channel.ID;
                 ChannelTitle = channel.Title;
+                UseFast = channel.UseFast;
                 if (SupportedCreds.Any())
                 {
                     SelectedCred = SupportedCreds.FirstOrDefault(x => x.Site == channel.Site);
@@ -105,6 +106,7 @@ namespace Crawler.ViewModels
             }
         }
 
+        public bool UseFast { get; set; }
         #endregion
 
         #region Methods
@@ -120,8 +122,15 @@ namespace Crawler.ViewModels
 
             if (IsEditMode && channel != null)
             {
+                var db = CommonFactory.CreateSqLiteDatabase();
                 channel.Title = ChannelTitle;
-                await CommonFactory.CreateSqLiteDatabase().RenameChannelAsync(channel.ID, ChannelTitle);
+                await db.RenameChannelAsync(channel.ID, ChannelTitle);
+                if (Equals(channel.UseFast, UseFast))
+                {
+                    return;
+                }
+                channel.UseFast = UseFast;
+                await db.UpdateChannelFastSync(channel.ID, channel.UseFast);
             }
             else
             {

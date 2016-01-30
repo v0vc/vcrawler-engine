@@ -15,18 +15,34 @@ namespace DataAPI.POCO
     {
         #region Constructors
 
-        public ChannelPOCO(string id, string title, byte[] thumbnail, string site, int countnew)
+        public ChannelPOCO(string id, string title, byte[] thumbnail, string site, int countnew, bool fastsync)
         {
             ID = id;
             Title = title;
             Thumbnail = thumbnail;
             Site = EnumHelper.GetValueFromDescription<SiteType>(site);
             Countnew = countnew;
+            UseFast = fastsync;
         }
 
         private ChannelPOCO()
         {
         }
+
+        #endregion
+
+        #region Properties
+
+        public int Countnew { get; private set; }
+
+        public string ID { get; private set; }
+        public List<VideoItemPOCO> Items { get; private set; }
+        public List<PlaylistPOCO> Playlists { get; private set; }
+        public SiteType Site { get; set; }
+        public string SubTitle { get; private set; }
+        public byte[] Thumbnail { get; private set; }
+        public string Title { get; private set; }
+        public bool UseFast { get; set; }
 
         #endregion
 
@@ -50,19 +66,6 @@ namespace DataAPI.POCO
 
             return ch;
         }
-
-        #endregion
-
-        #region IChannelPOCO Members
-
-        public string ID { get; private set; }
-        public SiteType Site { get; set; }
-        public string SubTitle { get; private set; }
-        public byte[] Thumbnail { get; private set; }
-        public string Title { get; private set; }
-        public int Countnew { get; private set; }
-        public List<PlaylistPOCO> Playlists { get; private set; }
-        public List<VideoItemPOCO> Items { get; private set; }
 
         #endregion
     }

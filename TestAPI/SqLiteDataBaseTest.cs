@@ -173,6 +173,10 @@ namespace TestAPI
             t = db.UpdateChannelNewCountAsync(ch.ID, 5);
             Assert.IsTrue(!t.IsFaulted);
 
+            // UpdateChannelFastSync
+            t = db.UpdateChannelFastSync(ch.ID, true);
+            Assert.IsTrue(!t.IsFaulted);
+
             // GetChannelAsync
             t = db.GetChannelAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);

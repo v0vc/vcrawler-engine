@@ -39,6 +39,7 @@ CREATE TABLE `channels` (
 `thumbnail` BLOB  NULL,
 `site` varchar(30) NOT NULL,
 `newcount` INTEGER NOT NULL DEFAULT '0',
+`fastsync` INTEGER NOT NULL CHECK (fastsync IN (0,1)) DEFAULT '0',
 FOREIGN KEY(`site`) REFERENCES credentials(`site`) ON DELETE CASCADE
 );
 

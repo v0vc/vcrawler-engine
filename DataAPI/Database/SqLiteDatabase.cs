@@ -55,6 +55,7 @@ namespace DataAPI.Database
         private const string channelThumbnail = "thumbnail";
         private const string channelSite = "site";
         private const string newcount = "newcount";
+        private const string fastsync = "fastsync";
 
         #endregion
 
@@ -152,15 +153,25 @@ namespace DataAPI.Database
                 playlistThumbnail,
                 playlistChannelId);
 
+        private readonly string channelsSelectString = string.Format(@"SELECT {0},{1},{2},{3},{4},{5} FROM {6}",
+                channelId,
+                channelTitle,
+                channelThumbnail,
+                channelSite,
+                newcount,
+                fastsync,
+                tablechannels);
+
         private readonly string channelsInsertString =
-            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7})",
                 tablechannels,
                 channelId,
                 channelTitle,
                 channelSubTitle,
                 channelThumbnail,
                 channelSite,
-                newcount);
+                newcount,
+                fastsync);
 
         private readonly string itemsInsertString =
             string.Format(
@@ -177,6 +188,19 @@ namespace DataAPI.Database
                 timestamp,
                 syncstate,
                 watchstate);
+
+        private readonly string itemsSelectString = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10}",
+            itemId,
+            parentID,
+            title,
+            viewCount,
+            duration,
+            comments,
+            thumbnail,
+            timestamp,
+            syncstate,
+            watchstate,
+            tableitems);
 
         #endregion
 
@@ -240,7 +264,8 @@ namespace DataAPI.Database
                 (string)reader[channelTitle],
                 (byte[])reader[channelThumbnail],
                 (string)reader[channelSite],
-                Convert.ToInt32(reader[newcount]));
+                Convert.ToInt32(reader[newcount]),
+                Convert.ToBoolean(reader[fastsync]));
         }
 
         private static CredPOCO CreateCred(IDataRecord reader)
@@ -317,6 +342,7 @@ namespace DataAPI.Database
             }
             command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
             command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
+            command.Parameters.AddWithValue("@" + fastsync, channel.UseFast);
 
             await command.ExecuteNonQueryAsync();
         }
@@ -502,15 +528,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<ChannelPOCO> GetChannelAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} WHERE {6}='{7}' LIMIT 1",
-                channelId,
-                channelTitle,
-                channelThumbnail,
-                channelSite,
-                newcount,
-                tablechannels,
-                channelId,
-                id);
+            string zap = string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", channelsSelectString, channelId, id);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -587,35 +605,12 @@ namespace DataAPI.Database
             var res = new List<VideoItemPOCO>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' LIMIT 1",
-                    itemId,
-                    parentID,
-                    title,
-                    viewCount,
-                    duration,
-                    comments,
-                    thumbnail,
-                    timestamp,
-                    syncstate,
-                    watchstate,
-                    tableitems,
-                    parentID,
-                    channelID)
-                : string.Format(
-                                @"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' ORDER BY {7} DESC LIMIT {13} OFFSET {14}",
-                    itemId,
-                    parentID,
-                    title,
-                    viewCount,
-                    duration,
-                    comments,
-                    thumbnail,
-                    timestamp,
-                    syncstate,
-                    watchstate,
-                    tableitems,
+                ? string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", itemsSelectString, parentID, channelID)
+                : string.Format(@"{0} WHERE {1}='{2}' ORDER BY {3} DESC LIMIT {4} OFFSET {5}",
+                    itemsSelectString,
                     parentID,
                     channelID,
+                    timestamp,
                     count,
                     offset);
 
@@ -1049,14 +1044,7 @@ namespace DataAPI.Database
         {
             var res = new List<ChannelPOCO>();
 
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4} FROM {5} ORDER BY {6} ASC",
-                channelId,
-                channelTitle,
-                channelThumbnail,
-                channelSite,
-                newcount,
-                tablechannels,
-                channelTitle);
+            string zap = string.Format(@"{0} ORDER BY {1} ASC", channelsSelectString, channelTitle);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1388,20 +1376,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<VideoItemPOCO> GetVideoItemAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10} WHERE {11}='{12}' LIMIT 1",
-                itemId,
-                parentID,
-                title,
-                viewCount,
-                duration,
-                comments,
-                thumbnail,
-                timestamp,
-                syncstate,
-                watchstate,
-                tableitems,
-                itemId,
-                id);
+            string zap = string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", itemsSelectString, itemId, id);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1885,7 +1860,7 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Update Channel New Count
+        ///     Update channel NewCount
         /// </summary>
         /// <param name="id"></param>
         /// <param name="count"></param>
@@ -1893,6 +1868,23 @@ namespace DataAPI.Database
         public async Task UpdateChannelNewCountAsync(string id, int count)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, newcount, count, channelId, id);
+            await RunSqlCodeAsync(zap);
+        }
+
+        /// <summary>
+        ///     Update channel fast sync option
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="useFast"></param>
+        /// <returns></returns>
+        public async Task UpdateChannelFastSync(string id, bool useFast)
+        {
+            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
+                tablechannels,
+                fastsync,
+                Convert.ToByte(useFast),
+                channelId,
+                id);
             await RunSqlCodeAsync(zap);
         }
 

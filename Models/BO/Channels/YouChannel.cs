@@ -192,6 +192,7 @@ namespace Models.BO.Channels
 
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
+        public bool UseFast { get; set; }
 
         public bool IsShowSynced
         {
