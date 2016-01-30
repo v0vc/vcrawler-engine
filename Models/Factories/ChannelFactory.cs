@@ -72,7 +72,7 @@ namespace Models.Factories
                     {
                         foreach (VideoItemPOCO item in poco.Items)
                         {
-                            channel.AddNewItem(VideoItemFactory.CreateVideoItem(item));
+                            channel.AddNewItem(VideoItemFactory.CreateVideoItem(item, SiteType.YouTube));
                         }
                     }
 
@@ -145,7 +145,7 @@ namespace Models.Factories
             {
                 channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
                 List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
-                foreach (IVideoItem vi in items.Select(VideoItemFactory.CreateVideoItem))
+                foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                 {
                     vi.IsHasLocalFileFound(channel.DirPath);
                     channel.ChannelItems.Add(vi);
@@ -156,26 +156,24 @@ namespace Models.Factories
         public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(IChannel channel, int maxresult)
         {
             var lst = new List<IVideoItem>();
-            switch (channel.Site)
+
+            var site = channel.Site;
+            IEnumerable<VideoItemPOCO> res;
+            switch (site)
             {
                 case SiteType.YouTube:
-
-                    IEnumerable<VideoItemPOCO> youres = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult);
-                    lst.AddRange(youres.Select(VideoItemFactory.CreateVideoItem));
-
+                    res = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult);
                     break;
-
+                    
                 case SiteType.Tapochek:
-
-                    IEnumerable<VideoItemPOCO> tapres = await CommonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
-                    lst.AddRange(tapres.Select(VideoItemFactory.CreateVideoItem));
-
+                    res = await CommonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     break;
 
                 default:
                     throw new Exception(EnumHelper.GetAttributeOfType(channel.Site) + " is not implemented yet");
             }
 
+            lst.AddRange(res.Select(poco => VideoItemFactory.CreateVideoItem(poco, site)));
             return lst;
         }
 
@@ -461,7 +459,7 @@ namespace Models.Factories
             }
             var mc = (MyChannel)e.Result;
             mc.Channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(mc.Channel.ID);
-            foreach (IVideoItem vi in mc.Pocotems.Select(VideoItemFactory.CreateVideoItem))
+            foreach (IVideoItem vi in mc.Pocotems.Select(poco => VideoItemFactory.CreateVideoItem(poco, mc.Channel.Site)))
             {
                 vi.IsHasLocalFileFound(mc.Channel.DirPath);
                 mc.Channel.ChannelItems.Add(vi);
@@ -490,7 +488,10 @@ namespace Models.Factories
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом
             IEnumerable<IVideoItem> result =
-                res.Select(VideoItemFactory.CreateVideoItem).Reverse().Where(vi => vi.ParentID == channel.ID).ToList();
+                res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site))
+                    .Reverse()
+                    .Where(vi => vi.ParentID == channel.ID)
+                    .ToList();
             result.ForEach(x => x.SyncState = SyncState.Added);
             await db.InsertChannelItemsAsync(result);
             foreach (IVideoItem vi in result)

@@ -172,7 +172,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    var item = new VideoItemPOCO(id);
                     await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
@@ -376,7 +376,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    var item = new VideoItemPOCO(id);
 
                     res.Add(item);
 
@@ -759,7 +759,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    var item = new VideoItemPOCO(id);
                     await FillFieldsFromPlaylist(item, pair);
                     res.Add(item);
                     sb.Append(id).Append(',');
@@ -888,7 +888,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    var item = new VideoItemPOCO(id);
                     await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
@@ -989,7 +989,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<VideoItemPOCO> GetVideoItemNetAsync(string videoid)
         {
-            var item = new VideoItemPOCO(videoid, SiteType.YouTube);
+            var item = new VideoItemPOCO(videoid);
 
             string zap =
                 string.Format(
@@ -1070,7 +1070,7 @@ namespace DataAPI.Videos
                     continue;
                 }
 
-                var item = new VideoItemPOCO(id.Value<string>(), SiteType.YouTube);
+                var item = new VideoItemPOCO(id.Value<string>());
 
                 await FillFieldsFromGetting(item, pair);
 
@@ -1124,7 +1124,7 @@ namespace DataAPI.Videos
                     continue;
                 }
 
-                var v = new VideoItemPOCO(id.Value<string>(), SiteType.YouTube);
+                var v = new VideoItemPOCO(id.Value<string>());
 
                 JToken pid = pair.SelectToken("snippet.channelId");
 
@@ -1256,7 +1256,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = new VideoItemPOCO(id, SiteType.YouTube);
+                    var item = new VideoItemPOCO(id);
                     await FillFieldsFromGetting(item, pair);
                     res.Add(item);
 
@@ -1418,7 +1418,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         private static async Task<VideoItemPOCO> GetVideoItemLiteNetAsync(string id)
         {
-            var item = new VideoItemPOCO(id, SiteType.YouTube);
+            var item = new VideoItemPOCO(id);
 
             string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}",
                 url,

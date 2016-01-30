@@ -204,7 +204,7 @@ namespace DataAPI.Trackers
 
             foreach (HtmlNode node in links)
             {
-                var item = new VideoItemPOCO(SiteType.Tapochek);
+                var item = new VideoItemPOCO();
                 FillVideoItemPOCO(item, node, hostUrl);
                 if (!string.IsNullOrEmpty(item.ID))
                 {
@@ -233,7 +233,7 @@ namespace DataAPI.Trackers
 
                     foreach (HtmlNode node in links)
                     {
-                        var item = new VideoItemPOCO(SiteType.Tapochek);
+                        var item = new VideoItemPOCO();
                         FillVideoItemPOCO(item, node, hostUrl);
                         if (!string.IsNullOrEmpty(item.ID))
                         {

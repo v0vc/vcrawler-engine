@@ -69,17 +69,21 @@
             </Border>
         </DockPanel>
 
-        <Button Grid.Row="3" x:Name="buttonOk"
+        <Grid Grid.Row="3">
+            <CheckBox VerticalAlignment="Center" Margin="3,0,0,0" 
+                      Content="Use F.A." Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                      />
+            <Button x:Name="buttonOk"
                 Style="{StaticResource RoundButtonTemplate}" 
                 HorizontalAlignment="Right" 
                 Width="100" Margin="5,3,3,5" 
                 Command="{Binding SaveNewItemCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=window}"
                 >
-            <StackPanel Orientation="Horizontal">
-                <Label Content="{Binding ButtonContent, Mode=OneTime}" FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
-            </StackPanel>
-        </Button>
-        
+                <StackPanel Orientation="Horizontal">
+                    <Label Content="{Binding ButtonContent, Mode=OneTime}" FontSize="14" Padding="5 0 5 0" Margin="4,0,0,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                    <Image Source="../Images/ok-32.png" Width="32" Height="32" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                </StackPanel>
+            </Button>
+        </Grid>
     </Grid>
 </Window>

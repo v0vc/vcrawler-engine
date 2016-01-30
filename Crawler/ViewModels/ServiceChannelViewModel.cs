@@ -133,7 +133,7 @@ namespace Crawler.ViewModels
 
                     List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
                     var lstemp = new List<IVideoItem>();
-                    foreach (IVideoItem item in lst.Select(VideoItemFactory.CreateVideoItem))
+                    foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                     {
                         AddNewItem(item);
                         item.IsHasLocalFileFound(DirPath);
@@ -202,7 +202,7 @@ namespace Crawler.ViewModels
                                 ChannelItems.RemoveAt(i - 1);
                             }
                         }
-                        foreach (IVideoItem item in lst.Select(VideoItemFactory.CreateVideoItem))
+                        foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
                             AddNewItem(item);
                             item.IsHasLocalFileFound(DirPath);

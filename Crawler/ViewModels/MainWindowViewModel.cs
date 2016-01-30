@@ -1041,7 +1041,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            var channel = SelectedChannel as IChannel;
+            var channel = SelectedChannel;
             if (channel == null)
             {
                 return;
@@ -1887,7 +1887,7 @@ namespace Crawler.ViewModels
             if (ch.ChannelItems.Count == YouTubeSite.ItemsPerPage)
             {
                 IEnumerable<VideoItemPOCO> allitem = await YouTubeSite.GetChannelItemsAsync(channel.ID, 0, true);
-                foreach (IVideoItem item in allitem.Select(VideoItemFactory.CreateVideoItem))
+                foreach (IVideoItem item in allitem.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                 {
                     ch.AddNewItem(item);
                 }

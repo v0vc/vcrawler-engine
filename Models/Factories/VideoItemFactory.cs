@@ -35,25 +35,40 @@ namespace Models.Factories
             }
         }
 
-        public static IVideoItem CreateVideoItem(VideoItemPOCO poco)
+        public static IVideoItem CreateVideoItem(VideoItemPOCO poco, SiteType site)
         {
-            var vi = new YouTubeItem
+            IVideoItem vi;
+            switch (site)
             {
-                ID = poco.ID,
-                Title = poco.Title,
-                ParentID = poco.ParentID,
-                Description = poco.Description, // .WordWrap(80);
-                ViewCount = poco.ViewCount,
-                Duration = poco.Duration,
-                Comments = poco.Comments,
-                Thumbnail = poco.Thumbnail,
-                Timestamp = poco.Timestamp,
-                SyncState = (SyncState)poco.SyncState,
-                WatchState = (WatchState)poco.WatchState,
-                DurationString = IntTostrTime(poco.Duration),
-                DateTimeAgo = TimeAgo(poco.Timestamp),
-                Subtitles = new ObservableCollection<ISubtitle>()
-            };
+                case SiteType.YouTube:
+                    vi = new YouTubeItem
+                    {
+                        ID = poco.ID,
+                        Title = poco.Title,
+                        ParentID = poco.ParentID,
+                        Description = poco.Description, // .WordWrap(80);
+                        ViewCount = poco.ViewCount,
+                        Duration = poco.Duration,
+                        Comments = poco.Comments,
+                        Thumbnail = poco.Thumbnail,
+                        Timestamp = poco.Timestamp,
+                        SyncState = (SyncState)poco.SyncState,
+                        WatchState = (WatchState)poco.WatchState,
+                        DurationString = IntTostrTime(poco.Duration),
+                        DateTimeAgo = TimeAgo(poco.Timestamp),
+                        Subtitles = new ObservableCollection<ISubtitle>()
+                    };
+                    break;
+                case SiteType.Tapochek:
+                    vi = new TapochekItem();
+                    break;
+                case SiteType.RuTracker:
+                    vi = new RuTrackerItem();
+                    break;
+                default:
+                    vi = null;
+                    break;
+            }
             return vi;
         }
 
@@ -68,7 +83,7 @@ namespace Models.Factories
                         poco = await YouTubeSite.GetVideoItemNetAsync(id);
                         break;
                 }
-                IVideoItem vi = CreateVideoItem(poco);
+                IVideoItem vi = CreateVideoItem(poco, site);
                 return vi;
             }
             catch (Exception ex)

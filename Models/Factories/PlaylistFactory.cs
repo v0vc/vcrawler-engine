@@ -127,7 +127,8 @@ namespace Models.Factories
                     foreach (List<string> list in chanks)
                     {
                         List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
-                        foreach (IVideoItem vi in res.Select(VideoItemFactory.CreateVideoItem))
+
+                        foreach (IVideoItem vi in res.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
                             vi.SyncState = SyncState.Added;
                             if (vi.ParentID == selectedChannel.ID)
