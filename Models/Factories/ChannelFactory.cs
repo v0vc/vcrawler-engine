@@ -158,14 +158,14 @@ namespace Models.Factories
         {
             var lst = new List<IVideoItem>();
 
-            var site = channel.Site;
+            SiteType site = channel.Site;
             IEnumerable<VideoItemPOCO> res;
             switch (site)
             {
                 case SiteType.YouTube:
                     res = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult);
                     break;
-                    
+
                 case SiteType.Tapochek:
                     res = await CommonFactory.CreateTapochekSite().GetChannelItemsAsync(channel, maxresult);
                     break;
@@ -272,14 +272,7 @@ namespace Models.Factories
                 // получаем списки id в базе и в нете
                 List<string> netids;
                 List<string> dbids;
-                if (isFastSync)
-                {
-                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
-                    int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
-                    int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
-                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint);
-                }
-                else
+                if (!isFastSync && !channel.UseFast) // полная проверка, с учетом индивдуальной опции (для больших каналов)
                 {
                     dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
                     netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0);
@@ -289,6 +282,13 @@ namespace Models.Factories
                     {
                         await db.UpdateItemSyncState(dbid, SyncState.Deleted);
                     }
+                }
+                else // быстрая проверка
+                {
+                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
+                    int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
+                    int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
+                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint);
                 }
 
                 // cобираем новые

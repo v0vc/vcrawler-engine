@@ -71,7 +71,7 @@
 
         <Grid Grid.Row="3">
             <CheckBox VerticalAlignment="Center" Margin="3,0,0,0" IsChecked="{Binding UseFast, Mode=TwoWay}"
-                      Content="Use F.A." Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
+                      Content="Use Fast Sync" Visibility="{Binding IsEditMode, Converter={StaticResource BoolToVisibilityConverter}}"
                       />
             <Button x:Name="buttonOk"
                 Style="{StaticResource RoundButtonTemplate}" 
