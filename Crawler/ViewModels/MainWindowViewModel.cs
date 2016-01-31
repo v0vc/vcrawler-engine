@@ -1101,7 +1101,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            channel.ChannelItemsCollectionView.Filter = null;
+            channel.IsShowSynced = false;
 
             // если канал только что добавили - элементы там есть
             if (channel.ChannelState == ChannelState.Added)
