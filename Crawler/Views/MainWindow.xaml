@@ -733,7 +733,18 @@
                                                             <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
                                                         </i:EventTrigger>
                                                     </i:Interaction.Triggers>
-
+                                                    <Image.Style>
+                                                        <Style TargetType="Image">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
+                                                                    <Setter Property="Opacity" Value="0.8" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
+                                                                    <Setter Property="Opacity" Value="0.8" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Image.Style>
                                                     <Image.ToolTip>
                                                         <StackPanel Orientation="Horizontal">
                                                             <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
