@@ -1,11 +1,9 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -61,11 +59,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID,
-                        Title = poco.Title,
+                        ID = poco.ID, 
+                        Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail,
-                        CountNew = poco.Countnew,
+                        Thumbnail = poco.Thumbnail, 
+                        CountNew = poco.Countnew, 
                         UseFast = poco.UseFast
                     };
 
@@ -127,30 +125,14 @@ namespace Models.Factories
 
         public static async Task FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
         {
-            if (offset == 0)
+            channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
+            List<VideoItemPOCO> items = offset == 0
+                ? await Task.Run(() => db.GetChannelItemsAsync(channel.ID, count, offset))
+                : await db.GetChannelItemsAsync(channel.ID, count, offset);
+            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
             {
-                MyChannel mc;
-                mc.Channel = channel;
-                mc.Count = count;
-                mc.Offcet = offset;
-                mc.Pocotems = null;
-
-                using (var bgv = new BackgroundWorker())
-                {
-                    bgv.DoWork += BgvDoWork;
-                    bgv.RunWorkerCompleted += BgvRunWorkerCompleted;
-                    bgv.RunWorkerAsync(mc);
-                }
-            }
-            else
-            {
-                channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
-                List<VideoItemPOCO> items = await db.GetChannelItemsAsync(channel.ID, count, offset);
-                foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
-                {
-                    vi.IsHasLocalFileFound(channel.DirPath);
-                    channel.ChannelItems.Add(vi);
-                }
+                vi.IsHasLocalFileFound(channel.DirPath);
+                channel.ChannelItems.Add(vi);
             }
         }
 
@@ -272,8 +254,9 @@ namespace Models.Factories
                 // получаем списки id в базе и в нете
                 List<string> netids;
                 List<string> dbids;
-                if (!isFastSync && !channel.UseFast) // полная проверка, с учетом индивдуальной опции (для больших каналов)
+                if (!isFastSync && !channel.UseFast)
                 {
+                    // полная проверка, с учетом индивдуальной опции (для больших каналов)
                     dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
                     netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0);
 
@@ -283,8 +266,9 @@ namespace Models.Factories
                         await db.UpdateItemSyncState(dbid, SyncState.Deleted);
                     }
                 }
-                else // быстрая проверка
+                else
                 {
+                    // быстрая проверка
                     dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted);
                     int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID);
                     int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
@@ -307,87 +291,10 @@ namespace Models.Factories
                     await db.UpdateChannelNewCountAsync(channel.ID, channel.CountNew);
                 }
 
+                // синхронизовать также плейлисты (двойной клик с UI по каналу)
                 if (isSyncPls)
                 {
-                    List<string> plIdsNet = await YouTubeSite.GetChannelPlaylistsIdsNetAsync(channel.ID);
-                    List<string> plIdsDb = await db.GetChannelsPlaylistsIdsListDbAsync(channel.ID);
-                    foreach (string playlistId in plIdsDb)
-                    {
-                        if (plIdsNet.Contains(playlistId))
-                        {
-                            // обновим плейлисты, которые есть уже в базе
-                            List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
-                            List<string> plitemsIdsDb = await db.GetPlaylistItemsIdsListDbAsync(playlistId);
-
-                            List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
-                            if (!ids.Any())
-                            {
-                                continue;
-                            }
-                            var lstInDb = new List<string>();
-                            var lstNoInDb = new List<string>();
-                            foreach (string id in ids)
-                            {
-                                if (dbids.Contains(id))
-                                {
-                                    lstInDb.Add(id);
-                                }
-                                else
-                                {
-                                    lstNoInDb.Add(id);
-                                }
-                            }
-                            foreach (string id in lstInDb)
-                            {
-                                await db.UpdatePlaylistAsync(playlistId, id, channel.ID);
-                            }
-
-                            IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
-                            foreach (List<string> list in chanks)
-                            {
-                                List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
-                                List<string> trueIds = (from poco in trlist where poco.ParentID == channel.ID select poco.ID).ToList();
-                                if (!trueIds.Any())
-                                {
-                                    continue;
-                                }
-
-                                // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
-                                await InsertNewItems(trueIds, channel, playlistId);
-                            }
-                        }
-                        else
-                        {
-                            // просто удалим уже не существующий в инете плейлист из базы
-                            await db.DeletePlaylistAsync(playlistId);
-                        }
-                    }
-
-                    // новые плейлисты
-                    foreach (string playlistId in plIdsNet.Where(playlistId => !plIdsDb.Contains(playlistId)))
-                    {
-                        PlaylistPOCO plpoco = await YouTubeSite.GetPlaylistNetAsync(playlistId);
-                        List<string> plpocoitems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
-                        plpoco.PlaylistItems.AddRange(plpocoitems);
-                        IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
-                        pl.State = SyncState.Added;
-                        channel.ChannelPlaylists.Add(pl);
-                        channel.PlaylistCount += 1;
-                        await db.InsertPlaylistAsync(pl);
-                        dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
-
-                        List<string> ids = plpocoitems.Where(netid => !dbids.Contains(netid)).ToList();
-                        IEnumerable<List<string>> chanks = ids.SplitList();
-                        foreach (List<string> trueIds in chanks)
-                        {
-                            await InsertNewItems(trueIds, channel, playlistId);
-                        }
-
-                        foreach (string plpocoitem in plpocoitems)
-                        {
-                            await pl.UpdatePlaylistAsync(plpocoitem);
-                        }
-                    }
+                    await SyncPlaylists(channel, dbids);
                 }
             }
             channel.IsHasNewFromSync = channel.ChannelItems.Any()
@@ -441,32 +348,6 @@ namespace Models.Factories
             }
         }
 
-        private static async void BgvDoWork(object sender, DoWorkEventArgs e)
-        {
-            if (!(e.Argument is MyChannel))
-            {
-                return;
-            }
-            var mc = (MyChannel)e.Argument;
-            mc.Pocotems = await db.GetChannelItemsAsync(mc.Channel.ID, mc.Count, mc.Offcet);
-            e.Result = mc;
-        }
-
-        private static async void BgvRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-        {
-            if (!(e.Result is MyChannel))
-            {
-                return;
-            }
-            var mc = (MyChannel)e.Result;
-            mc.Channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(mc.Channel.ID);
-            foreach (IVideoItem vi in mc.Pocotems.Select(poco => VideoItemFactory.CreateVideoItem(poco, mc.Channel.Site)))
-            {
-                vi.IsHasLocalFileFound(mc.Channel.DirPath);
-                mc.Channel.ChannelItems.Add(vi);
-            }
-        }
-
         private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
         {
             var lst = new List<IPlaylist>();
@@ -482,9 +363,9 @@ namespace Models.Factories
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds,
-            IChannel channel,
-            string playlistId = null,
+        private static async Task InsertNewItems(IEnumerable<string> trueIds, 
+            IChannel channel, 
+            string playlistId = null, 
             ICollection<string> dbIds = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом
@@ -514,21 +395,88 @@ namespace Models.Factories
             }
         }
 
-        #endregion
-
-        #region Nested type: MyChannel
-
-        private struct MyChannel
+        private static async Task SyncPlaylists(IChannel channel, List<string> dbids)
         {
-            #region Fields
+            List<string> plIdsNet = await YouTubeSite.GetChannelPlaylistsIdsNetAsync(channel.ID);
+            List<string> plIdsDb = await db.GetChannelsPlaylistsIdsListDbAsync(channel.ID);
+            foreach (string playlistId in plIdsDb)
+            {
+                if (plIdsNet.Contains(playlistId))
+                {
+                    // обновим плейлисты, которые есть уже в базе
+                    List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
+                    List<string> plitemsIdsDb = await db.GetPlaylistItemsIdsListDbAsync(playlistId);
 
-            public IChannel Channel;
-            public int Count;
-            public int Offcet;
-            public List<VideoItemPOCO> Pocotems;
+                    List<string> ids = plitemsIdsNet.Where(netid => !plitemsIdsDb.Contains(netid)).ToList();
+                    if (!ids.Any())
+                    {
+                        continue;
+                    }
+                    var lstInDb = new List<string>();
+                    var lstNoInDb = new List<string>();
+                    foreach (string id in ids)
+                    {
+                        if (dbids.Contains(id))
+                        {
+                            lstInDb.Add(id);
+                        }
+                        else
+                        {
+                            lstNoInDb.Add(id);
+                        }
+                    }
+                    foreach (string id in lstInDb)
+                    {
+                        await db.UpdatePlaylistAsync(playlistId, id, channel.ID);
+                    }
 
-            #endregion
-        };
+                    IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
+                    foreach (List<string> list in chanks)
+                    {
+                        List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
+                        List<string> trueIds = (from poco in trlist where poco.ParentID == channel.ID select poco.ID).ToList();
+                        if (!trueIds.Any())
+                        {
+                            continue;
+                        }
+
+                        // странный вариант, через аплоад видео не пришло, а через плейлист - есть, но оставим
+                        await InsertNewItems(trueIds, channel, playlistId);
+                    }
+                }
+                else
+                {
+                    // просто удалим уже не существующий в инете плейлист из базы
+                    await db.DeletePlaylistAsync(playlistId);
+                }
+            }
+
+            // новые плейлисты
+            foreach (string playlistId in plIdsNet.Where(playlistId => !plIdsDb.Contains(playlistId)))
+            {
+                PlaylistPOCO plpoco = await YouTubeSite.GetPlaylistNetAsync(playlistId);
+                List<string> plpocoitems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
+                plpoco.PlaylistItems.AddRange(plpocoitems);
+                IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
+                pl.State = SyncState.Added;
+                channel.ChannelPlaylists.Add(pl);
+                channel.PlaylistCount += 1;
+                await db.InsertPlaylistAsync(pl);
+                dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+
+                List<string> ids = plpocoitems.Where(netid => !dbids.Contains(netid)).ToList();
+                IEnumerable<List<string>> chanks = ids.SplitList();
+                foreach (List<string> trueIds in chanks)
+                {
+                    await InsertNewItems(trueIds, channel, playlistId);
+                }
+
+                foreach (string plpocoitem in plpocoitems)
+                {
+                    await pl.UpdatePlaylistAsync(plpocoitem);
+                }
+            }
+        }
 
         #endregion
     }
