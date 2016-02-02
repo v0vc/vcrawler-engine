@@ -711,10 +711,10 @@
                                                     </Style.Triggers>
                                                 </Style>
                                             </Border.Style>
-                                            <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
-                                                <StackPanel.OpacityMask>
+                                            <Grid Margin="1">
+                                                <Grid.OpacityMask>
                                                     <VisualBrush Visual="{Binding ElementName=mask}" />
-                                                </StackPanel.OpacityMask>
+                                                </Grid.OpacityMask>
                                                 <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
@@ -752,7 +752,25 @@
                                                         </StackPanel>
                                                     </Image.ToolTip>
                                                 </Image>
-                                            </StackPanel>
+                                                <Path Fill="LightBlue" 
+                                                      Data="F1 M 45.12,5.49L 21.255,40.8L 20.4525,40.8L 0,23.2875L 5.775,15.7875L 19.2525,27.3L 37.695,-1.90735e-006L 45.12,5.49 Z">
+                                                    <Path.Style>
+                                                        <Style TargetType="Path">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
+                                                                    <Setter Property="Visibility" Value="Visible" />
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Notset}">
+                                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Path.Style>
+                                                </Path>
+                                            </Grid>
                                         </Border>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
