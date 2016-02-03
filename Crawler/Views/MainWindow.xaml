@@ -693,29 +693,32 @@
                                 </DataGridTemplateColumn.HeaderStyle>
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Border d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
-                                            <Border.InputBindings>
-                                                <MouseBinding Command="{Binding DataContext.ChangeWatchedCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" 
-                                                              Gesture="MiddleClick" 
-                                                              />
-                                            </Border.InputBindings>
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
-                                                            <Setter Property="Background" Value="SpringGreen" />
-                                                        </DataTrigger>
-                                                        <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
-                                                            <Setter Property="Background" Value="CornflowerBlue" />
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </Border.Style>
-                                            <Grid Margin="1">
-                                                <Grid.OpacityMask>
-                                                    <VisualBrush Visual="{Binding ElementName=mask}" />
-                                                </Grid.OpacityMask>
-                                                <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
+                                        <Grid Margin="1" d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
+                                            <Grid.OpacityMask>
+                                                <VisualBrush Visual="{Binding ElementName=mask}" />
+                                            </Grid.OpacityMask>
+                                            <Path Stretch="Fill">
+                                                <Path.Style>
+                                                    <Style TargetType="Path">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                <Setter Property="Data" Value="F1 M 46.479,0.587 C 45.064,2.731 43.659,4.881 42.233,7.018 C 34.590,18.476 26.954,29.938 19.287,41.380 C 16.541,45.479 16.412,45.484 13.178,42.022 C 9.187,37.750 5.308,33.373 1.255,29.163 C -1.890,25.897 1.704,24.784 3.060,22.970 C 4.534,20.998 6.058,20.783 7.758,22.862 C 9.236,24.668 11.106,26.173 12.457,28.058 C 14.160,30.435 15.412,30.149 17.309,28.225 C 25.700,19.712 34.212,11.316 42.688,2.886 C 43.681,1.898 44.725,0.961 45.746,0.000 C 45.990,0.196 46.235,0.391 46.479,0.587 Z"/>
+                                                                <Setter Property="Fill" Value="Green"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                                <Setter Property="Data" Value="M10,0 C4.5,0 0,4.5 0,10 C0,15.5 4.5,20 10,20 C15.5,20 20,15.5 20,10 C20,4.5 15.5,0 10,0 L10,0 Z M10,18 C5.6,18 2,14.4 2,10 C2,5.6 5.6,2 10,2 C14.4,2 18,5.6 18,10 C18,14.4 14.4,18 10,18 Z M10.5,5 L9,5 L9,11 L14.2,14.2 L15,12.9 L10.5,10.2 L10.5,5 Z"/>
+                                                                <Setter Property="Fill" Value="DarkMagenta"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Notset}">
+                                                                <Setter Property="Visibility" Value="Hidden" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Path.Style>
+                                            </Path>
+                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
                                                    ToolTipService.ShowDuration="120000"
                                                    RenderOptions.BitmapScalingMode="Fant"
                                                    Stretch="Fill"
@@ -725,53 +728,39 @@
                                                    Margin="0"
                                                    HorizontalAlignment="Center"
                                                    >
-                                                    <i:Interaction.Triggers>
-                                                        <i:EventTrigger EventName="MouseLeftButtonUp" >
-                                                            <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                        </i:EventTrigger>
-                                                        <i:EventTrigger EventName="ToolTipOpening" >
-                                                            <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
-                                                        </i:EventTrigger>
-                                                    </i:Interaction.Triggers>
-                                                    <Image.Style>
-                                                        <Style TargetType="Image">
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
-                                                                    <Setter Property="Opacity" Value="0.8" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
-                                                                    <Setter Property="Opacity" Value="0.8" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Image.Style>
-                                                    <Image.ToolTip>
-                                                        <StackPanel Orientation="Horizontal">
-                                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
-                                                            <TextBlock Margin="10,0,0,0" Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
-                                                        </StackPanel>
-                                                    </Image.ToolTip>
-                                                </Image>
-                                                <Path Fill="LightBlue" 
-                                                      Data="F1 M 45.12,5.49L 21.255,40.8L 20.4525,40.8L 0,23.2875L 5.775,15.7875L 19.2525,27.3L 37.695,-1.90735e-006L 45.12,5.49 Z">
-                                                    <Path.Style>
-                                                        <Style TargetType="Path">
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
-                                                                    <Setter Property="Visibility" Value="Visible" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
-                                                                    <Setter Property="Visibility" Value="Visible" />
-                                                                </DataTrigger>
-                                                                <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Notset}">
-                                                                    <Setter Property="Visibility" Value="Hidden" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Path.Style>
-                                                </Path>
-                                            </Grid>
-                                        </Border>
+                                                <i:Interaction.Triggers>
+                                                    <i:EventTrigger EventName="MouseLeftButtonUp" >
+                                                        <i:InvokeCommandAction Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                    </i:EventTrigger>
+                                                    <i:EventTrigger EventName="ToolTipOpening" >
+                                                        <i:InvokeCommandAction Command="{Binding DataContext.FillDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" />
+                                                    </i:EventTrigger>
+                                                </i:Interaction.Triggers>
+                                                <Image.Style>
+                                                    <Style TargetType="Image">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Watched}">
+                                                                <Setter Property="Opacity" Value="0.65" />
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding WatchState}" Value="{x:Static enums:WatchState.Planned}">
+                                                                <Setter Property="Opacity" Value="0.65" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Image.Style>
+                                                <Image.ToolTip>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                        <TextBlock Margin="10,0,0,0" Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
+                                                    </StackPanel>
+                                                </Image.ToolTip>
+                                                <Image.InputBindings>
+                                                    <MouseBinding Command="{Binding DataContext.ChangeWatchedCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}" 
+                                                                  Gesture="MiddleClick" 
+                                                                  />
+                                                </Image.InputBindings>
+                                            </Image>     
+                                        </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
@@ -835,7 +824,7 @@
                                                                         </DataTrigger>
                                                                         <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.Downloading}">
                                                                             <Setter Property="Height" Value="32"/>
-                                                                            <Setter Property="Source" Value="../Images/inbox-32.png"></Setter>
+                                                                            <Setter Property="Source" Value="../Images/inbox-32.png" />
                                                                         </DataTrigger>
                                                                         <DataTrigger Binding="{Binding FileState}" Value="{x:Static enums:ItemState.Planned}">
                                                                             <Setter Property="Source" Value="../Images/clock_64.png"/>
