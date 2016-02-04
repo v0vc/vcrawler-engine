@@ -814,7 +814,11 @@ namespace Crawler.ViewModels
             switch (key)
             {
                 case KeyboardKey.Delete:
-                    await DeleteChannels();
+                    List<string> ids = DeleteChannels();
+                    if (ids.Any())
+                    {
+                        await Task.Run(() => df.DeleteChannelsAsync(ids));
+                    }
                     break;
 
                 case KeyboardKey.Enter:
@@ -829,7 +833,13 @@ namespace Crawler.ViewModels
             switch (menu)
             {
                 case ChannelMenuItem.Delete:
-                    await DeleteChannels();
+
+                    List<string> ids = DeleteChannels();
+                    if (ids.Any())
+                    {
+                        await Task.Run(() => df.DeleteChannelsAsync(ids));
+                    }
+
                     break;
 
                 case ChannelMenuItem.Edit:
@@ -904,8 +914,9 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task DeleteChannels()
+        private List<string> DeleteChannels()
         {
+            var res = new List<string>();
             var sb = new StringBuilder();
 
             foreach (IChannel channel in SelectedChannels)
@@ -915,7 +926,7 @@ namespace Crawler.ViewModels
 
             if (sb.Length == 0)
             {
-                return;
+                return res;
             }
 
             MessageBoxResult boxResult = MessageBox.Show(string.Format("Delete:{0}{1}?", Environment.NewLine, sb), 
@@ -923,38 +934,41 @@ namespace Crawler.ViewModels
                 MessageBoxButton.OKCancel, 
                 MessageBoxImage.Information);
 
-            if (boxResult == MessageBoxResult.OK)
+            if (boxResult != MessageBoxResult.OK)
             {
-                var indexes = new List<int>();
-                List<IChannel> channels = SelectedChannels.OfType<IChannel>().ToList();
-                for (int i = channels.Count; i > 0; i--)
-                {
-                    IChannel channel = channels.ElementAt(i - 1);
-                    indexes.Add(Channels.IndexOf(channel));
-                    Channels.Remove(channel);
-                    await df.DeleteChannelAsync(channel.ID);
-                    channelCollectionView.Filter = null;
-                    FilterChannelKey = string.Empty;
-                }
-
-                if (Channels.Any() && indexes.Any())
-                {
-                    int pos = indexes.Count == 1 ? indexes[0] : indexes.Min();
-
-                    if (pos == Channels.Count)
-                    {
-                        SelectedChannel = Channels.Last();
-                    }
-                    else if (pos == 0)
-                    {
-                        SelectedChannel = Channels.First();
-                    }
-                    else
-                    {
-                        SelectedChannel = Channels[pos - 1];
-                    }
-                }
+                return res;
             }
+            var indexes = new List<int>();
+            List<IChannel> channels = SelectedChannels.OfType<IChannel>().ToList();
+            for (int i = channels.Count; i > 0; i--)
+            {
+                IChannel channel = channels.ElementAt(i - 1);
+                indexes.Add(Channels.IndexOf(channel));
+                Channels.Remove(channel);
+                res.Add(channel.ID);
+                channelCollectionView.Filter = null;
+                FilterChannelKey = string.Empty;
+            }
+
+            if (!Channels.Any() || !indexes.Any())
+            {
+                return res;
+            }
+            int pos = indexes.Count == 1 ? indexes[0] : indexes.Min();
+
+            if (pos == Channels.Count)
+            {
+                SelectedChannel = Channels.Last();
+            }
+            else if (pos == 0)
+            {
+                SelectedChannel = Channels.First();
+            }
+            else
+            {
+                SelectedChannel = Channels[pos - 1];
+            }
+            return res;
         }
 
         private async Task DeleteItems(bool isDeleteFromDbToo = false)

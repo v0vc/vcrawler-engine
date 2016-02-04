@@ -391,6 +391,41 @@ namespace DataAPI.Database
         #region Methods
 
         /// <summary>
+        ///     Delete channels
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public async Task DeleteChannelsAsync(IEnumerable<string> ids)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        command.CommandType = CommandType.Text;
+                        try
+                        {
+                            foreach (string id in ids)
+                            {
+                                string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechannels, channelId, id);
+                                command.CommandText = zap;
+                                await command.ExecuteNonQueryAsync();
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         ///     Delete
         /// </summary>
         /// <param name="parID">channel ID</param>

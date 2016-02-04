@@ -125,11 +125,11 @@ namespace Models.Factories
 
         public static async Task FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
         {
-            channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
+            channel.ChannelItemsCount = await Task.Run(() => db.GetChannelItemsCountDbAsync(channel.ID));
             List<VideoItemPOCO> items = offset == 0
                 ? await Task.Run(() => db.GetChannelItemsAsync(channel.ID, count, offset))
                 : await db.GetChannelItemsAsync(channel.ID, count, offset);
-            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
+            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site)))
             {
                 vi.IsHasLocalFileFound(channel.DirPath);
                 channel.ChannelItems.Add(vi);
