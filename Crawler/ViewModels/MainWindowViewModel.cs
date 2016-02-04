@@ -925,23 +925,34 @@ namespace Crawler.ViewModels
 
             if (boxResult == MessageBoxResult.OK)
             {
-                for (int i = SelectedChannels.Count; i > 0; i--)
+                var indexes = new List<int>();
+                List<IChannel> channels = SelectedChannels.OfType<IChannel>().ToList();
+                for (int i = channels.Count; i > 0; i--)
                 {
-                    var channel = SelectedChannels[i - 1] as IChannel;
-                    if (channel == null)
-                    {
-                        continue;
-                    }
-
+                    IChannel channel = channels.ElementAt(i - 1);
+                    indexes.Add(Channels.IndexOf(channel));
                     Channels.Remove(channel);
                     await df.DeleteChannelAsync(channel.ID);
                     channelCollectionView.Filter = null;
                     FilterChannelKey = string.Empty;
                 }
 
-                if (Channels.Any())
+                if (Channels.Any() && indexes.Any())
                 {
-                    SelectedChannel = Channels.First();
+                    int pos = indexes.Count == 1 ? indexes[0] : indexes.Min();
+
+                    if (pos == Channels.Count)
+                    {
+                        SelectedChannel = Channels.Last();
+                    }
+                    else if (pos == 0)
+                    {
+                        SelectedChannel = Channels.First();
+                    }
+                    else
+                    {
+                        SelectedChannel = Channels[pos - 1];
+                    }
                 }
             }
         }
