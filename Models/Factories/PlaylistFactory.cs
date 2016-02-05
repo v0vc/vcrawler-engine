@@ -32,10 +32,12 @@ namespace Models.Factories
         {
             switch (site)
             {
+                case SiteType.NotSet:
+                    return new ServicePlaylist();
                 case SiteType.YouTube:
                     return new YouPlaylist();
                 default:
-                    return new ServicePlaylist();
+                    return null;
             }
         }
 

@@ -51,6 +51,7 @@ namespace Crawler.ViewModels
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
+            ChannelPlaylists = new ObservableCollection<IPlaylist>();
         }
 
         #endregion

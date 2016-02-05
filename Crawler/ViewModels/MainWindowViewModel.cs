@@ -31,6 +31,7 @@ using Interfaces.Models;
 using Microsoft.WindowsAPICodePack.Taskbar;
 using Models.BO.Channels;
 using Models.BO.Items;
+using Models.BO.Playlists;
 using Models.Factories;
 using Application = System.Windows.Application;
 using Clipboard = System.Windows.Clipboard;
@@ -332,7 +333,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(PlaylistExpand));
+                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(x => PlaylistExpand()));
             }
         }
 
@@ -609,28 +610,50 @@ namespace Crawler.ViewModels
             edv.Show();
         }
 
-        private static async void PlaylistExpand(object obj)
+        private async void PlaylistExpand()
         {
-            var ch = obj as IChannel;
+            var ch = SelectedChannel;
             if (ch == null)
             {
                 return;
             }
 
-            if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
+            if (ch is ServiceChannelViewModel)
             {
-                return;
+                if (ch.ChannelPlaylists.Any())
+                {
+                    return;
+                }
+
+                // TODO Add SyncState.Added
+
+                var servpl = new List<WatchState> { WatchState.Planned, WatchState.Watched };
+                foreach (WatchState state in servpl)
+                {
+                    var pl = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
+                    pl.Title = state.ToString();
+                    WatchState state1 = state;
+                    pl.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(state1));
+                    ch.ChannelPlaylists.Add(pl);
+                }
             }
-
-            List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
-
-            foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
+            else
             {
-                ch.ChannelPlaylists.Add(pl);
-            }
+                if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
+                {
+                    return;
+                }
 
-            List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
-            AddDefPlaylist(ch, lst);
+                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
+
+                foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
+                {
+                    ch.ChannelPlaylists.Add(pl);
+                }
+
+                List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
+                AddDefPlaylist(ch, lst);    
+            }
         }
 
         private static void ScrollToTop(object obj)
@@ -1795,13 +1818,30 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var channel = SelectedChannel as YouChannel;
-            if (channel == null)
+            if (obj is YouPlaylist && SelectedChannel is YouChannel)
             {
-                return;
+                var channel = SelectedChannel as YouChannel;
+                channel.RestoreFullChannelItems();
+                channel.ChannelItemsCollectionView.Filter = FilterByPlayList;    
             }
-            channel.RestoreFullChannelItems();
-            channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
+            else if (obj is ServicePlaylist && SelectedChannel is ServiceChannelViewModel)
+            {
+                // Filter by state
+
+                //var pls = obj as ServicePlaylist;
+                //var channel = SelectedChannel as ServiceChannelViewModel;
+
+                //foreach (IChannel ch in Channels)
+                //{
+                //    foreach (IVideoItem item in ch.ChannelItems)
+                //    {
+                //        if (pls.PlItems.Contains(item.ID))
+                //        {
+                //            channel.ChannelItems.Add(item);
+                //        }
+                //    }
+                //}
+            }
         }
 
         private void SelectPopular(object obj)

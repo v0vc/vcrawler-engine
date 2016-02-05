@@ -13,12 +13,21 @@ namespace Models.BO.Playlists
 {
     public class ServicePlaylist : IPlaylist
     {
+        #region Constructors
+
+        public ServicePlaylist()
+        {
+            PlItems = new List<string>();
+        }
+
+        #endregion
+
         #region IPlaylist Members
 
         public string ChannelId { get; set; }
         public string ID { get; set; }
         public bool IsDefault { get; private set; }
-        public List<string> PlItems { get; private set; }
+        public List<string> PlItems { get; set; }
         public SiteType Site { get; private set; }
         public SyncState State { get; set; }
         public string SubTitle { get; set; }

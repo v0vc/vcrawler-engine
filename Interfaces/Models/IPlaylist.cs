@@ -16,7 +16,7 @@ namespace Interfaces.Models
         string ChannelId { get; set; }
         string ID { get; set; }
         bool IsDefault { get; }
-        List<string> PlItems { get; }
+        List<string> PlItems { get; set; }
         SiteType Site { get; }
         SyncState State { get; set; }
         string SubTitle { get; set; }
