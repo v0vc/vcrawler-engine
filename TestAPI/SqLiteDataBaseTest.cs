@@ -260,7 +260,7 @@ namespace TestAPI
             IChannel ch = ChannelFactory.CreateChannel(SiteType.YouTube);
             FillTestChannel(ch, vi, vi2);
 
-            IPlaylist pl = PlaylistFactory.CreatePlaylist();
+            IPlaylist pl = PlaylistFactory.CreatePlaylist(SiteType.YouTube);
             FillTestPl(pl, ch);
 
             // DeleteCredAsync

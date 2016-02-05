@@ -622,9 +622,9 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            List<IPlaylist> pls = await ChannelFactory.GetChannelPlaylistsAsync(ch.ID);
+            List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
 
-            foreach (IPlaylist pl in pls)
+            foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
             {
                 ch.ChannelPlaylists.Add(pl);
             }
@@ -847,7 +847,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Related:
-                    await FindRelated();
+                    await FindRelatedChannels(SelectedChannel);
                     break;
 
                 case ChannelMenuItem.Subscribe:
@@ -1276,23 +1276,6 @@ namespace Crawler.ViewModels
                 return true;
             }
             return channel.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
-        }
-
-        private async Task FindRelated()
-        {
-            try
-            {
-                var channel = SelectedChannel as YouChannel;
-                if (channel != null)
-                {
-                    await FindRelatedChannels(channel);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message);
-                SetStatus(0);
-            }
         }
 
         private async Task FindRelatedChannels(IChannel channel)
@@ -1918,7 +1901,7 @@ namespace Crawler.ViewModels
             if (ch.ChannelItems.Count == YouTubeSite.ItemsPerPage)
             {
                 IEnumerable<VideoItemPOCO> allitem = await YouTubeSite.GetChannelItemsAsync(channel.ID, 0, true);
-                foreach (IVideoItem item in allitem.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
+                foreach (IVideoItem item in allitem.Select(poco => VideoItemFactory.CreateVideoItem(poco, ch.Site)))
                 {
                     ch.AddNewItem(item);
                 }
@@ -1928,7 +1911,7 @@ namespace Crawler.ViewModels
             foreach (PlaylistPOCO poco in pls)
             {
                 poco.PlaylistItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(poco.ID, 0);
-                ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco));
+                ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco, ch.Site));
             }
 
             await df.InsertChannelFullAsync(channel);

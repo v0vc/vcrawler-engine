@@ -71,7 +71,7 @@ namespace Models.Factories
                     {
                         foreach (VideoItemPOCO item in poco.Items)
                         {
-                            channel.AddNewItem(VideoItemFactory.CreateVideoItem(item, SiteType.YouTube));
+                            channel.AddNewItem(VideoItemFactory.CreateVideoItem(item, site));
                         }
                     }
 
@@ -79,7 +79,7 @@ namespace Models.Factories
                     {
                         foreach (PlaylistPOCO playlist in poco.Playlists)
                         {
-                            channel.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(playlist));
+                            channel.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(playlist, site));
                         }
                     }
 
@@ -186,20 +186,20 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
-        {
-            var lst = new List<IPlaylist>();
-            try
-            {
-                List<PlaylistPOCO> fbres = await db.GetChannelPlaylistAsync(channelID);
-                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //public static async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
+        //{
+        //    var lst = new List<IPlaylist>();
+        //    try
+        //    {
+        //        List<PlaylistPOCO> fbres = await db.GetChannelPlaylistAsync(channelID);
+        //        lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, TODO)));
+        //        return lst;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
         public static async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
@@ -308,7 +308,9 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    List<IPlaylist> pls = await GetChannelPlaylistsNetAsync(channel.ID);
+                    List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID);
+                    List<IPlaylist> pls = new List<IPlaylist>();
+                    pls.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)));
                     if (pls.Any())
                     {
                         await db.DeleteChannelPlaylistsAsync(channel.ID);
@@ -348,20 +350,20 @@ namespace Models.Factories
             }
         }
 
-        private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
-        {
-            var lst = new List<IPlaylist>();
-            try
-            {
-                List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
-                lst.AddRange(fbres.Select(PlaylistFactory.CreatePlaylist));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
+        //private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
+        //{
+        //    var lst = new List<IPlaylist>();
+        //    try
+        //    {
+        //        List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
+        //        lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, TODO)));
+        //        return lst;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message);
+        //    }
+        //}
 
         private static async Task InsertNewItems(IEnumerable<string> trueIds, 
             IChannel channel, 
@@ -457,7 +459,7 @@ namespace Models.Factories
                 PlaylistPOCO plpoco = await YouTubeSite.GetPlaylistNetAsync(playlistId);
                 List<string> plpocoitems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlistId, 0);
                 plpoco.PlaylistItems.AddRange(plpocoitems);
-                IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco);
+                IPlaylist pl = PlaylistFactory.CreatePlaylist(plpoco, channel.Site);
                 pl.State = SyncState.Added;
                 channel.ChannelPlaylists.Add(pl);
                 channel.PlaylistCount += 1;

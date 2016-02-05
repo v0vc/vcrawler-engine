@@ -20,32 +20,49 @@ namespace Models.Factories
 {
     public static class PlaylistFactory
     {
+        #region Static and Readonly Fields
+
         private static readonly SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
+
+        #endregion
+
         #region Static Methods
 
-        public static IPlaylist CreatePlaylist()
+        public static IPlaylist CreatePlaylist(SiteType site)
         {
-            var pl = new YouPlaylist();
-            return pl;
+            switch (site)
+            {
+                case SiteType.YouTube:
+                    return new YouPlaylist();
+                default:
+                    return new ServicePlaylist();
+            }
         }
 
-        public static IPlaylist CreatePlaylist(PlaylistPOCO poco)
+        public static IPlaylist CreatePlaylist(PlaylistPOCO poco, SiteType site)
         {
             if (poco == null)
             {
                 return null;
             }
-            var pl = new YouPlaylist
+            switch (site)
             {
-                ID = poco.ID,
-                Title = poco.Title,
-                SubTitle = poco.SubTitle,
-                Thumbnail = poco.Thumbnail,
-                ChannelId = poco.ChannelID,
-                PlItems = poco.PlaylistItems,
-                IsDefault = false
-            };
-            return pl;
+                case SiteType.YouTube:
+                    var pl = new YouPlaylist
+                    {
+                        ID = poco.ID,
+                        Title = poco.Title,
+                        SubTitle = poco.SubTitle,
+                        Thumbnail = poco.Thumbnail,
+                        ChannelId = poco.ChannelID,
+                        PlItems = poco.PlaylistItems,
+                        IsDefault = false
+                    };
+                    return pl;
+
+                default:
+                    return null;
+            }
         }
 
         public static IPlaylist CreateUploadPlaylist(IChannel ch, List<string> channel, byte[] thumbnail)
