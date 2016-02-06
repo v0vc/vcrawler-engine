@@ -34,6 +34,8 @@ namespace Models.BO.Playlists
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
 
+        public WatchState WatchState { get; set; }
+
         public Task UpdatePlaylistAsync(string videoId)
         {
             throw new NotImplementedException();

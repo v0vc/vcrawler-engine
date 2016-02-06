@@ -630,15 +630,16 @@ namespace Crawler.ViewModels
                 pla.Thumbnail =
                     StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.new_48.png"));
                 pla.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(SyncState.Added));
+                pla.State = SyncState.Added;
                 ch.ChannelPlaylists.Add(pla);
 
                 var servpl = new List<WatchState> { WatchState.Planned, WatchState.Watched };
                 foreach (WatchState state in servpl)
                 {
                     var pl = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
+                    pl.WatchState = state;
                     pl.Title = state.ToString();
-                    WatchState state1 = state;
-                    pl.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(state1));
+                    pl.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(pl.WatchState));
                     string path = state == WatchState.Planned ? "Crawler.Images.time_48.png" : "Crawler.Images.done_48.png";
                     Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
                     if (img != null)
@@ -834,6 +835,7 @@ namespace Crawler.ViewModels
                     item.WatchState = WatchState.Notset;
                     break;
             }
+            ServiceChannel.AddToStateList(item.WatchState, item);
             await df.UpdateItemWatchState(item.ID, item.WatchState);
         }
 
@@ -1837,21 +1839,26 @@ namespace Crawler.ViewModels
             }
             else if (obj is ServicePlaylist && SelectedChannel is ServiceChannelViewModel)
             {
-                // Filter by state
+                if (pl.State == SyncState.Added)
+                {
+                    // Filter by state
+                }
+                else
+                {
+                    switch (pl.WatchState)
+                    {
+                            
+                        case WatchState.Planned:
+                            Channels.ForEach(
+                                             x =>
+                                                 x.ChannelItems.Where(y => y.WatchState == WatchState.Planned)
+                                                     .ForEach(z => ServiceChannel.AddToStateList(WatchState.Planned, z)));
+                            break;
 
-                //var pls = obj as ServicePlaylist;
-                //var channel = SelectedChannel as ServiceChannelViewModel;
-
-                //foreach (IChannel ch in Channels)
-                //{
-                //    foreach (IVideoItem item in ch.ChannelItems)
-                //    {
-                //        if (pls.PlItems.Contains(item.ID))
-                //        {
-                //            channel.ChannelItems.Add(item);
-                //        }
-                //    }
-                //}
+                        case WatchState.Watched:
+                            break;
+                    }
+                }
             }
         }
 

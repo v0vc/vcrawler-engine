@@ -28,7 +28,9 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
-
+        private readonly List<IVideoItem> addedList;
+        private readonly List<IVideoItem> plannedList;
+        private readonly List<IVideoItem> watchedList;
         #endregion
 
         #region Fields
@@ -52,6 +54,9 @@ namespace Crawler.ViewModels
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
+            addedList = new List<IVideoItem>();
+            plannedList = new List<IVideoItem>();
+            watchedList = new List<IVideoItem>();
         }
 
         #endregion
@@ -110,9 +115,84 @@ namespace Crawler.ViewModels
 
         public List<CredImage> SupportedSites { get; private set; }
 
+        private IPlaylist WatchedPlaylist
+        {
+            get
+            {
+                return ChannelPlaylists.Single(x => x.Title == WatchState.Watched.ToString());
+            }
+        }
+
+        private IPlaylist PlannedPlaylist
+        {
+            get
+            {
+                return ChannelPlaylists.Single(x => x.Title == WatchState.Planned.ToString());
+            }
+        }
+
+        private IPlaylist AddedPlaylist
+        {
+            get
+            {
+                return ChannelPlaylists.Single(x => x.Title == SyncState.Added.ToString());
+            }
+        }
+
         #endregion
 
         #region Methods
+
+        public void AddToStateList(object state, IVideoItem item)
+        {
+            if (state is WatchState)
+            {
+                var st = (WatchState)state;
+                switch (st)
+                {
+                    case WatchState.Watched:
+                        watchedList.Add(item);
+                        WatchedPlaylist.PlItems.Add(item.ID);
+                        break;
+                    case WatchState.Planned:
+                        plannedList.Add(item);
+                        PlannedPlaylist.PlItems.Add(item.ID);
+                        if (watchedList.Contains(item) && WatchedPlaylist.PlItems.Contains(item.ID))
+                        {
+                            watchedList.Remove(item);
+                            WatchedPlaylist.PlItems.Remove(item.ID);
+                        }
+                        break;
+
+                    case WatchState.Notset:
+                        if (plannedList.Contains(item) && PlannedPlaylist.PlItems.Contains(item.ID))
+                        {
+                            plannedList.Remove(item);
+                            PlannedPlaylist.PlItems.Remove(item.ID);
+                        }
+                        break;
+                }
+            }
+            else if (state is SyncState)
+            {
+                var st = (SyncState)state;
+                switch (st)
+                {
+                    case SyncState.Added:
+                        addedList.Add(item);
+                        AddedPlaylist.PlItems.Add(item.ID);
+                        break;
+
+                    case SyncState.Notset:
+                        if (addedList.Contains(item) && AddedPlaylist.PlItems.Contains(item.ID))
+                        {
+                            addedList.Remove(item);
+                            AddedPlaylist.PlItems.Remove(item.ID);
+                        }
+                        break;
+                }
+            }
+        }
 
         public async Task FillPopular(HashSet<string> ids)
         {
@@ -363,7 +443,10 @@ namespace Crawler.ViewModels
             {
                 Cred = cred;
                 Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourcepic);
-                Thumbnail = StreamHelper.ReadFully(img);
+                if (img != null)
+                {
+                    Thumbnail = StreamHelper.ReadFully(img);
+                }
             }
 
             #endregion

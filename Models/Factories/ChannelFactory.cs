@@ -350,21 +350,6 @@ namespace Models.Factories
             }
         }
 
-        //private static async Task<List<IPlaylist>> GetChannelPlaylistsNetAsync(string channelID)
-        //{
-        //    var lst = new List<IPlaylist>();
-        //    try
-        //    {
-        //        List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channelID);
-        //        lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, TODO)));
-        //        return lst;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
-
         private static async Task InsertNewItems(IEnumerable<string> trueIds, 
             IChannel channel, 
             string playlistId = null, 

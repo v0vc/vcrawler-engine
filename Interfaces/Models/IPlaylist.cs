@@ -22,6 +22,7 @@ namespace Interfaces.Models
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
+        WatchState WatchState { get; set; }
 
         #endregion
 

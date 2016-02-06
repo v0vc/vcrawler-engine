@@ -33,6 +33,7 @@ namespace Models.BO.Playlists
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
+        public WatchState WatchState { get; set; }
 
         public async Task UpdatePlaylistAsync(string videoId)
         {
