@@ -625,7 +625,12 @@ namespace Crawler.ViewModels
                     return;
                 }
 
-                // TODO Add SyncState.Added
+                var pla = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
+                pla.Title = SyncState.Added.ToString();
+                pla.Thumbnail =
+                    StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.new_48.png"));
+                pla.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(SyncState.Added));
+                ch.ChannelPlaylists.Add(pla);
 
                 var servpl = new List<WatchState> { WatchState.Planned, WatchState.Watched };
                 foreach (WatchState state in servpl)
@@ -634,6 +639,12 @@ namespace Crawler.ViewModels
                     pl.Title = state.ToString();
                     WatchState state1 = state;
                     pl.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(state1));
+                    string path = state == WatchState.Planned ? "Crawler.Images.time_48.png" : "Crawler.Images.done_48.png";
+                    Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
+                    if (img != null)
+                    {
+                        pl.Thumbnail = StreamHelper.ReadFully(img);
+                    }
                     ch.ChannelPlaylists.Add(pl);
                 }
             }
