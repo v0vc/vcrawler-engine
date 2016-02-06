@@ -119,7 +119,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return ChannelPlaylists.Single(x => x.Title == WatchState.Watched.ToString());
+                return ChannelPlaylists.Single(x => x.WatchState == WatchState.Watched);
             }
         }
 
@@ -127,7 +127,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return ChannelPlaylists.Single(x => x.Title == WatchState.Planned.ToString());
+                return ChannelPlaylists.Single(x => x.WatchState == WatchState.Planned);
             }
         }
 
@@ -135,13 +135,41 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return ChannelPlaylists.Single(x => x.Title == SyncState.Added.ToString());
+                return ChannelPlaylists.Single(x => x.State == SyncState.Added);
             }
         }
 
         #endregion
 
         #region Methods
+
+        public void ReloadFilteredLists(object state)
+        {
+            ChannelItems.Clear();
+            if (state is WatchState)
+            {
+                var st = (WatchState)state;
+                switch (st)
+                {
+                    case WatchState.Watched:
+                        watchedList.ForEach(x => ChannelItems.Add(x));
+                        break;
+                    case WatchState.Planned:
+                        plannedList.ForEach(x => ChannelItems.Add(x));
+                        break;
+                }
+            }
+            else if (state is SyncState)
+            {
+                var st = (SyncState)state;
+                switch (st)
+                {
+                    case SyncState.Added:
+                        addedList.ForEach(x => ChannelItems.Add(x));
+                        break;
+                }
+            }
+        }
 
         public void AddToStateList(object state, IVideoItem item)
         {
@@ -151,12 +179,24 @@ namespace Crawler.ViewModels
                 switch (st)
                 {
                     case WatchState.Watched:
-                        watchedList.Add(item);
-                        WatchedPlaylist.PlItems.Add(item.ID);
+                        if (!watchedList.Contains(item))
+                        {
+                            watchedList.Add(item);
+                        }
+                        if (!WatchedPlaylist.PlItems.Contains(item.ID))
+                        {
+                            WatchedPlaylist.PlItems.Add(item.ID);
+                        }
                         break;
                     case WatchState.Planned:
-                        plannedList.Add(item);
-                        PlannedPlaylist.PlItems.Add(item.ID);
+                        if (!plannedList.Contains(item))
+                        {
+                            plannedList.Add(item);
+                        }
+                        if (!PlannedPlaylist.PlItems.Contains(item.ID))
+                        {
+                            PlannedPlaylist.PlItems.Add(item.ID);
+                        }
                         if (watchedList.Contains(item) && WatchedPlaylist.PlItems.Contains(item.ID))
                         {
                             watchedList.Remove(item);

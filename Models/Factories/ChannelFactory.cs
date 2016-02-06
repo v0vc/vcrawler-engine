@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -24,6 +25,7 @@ namespace Models.Factories
         #region Static and Readonly Fields
 
         private static readonly SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
+        private static Task task;
 
         #endregion
 
@@ -59,11 +61,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID, 
-                        Title = poco.Title, 
+                        ID = poco.ID,
+                        Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail, 
-                        CountNew = poco.Countnew, 
+                        Thumbnail = poco.Thumbnail,
+                        CountNew = poco.Countnew,
                         UseFast = poco.UseFast
                     };
 
@@ -123,17 +125,20 @@ namespace Models.Factories
             }
         }
 
-        public static async Task FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
+        public static void FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
         {
-            channel.ChannelItemsCount = await Task.Run(() => db.GetChannelItemsCountDbAsync(channel.ID));
-            List<VideoItemPOCO> items = offset == 0
-                ? await Task.Run(() => db.GetChannelItemsAsync(channel.ID, count, offset))
-                : await db.GetChannelItemsAsync(channel.ID, count, offset);
-            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site)))
+            if ((task != null)
+                && (task.IsCompleted == false || task.Status == TaskStatus.Running || task.Status == TaskStatus.WaitingToRun
+                    || task.Status == TaskStatus.WaitingForActivation))
             {
-                vi.IsHasLocalFileFound(channel.DirPath);
-                channel.ChannelItems.Add(vi);
+                return;
             }
+            List<VideoItemPOCO> items = null;
+            task = Task.Run(async () =>
+            {
+                items = await db.GetChannelItemsAsync(channel.ID, count, offset);
+                channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
+            }).ContinueWith(x => AddItemsToChannel(items, channel), TaskScheduler.FromCurrentSynchronizationContext());
         }
 
         public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(IChannel channel, int maxresult)
@@ -185,21 +190,6 @@ namespace Models.Factories
                 throw new Exception(ex.Message);
             }
         }
-
-        //public static async Task<List<IPlaylist>> GetChannelPlaylistsAsync(string channelID)
-        //{
-        //    var lst = new List<IPlaylist>();
-        //    try
-        //    {
-        //        List<PlaylistPOCO> fbres = await db.GetChannelPlaylistAsync(channelID);
-        //        lst.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, TODO)));
-        //        return lst;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception(ex.Message);
-        //    }
-        //}
 
         public static async Task<List<ITag>> GetChannelTagsAsync(string id)
         {
@@ -309,7 +299,7 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID);
-                    List<IPlaylist> pls = new List<IPlaylist>();
+                    var pls = new List<IPlaylist>();
                     pls.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)));
                     if (pls.Any())
                     {
@@ -350,9 +340,18 @@ namespace Models.Factories
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds, 
-            IChannel channel, 
-            string playlistId = null, 
+        private static void AddItemsToChannel(IEnumerable<VideoItemPOCO> items, IChannel channel)
+        {
+            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site)))
+            {
+                vi.IsHasLocalFileFound(channel.DirPath);
+                channel.ChannelItems.Add(vi);
+            }
+        }
+
+        private static async Task InsertNewItems(IEnumerable<string> trueIds,
+            IChannel channel,
+            string playlistId = null,
             ICollection<string> dbIds = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом

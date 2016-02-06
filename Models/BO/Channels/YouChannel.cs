@@ -60,13 +60,13 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public async void RestoreFullChannelItems()
+        public void RestoreFullChannelItems()
         {
             if (ChannelItemsCount <= ChannelItems.Count)
             {
                 return;
             }
-            await ChannelFactory.FillChannelItemsFromDbAsync(this, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
+            ChannelFactory.FillChannelItemsFromDbAsync(this, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
         }
 
         private bool FilterVideoBySynced(object item)
@@ -192,7 +192,6 @@ namespace Models.BO.Channels
 
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
-        public bool UseFast { get; set; }
 
         public bool IsShowSynced
         {
@@ -286,6 +285,8 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
+
+        public bool UseFast { get; set; }
 
         public void AddNewItem(IVideoItem item)
         {
