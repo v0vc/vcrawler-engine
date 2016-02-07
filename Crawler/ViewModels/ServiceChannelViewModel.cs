@@ -291,29 +291,47 @@ namespace Crawler.ViewModels
 
         public void ReloadFilteredLists(object state)
         {
-            ChannelItems.Clear();
-            if (state is WatchState)
+            if (state == null)
             {
-                var st = (WatchState)state;
-                switch (st)
+                List<IVideoItem> lst;
+                if (!popCountriesDictionary.TryGetValue(SelectedCountry, out lst))
                 {
-                    case WatchState.Watched:
-                        watchedList.ForEach(x => ChannelItems.Add(x));
-                        break;
-                    case WatchState.Planned:
-                        plannedList.ForEach(x => ChannelItems.Add(x));
-                        break;
+                    return;
                 }
+                if (!lst.Any())
+                {
+                    return;
+                }
+                ChannelItems.Clear();
+                lst.ForEach(x => ChannelItems.Add(x));
             }
-            else if (state is SyncState)
+
+            else
             {
-                var st = (SyncState)state;
-                switch (st)
+                ChannelItems.Clear();
+                if (state is WatchState)
                 {
-                    case SyncState.Added:
-                        addedList.ForEach(x => ChannelItems.Add(x));
-                        break;
+                    var st = (WatchState)state;
+                    switch (st)
+                    {
+                        case WatchState.Watched:
+                            watchedList.ForEach(x => ChannelItems.Add(x));
+                            break;
+                        case WatchState.Planned:
+                            plannedList.ForEach(x => ChannelItems.Add(x));
+                            break;
+                    }
                 }
+                else if (state is SyncState)
+                {
+                    var st = (SyncState)state;
+                    switch (st)
+                    {
+                        case SyncState.Added:
+                            addedList.ForEach(x => ChannelItems.Add(x));
+                            break;
+                    }
+                }    
             }
         }
 

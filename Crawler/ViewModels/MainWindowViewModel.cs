@@ -1851,7 +1851,9 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+            ServiceChannel.ReloadFilteredLists(null);
             SelectedChannel = item;
+            
         }
 
         /// <summary>
