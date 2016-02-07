@@ -680,6 +680,73 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get items by state
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetItemsByIdsAndState(object state, IEnumerable<string> ids)
+        {
+            string col = string.Empty;
+            if (state is WatchState)
+            {
+                col = watchstate;
+            }
+            else if (state is SyncState)
+            {
+                col = syncstate;
+            }
+            var res = new List<VideoItemPOCO>();
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            foreach (string itemID in ids)
+                            {
+                                command.CommandText = string.Format(@"{0} WHERE {1}='{2}' AND {3}='{4}' LIMIT 1",
+                                    itemsSelectString,
+                                    col,
+                                    (byte)state,
+                                    itemId,
+                                    itemID);
+
+                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                                {
+                                    if (!reader.HasRows)
+                                    {
+                                        transaction.Rollback();
+                                        throw new KeyNotFoundException("No item: " + itemID);
+                                    }
+
+                                    if (!await reader.ReadAsync())
+                                    {
+                                        transaction.Rollback();
+                                        throw new Exception(command.CommandText);
+                                    }
+                                    VideoItemPOCO vi = CreateVideoItem(reader);
+                                    res.Add(vi);
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
         ///     Get channel items count
         /// </summary>
         /// <param name="channelID">channel ID</param>
@@ -2226,5 +2293,6 @@ namespace DataAPI.Database
         }
 
         #endregion
+
     }
 }

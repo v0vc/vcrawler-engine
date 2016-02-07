@@ -54,7 +54,7 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly ICollectionView channelCollectionView;
-        private readonly SqLiteDatabase df;
+        private readonly SqLiteDatabase db;
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
 
         #endregion
@@ -108,14 +108,14 @@ namespace Crawler.ViewModels
         public MainWindowViewModel()
         {
             ParseCommandLineArguments();
-            df = CommonFactory.CreateSqLiteDatabase();
+            db = CommonFactory.CreateSqLiteDatabase();
             if (launchParam.Any())
             {
                 // через параметры запуска указали путь к своей базе
                 string dbpath;
                 if (launchParam.TryGetValue(dbLaunchParam, out dbpath))
                 {
-                    df.FileBase = new FileInfo(dbpath);
+                    db.FileBase = new FileInfo(dbpath);
                 }
             }
 
@@ -126,7 +126,7 @@ namespace Crawler.ViewModels
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
-            ServiceChannel = new ServiceChannelViewModel();
+            ServiceChannel = new ServiceChannelViewModel(db);
             InitBase();
         }
 
@@ -700,7 +700,7 @@ namespace Crawler.ViewModels
             Channels.Add(channel);
             SelectedChannel = channel;
             channel.ChannelState = ChannelState.InWork;
-            await df.InsertChannelFullAsync(channel);
+            await db.InsertChannelFullAsync(channel);
             AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
@@ -733,7 +733,7 @@ namespace Crawler.ViewModels
             DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                List<ChannelPOCO> lst = await df.GetChannelsListAsync();
+                List<ChannelPOCO> lst = await db.GetChannelsListAsync();
                 var sb = new StringBuilder();
                 foreach (ChannelPOCO poco in lst)
                 {
@@ -779,7 +779,7 @@ namespace Crawler.ViewModels
                     break;
             }
             ServiceChannel.AddToStateList(item.WatchState, item);
-            await df.UpdateItemWatchState(item.ID, item.WatchState);
+            await db.UpdateItemWatchState(item.ID, item.WatchState);
         }
 
         private async void ChannelKeyDown(object par)
@@ -796,7 +796,7 @@ namespace Crawler.ViewModels
                     List<string> ids = DeleteChannels();
                     if (ids.Any())
                     {
-                        await Task.Run(() => df.DeleteChannelsAsync(ids));
+                        await Task.Run(() => db.DeleteChannelsAsync(ids));
                     }
                     break;
 
@@ -816,7 +816,7 @@ namespace Crawler.ViewModels
                     List<string> ids = DeleteChannels();
                     if (ids.Any())
                     {
-                        await Task.Run(() => df.DeleteChannelsAsync(ids));
+                        await Task.Run(() => db.DeleteChannelsAsync(ids));
                     }
 
                     break;
@@ -884,7 +884,7 @@ namespace Crawler.ViewModels
 
             foreach (ITag tag in channel.ChannelTags)
             {
-                await df.InsertChannelTagsAsync(channel.ID, tag.Title);
+                await db.InsertChannelTagsAsync(channel.ID, tag.Title);
 
                 if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
                 {
@@ -1014,7 +1014,7 @@ namespace Crawler.ViewModels
                         if (isDeleteFromDbToo)
                         {
                             channel.DeleteItem(item);
-                            await df.DeleteItemAsync(item.ID);
+                            await db.DeleteItemAsync(item.ID);
                         }
                         else
                         {
@@ -1131,7 +1131,7 @@ namespace Crawler.ViewModels
 
             if (channel.PlaylistCount == 0)
             {
-                channel.PlaylistCount = await df.GetChannelPlaylistCountDbAsync(channel.ID);
+                channel.PlaylistCount = await db.GetChannelPlaylistCountDbAsync(channel.ID);
             }
         }
 
@@ -1371,7 +1371,7 @@ namespace Crawler.ViewModels
             var channelGrid = obj as DataGrid;
             try
             {
-                List<ChannelPOCO> fbres = await Task.Run(() => df.GetChannelsListAsync());
+                List<ChannelPOCO> fbres = await Task.Run(() => db.GetChannelsListAsync());
                 foreach (IChannel channel in fbres.Select(poco => ChannelFactory.CreateChannel(poco, SettingsViewModel.DirPath)))
                 {
                     Channels.Add(channel);
@@ -1516,54 +1516,25 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (ch is ServiceChannelViewModel)
+            if (!(ch is YouChannel))
             {
-                if (ch.ChannelPlaylists.Any())
-                {
-                    return;
-                }
-
-                IPlaylist pla = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-                pla.Title = SyncState.Added.ToString();
-                pla.Thumbnail =
-                    StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.new_48.png"));
-                pla.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(SyncState.Added));
-                pla.State = SyncState.Added;
-                ch.ChannelPlaylists.Add(pla);
-
-                var servpl = new List<WatchState> { WatchState.Planned, WatchState.Watched };
-                foreach (WatchState state in servpl)
-                {
-                    IPlaylist pl = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-                    pl.WatchState = state;
-                    pl.Title = state.ToString();
-                    pl.PlItems = await Task.Run(() => df.GetWatchStateListItemsAsync(pl.WatchState));
-                    string path = state == WatchState.Planned ? "Crawler.Images.time_48.png" : "Crawler.Images.done_48.png";
-                    Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(path);
-                    if (img != null)
-                    {
-                        pl.Thumbnail = StreamHelper.ReadFully(img);
-                    }
-                    ch.ChannelPlaylists.Add(pl);
-                }
+                return;
             }
-            else
+
+            if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
             {
-                if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
-                {
-                    return;
-                }
-
-                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
-
-                foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
-                {
-                    ch.ChannelPlaylists.Add(pl);
-                }
-
-                List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
-                AddDefPlaylist(ch, lst);
+                return;
             }
+
+            List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
+
+            foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
+            {
+                ch.ChannelPlaylists.Add(pl);
+            }
+
+            List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
+            AddDefPlaylist(ch, lst);
         }
 
         private void PlaylistLinkToClipboard()
@@ -1823,7 +1794,7 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private void SelectPlaylist(object obj)
+        private async void SelectPlaylist(object obj)
         {
             var pl = obj as IPlaylist;
             if (pl == null)
@@ -1841,25 +1812,32 @@ namespace Crawler.ViewModels
             {
                 if (pl.State == SyncState.Added)
                 {
-                    // Filter by state
+                    if (!ServiceChannel.IsAllItemsExist(pl.State, pl.PlItems))
+                    {
+                        List<IVideoItem> readyList = Channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == pl.State).ToList();
+                        IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
+                        List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.State, notreadyList));
+                        readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
+                        foreach (IVideoItem item in readyList)
+                        {
+                            ServiceChannel.AddToStateList(pl.State, item);
+                        }
+                    }
+                    ServiceChannel.ReloadFilteredLists(pl.State);
                 }
                 else
                 {
-                    switch (pl.WatchState)
+                    if (!ServiceChannel.IsAllItemsExist(pl.WatchState, pl.PlItems))
                     {
-                        case WatchState.Planned:
-                            Channels.ForEach(
-                                             x =>
-                                                 x.ChannelItems.Where(y => y.WatchState == WatchState.Planned)
-                                                     .ForEach(z => ServiceChannel.AddToStateList(WatchState.Planned, z)));
-                            break;
-
-                        case WatchState.Watched:
-                            Channels.ForEach(
-                                             x =>
-                                                 x.ChannelItems.Where(y => y.WatchState == WatchState.Watched)
-                                                     .ForEach(z => ServiceChannel.AddToStateList(WatchState.Watched, z)));
-                            break;
+                        List<IVideoItem> readyList =
+                            Channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == pl.WatchState).ToList();
+                        IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
+                        List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.WatchState, notreadyList));
+                        readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
+                        foreach (IVideoItem item in readyList)
+                        {
+                            ServiceChannel.AddToStateList(pl.WatchState, item);
+                        }
                     }
                     ServiceChannel.ReloadFilteredLists(pl.WatchState);
                 }
@@ -1976,7 +1954,7 @@ namespace Crawler.ViewModels
                 ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco, ch.Site));
             }
 
-            await df.InsertChannelFullAsync(channel);
+            await db.InsertChannelFullAsync(channel);
             channel.ChannelState = ChannelState.Added;
             SetStatus(0);
         }
@@ -2083,9 +2061,9 @@ namespace Crawler.ViewModels
 
         private async Task Vacuumdb()
         {
-            long sizebefore = df.FileBase.Length;
-            await df.VacuumAsync();
-            long sizeafter = new FileInfo(df.FileBase.FullName).Length;
+            long sizebefore = db.FileBase.Length;
+            await db.VacuumAsync();
+            long sizeafter = new FileInfo(db.FileBase.FullName).Length;
             Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
         }
 
