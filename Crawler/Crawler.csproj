@@ -97,6 +97,7 @@
     <Compile Include="ViewModels\EditTagsViewModel.cs" />
     <Compile Include="ViewModels\ServiceChannelViewModel.cs" />
     <Compile Include="ViewModels\SettingsViewModel.cs" />
+    <Compile Include="ViewModels\StateChannel.cs" />
     <Compile Include="Views\DownloadLinkView.xaml.cs">
       <DependentUpon>DownloadLinkView.xaml</DependentUpon>
     </Compile>

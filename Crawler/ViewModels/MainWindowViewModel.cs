@@ -126,7 +126,9 @@ namespace Crawler.ViewModels
             ServiceChannels = new ObservableCollection<ServiceChannelViewModel>();
             RelatedChannels = new ObservableCollection<IChannel>();
             CurrentTags = new ObservableCollection<ITag>();
-            ServiceChannel = new ServiceChannelViewModel(db);
+            ServiceChannel = new ServiceChannelViewModel();
+            StateChannel = new StateChannel(db);
+            RelatedChannels.Add(StateChannel);
             InitBase();
         }
 
@@ -504,6 +506,8 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
 
+        public StateChannel StateChannel { get; set; }
+
         public RelayCommand SiteChangedCommand
         {
             get
@@ -779,7 +783,7 @@ namespace Crawler.ViewModels
                     break;
             }
             ServiceChannel.ChannelItems.Clear();
-            ServiceChannel.AddToStateList(item.WatchState, item);
+            StateChannel.AddToStateList(item.WatchState, item);
             await db.UpdateItemWatchState(item.ID, item.WatchState);
         }
 
@@ -1810,29 +1814,29 @@ namespace Crawler.ViewModels
                 channel.RestoreFullChannelItems();
                 channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
             }
-            else if (obj is ServicePlaylist && SelectedChannel is ServiceChannelViewModel)
+            else if (obj is ServicePlaylist && SelectedChannel is StateChannel)
             {
                 if (pl.State == SyncState.Added)
                 {
-                    if (!ServiceChannel.IsAllItemsExist(pl.State, pl.PlItems))
+                    if (!StateChannel.IsAllItemsExist(pl.State, pl.PlItems))
                     {
-                        ServiceChannel.ClearList(pl.State);
+                        StateChannel.ClearList(pl.State);
                         List<IVideoItem> readyList = Channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == pl.State).ToList();
                         IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
                         List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.State, notreadyList));
                         readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
                         foreach (IVideoItem item in readyList)
                         {
-                            ServiceChannel.AddToStateList(pl.State, item);
+                            StateChannel.AddToStateList(pl.State, item);
                         }
                     }
-                    ServiceChannel.ReloadFilteredLists(pl.State);
+                    StateChannel.ReloadFilteredLists(pl.State);
                 }
                 else
                 {
-                    if (!ServiceChannel.IsAllItemsExist(pl.WatchState, pl.PlItems))
+                    if (!StateChannel.IsAllItemsExist(pl.WatchState, pl.PlItems))
                     {
-                        ServiceChannel.ClearList(pl.WatchState);
+                        StateChannel.ClearList(pl.WatchState);
                         List<IVideoItem> readyList =
                             Channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == pl.WatchState).ToList();
                         IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
@@ -1840,10 +1844,10 @@ namespace Crawler.ViewModels
                         readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
                         foreach (IVideoItem item in readyList)
                         {
-                            ServiceChannel.AddToStateList(pl.WatchState, item);
+                            StateChannel.AddToStateList(pl.WatchState, item);
                         }
                     }
-                    ServiceChannel.ReloadFilteredLists(pl.WatchState);
+                    StateChannel.ReloadFilteredLists(pl.WatchState);
                 }
             }
         }
@@ -1855,7 +1859,6 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            ServiceChannel.ReloadFilteredLists(null);
             SelectedChannel = item;
             
         }

@@ -14,7 +14,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Data;
-using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions.Helpers;
@@ -28,14 +27,7 @@ namespace Crawler.ViewModels
     {
         #region Static and Readonly Fields
 
-        private readonly List<IVideoItem> addedList;
-        private readonly IPlaylist addedPlaylist;
-        private readonly SqLiteDatabase db;
-        private readonly List<IVideoItem> plannedList;
-        private readonly IPlaylist plannedPlaylist;
         private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
-        private readonly List<IVideoItem> watchedList;
-        private readonly IPlaylist watchedPlaylist;
 
         #endregion
 
@@ -50,9 +42,8 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public ServiceChannelViewModel(SqLiteDatabase db)
+        public ServiceChannelViewModel()
         {
-            this.db = db;
             Title = "#Popular";
             Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
@@ -61,12 +52,6 @@ namespace Crawler.ViewModels
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
-            addedList = new List<IVideoItem>();
-            plannedList = new List<IVideoItem>();
-            watchedList = new List<IVideoItem>();
-            addedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-            plannedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-            watchedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
         }
 
         #endregion
@@ -127,131 +112,7 @@ namespace Crawler.ViewModels
 
         #endregion
 
-        #region Static Methods
-
-        private static bool ListsContentdEquals(IReadOnlyCollection<string> list1, IReadOnlyCollection<string> list2)
-        {
-            if (list1.Count != list2.Count)
-            {
-                return false;
-            }
-            var ids = new HashSet<string>(list2);
-            return list1.All(ids.Contains);
-        }
-
-        #endregion
-
         #region Methods
-
-        public void AddToStateList(object state, IVideoItem item)
-        {
-            if (state is WatchState)
-            {
-                var st = (WatchState)state;
-                switch (st)
-                {
-                    case WatchState.Watched:
-                        if (!watchedList.Contains(item))
-                        {
-                            watchedList.Add(item);
-                        }
-                        if (!watchedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            watchedPlaylist.PlItems.Add(item.ID);
-                        }
-
-                        break;
-                    case WatchState.Planned:
-                        if (!plannedList.Contains(item))
-                        {
-                            plannedList.Add(item);
-                        }
-
-                        if (watchedList.Contains(item))
-                        {
-                            watchedList.Remove(item);
-                        }
-
-                        if (!plannedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            plannedPlaylist.PlItems.Add(item.ID);
-                        }
-                        if (watchedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            watchedPlaylist.PlItems.Remove(item.ID);
-                        }
-
-                        break;
-
-                    case WatchState.Notset:
-                        if (plannedList.Contains(item))
-                        {
-                            plannedList.Remove(item);
-                        }
-                        if (plannedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            plannedPlaylist.PlItems.Remove(item.ID);
-                        }
-                        break;
-                }
-            }
-            else if (state is SyncState)
-            {
-                var st = (SyncState)state;
-                switch (st)
-                {
-                    case SyncState.Added:
-
-                        if (!addedList.Contains(item))
-                        {
-                            addedList.Add(item);
-                        }
-                        if (!addedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            addedPlaylist.PlItems.Add(item.ID);
-                        }
-                        break;
-
-                    case SyncState.Notset:
-                        if (addedList.Contains(item))
-                        {
-                            addedList.Remove(item);
-                        }
-                        if (addedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            addedPlaylist.PlItems.Remove(item.ID);
-                        }
-                        break;
-                }
-            }
-        }
-
-        public void ClearList(object state)
-        {
-            if (state is WatchState)
-            {
-                var st = (WatchState)state;
-                switch (st)
-                {
-                    case WatchState.Watched:
-                        watchedList.Clear();
-                        break;
-                    case WatchState.Planned:
-                        plannedList.Clear();
-                        break;
-                }
-            }
-            else if (state is SyncState)
-            {
-                var st = (SyncState)state;
-                switch (st)
-                {
-                    case SyncState.Added:
-                        addedList.Clear();
-                        break;
-                }
-            }
-        }
 
         public async Task FillPopular(HashSet<string> ids)
         {
@@ -317,78 +178,6 @@ namespace Crawler.ViewModels
                 }
             }
             SelectedSite = SupportedSites.First();
-            InitServicePlaylists();
-        }
-
-        public bool IsAllItemsExist(object state, List<string> ids)
-        {
-            if (state is WatchState)
-            {
-                var st = (WatchState)state;
-                switch (st)
-                {
-                    case WatchState.Watched:
-                        return ListsContentdEquals(watchedList.Select(x => x.ID).ToList(), ids);
-                    case WatchState.Planned:
-                        return ListsContentdEquals(plannedList.Select(x => x.ID).ToList(), ids);
-                }
-            }
-            else if (state is SyncState)
-            {
-                var st = (SyncState)state;
-                switch (st)
-                {
-                    case SyncState.Added:
-                        return ListsContentdEquals(addedList.Select(x => x.ID).ToList(), ids);
-                }
-            }
-            return false;
-        }
-
-        public void ReloadFilteredLists(object state)
-        {
-            if (state == null)
-            {
-                List<IVideoItem> lst;
-                if (!popCountriesDictionary.TryGetValue(SelectedCountry, out lst))
-                {
-                    return;
-                }
-                if (!lst.Any())
-                {
-                    return;
-                }
-                ChannelItems.Clear();
-                lst.ForEach(x => ChannelItems.Add(x));
-            }
-
-            else
-            {
-                ChannelItems.Clear();
-                if (state is WatchState)
-                {
-                    var st = (WatchState)state;
-                    switch (st)
-                    {
-                        case WatchState.Watched:
-                            watchedList.ForEach(x => ChannelItems.Add(x));
-                            break;
-                        case WatchState.Planned:
-                            plannedList.ForEach(x => ChannelItems.Add(x));
-                            break;
-                    }
-                }
-                else if (state is SyncState)
-                {
-                    var st = (SyncState)state;
-                    switch (st)
-                    {
-                        case SyncState.Added:
-                            addedList.ForEach(x => ChannelItems.Add(x));
-                            break;
-                    }
-                }
-            }
         }
 
         public async Task Search(HashSet<string> ids)
@@ -443,32 +232,6 @@ namespace Crawler.ViewModels
             }
 
             return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
-        }
-
-        private async void InitServicePlaylists()
-        {
-            addedPlaylist.Title = SyncState.Added.ToString();
-            addedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.new_48.png"));
-            addedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(SyncState.Added));
-            addedPlaylist.State = SyncState.Added;
-            ChannelPlaylists.Add(addedPlaylist);
-
-            plannedPlaylist.WatchState = WatchState.Planned;
-            plannedPlaylist.Title = WatchState.Planned.ToString();
-            plannedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Planned));
-            plannedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.time_48.png"));
-            ChannelPlaylists.Add(plannedPlaylist);
-
-            watchedPlaylist.WatchState = WatchState.Watched;
-            watchedPlaylist.Title = WatchState.Watched.ToString();
-            watchedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Watched));
-            watchedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.done_48.png"));
-            ChannelPlaylists.Add(watchedPlaylist);
-
-            PlaylistCount = ChannelPlaylists.Count;
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
