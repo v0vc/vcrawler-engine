@@ -778,6 +778,7 @@ namespace Crawler.ViewModels
                     item.WatchState = WatchState.Notset;
                     break;
             }
+            ServiceChannel.ChannelItems.Clear();
             ServiceChannel.AddToStateList(item.WatchState, item);
             await db.UpdateItemWatchState(item.ID, item.WatchState);
         }
@@ -1609,7 +1610,7 @@ namespace Crawler.ViewModels
 
                 case PlaylistMenuItem.Update:
 
-                    if (SelectedChannel == null)
+                    if (SelectedChannel == null || SelectedChannel is ServiceChannelViewModel)
                     {
                         return;
                     }
@@ -1814,6 +1815,7 @@ namespace Crawler.ViewModels
                 {
                     if (!ServiceChannel.IsAllItemsExist(pl.State, pl.PlItems))
                     {
+                        ServiceChannel.ClearList(pl.State);
                         List<IVideoItem> readyList = Channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == pl.State).ToList();
                         IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
                         List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.State, notreadyList));
@@ -1829,6 +1831,7 @@ namespace Crawler.ViewModels
                 {
                     if (!ServiceChannel.IsAllItemsExist(pl.WatchState, pl.PlItems))
                     {
+                        ServiceChannel.ClearList(pl.WatchState);
                         List<IVideoItem> readyList =
                             Channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == pl.WatchState).ToList();
                         IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
