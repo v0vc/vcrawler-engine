@@ -1372,6 +1372,7 @@ namespace Crawler.ViewModels
             var channelGrid = obj as DataGrid;
             try
             {
+                Result = "Working..";
                 List<ChannelPOCO> fbres = await Task.Run(() => db.GetChannelsListAsync());
                 foreach (IChannel channel in fbres.Select(poco => ChannelFactory.CreateChannel(poco, SettingsViewModel.DirPath)))
                 {
