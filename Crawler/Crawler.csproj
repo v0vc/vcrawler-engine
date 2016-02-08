@@ -243,6 +243,7 @@
   <ItemGroup>
     <Content Include="DLL\Microsoft.WindowsAPICodePack.dll" />
     <Content Include="DLL\Microsoft.WindowsAPICodePack.Shell.dll" />
+    <EmbeddedResource Include="Images\tick_48.png" />
     <EmbeddedResource Include="Images\time_48.png" />
     <EmbeddedResource Include="Images\new_48.png" />
     <EmbeddedResource Include="Images\done_48.png" />
