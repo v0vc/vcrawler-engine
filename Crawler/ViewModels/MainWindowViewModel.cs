@@ -506,8 +506,6 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
 
-        public StateChannel StateChannel { get; set; }
-
         public RelayCommand SiteChangedCommand
         {
             get
@@ -515,6 +513,8 @@ namespace Crawler.ViewModels
                 return siteChangedCommand ?? (siteChangedCommand = new RelayCommand(SiteChanged));
             }
         }
+
+        public StateChannel StateChannel { get; set; }
 
         public RelayCommand SyncDataCommand
         {
@@ -1860,7 +1860,6 @@ namespace Crawler.ViewModels
                 return;
             }
             SelectedChannel = item;
-            
         }
 
         /// <summary>
@@ -1895,13 +1894,16 @@ namespace Crawler.ViewModels
 
         private void SiteChanged(object obj)
         {
-            var item = obj as IChannel;
-            if (item != null)
+            if (obj is IChannel)
             {
-                SelectedChannel = item;
+                // ServiceChannel.SiteChanged();
+                SelectedChannel = obj as IChannel;
             }
-
-            ServiceChannel.SiteChanged();
+            else if (obj is StateChannel.StateImage)
+            {
+                StateChannel.SelectedState = obj as StateChannel.StateImage;
+                SelectedChannel = StateChannel;
+            }
         }
 
         private async void SubscribeOnPopular()

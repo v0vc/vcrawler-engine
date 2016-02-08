@@ -11,7 +11,9 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Crawler.Common;
 using DataAPI.Database;
 using Extensions.Helpers;
 using Interfaces.Enums;
@@ -20,7 +22,7 @@ using Models.Factories;
 
 namespace Crawler.ViewModels
 {
-    public class StateChannel : IChannel
+    public class StateChannel : IChannel, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -39,6 +41,10 @@ namespace Crawler.ViewModels
             { "Crawler.Images.tick_48.png", WatchState.Watched },
             { "Crawler.Images.done_48.png", ItemState.LocalYes }
         };
+
+        private RelayCommand stateChangedCommand;
+        private StateImage selectedState;
+        private string title;
 
         #endregion
 
@@ -65,6 +71,19 @@ namespace Crawler.ViewModels
             SelectedState = SupportedStates.First();
         }
 
+        public RelayCommand StateChangedCommand
+        {
+            get
+            {
+                return stateChangedCommand ?? (stateChangedCommand = new RelayCommand(x => OnStateChanged()));
+            }
+        }
+
+        private void OnStateChanged()
+        {
+            Title = SelectedState.State.ToString();
+        }
+
         #endregion
 
         #region Static Methods
@@ -83,7 +102,23 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public StateImage SelectedState { get; set; }
+        public StateImage SelectedState
+        {
+            get
+            {
+                return selectedState;
+            }
+            set
+            {
+                if (value.Equals(selectedState))
+                {
+                    return;
+                }
+                selectedState = value;
+                OnPropertyChanged();
+                OnStateChanged();
+            }
+        }
 
         public void AddToStateList(object state, IVideoItem item)
         {
@@ -302,7 +337,24 @@ namespace Crawler.ViewModels
         }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
-        public string Title { get; set; }
+
+        public string Title
+        {
+            get
+            {
+                return title;
+            }
+            set
+            {
+                if (value == title)
+                {
+                    return;
+                }
+                title = value;
+                OnPropertyChanged();
+            }
+        }
+
         public bool UseFast { get; set; }
 
         public void AddNewItem(IVideoItem item)
@@ -334,6 +386,17 @@ namespace Crawler.ViewModels
             public object State { get; private set; }
 
             public byte[] Thumbnail { get; private set; }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
         }
     }
 }

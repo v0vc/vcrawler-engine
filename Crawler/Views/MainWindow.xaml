@@ -131,15 +131,15 @@
                                         <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:StateChannel, IsDesignTimeCreatable=False}">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <ComboBox ItemsSource="{Binding SupportedStates, Mode=OneWay}" Margin="0.5"
+                                                    <ComboBox ItemsSource="{Binding SupportedStates, Mode=OneTime}" Margin="0.5" x:Name="stateBox"
                                                               SelectedItem="{Binding SelectedState, Mode=OneWay}"
                                                               >
 
                                                         <i:Interaction.Triggers>
                                                             <i:EventTrigger EventName="SelectionChanged">
                                                                 <i:InvokeCommandAction Command="{Binding DataContext.SiteChangedCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" 
-                                                                                           CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}" 
-                                                                                           />
+                                                                                       CommandParameter="{Binding ElementName=stateBox, Path=SelectedItem}" 
+                                                                                       />
                                                             </i:EventTrigger>
                                                         </i:Interaction.Triggers>
 
@@ -439,7 +439,7 @@
                 <DockPanel Grid.Row="2" Background="Lavender" Margin="0">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <Expander ExpandDirection="Up" DockPanel.Dock="Left" FlowDirection="RightToLeft" 
-                                  IsExpanded="{Binding IsSearchExpanded, Mode=OneWayToSource}"
+                                  IsExpanded="{Binding IsSearchExpanded, Mode=OneWayToSource}" Margin="-0.8,0,0.6,0"
                                   >
                             
                             <Expander.Header>
