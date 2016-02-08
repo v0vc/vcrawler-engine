@@ -12,13 +12,10 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using Crawler.Common;
 using DataAPI.Database;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Crawler.ViewModels
 {
@@ -27,12 +24,9 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly List<IVideoItem> addedList;
-        private readonly IPlaylist addedPlaylist;
         private readonly SqLiteDatabase db;
+        private readonly List<IVideoItem> hasfileList;
         private readonly List<IVideoItem> plannedList;
-        private readonly IPlaylist plannedPlaylist;
-        private readonly List<IVideoItem> watchedList;
-        private readonly IPlaylist watchedPlaylist;
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
@@ -42,7 +36,12 @@ namespace Crawler.ViewModels
             { "Crawler.Images.done_48.png", ItemState.LocalYes }
         };
 
-        private RelayCommand stateChangedCommand;
+        private readonly List<IVideoItem> watchedList;
+
+        #endregion
+
+        #region Fields
+
         private StateImage selectedState;
         private string title;
 
@@ -55,9 +54,10 @@ namespace Crawler.ViewModels
             this.db = db;
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelItems = new ObservableCollection<IVideoItem>();
-            //addedList = new List<IVideoItem>();
-            //plannedList = new List<IVideoItem>();
-            //watchedList = new List<IVideoItem>();
+            addedList = new List<IVideoItem>();
+            plannedList = new List<IVideoItem>();
+            watchedList = new List<IVideoItem>();
+            hasfileList = new List<IVideoItem>();
             //addedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
             //plannedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
             //watchedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
@@ -71,36 +71,9 @@ namespace Crawler.ViewModels
             SelectedState = SupportedStates.First();
         }
 
-        public RelayCommand StateChangedCommand
-        {
-            get
-            {
-                return stateChangedCommand ?? (stateChangedCommand = new RelayCommand(x => OnStateChanged()));
-            }
-        }
-
-        private void OnStateChanged()
-        {
-            Title = SelectedState.State.ToString();
-        }
-
         #endregion
 
-        #region Static Methods
-
-        private static bool ListsContentdEquals(IReadOnlyCollection<string> list1, IReadOnlyCollection<string> list2)
-        {
-            if (list1.Count != list2.Count)
-            {
-                return false;
-            }
-            var ids = new HashSet<string>(list2);
-            return list1.All(ids.Contains);
-        }
-
-        #endregion
-
-        #region Methods
+        #region Properties
 
         public StateImage SelectedState
         {
@@ -120,6 +93,26 @@ namespace Crawler.ViewModels
             }
         }
 
+        public List<StateImage> SupportedStates { get; private set; }
+
+        #endregion
+
+        #region Static Methods
+
+        private static bool ListsContentdEquals(IReadOnlyCollection<string> list1, IReadOnlyCollection<string> list2)
+        {
+            if (list1.Count != list2.Count)
+            {
+                return false;
+            }
+            var ids = new HashSet<string>(list2);
+            return list1.All(ids.Contains);
+        }
+
+        #endregion
+
+        #region Methods
+
         public void AddToStateList(object state, IVideoItem item)
         {
             if (state is WatchState)
@@ -131,10 +124,6 @@ namespace Crawler.ViewModels
                         if (!watchedList.Contains(item))
                         {
                             watchedList.Add(item);
-                        }
-                        if (!watchedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            watchedPlaylist.PlItems.Add(item.ID);
                         }
 
                         break;
@@ -149,25 +138,12 @@ namespace Crawler.ViewModels
                             watchedList.Remove(item);
                         }
 
-                        if (!plannedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            plannedPlaylist.PlItems.Add(item.ID);
-                        }
-                        if (watchedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            watchedPlaylist.PlItems.Remove(item.ID);
-                        }
-
                         break;
 
                     case WatchState.Notset:
                         if (plannedList.Contains(item))
                         {
                             plannedList.Remove(item);
-                        }
-                        if (plannedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            plannedPlaylist.PlItems.Remove(item.ID);
                         }
                         break;
                 }
@@ -183,20 +159,12 @@ namespace Crawler.ViewModels
                         {
                             addedList.Add(item);
                         }
-                        if (!addedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            addedPlaylist.PlItems.Add(item.ID);
-                        }
                         break;
 
                     case SyncState.Notset:
                         if (addedList.Contains(item))
                         {
                             addedList.Remove(item);
-                        }
-                        if (addedPlaylist.PlItems.Contains(item.ID))
-                        {
-                            addedPlaylist.PlItems.Remove(item.ID);
                         }
                         break;
                 }
@@ -283,30 +251,18 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void InitServicePlaylists()
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            addedPlaylist.Title = SyncState.Added.ToString();
-            addedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.new_48.png"));
-            addedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(SyncState.Added));
-            addedPlaylist.State = SyncState.Added;
-            ChannelPlaylists.Add(addedPlaylist);
+            PropertyChangedEventHandler handler = PropertyChanged;
+            if (handler != null)
+            {
+                handler(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
 
-            plannedPlaylist.WatchState = WatchState.Planned;
-            plannedPlaylist.Title = WatchState.Planned.ToString();
-            plannedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Planned));
-            plannedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.time_48.png"));
-            ChannelPlaylists.Add(plannedPlaylist);
-
-            watchedPlaylist.WatchState = WatchState.Watched;
-            watchedPlaylist.Title = WatchState.Watched.ToString();
-            watchedPlaylist.PlItems = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Watched));
-            watchedPlaylist.Thumbnail =
-                StreamHelper.ReadFully(Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.done_48.png"));
-            ChannelPlaylists.Add(watchedPlaylist);
-
-            PlaylistCount = ChannelPlaylists.Count;
+        private void OnStateChanged()
+        {
+            Title = SelectedState.State.ToString();
         }
 
         #endregion
@@ -328,6 +284,7 @@ namespace Crawler.ViewModels
         public bool IsShowSynced { get; set; }
         public int PlaylistCount { get; set; }
         public IVideoItem SelectedItem { get; set; }
+
         public SiteType Site
         {
             get
@@ -335,6 +292,7 @@ namespace Crawler.ViewModels
                 return SiteType.NotSet;
             }
         }
+
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
 
@@ -369,10 +327,18 @@ namespace Crawler.ViewModels
 
         #endregion
 
-        public List<StateImage> SupportedStates { get; private set; }
+        #region INotifyPropertyChanged Members
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Nested type: StateImage
 
         public class StateImage
         {
+            #region Constructors
+
             public StateImage(object state, string resourcepic)
             {
                 State = state;
@@ -383,20 +349,17 @@ namespace Crawler.ViewModels
                 }
             }
 
+            #endregion
+
+            #region Properties
+
             public object State { get; private set; }
 
             public byte[] Thumbnail { get; private set; }
+
+            #endregion
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
+        #endregion
     }
 }
