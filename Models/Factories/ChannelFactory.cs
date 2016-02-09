@@ -221,7 +221,10 @@ namespace Models.Factories
             throw new Exception(channel.ID);
         }
 
-        public static async Task SyncChannelAsync(IChannel channel, bool isFastSync, bool isSyncPls = false)
+        public static async Task SyncChannelAsync(IChannel channel,
+            bool isFastSync,
+            bool isSyncPls = false,
+            Action<IVideoItem, object> stateAction = null)
         {
             channel.ChannelState = ChannelState.InWork;
             if (channel is YouChannel)
@@ -230,9 +233,13 @@ namespace Models.Factories
 
                 // убираем признак предыдущей синхронизации
                 List<IVideoItem> preds = channel.ChannelItems.Where(x => x.SyncState == SyncState.Added).ToList();
-                if (preds.Any())
+                foreach (IVideoItem item in preds)
                 {
-                    preds.ForEach(x => x.SyncState = SyncState.Notset);
+                    item.SyncState = SyncState.Notset;
+                    if (stateAction != null)
+                    {
+                        stateAction.Invoke(item, SyncState.Notset);
+                    }
                 }
                 if (channel.CountNew > 0)
                 {
@@ -272,7 +279,7 @@ namespace Models.Factories
                 {
                     List<VideoItemPOCO> trlist = await YouTubeSite.GetVideosListByIdsLiteAsync(list);
                     IEnumerable<string> trueIds = from poco in trlist where poco.ParentID == channel.ID select poco.ID;
-                    await InsertNewItems(trueIds, channel, null, dbids);
+                    await InsertNewItems(trueIds, channel, null, dbids, stateAction);
                 }
 
                 // обновим инфу о количестве новых после синхронизации
@@ -352,7 +359,8 @@ namespace Models.Factories
         private static async Task InsertNewItems(IEnumerable<string> trueIds,
             IChannel channel,
             string playlistId = null,
-            ICollection<string> dbIds = null)
+            ICollection<string> dbIds = null,
+            Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом
             IEnumerable<IVideoItem> result =
@@ -364,6 +372,10 @@ namespace Models.Factories
             await db.InsertChannelItemsAsync(result);
             foreach (IVideoItem vi in result)
             {
+                if (stateAction != null)
+                {
+                    stateAction.Invoke(vi, SyncState.Added);
+                }
                 vi.SyncState = SyncState.Added;
                 channel.AddNewItem(vi);
                 if (playlistId != null)

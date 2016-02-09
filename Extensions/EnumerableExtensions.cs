@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -22,7 +23,7 @@ namespace Extensions
         public static IEnumerable<IEnumerable<TSource>> Batch<TSource>(this IEnumerable<TSource> source, int size)
         {
             TSource[] bucket = null;
-            var count = 0;
+            int count = 0;
 
             foreach (TSource item in source)
             {
@@ -66,11 +67,21 @@ namespace Extensions
             }
         }
 
+        public static bool ListsContentdEquals(this IReadOnlyCollection<string> list1, IReadOnlyCollection<string> list2)
+        {
+            if (list1.Count != list2.Count)
+            {
+                return false;
+            }
+            var ids = new HashSet<string>(list2);
+            return list1.All(ids.Contains);
+        }
+
         public static IEnumerable<List<string>> SplitList(this List<string> locations, int nSize = 50)
         {
             var list = new List<List<string>>();
 
-            for (var i = 0; i < locations.Count; i += nSize)
+            for (int i = 0; i < locations.Count; i += nSize)
             {
                 list.Add(locations.GetRange(i, Math.Min(nSize, locations.Count - i)));
             }

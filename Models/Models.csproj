@@ -51,7 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BO\Channels\YouChannel.cs" />
-    <Compile Include="BO\Playlists\ServicePlaylist.cs" />
     <Compile Include="BO\Playlists\YouPlaylist.cs" />
     <Compile Include="BO\Subtitle.cs" />
     <Compile Include="BO\Cred.cs" />

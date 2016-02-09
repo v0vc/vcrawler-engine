@@ -53,6 +53,8 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
+        private readonly Action<IVideoItem, object> addItemToStateChannel;
+
         private readonly ICollectionView channelCollectionView;
         private readonly SqLiteDatabase db;
         private readonly Dictionary<string, string> launchParam = new Dictionary<string, string>();
@@ -130,6 +132,7 @@ namespace Crawler.ViewModels
             StateChannel = new StateChannel(db);
             RelatedChannels.Add(StateChannel);
             InitBase();
+            addItemToStateChannel = AddItemToStateChannel;
         }
 
         #endregion
@@ -637,6 +640,11 @@ namespace Crawler.ViewModels
         {
             SelectedChannel = ServiceChannel;
             SelectedChannel.AddNewItem(item);
+        }
+
+        private void AddItemToStateChannel(IVideoItem videoItem, object state)
+        {
+            StateChannel.AddToStateList(state, videoItem);
         }
 
         private async void AddNewChannel(string channelId, string channelTitle, SiteType site)
@@ -1312,6 +1320,7 @@ namespace Crawler.ViewModels
                 await SettingsViewModel.LoadCredsFromDb();
                 ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
                 ServiceChannels.Add(ServiceChannel);
+                StateChannel.DirPath = SettingsViewModel.DirPath;
             }
             catch (Exception ex)
             {
@@ -1517,27 +1526,25 @@ namespace Crawler.ViewModels
         private async void PlaylistExpand(object obj)
         {
             var channel = obj as YouChannel;
-            if (channel != null)
+            if (channel == null)
             {
-                if (channel.ChannelPlaylists.Any() && channel.ChannelPlaylists.Any(x => x.State != SyncState.Added))
-                {
-                    return;
-                }
-
-                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channel.ID);
-
-                foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)))
-                {
-                    channel.ChannelPlaylists.Add(pl);
-                }
-
-                List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
-                AddDefPlaylist(channel, lst);
+                SelectedChannel = StateChannel;
+                return;
             }
-            else
+            if (channel.ChannelPlaylists.Any() && channel.ChannelPlaylists.Any(x => x.State != SyncState.Added))
             {
-                StateChannel.Init(Channels);
+                return;
             }
+
+            List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channel.ID);
+
+            foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)))
+            {
+                channel.ChannelPlaylists.Add(pl);
+            }
+
+            List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+            AddDefPlaylist(channel, lst);
         }
 
         private void PlaylistLinkToClipboard()
@@ -1797,7 +1804,7 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async void SelectPlaylist(object obj)
+        private void SelectPlaylist(object obj)
         {
             var pl = obj as IPlaylist;
             if (pl == null)
@@ -1805,48 +1812,13 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            if (obj is YouPlaylist && SelectedChannel is YouChannel)
+            if (!(obj is YouPlaylist) || !(SelectedChannel is YouChannel))
             {
-                var channel = (YouChannel)SelectedChannel;
-                channel.RestoreFullChannelItems();
-                channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
+                return;
             }
-            else if (obj is ServicePlaylist && SelectedChannel is StateChannel)
-            {
-                if (pl.State == SyncState.Added)
-                {
-                    if (!StateChannel.IsAllItemsExist(pl.State, pl.PlItems))
-                    {
-                        StateChannel.ClearList(pl.State);
-                        List<IVideoItem> readyList = Channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == pl.State).ToList();
-                        IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
-                        List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.State, notreadyList));
-                        readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
-                        foreach (IVideoItem item in readyList)
-                        {
-                            StateChannel.AddToStateList(pl.State, item);
-                        }
-                    }
-                    StateChannel.ReloadFilteredLists(pl.State);
-                }
-                else
-                {
-                    if (!StateChannel.IsAllItemsExist(pl.WatchState, pl.PlItems))
-                    {
-                        StateChannel.ClearList(pl.WatchState);
-                        List<IVideoItem> readyList =
-                            Channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == pl.WatchState).ToList();
-                        IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
-                        List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.WatchState, notreadyList));
-                        readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
-                        foreach (IVideoItem item in readyList)
-                        {
-                            StateChannel.AddToStateList(pl.WatchState, item);
-                        }
-                    }
-                    StateChannel.ReloadFilteredLists(pl.WatchState);
-                }
-            }
+            var channel = (YouChannel)SelectedChannel;
+            channel.RestoreFullChannelItems();
+            channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
         }
 
         private void SelectPopular(object obj)
@@ -1980,7 +1952,8 @@ namespace Crawler.ViewModels
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                await ChannelFactory.SyncChannelAsync(channel, false, true);
+                StateChannel.ClearAddedAllList();
+                await ChannelFactory.SyncChannelAsync(channel, false, true, addItemToStateChannel);
                 watch.Stop();
                 Info = watch.TakeLogMessage();
                 SetStatus(0);
@@ -2022,6 +1995,7 @@ namespace Crawler.ViewModels
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
             Stopwatch watch = Stopwatch.StartNew();
+            StateChannel.ClearAddedAllList();
             foreach (IChannel channel in Channels)
             {
                 i += 1;
@@ -2030,7 +2004,7 @@ namespace Crawler.ViewModels
                 Info = "Syncing: " + channel.Title;
                 try
                 {
-                    await ChannelFactory.SyncChannelAsync(channel, isFastSync);
+                    await ChannelFactory.SyncChannelAsync(channel, isFastSync, false, addItemToStateChannel);
                 }
                 catch (Exception ex)
                 {
@@ -2060,6 +2034,7 @@ namespace Crawler.ViewModels
                     channel.DirPath = obj;
                 }
                 ServiceChannel.DirPath = obj;
+                StateChannel.DirPath = obj;
             }
             else
             {

@@ -679,8 +679,65 @@ namespace DataAPI.Database
             return res;
         }
 
+
         /// <summary>
         ///     Get items by state
+        /// </summary>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetItemsByState(object state)
+        {
+            string col = string.Empty;
+            if (state is WatchState)
+            {
+                col = watchstate;
+            }
+            else if (state is SyncState)
+            {
+                col = syncstate;
+            }
+            var res = new List<VideoItemPOCO>();
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            command.CommandText = string.Format(@"{0} WHERE {1}='{2}'", itemsSelectString, col, (byte)state);
+
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                            {
+                                if (!reader.HasRows)
+                                {
+                                    transaction.Rollback();
+                                    throw new KeyNotFoundException("No item");
+                                }
+
+                                while (await reader.ReadAsync())
+                                {
+                                    VideoItemPOCO vi = CreateVideoItem(reader);
+                                    res.Add(vi);
+                                }
+                                transaction.Commit();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        ///     Get items by state and id
         /// </summary>
         /// <param name="state"></param>
         /// <param name="ids"></param>

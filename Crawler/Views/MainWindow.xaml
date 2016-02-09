@@ -101,9 +101,7 @@
 
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Expanded">
-                                    <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}"
-                                                           CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"
-                                                           />
+                                    <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
 
@@ -192,12 +190,12 @@
                                         <DataGridTemplateColumn CanUserResize="False" Width="50" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <TextBlock Text="{Binding CountNew, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
+                                                    <TextBlock Text="{Binding ChannelItems.Count, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="21">
                                                         <TextBlock.Style>
                                                             <Style TargetType="TextBlock">
                                                                 <Setter Property= "Foreground" Value="MediumSeaGreen" />
                                                                 <Style.Triggers>
-                                                                    <DataTrigger Binding="{Binding CountNew}" Value="0">
+                                                                    <DataTrigger Binding="{Binding ChannelItems.Count}" Value="0">
                                                                         <Setter Property="Visibility" Value="Collapsed" />
                                                                     </DataTrigger>
                                                                 </Style.Triggers>
