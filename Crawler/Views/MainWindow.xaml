@@ -98,6 +98,15 @@
                 <DockPanel Grid.Row="0" Background="Lavender" Margin="0,1,0,1">
                     <Border CornerRadius="4" BorderBrush="Gray" Background="Lavender" BorderThickness="1" DockPanel.Dock="Top">
                         <Expander ExpandDirection="Down" DockPanel.Dock="Left" FlowDirection="RightToLeft">
+
+                            <i:Interaction.Triggers>
+                                <i:EventTrigger EventName="Expanded">
+                                    <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}"
+                                                           CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"
+                                                           />
+                                </i:EventTrigger>
+                            </i:Interaction.Triggers>
+
                             <Expander.Content>
                                 <DockPanel FlowDirection="LeftToRight" LastChildFill="True">
                                     <DataGrid CanUserAddRows="False" x:Name="stateGrid"
@@ -121,11 +130,11 @@
                                         <i:EventTrigger EventName="MouseLeftButtonUp">
                                             <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
                                         </i:EventTrigger>
-                                    </i:Interaction.Triggers>
+                                    </i:Interaction.Triggers>-->
 
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                                    </DataGrid.Resources>-->
+                                    </DataGrid.Resources>
 
                                     <DataGrid.Columns>
                                         <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:StateChannel, IsDesignTimeCreatable=False}">

@@ -19,14 +19,15 @@ using Interfaces.Models;
 
 namespace Crawler.ViewModels
 {
-    public class StateChannel : IChannel, INotifyPropertyChanged
+    public sealed class StateChannel : IChannel, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
-        private readonly List<IVideoItem> addedList;
         private readonly SqLiteDatabase db;
+        private readonly List<IVideoItem> addedList;
         private readonly List<IVideoItem> hasfileList;
         private readonly List<IVideoItem> plannedList;
+        private readonly List<IVideoItem> watchedList;
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
@@ -35,8 +36,6 @@ namespace Crawler.ViewModels
             { "Crawler.Images.tick_48.png", WatchState.Watched },
             { "Crawler.Images.done_48.png", ItemState.LocalYes }
         };
-
-        private readonly List<IVideoItem> watchedList;
 
         #endregion
 
@@ -58,10 +57,6 @@ namespace Crawler.ViewModels
             plannedList = new List<IVideoItem>();
             watchedList = new List<IVideoItem>();
             hasfileList = new List<IVideoItem>();
-            //addedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-            //plannedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-            //watchedPlaylist = PlaylistFactory.CreatePlaylist(SiteType.NotSet);
-            //InitServicePlaylists();
 
             SupportedStates = new List<StateImage>();
             foreach (KeyValuePair<string, object> pair in supportedStates)
@@ -89,7 +84,7 @@ namespace Crawler.ViewModels
                 }
                 selectedState = value;
                 OnPropertyChanged();
-                OnStateChanged();
+                OnStateChanged(selectedState);
             }
         }
 
@@ -113,61 +108,68 @@ namespace Crawler.ViewModels
 
         #region Methods
 
-        public void AddToStateList(object state, IVideoItem item)
+        public void AddToStateList(WatchState state, IVideoItem item)
         {
-            if (state is WatchState)
+            switch (state)
             {
-                var st = (WatchState)state;
-                switch (st)
-                {
-                    case WatchState.Watched:
-                        if (!watchedList.Contains(item))
-                        {
-                            watchedList.Add(item);
-                        }
+                case WatchState.Watched:
+                    if (!watchedList.Contains(item))
+                    {
+                        watchedList.Add(item);
+                    }
 
-                        break;
-                    case WatchState.Planned:
-                        if (!plannedList.Contains(item))
-                        {
-                            plannedList.Add(item);
-                        }
-
+                    break;
+                case WatchState.Planned:
+                    if (!plannedList.Contains(item))
+                    {
+                        plannedList.Add(item);
                         if (watchedList.Contains(item))
                         {
                             watchedList.Remove(item);
                         }
+                    }
 
-                        break;
+                    break;
 
-                    case WatchState.Notset:
-                        if (plannedList.Contains(item))
-                        {
-                            plannedList.Remove(item);
-                        }
-                        break;
-                }
+                case WatchState.Notset:
+                    if (plannedList.Contains(item))
+                    {
+                        plannedList.Remove(item);
+                    }
+                    break;
             }
-            else if (state is SyncState)
+        }
+
+        public void AddToStateList(ItemState state, IVideoItem item)
+        {
+            if (state != ItemState.LocalYes)
             {
-                var st = (SyncState)state;
-                switch (st)
-                {
-                    case SyncState.Added:
+                return;
+            }
+            if (!hasfileList.Contains(item))
+            {
+                hasfileList.Add(item);
+            }
+        }
 
-                        if (!addedList.Contains(item))
-                        {
-                            addedList.Add(item);
-                        }
-                        break;
+        public void AddToStateList(SyncState state, IVideoItem item)
+        {
+            switch (state)
+            {
+                case SyncState.Added:
 
-                    case SyncState.Notset:
-                        if (addedList.Contains(item))
-                        {
-                            addedList.Remove(item);
-                        }
-                        break;
-                }
+                    if (!addedList.Contains(item))
+                    {
+                        addedList.Add(item);
+                    }
+                    break;
+
+                case SyncState.Notset:
+                    if (addedList.Contains(item))
+                    {
+                        addedList.Remove(item);
+                    }
+                    break;
             }
         }
 
@@ -249,9 +251,19 @@ namespace Crawler.ViewModels
                         break;
                 }
             }
+            else if (state is ItemState)
+            {
+                var st = (ItemState)state;
+                switch (st)
+                {
+                    case ItemState.LocalYes:
+                        hasfileList.ForEach(x => ChannelItems.Add(x));
+                        break;
+                }
+            }
         }
 
-        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             if (handler != null)
@@ -260,9 +272,10 @@ namespace Crawler.ViewModels
             }
         }
 
-        private void OnStateChanged()
+        private void OnStateChanged(StateImage stateImage)
         {
-            Title = SelectedState.State.ToString();
+            Title = stateImage.State.ToString();
+            ReloadFilteredLists(stateImage.State);
         }
 
         #endregion
@@ -361,5 +374,43 @@ namespace Crawler.ViewModels
         }
 
         #endregion
+
+        public void Init(IEnumerable<IChannel> channels)
+        {
+            var state = SelectedState.State;
+            if (state is WatchState)
+            {
+                var st = (WatchState)state;
+                switch (st)
+                {
+                    case WatchState.Watched:
+                        watchedList.AddRange(channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == WatchState.Watched));
+                        break;
+                    case WatchState.Planned:
+                        plannedList.AddRange(channels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == WatchState.Planned));
+                        break;
+                }
+            }
+            else if (state is SyncState)
+            {
+                var st = (SyncState)state;
+                switch (st)
+                {
+                    case SyncState.Added:
+                        addedList.AddRange(channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == SyncState.Added));
+                        break;
+                }
+            }
+            else if (state is ItemState)
+            {
+                var st = (ItemState)state;
+                switch (st)
+                {
+                    case ItemState.LocalYes:
+                        hasfileList.AddRange(channels.SelectMany(x => x.ChannelItems).Where(y => y.FileState == ItemState.LocalYes));
+                        break;
+                }
+            }
+        }
     }
 }

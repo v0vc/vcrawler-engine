@@ -336,7 +336,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(x => PlaylistExpand()));
+                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(PlaylistExpand));
             }
         }
 
@@ -1514,33 +1514,30 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void PlaylistExpand()
+        private async void PlaylistExpand(object obj)
         {
-            IChannel ch = SelectedChannel;
-            if (ch == null)
+            var channel = obj as YouChannel;
+            if (channel != null)
             {
-                return;
-            }
+                if (channel.ChannelPlaylists.Any() && channel.ChannelPlaylists.Any(x => x.State != SyncState.Added))
+                {
+                    return;
+                }
 
-            if (!(ch is YouChannel))
+                List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(channel.ID);
+
+                foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)))
+                {
+                    channel.ChannelPlaylists.Add(pl);
+                }
+
+                List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(channel.ID, 0, 0);
+                AddDefPlaylist(channel, lst);
+            }
+            else
             {
-                return;
+                StateChannel.Init(Channels);
             }
-
-            if (ch.ChannelPlaylists.Any() && ch.ChannelPlaylists.Any(x => x.State != SyncState.Added))
-            {
-                return;
-            }
-
-            List<PlaylistPOCO> fbres = await CommonFactory.CreateSqLiteDatabase().GetChannelPlaylistAsync(ch.ID);
-
-            foreach (IPlaylist pl in fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, ch.Site)))
-            {
-                ch.ChannelPlaylists.Add(pl);
-            }
-
-            List<string> lst = await CommonFactory.CreateSqLiteDatabase().GetChannelItemsIdListDbAsync(ch.ID, 0, 0);
-            AddDefPlaylist(ch, lst);
         }
 
         private void PlaylistLinkToClipboard()
@@ -1810,7 +1807,7 @@ namespace Crawler.ViewModels
 
             if (obj is YouPlaylist && SelectedChannel is YouChannel)
             {
-                var channel = SelectedChannel as YouChannel;
+                var channel = (YouChannel)SelectedChannel;
                 channel.RestoreFullChannelItems();
                 channel.ChannelItemsCollectionView.Filter = FilterByPlayList;
             }
