@@ -311,7 +311,7 @@ namespace Crawler.ViewModels
         public string Title { get; set; }
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true)
         {
             if (item == null)
             {

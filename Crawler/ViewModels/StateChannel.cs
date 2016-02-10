@@ -15,7 +15,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataAPI.Database;
 using DataAPI.POCO;
-using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -27,7 +26,6 @@ namespace Crawler.ViewModels
     {
         #region Static and Readonly Fields
 
-        
         private readonly List<IVideoItem> addedList;
         private readonly SqLiteDatabase db;
         private readonly List<IVideoItem> hasfileList;
@@ -47,11 +45,14 @@ namespace Crawler.ViewModels
 
         #region Fields
 
+        private List<string> addedListIds;
+        private ObservableCollection<IChannel> allchannels;
+        private int channelItemsCount;
+        private List<string> plannedListIds;
         private StateImage selectedState;
         private string title;
-        private List<string> addedListIds;
-        private List<string> plannedListIds;
         private List<string> watchedListIds;
+
         #endregion
 
         #region Constructors
@@ -71,19 +72,10 @@ namespace Crawler.ViewModels
             {
                 SupportedStates.Add(new StateImage(pair.Value, pair.Key));
             }
-            SelectedState = SupportedStates.First();
-
             InitIds();
         }
 
         #endregion
-
-        private async void InitIds()
-        {
-            addedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(SyncState.Added));
-            plannedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Planned));
-            watchedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Watched));
-        }
 
         #region Properties
 
@@ -191,6 +183,19 @@ namespace Crawler.ViewModels
             }
         }
 
+        public void Init(ObservableCollection<IChannel> channels)
+        {
+            allchannels = channels;
+            SelectedState = SupportedStates.First();
+        }
+
+        private async void InitIds()
+        {
+            addedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(SyncState.Added));
+            plannedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Planned));
+            watchedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Watched));
+        }
+
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
@@ -212,31 +217,63 @@ namespace Crawler.ViewModels
             if (state is WatchState)
             {
                 var st = (WatchState)state;
+                List<string> readyAddedIds;
+                List<string> notreadyList;
+                List<VideoItemPOCO> items;
                 switch (st)
                 {
                     case WatchState.Watched:
-                        if (!watchedList.Any())
+                        readyAddedIds =
+                            allchannels.SelectMany(x => x.ChannelItems)
+                                .Where(y => y.WatchState == WatchState.Watched)
+                                .Select(x => x.ID)
+                                .ToList();
+                        foreach (string id in watchedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
-                            List<VideoItemPOCO> res = await Task.Run(() => db.GetItemsByState(state));
-                            foreach (VideoItemPOCO poco in res)
+                            readyAddedIds.Add(id);
+                        }
+                        notreadyList = watchedListIds.Except(readyAddedIds).ToList();
+                        if (notreadyList.Any())
+                        {
+                            items = await Task.Run(() => db.GetItemsByIdsAndState(WatchState.Watched, notreadyList));
+                            foreach (VideoItemPOCO poco in items)
                             {
-                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube);
+                                IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
+                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, parent.Site);
+                                parent.AddNewItem(item, false);
+                                parent.IsHasNewFromSync = true;
                                 watchedList.Add(item);
                             }
                         }
-                        watchedList.ForEach(x => ChannelItems.Add(x));
+                        watchedList.ForEach(x => AddNewItem(x));
+
                         break;
                     case WatchState.Planned:
-                        if (!plannedList.Any())
+
+                        readyAddedIds =
+                            allchannels.SelectMany(x => x.ChannelItems)
+                                .Where(y => y.WatchState == WatchState.Planned)
+                                .Select(x => x.ID)
+                                .ToList();
+                        foreach (string id in plannedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
-                            List<VideoItemPOCO> res = await Task.Run(() => db.GetItemsByState(state));
-                            foreach (VideoItemPOCO poco in res)
+                            readyAddedIds.Add(id);
+                        }
+                        notreadyList = plannedListIds.Except(readyAddedIds).ToList();
+                        if (notreadyList.Any())
+                        {
+                            items = await Task.Run(() => db.GetItemsByIdsAndState(WatchState.Planned, notreadyList));
+                            foreach (VideoItemPOCO poco in items)
                             {
-                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube);
+                                IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
+                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, parent.Site);
+                                parent.AddNewItem(item, false);
+                                parent.IsHasNewFromSync = true;
                                 plannedList.Add(item);
                             }
                         }
-                        plannedList.ForEach(x => ChannelItems.Add(x));
+                        plannedList.ForEach(x => AddNewItem(x));
+
                         break;
                 }
             }
@@ -246,16 +283,30 @@ namespace Crawler.ViewModels
                 switch (st)
                 {
                     case SyncState.Added:
-                        if (!addedList.Any())
+
+                        List<string> readyAddedIds =
+                            allchannels.SelectMany(x => x.ChannelItems)
+                                .Where(y => y.SyncState == SyncState.Added)
+                                .Select(x => x.ID)
+                                .ToList();
+                        foreach (string id in addedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
-                            List<VideoItemPOCO> res = await Task.Run(() => db.GetItemsByState(state));
-                            foreach (VideoItemPOCO poco in res)
+                            readyAddedIds.Add(id);
+                        }
+                        List<string> notreadyList = addedListIds.Except(readyAddedIds).ToList();
+                        if (notreadyList.Any())
+                        {
+                            List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(SyncState.Added, notreadyList));
+                            foreach (VideoItemPOCO poco in items)
                             {
-                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube);
+                                IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
+                                IVideoItem item = VideoItemFactory.CreateVideoItem(poco, parent.Site);
+                                parent.AddNewItem(item, false);
+                                parent.IsHasNewFromSync = true;
                                 addedList.Add(item);
                             }
                         }
-                        addedList.ForEach(AddNewItem);
+                        addedList.ForEach(x => AddNewItem(x));
                         break;
                 }
             }
@@ -278,7 +329,20 @@ namespace Crawler.ViewModels
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
-        public int ChannelItemsCount { get; set; }
+
+        public int ChannelItemsCount
+        {
+            get
+            {
+                return channelItemsCount;
+            }
+            set
+            {
+                channelItemsCount = value;
+                OnPropertyChanged();
+            }
+        }
+
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ChannelState ChannelState { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
@@ -321,10 +385,11 @@ namespace Crawler.ViewModels
 
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true)
         {
             item.IsHasLocalFileFound(DirPath);
             ChannelItems.Add(item);
+            ChannelItemsCount += 1;
         }
 
         public void DeleteItem(IVideoItem item)
@@ -368,24 +433,5 @@ namespace Crawler.ViewModels
         }
 
         #endregion
-
-        public void Init(ObservableCollection<IChannel> channels)
-        {
-            //if (channels.SelectMany(x=>x.ChannelItems).Select(x=>x.ID))
-            //if (!addedList.Select(x=>x.ID).ToList().ListsContentdEquals())
-            //if (!IsAllItemsExist(pl.State, pl.PlItems))
-            //{
-            //    StateChannel.ClearList(pl.State);
-            //    List<IVideoItem> readyList = Channels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == pl.State).ToList();
-            //    IEnumerable<string> notreadyList = pl.PlItems.Except(readyList.Select(x => x.ID));
-            //    List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(pl.State, notreadyList));
-            //    readyList.AddRange(items.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)));
-            //    foreach (IVideoItem item in readyList)
-            //    {
-            //        StateChannel.AddToStateList(pl.State, item);
-            //    }
-            //}
-            //StateChannel.ReloadFilteredLists(pl.State);
-        }
-    } 
+    }
 }

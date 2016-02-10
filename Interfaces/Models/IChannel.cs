@@ -39,7 +39,7 @@ namespace Interfaces.Models
 
         #region Methods
 
-        void AddNewItem(IVideoItem item);
+        void AddNewItem(IVideoItem item, bool isIncrease = true);
 
         void DeleteItem(IVideoItem item);
 

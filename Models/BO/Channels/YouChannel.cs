@@ -288,7 +288,7 @@ namespace Models.BO.Channels
 
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true)
         {
             if (item == null)
             {
@@ -300,7 +300,10 @@ namespace Models.BO.Channels
             if (item.SyncState == SyncState.Added)
             {
                 ChannelItems.Insert(0, item);
-                CountNew += 1;
+                if (isIncrease)
+                {
+                    CountNew += 1;
+                }
             }
             else
             {
