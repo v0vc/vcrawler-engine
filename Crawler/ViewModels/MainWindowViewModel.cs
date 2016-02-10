@@ -1528,6 +1528,7 @@ namespace Crawler.ViewModels
             var channel = obj as YouChannel;
             if (channel == null)
             {
+                StateChannel.Init(Channels);
                 SelectedChannel = StateChannel;
                 return;
             }
