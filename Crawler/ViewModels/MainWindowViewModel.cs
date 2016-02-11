@@ -1028,6 +1028,14 @@ namespace Crawler.ViewModels
                         {
                             channel.DeleteItem(item);
                             await db.DeleteItemAsync(item.ID);
+                            if (item.SyncState == SyncState.Added)
+                            {
+                                StateChannel.AddToStateList(SyncState.Notset, item);    
+                            }
+                            else if (item.WatchState == WatchState.Watched || item.WatchState == WatchState.Planned)
+                            {
+                                StateChannel.AddToStateList(item.WatchState, item);    
+                            }
                         }
                         else
                         {
@@ -1131,9 +1139,10 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            // заполняем только если либо ничего нет, либо одни новые
+            // заполняем только если либо ничего нет, либо одни новые (после сунка или после того, как была выборка по стейту)
             if (channel.IsHasNewFromSync)
             {
+                // TODO переделать с оффсета на список айди
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
                 channel.IsHasNewFromSync = false;
             }

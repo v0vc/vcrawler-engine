@@ -112,7 +112,7 @@ namespace Crawler.ViewModels
                         if (!watchedList.Select(x => x.ID).Contains(item.ID))
                         {
                             watchedList.Add(item);
-                            if ((WatchState)SelectedState.State == st)
+                            if (SelectedState != null && (WatchState)SelectedState.State == st)
                             {
                                 AddNewItem(item);
                             }
@@ -127,7 +127,7 @@ namespace Crawler.ViewModels
                         if (!plannedList.Select(x => x.ID).Contains(item.ID))
                         {
                             plannedList.Add(item);
-                            if ((WatchState)SelectedState.State == st)
+                            if (SelectedState != null && (WatchState)SelectedState.State == st)
                             {
                                 AddNewItem(item);
                             }
