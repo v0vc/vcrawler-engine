@@ -349,8 +349,13 @@ namespace Models.Factories
 
         private static void AddItemsToChannel(IEnumerable<VideoItemPOCO> items, IChannel channel)
         {
-            foreach (IVideoItem vi in items.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site)))
+            foreach (VideoItemPOCO poco in items)
             {
+                if (channel.ChannelItems.Select(x => x.ID).Contains(poco.ID))
+                {
+                    continue;
+                }
+                IVideoItem vi = VideoItemFactory.CreateVideoItem(poco, channel.Site);
                 vi.IsHasLocalFileFound(channel.DirPath);
                 channel.ChannelItems.Add(vi);
             }
