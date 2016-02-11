@@ -117,18 +117,18 @@
                                               SelectedItem="{Binding SelectedChannel}"
                                               IsSynchronizedWithCurrentItem="True"
                                               >
-                                    <!--<DataGrid.InputBindings>
+                                    <DataGrid.InputBindings>
                                         <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
                                     </DataGrid.InputBindings>
 
                                     <i:Interaction.Triggers>
-                                        <i:EventTrigger EventName="MouseDoubleClick">
+                                        <!--<i:EventTrigger EventName="MouseDoubleClick">
                                             <i:InvokeCommandAction Command="{Binding PopularFillCommand, Mode=OneTime}" />
-                                        </i:EventTrigger>
+                                        </i:EventTrigger>-->
                                         <i:EventTrigger EventName="MouseLeftButtonUp">
-                                            <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=popGrid, Path=SelectedItem}"/>
+                                            <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"/>
                                         </i:EventTrigger>
-                                    </i:Interaction.Triggers>-->
+                                    </i:Interaction.Triggers>
 
                                     <DataGrid.Resources>
                                         <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />

@@ -15,6 +15,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataAPI.Database;
 using DataAPI.POCO;
+using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -28,15 +29,13 @@ namespace Crawler.ViewModels
 
         private readonly List<IVideoItem> addedList;
         private readonly SqLiteDatabase db;
-        private readonly List<IVideoItem> hasfileList;
         private readonly List<IVideoItem> plannedList;
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
             { "Crawler.Images.new_48.png", SyncState.Added },
             { "Crawler.Images.time_48.png", WatchState.Planned },
-            { "Crawler.Images.tick_48.png", WatchState.Watched },
-            { "Crawler.Images.done_48.png", ItemState.LocalYes }
+            { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
         private readonly List<IVideoItem> watchedList;
@@ -65,7 +64,6 @@ namespace Crawler.ViewModels
             addedList = new List<IVideoItem>();
             plannedList = new List<IVideoItem>();
             watchedList = new List<IVideoItem>();
-            hasfileList = new List<IVideoItem>();
 
             SupportedStates = new List<StateImage>();
             foreach (KeyValuePair<string, object> pair in supportedStates)
@@ -114,6 +112,14 @@ namespace Crawler.ViewModels
                         if (!watchedList.Select(x => x.ID).Contains(item.ID))
                         {
                             watchedList.Add(item);
+                            if ((WatchState)SelectedState.State == st)
+                            {
+                                AddNewItem(item);
+                            }
+                            if (!watchedListIds.Contains(item.ID))
+                            {
+                                watchedListIds.Add(item.ID);
+                            }
                         }
 
                         break;
@@ -121,10 +127,23 @@ namespace Crawler.ViewModels
                         if (!plannedList.Select(x => x.ID).Contains(item.ID))
                         {
                             plannedList.Add(item);
+                            if ((WatchState)SelectedState.State == st)
+                            {
+                                AddNewItem(item);
+                            }
+                            if (!plannedListIds.Contains(item.ID))
+                            {
+                                plannedListIds.Add(item.ID);
+                            }
+
                             IVideoItem vi = watchedList.FirstOrDefault(x => x.ID == item.ID);
                             if (vi != null)
                             {
                                 watchedList.Remove(vi);
+                                if (watchedListIds.Contains(item.ID))
+                                {
+                                    watchedListIds.Remove(item.ID);
+                                }
                             }
                         }
 
@@ -135,6 +154,10 @@ namespace Crawler.ViewModels
                         if (vim != null)
                         {
                             plannedList.Remove(vim);
+                            if (plannedListIds.Contains(item.ID))
+                            {
+                                plannedListIds.Remove(item.ID);
+                            }
                         }
                         break;
                 }
@@ -149,6 +172,10 @@ namespace Crawler.ViewModels
                         if (!addedList.Select(x => x.ID).Contains(item.ID))
                         {
                             addedList.Add(item);
+                            if (!addedListIds.Contains(item.ID))
+                            {
+                                addedListIds.Add(item.ID);
+                            }
                         }
                         break;
 
@@ -157,19 +184,12 @@ namespace Crawler.ViewModels
                         if (vi != null)
                         {
                             addedList.Remove(vi);
+                            if (addedListIds.Contains(item.ID))
+                            {
+                                addedListIds.Remove(item.ID);
+                            }
                         }
                         break;
-                }
-            }
-            else if (state is ItemState)
-            {
-                var st = (ItemState)state;
-                if (st == ItemState.LocalYes)
-                {
-                    if (!hasfileList.Contains(item))
-                    {
-                        hasfileList.Add(item);
-                    }
                 }
             }
         }
@@ -217,17 +237,20 @@ namespace Crawler.ViewModels
             if (state is WatchState)
             {
                 var st = (WatchState)state;
+                List<IVideoItem> readyel;
                 List<string> readyAddedIds;
                 List<string> notreadyList;
                 List<VideoItemPOCO> items;
                 switch (st)
                 {
                     case WatchState.Watched:
-                        readyAddedIds =
-                            allchannels.SelectMany(x => x.ChannelItems)
-                                .Where(y => y.WatchState == WatchState.Watched)
-                                .Select(x => x.ID)
-                                .ToList();
+
+                        readyel = allchannels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == WatchState.Watched).ToList();
+                        foreach (IVideoItem item in readyel.Where(item => !watchedList.Contains(item)))
+                        {
+                            watchedList.Add(item);
+                        }
+                        readyAddedIds = readyel.Select(x => x.ID).ToList();
                         foreach (string id in watchedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
                             readyAddedIds.Add(id);
@@ -250,11 +273,13 @@ namespace Crawler.ViewModels
                         break;
                     case WatchState.Planned:
 
-                        readyAddedIds =
-                            allchannels.SelectMany(x => x.ChannelItems)
-                                .Where(y => y.WatchState == WatchState.Planned)
-                                .Select(x => x.ID)
-                                .ToList();
+                        readyel = allchannels.SelectMany(x => x.ChannelItems).Where(y => y.WatchState == WatchState.Planned).ToList();
+                        foreach (IVideoItem item in readyel.Where(item => !plannedList.Contains(item)))
+                        {
+                            plannedList.Add(item);
+                        }
+
+                        readyAddedIds = readyel.Select(x => x.ID).ToList();
                         foreach (string id in plannedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
                             readyAddedIds.Add(id);
@@ -284,11 +309,13 @@ namespace Crawler.ViewModels
                 {
                     case SyncState.Added:
 
-                        List<string> readyAddedIds =
-                            allchannels.SelectMany(x => x.ChannelItems)
-                                .Where(y => y.SyncState == SyncState.Added)
-                                .Select(x => x.ID)
-                                .ToList();
+                        List<IVideoItem> readyel =
+                            allchannels.SelectMany(x => x.ChannelItems).Where(y => y.SyncState == SyncState.Added).ToList();
+                        foreach (IVideoItem item in readyel.Where(item => !addedList.Contains(item)))
+                        {
+                            addedList.Add(item);
+                        }
+                        List<string> readyAddedIds = readyel.Select(x => x.ID).ToList();
                         foreach (string id in addedList.Select(x => x.ID).Where(id => !readyAddedIds.Contains(id)))
                         {
                             readyAddedIds.Add(id);
@@ -307,16 +334,6 @@ namespace Crawler.ViewModels
                             }
                         }
                         addedList.ForEach(x => AddNewItem(x));
-                        break;
-                }
-            }
-            else if (state is ItemState)
-            {
-                var st = (ItemState)state;
-                switch (st)
-                {
-                    case ItemState.LocalYes:
-                        hasfileList.ForEach(x => ChannelItems.Add(x));
                         break;
                 }
             }
