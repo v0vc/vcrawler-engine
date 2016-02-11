@@ -196,11 +196,13 @@ namespace Crawler.ViewModels
 
         public void ClearAddedAllList()
         {
-            addedList.Clear();
-            if (SelectedState.State is ItemState)
+            if (SelectedState == null || !(SelectedState.State is ItemState))
             {
-                ChannelItems.Clear();
+                return;
             }
+            addedList.Clear();
+            addedListIds.Clear();
+            ChannelItems.Clear();
         }
 
         public void Init(ObservableCollection<IChannel> channels)

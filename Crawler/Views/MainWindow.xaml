@@ -101,7 +101,7 @@
 
                             <i:Interaction.Triggers>
                                 <i:EventTrigger EventName="Expanded">
-                                    <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}"/>
+                                    <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"/>
                                 </i:EventTrigger>
                             </i:Interaction.Triggers>
 
@@ -1048,7 +1048,7 @@
                       >
                 <i:Interaction.Triggers>
                     <i:EventTrigger EventName="Expanded">
-                        <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}"/>
+                        <i:InvokeCommandAction Command="{Binding PlaylistExpandCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=channelsGrid, Path=SelectedItem}"/>
                     </i:EventTrigger>
                 </i:Interaction.Triggers>
                 
