@@ -66,7 +66,8 @@ namespace Models.BO.Channels
             {
                 return;
             }
-            ChannelFactory.FillChannelItemsFromDbAsync(this, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
+            ChannelFactory.FillChannelItemsFromDbAsync(this, 0, ChannelItems.Select(x => x.ID).ToList());
+            //ChannelFactory.FillChannelItemsFromDbAsync(this, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
         }
 
         private bool FilterVideoBySynced(object item)

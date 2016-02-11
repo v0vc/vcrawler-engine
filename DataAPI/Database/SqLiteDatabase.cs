@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -626,6 +627,154 @@ namespace DataAPI.Database
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     Get channel items, except ids
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="basePage"></param>
+        /// <param name="excepted"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, List<string> excepted)
+        {
+            var res = new List<VideoItemPOCO>();
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync();
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        try
+                        {
+                            var ids = new List<string>(basePage);
+                            command.CommandType = CommandType.Text;
+                            string zap = basePage == 0
+                                ? string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC",
+                                    itemId,
+                                    tableitems,
+                                    parentID,
+                                    channelID,
+                                    timestamp)
+                                : string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC LIMIT {5}",
+                                    itemId,
+                                    tableitems,
+                                    parentID,
+                                    channelID,
+                                    timestamp,
+                                    basePage);
+
+                            command.CommandText = zap;
+
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                            {
+                                if (!reader.HasRows)
+                                {
+                                    transaction.Rollback();
+                                    return res;
+                                }
+
+                                while (await reader.ReadAsync())
+                                {
+                                    var id = reader[itemId] as string;
+                                    if (excepted == null)
+                                    {
+                                        ids.Add(id);
+                                    }
+                                    else
+                                    {
+                                        if (!excepted.Contains(id))
+                                        {
+                                            ids.Add(id);
+                                        }    
+                                    }
+                                }
+                            }
+
+                            foreach (string id in ids)
+                            {
+                                command.CommandText = string.Format("{0} WHERE {1}='{2}' AND {3}='{4}' LIMIT 1",
+                                    itemsSelectString,
+                                    parentID,
+                                    channelID,
+                                    itemId,
+                                    id);
+
+                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                                {
+                                    if (!reader.HasRows)
+                                    {
+                                        transaction.Rollback();
+                                        throw new KeyNotFoundException("No item");
+                                    }
+
+                                    while (await reader.ReadAsync())
+                                    {
+                                        VideoItemPOCO vi = CreateVideoItem(reader);
+                                        res.Add(vi);
+                                    }
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                    }
+                    conn.Close();
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        ///     Get channel items
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="basePage"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            string zap = string.Format(@"{0} WHERE {1}='{2}' ORDER BY {3} DESC LIMIT {4}",
+                itemsSelectString,
+                parentID,
+                channelID,
+                timestamp,
+                basePage);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync();
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Rollback();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync())
+                            {
+                                VideoItemPOCO vi = CreateVideoItem(reader);
+                                res.Add(vi);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+            return res;
         }
 
         /// <summary>
@@ -2350,6 +2499,5 @@ namespace DataAPI.Database
         }
 
         #endregion
-
     }
 }

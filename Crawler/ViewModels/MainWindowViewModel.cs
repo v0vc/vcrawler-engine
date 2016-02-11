@@ -1126,6 +1126,11 @@ namespace Crawler.ViewModels
 
             channel.IsShowSynced = false;
 
+            if (channel is StateChannel)
+            {
+                return;
+            }
+
             // если канал только что добавили - элементы там есть
             if (channel.ChannelState == ChannelState.Added)
             {
@@ -1142,13 +1147,15 @@ namespace Crawler.ViewModels
             // заполняем только если либо ничего нет, либо одни новые (после сунка или после того, как была выборка по стейту)
             if (channel.IsHasNewFromSync)
             {
-                // TODO переделать с оффсета на список айди
-                ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
+                var excepted = channel.ChannelItems.Select(x => x.ID).ToList();
+                ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
+                //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
                 channel.IsHasNewFromSync = false;
             }
             else
             {
-                ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, 0);
+                ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage);
+                //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, 0);
             }
 
             if (channel.PlaylistCount == 0)

@@ -125,18 +125,28 @@ namespace Models.Factories
             }
         }
 
-        public static void FillChannelItemsFromDbAsync(IChannel channel, int count, int offset)
+        public static void FillChannelItemsFromDbAsync(IChannel channel, int basePage, List<string> excepted = null)
         {
             if ((task != null)
-                && (task.IsCompleted == false || task.Status == TaskStatus.Running || task.Status == TaskStatus.WaitingToRun
-                    || task.Status == TaskStatus.WaitingForActivation))
+             && (task.IsCompleted == false || task.Status == TaskStatus.Running || task.Status == TaskStatus.WaitingToRun
+                 || task.Status == TaskStatus.WaitingForActivation))
             {
                 return;
             }
             List<VideoItemPOCO> items = null;
+
             task = Task.Run(async () =>
             {
-                items = await db.GetChannelItemsAsync(channel.ID, count, offset);
+                // items = await db.GetChannelItemsAsync(channel.ID, count, offset);
+                if (excepted == null)
+                {
+                    items = await db.GetChannelItemsAsync(channel.ID, basePage);
+                }
+                else
+                {
+                    items = await db.GetChannelItemsAsync(channel.ID, basePage, excepted);    
+                }
+                
                 channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
             }).ContinueWith(x => AddItemsToChannel(items, channel), TaskScheduler.FromCurrentSynchronizationContext());
         }
@@ -351,10 +361,10 @@ namespace Models.Factories
         {
             foreach (VideoItemPOCO poco in items)
             {
-                if (channel.ChannelItems.Select(x => x.ID).Contains(poco.ID))
-                {
-                    continue;
-                }
+                //if (channel.ChannelItems.Select(x => x.ID).Contains(poco.ID))
+                //{
+                //    continue;
+                //}
                 IVideoItem vi = VideoItemFactory.CreateVideoItem(poco, channel.Site);
                 vi.IsHasLocalFileFound(channel.DirPath);
                 channel.ChannelItems.Add(vi);
