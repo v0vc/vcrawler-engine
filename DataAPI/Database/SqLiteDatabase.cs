@@ -9,7 +9,6 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -426,7 +425,6 @@ namespace DataAPI.Database
                             command.Dispose();
                             conn.Close();
                         }
-
                     }
                 }
             }
@@ -538,7 +536,6 @@ namespace DataAPI.Database
                 {
                     await connection.OpenAsync();
                     command.Connection = connection;
-
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
                         using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
@@ -546,6 +543,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -554,10 +552,10 @@ namespace DataAPI.Database
                                 TagPOCO tag = CreateTag(reader, tagTitle);
                                 res.Add(tag);
                             }
-
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -585,16 +583,19 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new Exception(zap);
                             }
                             ChannelPOCO ch = CreateChannel(reader);
                             transaction.Commit();
+                            connection.Close();
                             return ch;
                         }
                     }
@@ -625,10 +626,12 @@ namespace DataAPI.Database
                         if (res == null || res == DBNull.Value)
                         {
                             transaction.Rollback();
+                            connection.Close();
                             return string.Empty;
                         }
 
                         transaction.Commit();
+                        connection.Close();
                         return res as string;
                     }
                 }
@@ -645,12 +648,12 @@ namespace DataAPI.Database
         public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, List<string> excepted)
         {
             var res = new List<VideoItemPOCO>();
-            using (var conn = new SQLiteConnection(dbConnection))
+            using (var connection = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
-                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                await connection.OpenAsync();
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    using (SQLiteCommand command = conn.CreateCommand())
+                    using (SQLiteCommand command = connection.CreateCommand())
                     {
                         try
                         {
@@ -678,6 +681,7 @@ namespace DataAPI.Database
                                 if (!reader.HasRows)
                                 {
                                     transaction.Rollback();
+                                    connection.Close();
                                     return res;
                                 }
 
@@ -712,6 +716,7 @@ namespace DataAPI.Database
                                     if (!reader.HasRows)
                                     {
                                         transaction.Rollback();
+                                        connection.Close();
                                         throw new KeyNotFoundException("No item");
                                     }
 
@@ -732,7 +737,7 @@ namespace DataAPI.Database
                         finally
                         {
                             command.Dispose();
-                            conn.Close();
+                            connection.Close();
                         }
                     }
                 }
@@ -771,6 +776,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -782,6 +788,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -822,6 +829,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -833,6 +841,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -856,12 +865,12 @@ namespace DataAPI.Database
                 col = syncstate;
             }
             var res = new List<VideoItemPOCO>();
-            using (var conn = new SQLiteConnection(dbConnection))
+            using (var connection = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
-                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                await connection.OpenAsync();
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    using (SQLiteCommand command = conn.CreateCommand())
+                    using (SQLiteCommand command = connection.CreateCommand())
                     {
                         try
                         {
@@ -873,6 +882,7 @@ namespace DataAPI.Database
                                 if (!reader.HasRows)
                                 {
                                     transaction.Rollback();
+                                    connection.Close();
                                     throw new KeyNotFoundException("No item");
                                 }
 
@@ -892,7 +902,7 @@ namespace DataAPI.Database
                         finally
                         {
                             command.Dispose();
-                            conn.Close();
+                            connection.Close();
                         }
                     }
                 }
@@ -918,12 +928,12 @@ namespace DataAPI.Database
                 col = syncstate;
             }
             var res = new List<VideoItemPOCO>();
-            using (var conn = new SQLiteConnection(dbConnection))
+            using (var connection = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
-                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                await connection.OpenAsync();
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
-                    using (SQLiteCommand command = conn.CreateCommand())
+                    using (SQLiteCommand command = connection.CreateCommand())
                     {
                         try
                         {
@@ -942,12 +952,14 @@ namespace DataAPI.Database
                                     if (!reader.HasRows)
                                     {
                                         transaction.Rollback();
+                                        connection.Close();
                                         throw new KeyNotFoundException("No item: " + itemID);
                                     }
 
                                     if (!await reader.ReadAsync())
                                     {
                                         transaction.Rollback();
+                                        connection.Close();
                                         throw new Exception(command.CommandText);
                                     }
                                     VideoItemPOCO vi = CreateVideoItem(reader);
@@ -964,7 +976,7 @@ namespace DataAPI.Database
                         finally
                         {
                             command.Dispose();
-                            conn.Close();
+                            connection.Close();
                         }
                     }
                 }
@@ -994,10 +1006,12 @@ namespace DataAPI.Database
                         if (res == null || res == DBNull.Value)
                         {
                             transaction.Rollback();
+                            connection.Close();
                             throw new Exception(zap);
                         }
 
                         transaction.Commit();
+                        connection.Close();
                         return Convert.ToInt32(res);
                     }
                 }
@@ -1033,10 +1047,12 @@ namespace DataAPI.Database
                         if (res == null || res == DBNull.Value)
                         {
                             transaction.Rollback();
+                            connection.Close();
                             throw new Exception(zap);
                         }
 
                         transaction.Commit();
+                        connection.Close();
                         return Convert.ToInt32(res);
                     }
                 }
@@ -1089,6 +1105,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1100,6 +1117,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1146,6 +1164,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1157,6 +1176,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1185,6 +1205,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1196,6 +1217,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             foreach (PlaylistPOCO poco in res)
@@ -1228,10 +1250,12 @@ namespace DataAPI.Database
                         if (res == null || res == DBNull.Value)
                         {
                             transaction.Rollback();
+                            connection.Close();
                             throw new Exception(zap);
                         }
 
                         transaction.Commit();
+                        connection.Close();
                         return Convert.ToInt32(res);
                     }
                 }
@@ -1261,6 +1285,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1272,6 +1297,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1302,6 +1328,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1313,6 +1340,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             foreach (string id in lst)
@@ -1347,6 +1375,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1359,6 +1388,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1388,6 +1418,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1400,6 +1431,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1429,6 +1461,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1441,6 +1474,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1469,16 +1503,19 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new KeyNotFoundException("No item: " + url);
                             }
 
                             if (!await reader.ReadAsync())
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new Exception(zap);
                             }
                             CredPOCO cred = CreateCred(reader);
                             transaction.Commit();
+                            connection.Close();
                             return cred;
                         }
                     }
@@ -1508,6 +1545,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1519,6 +1557,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1541,21 +1580,24 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
                         {
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new Exception(zap);
                             }
                             PlaylistPOCO pl = CreatePlaylist(reader);
                             transaction.Commit();
+                            connection.Close();
                             return pl;
                         }
                     }
@@ -1594,6 +1636,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1605,6 +1648,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
 
@@ -1641,6 +1685,7 @@ namespace DataAPI.Database
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 return res;
                             }
 
@@ -1652,6 +1697,7 @@ namespace DataAPI.Database
                             transaction.Commit();
                         }
                     }
+                    connection.Close();
                 }
             }
             return res;
@@ -1674,22 +1720,25 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
                         {
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new KeyNotFoundException("No item: " + key);
                             }
 
                             if (!await reader.ReadAsync())
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new Exception(zap);
                             }
 
                             SettingPOCO cred = CreateSetting(reader);
                             transaction.Commit();
+                            connection.Close();
                             return cred;
                         }
                     }
@@ -1715,21 +1764,24 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
                         {
                             if (!reader.HasRows)
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
                             if (!await reader.ReadAsync())
                             {
                                 transaction.Rollback();
+                                connection.Close();
                                 throw new Exception(zap);
                             }
                             VideoItemPOCO vi = CreateVideoItem(reader);
                             transaction.Commit();
+                            connection.Close();
                             return vi;
                         }
                     }
@@ -1760,10 +1812,12 @@ namespace DataAPI.Database
                         if (res == null || res == DBNull.Value)
                         {
                             transaction.Rollback();
+                            connection.Close();
                             return string.Empty;
                         }
 
                         transaction.Commit();
+                        connection.Close();
                         return res as string;
                     }
                 }
@@ -2528,6 +2582,62 @@ namespace DataAPI.Database
                 }
             }
             return res;
+        }
+
+        public async Task<Dictionary<object, List<string>>> GetStateListItemsAsync()
+        {
+            var dic = new Dictionary<object, List<string>>
+            {
+                { SyncState.Added, new List<string>() },
+                { WatchState.Watched, new List<string>() },
+                { WatchState.Planned, new List<string>() }
+            };
+
+            foreach (KeyValuePair<object, List<string>> pair in dic)
+            {
+                string zap = string.Empty;
+                if (pair.Key is SyncState)
+                {
+                    zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", itemId, tableitems, syncstate, 1);
+                }
+                else if (pair.Key is WatchState)
+                {
+                    var st = (WatchState)pair.Key;
+                    zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'",
+                        itemId,
+                        tableitems,
+                        watchstate,
+                        st == WatchState.Watched ? 1 : 2);
+                }
+                using (SQLiteCommand command = GetCommand(zap))
+                {
+                    using (var connection = new SQLiteConnection(dbConnection))
+                    {
+                        await connection.OpenAsync();
+                        command.Connection = connection;
+
+                        using (SQLiteTransaction transaction = connection.BeginTransaction())
+                        {
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                            {
+                                if (!reader.HasRows)
+                                {
+                                    continue;
+                                }
+
+                                while (await reader.ReadAsync())
+                                {
+                                    var ch = reader[itemId] as string;
+                                    pair.Value.Add(ch);
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            return dic;
         }
 
         public async Task<List<string>> GetWatchStateListItemsAsync(SyncState state)

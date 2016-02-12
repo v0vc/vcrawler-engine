@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -31,8 +32,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added }, 
-            { "Crawler.Images.time_48.png", WatchState.Planned }, 
+            { "Crawler.Images.new_48.png", SyncState.Added },
+            { "Crawler.Images.time_48.png", WatchState.Planned },
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -173,8 +174,16 @@ namespace Crawler.ViewModels
                             if (!addedListIds.Contains(item.ID))
                             {
                                 addedListIds.Add(item.ID);
+                                if (SelectedState != null && SelectedState.State is SyncState)
+                                {
+                                    if (!ChannelItems.Select(x => x.ID).Contains(item.ID))
+                                    {
+                                        ChannelItems.Add(item);
+                                    }
+                                }
                             }
                         }
+
                         break;
 
                     case SyncState.Notset:
@@ -185,22 +194,19 @@ namespace Crawler.ViewModels
                             if (addedListIds.Contains(item.ID))
                             {
                                 addedListIds.Remove(item.ID);
+                                if (SelectedState != null && SelectedState.State is SyncState)
+                                {
+                                    IVideoItem ite = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+                                    if (ite != null)
+                                    {
+                                        ChannelItems.Remove(ite);
+                                    }
+                                }
                             }
                         }
                         break;
                 }
             }
-        }
-
-        public void ClearAddedAllList()
-        {
-            if (SelectedState == null || !(SelectedState.State is ItemState))
-            {
-                return;
-            }
-            addedList.Clear();
-            addedListIds.Clear();
-            ChannelItems.Clear();
         }
 
         public void Init(ObservableCollection<IChannel> channels)
@@ -211,9 +217,10 @@ namespace Crawler.ViewModels
 
         private async void InitIds()
         {
-            addedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(SyncState.Added));
-            plannedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Planned));
-            watchedListIds = await Task.Run(() => db.GetWatchStateListItemsAsync(WatchState.Watched));
+            Dictionary<object, List<string>> dids = await db.GetStateListItemsAsync();
+            dids.TryGetValue(SyncState.Added, out addedListIds);
+            dids.TryGetValue(WatchState.Watched, out watchedListIds);
+            dids.TryGetValue(WatchState.Planned, out plannedListIds);
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)

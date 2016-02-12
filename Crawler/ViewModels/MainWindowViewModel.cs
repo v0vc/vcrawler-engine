@@ -1030,11 +1030,11 @@ namespace Crawler.ViewModels
                             await db.DeleteItemAsync(item.ID);
                             if (item.SyncState == SyncState.Added)
                             {
-                                StateChannel.AddToStateList(SyncState.Notset, item);    
+                                StateChannel.AddToStateList(SyncState.Notset, item);
                             }
                             else if (item.WatchState == WatchState.Watched || item.WatchState == WatchState.Planned)
                             {
-                                StateChannel.AddToStateList(item.WatchState, item);    
+                                StateChannel.AddToStateList(item.WatchState, item);
                             }
                         }
                         else
@@ -1147,7 +1147,7 @@ namespace Crawler.ViewModels
             // заполняем только если либо ничего нет, либо одни новые (после сунка или после того, как была выборка по стейту)
             if (channel.IsHasNewFromSync)
             {
-                var excepted = channel.ChannelItems.Select(x => x.ID).ToList();
+                List<string> excepted = channel.ChannelItems.Select(x => x.ID).ToList();
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
                 //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
                 channel.IsHasNewFromSync = false;
@@ -1981,7 +1981,6 @@ namespace Crawler.ViewModels
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                StateChannel.ClearAddedAllList();
                 await ChannelFactory.SyncChannelAsync(channel, false, true, addItemToStateChannel);
                 watch.Stop();
                 Info = watch.TakeLogMessage();
@@ -2024,7 +2023,6 @@ namespace Crawler.ViewModels
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
             Stopwatch watch = Stopwatch.StartNew();
-            StateChannel.ClearAddedAllList();
             foreach (IChannel channel in Channels)
             {
                 i += 1;
