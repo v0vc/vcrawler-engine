@@ -421,6 +421,12 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
+
                     }
                 }
             }
@@ -723,8 +729,12 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
-                    conn.Close();
                 }
             }
             return res;
@@ -879,6 +889,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
                 return res;
@@ -922,7 +937,7 @@ namespace DataAPI.Database
                                     itemId,
                                     itemID);
 
-                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
                                 {
                                     if (!reader.HasRows)
                                     {
@@ -945,6 +960,11 @@ namespace DataAPI.Database
                         {
                             transaction.Rollback();
                             throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
                         }
                     }
                 }
@@ -1776,6 +1796,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -1846,6 +1871,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -1882,6 +1912,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -1915,6 +1950,11 @@ namespace DataAPI.Database
                         {
                             transaction.Rollback();
                             throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
                         }
                     }
                 }
@@ -1969,6 +2009,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -2000,6 +2045,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -2030,6 +2080,11 @@ namespace DataAPI.Database
                         {
                             transaction.Rollback();
                             throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
                         }
                     }
                 }
@@ -2263,6 +2318,11 @@ namespace DataAPI.Database
                             transaction.Rollback();
                             throw;
                         }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
                     }
                 }
             }
@@ -2336,6 +2396,11 @@ namespace DataAPI.Database
                         {
                             transaction.Rollback();
                             throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
                         }
                     }
                 }
@@ -2411,8 +2476,12 @@ namespace DataAPI.Database
                         transaction.Rollback();
                         throw;
                     }
+                    finally
+                    {
+                        command.Dispose();
+                        connection.Close();
+                    }
                 }
-                connection.Close();
             }
         }
 

@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -15,7 +14,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using DataAPI.Database;
 using DataAPI.POCO;
-using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -33,8 +31,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added },
-            { "Crawler.Images.time_48.png", WatchState.Planned },
+            { "Crawler.Images.new_48.png", SyncState.Added }, 
+            { "Crawler.Images.time_48.png", WatchState.Planned }, 
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -406,6 +404,10 @@ namespace Crawler.ViewModels
 
         public void AddNewItem(IVideoItem item, bool isIncrease = true)
         {
+            if (ChannelItems.Contains(item))
+            {
+                return;
+            }
             item.IsHasLocalFileFound(DirPath);
             ChannelItems.Add(item);
             ChannelItemsCount += 1;
@@ -445,7 +447,6 @@ namespace Crawler.ViewModels
             #region Properties
 
             public object State { get; private set; }
-
             public byte[] Thumbnail { get; private set; }
 
             #endregion
