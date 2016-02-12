@@ -7,7 +7,7 @@
         xmlns:enums="clr-namespace:Interfaces.Enums;assembly=Interfaces"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:viewModels="clr-namespace:Crawler.ViewModels"
-        Height="280" Width="380" ResizeMode="NoResize"
+        Height="340" Width="380" ResizeMode="NoResize"
         WindowStyle="ToolWindow"
         Title="Settings"
         d:DataContext="{d:DesignInstance viewModels:SettingsViewModel, IsDesignTimeCreatable=False}"
@@ -30,7 +30,7 @@
                         <RowDefinition Height="60" />
                         <RowDefinition Height="60" />
                         <RowDefinition Height="60" />
-                        <RowDefinition Height="20" />
+                        <RowDefinition Height="60" />
                     </Grid.RowDefinitions>
                     <GroupBox Header="Download directory">
                         <Grid>
@@ -128,6 +128,18 @@
                                 />
                         </Grid>
                     </GroupBox>
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <GroupBox Header="Open on starup:">
+                            <StackPanel>
+                                <RadioButton Content="First channel" IsChecked="True"/>
+                                <RadioButton Content="Filter result" IsChecked="{Binding IsFilterOpen, Mode=TwoWay}"/>
+                            </StackPanel>
+                        </GroupBox>
+                    </Grid>
                 </Grid>
             </TabItem>
             <TabItem Header="Credentials">

@@ -43,6 +43,7 @@ namespace Crawler.ViewModels
         private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
         private const string youtubeDl = "youtube-dl.exe";
+        private const string onstartupopen = "youtubeBest";
 
         #endregion
 
@@ -67,6 +68,7 @@ namespace Crawler.ViewModels
         private RelayCommand updateYouDlCommand;
         private string youHeader;
         private string youPath;
+        private bool isFilterOpen;
 
         #endregion
 
@@ -83,6 +85,19 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Properties
+
+        public bool IsFilterOpen
+        {
+            get
+            {
+                return isFilterOpen;
+            }
+            set
+            {
+                isFilterOpen = value;
+                OnPropertyChanged();
+            }
+        }
 
         public RelayCommand AddNewTagCommand
         {
@@ -286,6 +301,9 @@ namespace Crawler.ViewModels
                     YouPath = fn.FullName;
                 }
             }
+
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            IsFilterOpen = onstartup.Value != "0";
         }
 
         public void LoadSettingsFromLaunchParam(IReadOnlyDictionary<string, string> launchParams)
@@ -436,6 +454,13 @@ namespace Crawler.ViewModels
             if (youpath.Value != YouPath)
             {
                 await youpath.UpdateSettingAsync(YouPath);
+            }
+
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            string res = IsFilterOpen ? "1" : "0";
+            if (onstartup.Value != res)
+            {
+                await onstartup.UpdateSettingAsync(res);
             }
 
             foreach (ICred cred in SupportedCreds)

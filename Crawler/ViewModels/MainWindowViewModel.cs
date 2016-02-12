@@ -1407,10 +1407,19 @@ namespace Crawler.ViewModels
                 {
                     Channels.Add(channel);
                 }
-                if (Channels.Any())
+                if (SettingsViewModel.IsFilterOpen)
                 {
-                    SelectedChannel = Channels.First();
+                    StateChannel.Init(Channels);
+                    SelectedChannel = StateChannel;
                 }
+                else
+                {
+                    if (Channels.Any())
+                    {
+                        SelectedChannel = Channels.First();
+                    }
+                }
+
                 SetStatus(0);
             }
             catch (Exception ex)
@@ -1544,7 +1553,10 @@ namespace Crawler.ViewModels
             var channel = obj as YouChannel;
             if (channel == null)
             {
-                StateChannel.Init(Channels);
+                if (!SettingsViewModel.IsFilterOpen)
+                {
+                    StateChannel.Init(Channels);
+                }
                 SelectedChannel = StateChannel;
                 return;
             }
