@@ -1158,9 +1158,18 @@ namespace Crawler.ViewModels
                 //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, 0);
             }
 
+            // проверочка
+            if (channel.ChannelItems.Count < basePage)
+            {
+                List<string> excepted = channel.ChannelItems.Select(x => x.ID).ToList();
+                ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
+                //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
+                channel.IsHasNewFromSync = false;
+            }
+
             if (channel.PlaylistCount == 0)
             {
-                channel.PlaylistCount = await db.GetChannelPlaylistCountDbAsync(channel.ID);
+                channel.PlaylistCount = await Task.Run(() => db.GetChannelPlaylistCountDbAsync(channel.ID));
             }
         }
 
@@ -1325,7 +1334,7 @@ namespace Crawler.ViewModels
             {
                 if (launchParam.Any())
                 {
-                    SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
+                    await SettingsViewModel.LoadSettingsFromLaunchParam(launchParam);
                 }
                 else
                 {

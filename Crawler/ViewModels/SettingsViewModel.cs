@@ -306,13 +306,22 @@ namespace Crawler.ViewModels
             IsFilterOpen = onstartup.Value != "0";
         }
 
-        public void LoadSettingsFromLaunchParam(IReadOnlyDictionary<string, string> launchParams)
+        public async Task LoadSettingsFromLaunchParam(IReadOnlyDictionary<string, string> launchParams)
         {
             string param;
             if (launchParams.TryGetValue(dirLaunchParam, out param))
             {
                 var di = new DirectoryInfo(param);
                 DirPath = di.Exists ? di.FullName : Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            }
+            else
+            {
+                ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
+                DirPath = savedir.Value;
+                if (string.IsNullOrEmpty(DirPath))
+                {
+                    DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                }
             }
 
             if (launchParams.TryGetValue(mpcLaunchParam, out param))
@@ -323,6 +332,11 @@ namespace Crawler.ViewModels
                     MpcPath = fn.FullName;
                 }
             }
+            else
+            {
+                ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
+                MpcPath = mpcdir.Value;
+            }
 
             if (launchParams.TryGetValue(youLaunchParam, out param))
             {
@@ -332,6 +346,14 @@ namespace Crawler.ViewModels
                     YouPath = fn.FullName;
                 }
             }
+            else
+            {
+                ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
+                YouPath = youpath.Value;
+            }
+
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            IsFilterOpen = onstartup.Value != "0";
         }
 
         public async Task LoadTagsFromDb()
