@@ -111,7 +111,7 @@ namespace Crawler.ViewModels
                         if (!watchedList.Select(x => x.ID).Contains(item.ID))
                         {
                             watchedList.Add(item);
-                            if (SelectedState != null && (WatchState)SelectedState.State == st)
+                            if (SelectedState != null && SelectedState.State as WatchState? == st)
                             {
                                 AddNewItem(item);
                             }
@@ -126,7 +126,7 @@ namespace Crawler.ViewModels
                         if (!plannedList.Select(x => x.ID).Contains(item.ID))
                         {
                             plannedList.Add(item);
-                            if (SelectedState != null && (WatchState)SelectedState.State == st)
+                            if (SelectedState != null && SelectedState.State as WatchState? == st)
                             {
                                 AddNewItem(item);
                             }
@@ -174,7 +174,7 @@ namespace Crawler.ViewModels
                             if (!addedListIds.Contains(item.ID))
                             {
                                 addedListIds.Add(item.ID);
-                                if (SelectedState != null && SelectedState.State is SyncState)
+                                if (SelectedState != null && SelectedState.State as SyncState? == st)
                                 {
                                     if (!ChannelItems.Select(x => x.ID).Contains(item.ID))
                                     {
@@ -194,7 +194,7 @@ namespace Crawler.ViewModels
                             if (addedListIds.Contains(item.ID))
                             {
                                 addedListIds.Remove(item.ID);
-                                if (SelectedState != null && SelectedState.State is SyncState)
+                                if (SelectedState != null && SelectedState.State as SyncState? == st)
                                 {
                                     IVideoItem ite = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
                                     if (ite != null)
@@ -416,7 +416,7 @@ namespace Crawler.ViewModels
                 return;
             }
             item.IsHasLocalFileFound(DirPath);
-            ChannelItems.Add(item);
+            ChannelItems.Insert(0, item);
             ChannelItemsCount += 1;
         }
 
