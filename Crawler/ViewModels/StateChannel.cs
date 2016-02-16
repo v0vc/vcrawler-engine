@@ -194,7 +194,7 @@ namespace Crawler.ViewModels
                             if (addedListIds.Contains(item.ID))
                             {
                                 addedListIds.Remove(item.ID);
-                                if (SelectedState != null && SelectedState.State as SyncState? == st)
+                                if (SelectedState != null && SelectedState.State as SyncState? == SyncState.Added)
                                 {
                                     IVideoItem ite = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
                                     if (ite != null)
