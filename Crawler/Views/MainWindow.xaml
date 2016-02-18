@@ -757,7 +757,7 @@
                                     </i:Interaction.Triggers>
 
                                     <ListView ItemsSource="{Binding Path=DataContext.SelectedChannel.SelectedItem.Subtitles, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                          BorderThickness="0" Background="WhiteSmoke"
+                                              BorderThickness="0" Background="WhiteSmoke"
                                               >
                                         <ListView.ItemTemplate>
                                             <DataTemplate>

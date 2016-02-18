@@ -144,6 +144,10 @@ namespace Crawler.ViewModels
                                     watchedListIds.Remove(item.ID);
                                 }
                             }
+                            if (SelectedState != null && SelectedState.State as WatchState? == WatchState.Watched)
+                            {
+                                DeleteItem(item);
+                            }
                         }
 
                         break;
@@ -158,6 +162,11 @@ namespace Crawler.ViewModels
                                 plannedListIds.Remove(item.ID);
                             }
                         }
+                        //if (SelectedState != null && SelectedState.State as WatchState? == WatchState.Planned)
+                        //{
+                        //    DeleteItem(item);
+                        //}
+
                         break;
                 }
             }
@@ -422,7 +431,11 @@ namespace Crawler.ViewModels
 
         public void DeleteItem(IVideoItem item)
         {
-            throw new NotImplementedException();
+            var el = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+            if (el != null)
+            {
+                ChannelItems.Remove(el);
+            }
         }
 
         #endregion
