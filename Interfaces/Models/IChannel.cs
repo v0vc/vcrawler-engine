@@ -43,6 +43,8 @@ namespace Interfaces.Models
 
         void DeleteItem(IVideoItem item);
 
+        void RefreshView(string field);
+
         #endregion
     }
 }

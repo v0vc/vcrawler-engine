@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -52,8 +51,6 @@ namespace Crawler.ViewModels
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
-            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
-            ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
         }
 
         #endregion
@@ -154,6 +151,7 @@ namespace Crawler.ViewModels
                     popCountriesDictionary.Add(SelectedCountry, lstemp);
                     break;
             }
+            RefreshView("ViewCount");
         }
 
         public void Init(IEnumerable<ICred> supportedCreds, string dirPath)
@@ -347,20 +345,20 @@ namespace Crawler.ViewModels
             ChannelItems.Remove(item);
         }
 
+        public void RefreshView(string field)
+        {
+            if (!ChannelItemsCollectionView.SortDescriptions.Any())
+            {
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
+            }
+            ChannelItemsCollectionView.Refresh();
+        }
+
         #endregion
 
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region Event Handling
-
-        private void ChannelItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            ChannelItemsCollectionView.Refresh();
-        }
 
         #endregion
 

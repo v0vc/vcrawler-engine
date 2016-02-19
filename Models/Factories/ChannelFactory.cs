@@ -134,6 +134,7 @@ namespace Models.Factories
                 vi.IsHasLocalFileFound(channel.DirPath);
                 channel.ChannelItems.Add(vi);
             }
+            channel.RefreshView("Timestamp");
         }
 
         public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(IChannel channel, int maxresult)

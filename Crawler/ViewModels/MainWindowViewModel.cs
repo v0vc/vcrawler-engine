@@ -630,15 +630,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private static void UnsubsChannel(IChannel channel)
-        {
-            var youChannel = channel as YouChannel;
-            if (youChannel != null)
-            {
-                youChannel.UnsubscribeEvents();
-            }
-        }
-
         #endregion
 
         #region Methods
@@ -943,7 +934,6 @@ namespace Crawler.ViewModels
             {
                 IChannel channel = channels.ElementAt(i - 1);
                 indexes.Add(Channels.IndexOf(channel));
-                UnsubsChannel(channel);
                 Channels.Remove(channel);
                 res.Add(channel.ID);
                 channelCollectionView.Filter = null;
@@ -1903,14 +1893,19 @@ namespace Crawler.ViewModels
 
         private void SiteChanged(object obj)
         {
-            if (obj is IChannel)
+            var channel = obj as IChannel;
+            if (channel != null)
             {
-                // ServiceChannel.SiteChanged();
-                SelectedChannel = obj as IChannel;
+                SelectedChannel = channel;
             }
-            else if (obj is StateChannel.StateImage)
+            else
             {
-                StateChannel.SelectedState = obj as StateChannel.StateImage;
+                var image = obj as StateChannel.StateImage;
+                if (image == null)
+                {
+                    return;
+                }
+                StateChannel.SelectedState = image;
                 SelectedChannel = StateChannel;
             }
         }

@@ -70,8 +70,6 @@ namespace Crawler.ViewModels
                 SupportedStates.Add(new StateImage(pair.Value, pair.Key));
             }
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
-            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
-            ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
             InitIds();
         }
 
@@ -248,6 +246,7 @@ namespace Crawler.ViewModels
         {
             Title = stateImage.State.ToString();
             ReloadFilteredLists(stateImage.State);
+            RefreshView("Timestamp");
         }
 
         private async void ReloadFilteredLists(object state)
@@ -439,6 +438,15 @@ namespace Crawler.ViewModels
             {
                 ChannelItems.Remove(el);
             }
+        }
+
+        public void RefreshView(string field)
+        {
+            if (!ChannelItemsCollectionView.SortDescriptions.Any())
+            {
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
+            }
+            ChannelItemsCollectionView.Refresh();
         }
 
         #endregion
