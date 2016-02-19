@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
@@ -45,13 +46,8 @@ namespace Models.BO.Channels
             ChannelTags = new ObservableCollection<ITag>();
             ChannelCookies = new CookieContainer();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
-            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            AddDefSorting();
             ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
-        }
-
-        private void ChannelItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-        {
-            ChannelItemsCollectionView.Refresh();
         }
 
         #endregion
@@ -69,12 +65,6 @@ namespace Models.BO.Channels
 
         #region Methods
 
-        public void UnsubscribeEvents()
-        {
-            ChannelItems.CollectionChanged -= ChannelItemsCollectionChanged;
-            ChannelItemsCollectionView = null;
-        }
-
         public void RestoreFullChannelItems()
         {
             if (isHasScrolled)
@@ -88,6 +78,20 @@ namespace Models.BO.Channels
             isHasScrolled = true;
             ChannelFactory.SetChannelCountAsync(this);
             ChannelFactory.FillChannelItemsFromDbAsync(this, 0, ChannelItems.Select(x => x.ID).ToList());
+        }
+
+        public void UnsubscribeEvents()
+        {
+            ChannelItems.CollectionChanged -= ChannelItemsCollectionChanged;
+            ChannelItemsCollectionView = null;
+        }
+
+        private void AddDefSorting()
+        {
+            if (!ChannelItemsCollectionView.SortDescriptions.Any())
+            {
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            }
         }
 
         private bool FilterVideoBySynced(object item)
@@ -140,7 +144,6 @@ namespace Models.BO.Channels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
-
         public ICollectionView ChannelItemsCollectionView { get; set; }
 
         public int ChannelItemsCount
@@ -356,6 +359,21 @@ namespace Models.BO.Channels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Event Handling
+
+        private void ChannelItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            if (e.Action == NotifyCollectionChangedAction.Replace)
+            {
+                return;
+            }
+
+            AddDefSorting();
+            ChannelItemsCollectionView.Refresh();
+        }
 
         #endregion
     }

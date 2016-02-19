@@ -1157,25 +1157,14 @@ namespace Crawler.ViewModels
             {
                 List<string> excepted = channel.ChannelItems.Select(x => x.ID).ToList();
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
-
-                // ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
                 channel.IsHasNewFromSync = false;
             }
             else
             {
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage);
-
-                // ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, 0);
             }
 
-            // проверочка
-            // if (channel.ChannelItems.Count < basePage)
-            // {
-            // List<string> excepted = channel.ChannelItems.Select(x => x.ID).ToList();
-            // ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
-            // //ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage - channel.ChannelItems.Count, channel.ChannelItems.Count);
-            // channel.IsHasNewFromSync = false;
-            // }
+            ChannelFactory.SetChannelCountAsync(channel);
             if (channel.PlaylistCount == 0)
             {
                 channel.PlaylistCount = await Task.Run(() => db.GetChannelPlaylistCountDbAsync(channel.ID));
