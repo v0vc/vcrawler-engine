@@ -719,7 +719,7 @@
                               RowHeaderWidth="0"
                               GridLinesVisibility="Horizontal"
                               BorderThickness="1"
-                              ItemsSource="{Binding SelectedChannel.ChannelItems}"
+                              ItemsSource="{Binding SelectedChannel.ChannelItemsCollectionView, Mode=OneWay}"
                               SelectedItem="{Binding SelectedChannel.SelectedItem}"   
                               SelectedItemsList="{Binding SelectedItems, Mode=OneWayToSource}"
                               HorizontalScrollBarVisibility="Disabled"

@@ -1,11 +1,11 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -48,10 +48,12 @@ namespace Crawler.ViewModels
             Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
             popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
             SelectedCountry = Countries.First();
+            ChannelPlaylists = new ObservableCollection<IPlaylist>();
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
-            ChannelPlaylists = new ObservableCollection<IPlaylist>();
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
         }
 
         #endregion
@@ -350,6 +352,15 @@ namespace Crawler.ViewModels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Event Handling
+
+        private void ChannelItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ChannelItemsCollectionView.Refresh();
+        }
 
         #endregion
 

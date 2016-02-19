@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Windows.Data;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -43,6 +44,14 @@ namespace Models.BO.Channels
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
             ChannelCookies = new CookieContainer();
+            ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
+        }
+
+        private void ChannelItemsCollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            ChannelItemsCollectionView.Refresh();
         }
 
         #endregion
@@ -59,6 +68,12 @@ namespace Models.BO.Channels
         #endregion
 
         #region Methods
+
+        public void UnsubscribeEvents()
+        {
+            ChannelItems.CollectionChanged -= ChannelItemsCollectionChanged;
+            ChannelItemsCollectionView = null;
+        }
 
         public void RestoreFullChannelItems()
         {
@@ -125,6 +140,7 @@ namespace Models.BO.Channels
 
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
+
         public ICollectionView ChannelItemsCollectionView { get; set; }
 
         public int ChannelItemsCount

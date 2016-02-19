@@ -1,11 +1,10 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -13,6 +12,7 @@ using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Windows.Data;
 using DataAPI.Database;
 using DataAPI.POCO;
 using Extensions.Helpers;
@@ -32,8 +32,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added },
-            { "Crawler.Images.time_48.png", WatchState.Planned },
+            { "Crawler.Images.new_48.png", SyncState.Added }, 
+            { "Crawler.Images.time_48.png", WatchState.Planned }, 
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -69,6 +69,9 @@ namespace Crawler.ViewModels
             {
                 SupportedStates.Add(new StateImage(pair.Value, pair.Key));
             }
+            ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription("Timestamp", ListSortDirection.Descending));
+            ChannelItems.CollectionChanged += ChannelItemsCollectionChanged;
             InitIds();
         }
 
@@ -162,11 +165,11 @@ namespace Crawler.ViewModels
                                 plannedListIds.Remove(item.ID);
                             }
                         }
-                        //if (SelectedState != null && SelectedState.State as WatchState? == WatchState.Planned)
-                        //{
-                        //    DeleteItem(item);
-                        //}
 
+                        // if (SelectedState != null && SelectedState.State as WatchState? == WatchState.Planned)
+                        // {
+                        // DeleteItem(item);
+                        // }
                         break;
                 }
             }
@@ -431,7 +434,7 @@ namespace Crawler.ViewModels
 
         public void DeleteItem(IVideoItem item)
         {
-            var el = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
+            IVideoItem el = ChannelItems.FirstOrDefault(x => x.ID == item.ID);
             if (el != null)
             {
                 ChannelItems.Remove(el);
@@ -443,6 +446,15 @@ namespace Crawler.ViewModels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Event Handling
+
+        private void ChannelItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+        {
+            ChannelItemsCollectionView.Refresh();
+        }
 
         #endregion
 

@@ -630,6 +630,15 @@ namespace Crawler.ViewModels
             }
         }
 
+        private static void UnsubsChannel(IChannel channel)
+        {
+            var youChannel = channel as YouChannel;
+            if (youChannel != null)
+            {
+                youChannel.UnsubscribeEvents();
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -934,6 +943,7 @@ namespace Crawler.ViewModels
             {
                 IChannel channel = channels.ElementAt(i - 1);
                 indexes.Add(Channels.IndexOf(channel));
+                UnsubsChannel(channel);
                 Channels.Remove(channel);
                 res.Add(channel.ID);
                 channelCollectionView.Filter = null;
