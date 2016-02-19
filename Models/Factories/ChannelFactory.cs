@@ -220,6 +220,10 @@ namespace Models.Factories
         public static async void SetChannelCountAsync(IChannel channel)
         {
             channel.ChannelItemsCount = await Task.Run(() => db.GetChannelItemsCountDbAsync(channel.ID)).ConfigureAwait(false);
+            if (channel.PlaylistCount == 0)
+            {
+                channel.PlaylistCount = await Task.Run(() => db.GetChannelPlaylistCountDbAsync(channel.ID)).ConfigureAwait(false);
+            }
         }
 
         public static async Task SyncChannelAsync(IChannel channel, 

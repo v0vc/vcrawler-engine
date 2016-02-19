@@ -361,7 +361,7 @@ namespace Models.BO.Items
 
         public async Task FillDescriptionAsync()
         {
-            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(ID);
+            string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(ID).ConfigureAwait(false);
             Description = res.WordWrap(100);
         }
 

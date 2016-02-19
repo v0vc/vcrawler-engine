@@ -19,6 +19,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Crawler.Common;
 using Crawler.Views;
 using DataAPI.Database;
@@ -413,7 +414,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return searchCommand ?? (searchCommand = new RelayCommand(async x => await SearchExecute()));
+                return searchCommand ?? (searchCommand = new RelayCommand(async x => await SearchExecute().ConfigureAwait(false)));
             }
         }
 
@@ -521,7 +522,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData(true)));
+                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData(true).ConfigureAwait(false)));
             }
         }
 
@@ -579,12 +580,12 @@ namespace Crawler.ViewModels
             {
                 if (string.IsNullOrEmpty(video.Description))
                 {
-                    await video.FillDescriptionAsync();
+                    await video.FillDescriptionAsync().ConfigureAwait(false);
                 }
             }
             else
             {
-                var channel = obj as YouChannel;
+                var channel = obj as IChannel;
                 if (channel == null)
                 {
                     return;
@@ -593,7 +594,7 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(channel.ID);
+                string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(channel.ID).ConfigureAwait(false);
                 channel.SubTitle = text.WordWrap(80);
             }
         }
@@ -652,7 +653,7 @@ namespace Crawler.ViewModels
             switch (site)
             {
                 case SiteType.YouTube:
-                    parsedId = await YouTubeSite.ParseChannelLink(channelId);
+                    parsedId = await YouTubeSite.ParseChannelLink(channelId).ConfigureAwait(false);
 
                     break;
 
@@ -680,7 +681,7 @@ namespace Crawler.ViewModels
                 {
                     try
                     {
-                        await AddNewChannelAsync(parsedId, channelTitle, site);
+                        await AddNewChannelAsync(parsedId, channelTitle, site).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -694,7 +695,7 @@ namespace Crawler.ViewModels
         {
             SetStatus(1);
 
-            IChannel channel = await ChannelFactory.GetChannelNetAsync(channelid, site);
+            IChannel channel = await Task.Run(() => ChannelFactory.GetChannelNetAsync(channelid, site)).ConfigureAwait(true);
 
             if (channel == null)
             {
@@ -709,12 +710,12 @@ namespace Crawler.ViewModels
             channel.DirPath = SettingsViewModel.DirPath;
             Channels.Add(channel);
             SelectedChannel = channel;
-            channel.ChannelState = ChannelState.InWork;
-            await db.InsertChannelFullAsync(channel);
             AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
+            channel.ChannelState = ChannelState.InWork;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
             channel.ChannelState = ChannelState.Added;
+            await Task.Run(() => db.InsertChannelFullAsync(channel)).ConfigureAwait(false);
             SetStatus(0);
         }
 
@@ -743,7 +744,7 @@ namespace Crawler.ViewModels
             DialogResult res = dlg.ShowDialog();
             if (res == DialogResult.OK)
             {
-                List<ChannelPOCO> lst = await db.GetChannelsListAsync();
+                List<ChannelPOCO> lst = await db.GetChannelsListAsync().ConfigureAwait(false);
                 var sb = new StringBuilder();
                 foreach (ChannelPOCO poco in lst)
                 {
@@ -790,7 +791,7 @@ namespace Crawler.ViewModels
             }
             ServiceChannel.ChannelItems.Clear();
             StateChannel.AddToStateList(item.WatchState, item);
-            await db.UpdateItemWatchState(item.ID, item.WatchState);
+            await db.UpdateItemWatchState(item.ID, item.WatchState).ConfigureAwait(false);
         }
 
         private async void ChannelKeyDown(object par)
@@ -807,12 +808,12 @@ namespace Crawler.ViewModels
                     List<string> ids = DeleteChannels();
                     if (ids.Any())
                     {
-                        await Task.Run(() => db.DeleteChannelsAsync(ids));
+                        await Task.Run(() => db.DeleteChannelsAsync(ids)).ConfigureAwait(false);
                     }
                     break;
 
                 case KeyboardKey.Enter:
-                    await SearchExecute();
+                    await SearchExecute().ConfigureAwait(false);
                     break;
             }
         }
@@ -827,7 +828,7 @@ namespace Crawler.ViewModels
                     List<string> ids = DeleteChannels();
                     if (ids.Any())
                     {
-                        await Task.Run(() => db.DeleteChannelsAsync(ids));
+                        await Task.Run(() => db.DeleteChannelsAsync(ids)).ConfigureAwait(false);
                     }
 
                     break;
@@ -837,13 +838,13 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Related:
-                    await FindRelatedChannels(SelectedChannel);
+                    await FindRelatedChannels(SelectedChannel).ConfigureAwait(false);
                     break;
 
                 case ChannelMenuItem.Subscribe:
                     try
                     {
-                        await SubscribeOnRelated();
+                        await SubscribeOnRelated().ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -857,7 +858,7 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.Update:
-                    await SyncChannelPlaylist();
+                    await SyncChannelPlaylist().ConfigureAwait(false);
                     break;
             }
         }
@@ -1112,7 +1113,7 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
-        private async void FillChannelItems(IChannel channel)
+        private void FillChannelItems(IChannel channel)
         {
             IsLogExpand = false;
             IsPlExpand = false;
@@ -1124,20 +1125,10 @@ namespace Crawler.ViewModels
 
             channel.IsShowSynced = false;
 
-            if (channel is StateChannel)
-            {
-                return;
-            }
-
             // если канал только что добавили - элементы там есть
-            if (channel.ChannelState == ChannelState.Added)
-            {
-                return;
-            }
-
             // есть новые элементы после синхронизации - теперь проставляется в самой синхронизации
             // если канал заполнен элементами, но нет новых - уже загружали, не нужно больше
-            if (channel.ChannelItems.Any() && !channel.IsHasNewFromSync)
+            if (channel is StateChannel || channel.ChannelState == ChannelState.Added || channel.ChannelItems.Count >= basePage)
             {
                 return;
             }
@@ -1147,18 +1138,14 @@ namespace Crawler.ViewModels
             {
                 List<string> excepted = channel.ChannelItems.Select(x => x.ID).ToList();
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage, excepted);
-                channel.IsHasNewFromSync = false;
             }
             else
             {
                 ChannelFactory.FillChannelItemsFromDbAsync(channel, basePage);
             }
 
+            channel.IsHasNewFromSync = false;
             ChannelFactory.SetChannelCountAsync(channel);
-            if (channel.PlaylistCount == 0)
-            {
-                channel.PlaylistCount = await Task.Run(() => db.GetChannelPlaylistCountDbAsync(channel.ID));
-            }
         }
 
         private async void FillPopular()
