@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -25,7 +24,6 @@ namespace Models.Factories
         #region Static and Readonly Fields
 
         private static readonly SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
-        private static Task task;
 
         #endregion
 
@@ -61,11 +59,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID,
-                        Title = poco.Title,
+                        ID = poco.ID, 
+                        Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail,
-                        CountNew = poco.Countnew,
+                        Thumbnail = poco.Thumbnail, 
+                        CountNew = poco.Countnew, 
                         UseFast = poco.UseFast
                     };
 
@@ -125,30 +123,17 @@ namespace Models.Factories
             }
         }
 
-        public static void FillChannelItemsFromDbAsync(IChannel channel, int basePage, List<string> excepted = null)
+        public static async void FillChannelItemsFromDbAsync(IChannel channel, int basePage, List<string> excepted = null)
         {
-            if ((task != null)
-             && (task.IsCompleted == false || task.Status == TaskStatus.Running || task.Status == TaskStatus.WaitingToRun
-                 || task.Status == TaskStatus.WaitingForActivation))
-            {
-                return;
-            }
-            List<VideoItemPOCO> items = null;
+            List<VideoItemPOCO> items =
+                await Task.Run(() => db.GetChannelItemsBaseAsync(channel.ID, basePage, excepted)).ConfigureAwait(true);
 
-            task = Task.Run(async () =>
+            foreach (VideoItemPOCO poco in items)
             {
-                // items = await db.GetChannelItemsAsync(channel.ID, count, offset);
-                if (excepted == null)
-                {
-                    items = await db.GetChannelItemsAsync(channel.ID, basePage);
-                }
-                else
-                {
-                    items = await db.GetChannelItemsAsync(channel.ID, basePage, excepted);    
-                }
-                
-                channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID);
-            }).ContinueWith(x => AddItemsToChannel(items, channel), TaskScheduler.FromCurrentSynchronizationContext());
+                IVideoItem vi = VideoItemFactory.CreateVideoItem(poco, channel.Site);
+                vi.IsHasLocalFileFound(channel.DirPath);
+                channel.ChannelItems.Add(vi);
+            }
         }
 
         public static async Task<IEnumerable<IVideoItem>> GetChannelItemsNetAsync(IChannel channel, int maxresult)
@@ -231,9 +216,14 @@ namespace Models.Factories
             throw new Exception(channel.ID);
         }
 
-        public static async Task SyncChannelAsync(IChannel channel,
-            bool isFastSync,
-            bool isSyncPls = false,
+        public static async void SetChannelCountAsync(IChannel channel)
+        {
+            channel.ChannelItemsCount = await Task.Run(() => db.GetChannelItemsCountDbAsync(channel.ID)).ConfigureAwait(false);
+        }
+
+        public static async Task SyncChannelAsync(IChannel channel, 
+            bool isFastSync, 
+            bool isSyncPls = false, 
             Action<IVideoItem, object> stateAction = null)
         {
             channel.ChannelState = ChannelState.InWork;
@@ -357,24 +347,10 @@ namespace Models.Factories
             }
         }
 
-        private static void AddItemsToChannel(IEnumerable<VideoItemPOCO> items, IChannel channel)
-        {
-            foreach (VideoItemPOCO poco in items)
-            {
-                //if (channel.ChannelItems.Select(x => x.ID).Contains(poco.ID))
-                //{
-                //    continue;
-                //}
-                IVideoItem vi = VideoItemFactory.CreateVideoItem(poco, channel.Site);
-                vi.IsHasLocalFileFound(channel.DirPath);
-                channel.ChannelItems.Add(vi);
-            }
-        }
-
-        private static async Task InsertNewItems(IEnumerable<string> trueIds,
-            IChannel channel,
-            string playlistId = null,
-            ICollection<string> dbIds = null,
+        private static async Task InsertNewItems(IEnumerable<string> trueIds, 
+            IChannel channel, 
+            string playlistId = null, 
+            ICollection<string> dbIds = null, 
             Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds); // получим скопом

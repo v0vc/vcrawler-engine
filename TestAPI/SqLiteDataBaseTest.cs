@@ -186,7 +186,7 @@ namespace TestAPI
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsAsync
-            t = db.GetChannelItemsAsync(ch.ID, 25);
+            t = db.GetChannelItemsBaseAsync(ch.ID, 25);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelItemsCountDbAsync

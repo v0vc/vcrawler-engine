@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -27,6 +26,7 @@ namespace Models.BO.Channels
         private int countNew;
         private List<string> deleted;
         private string filterVideoKey;
+        private bool isHasScrolled;
         private bool isShowSynced;
         private int playlistCount;
         private IVideoItem selectedItem;
@@ -62,12 +62,17 @@ namespace Models.BO.Channels
 
         public void RestoreFullChannelItems()
         {
-            if (ChannelItemsCount <= ChannelItems.Count)
+            if (isHasScrolled)
             {
                 return;
             }
+            if (ChannelItemsCount != 0 && ChannelItemsCount <= ChannelItems.Count)
+            {
+                return;
+            }
+            isHasScrolled = true;
+            ChannelFactory.SetChannelCountAsync(this);
             ChannelFactory.FillChannelItemsFromDbAsync(this, 0, ChannelItems.Select(x => x.ID).ToList());
-            //ChannelFactory.FillChannelItemsFromDbAsync(this, ChannelItemsCount - ChannelItems.Count, ChannelItems.Count);
         }
 
         private bool FilterVideoBySynced(object item)

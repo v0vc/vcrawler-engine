@@ -9,6 +9,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SQLite;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -639,15 +640,32 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Common wrapper
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="basePage"></param>
+        /// <param name="excepted"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetChannelItemsBaseAsync(string channelID, int basePage, List<string> excepted = null)
+        {
+            if (excepted == null || !excepted.Any())
+            {
+                return await GetChannelItemsAsync(channelID, basePage).ConfigureAwait(false);
+            }
+            return await GetChannelItemsAsync(channelID, basePage, excepted).ConfigureAwait(false);
+        }
+
+        /// <summary>
         ///     Get channel items, except ids
         /// </summary>
         /// <param name="channelID"></param>
         /// <param name="basePage"></param>
         /// <param name="excepted"></param>
         /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, List<string> excepted)
+        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, ICollection<string> excepted)
         {
             var res = new List<VideoItemPOCO>();
+
             using (var connection = new SQLiteConnection(dbConnection))
             {
                 await connection.OpenAsync();
@@ -751,7 +769,7 @@ namespace DataAPI.Database
         /// <param name="channelID"></param>
         /// <param name="basePage"></param>
         /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage)
+        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage)
         {
             var res = new List<VideoItemPOCO>();
 
