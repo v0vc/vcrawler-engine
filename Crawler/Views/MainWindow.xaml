@@ -734,6 +734,9 @@
                             <i:EventTrigger EventName="MouseDoubleClick">
                                 <i:InvokeCommandAction Command="{Binding VideoDoubleClickCommand, Mode=OneTime}" CommandParameter="{Binding ElementName=videoGrid, Path=SelectedItem}"/>
                             </i:EventTrigger>
+                            <i:EventTrigger EventName="Sorting">
+                                <i:InvokeCommandAction Command="{Binding VideoDoubleClickCommand, Mode=OneTime}"/>
+                            </i:EventTrigger>
                             <behaviors:RoutedEventTrigger RoutedEvent="ScrollViewer.ScrollChanged">
                                 <i:InvokeCommandAction Command="{Binding DataContext.ScrollChangedCommand, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" CommandParameter="{Binding ElementName=videoGrid}"/>
                             </behaviors:RoutedEventTrigger>

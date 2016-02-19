@@ -1774,9 +1774,13 @@ namespace Crawler.ViewModels
             var item = obj as IVideoItem;
             if (item == null)
             {
-                return;
+                var chanell = SelectedChannel as YouChannel;
+                if (chanell != null)
+                {
+                    chanell.RestoreFullChannelItems();
+                }
             }
-            if (SettingsViewModel.IsMpcExist())
+            else if (SettingsViewModel.IsMpcExist())
             {
                 await item.RunItem(SettingsViewModel.MpcPath);
             }
