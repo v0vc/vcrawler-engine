@@ -24,6 +24,12 @@ namespace Crawler.ViewModels
 {
     public sealed class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
     {
+        #region Constants
+
+        private const string dlindex = "DL";
+
+        #endregion
+
         #region Static and Readonly Fields
 
         private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
@@ -44,7 +50,7 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel()
         {
             Title = "#Popular";
-            Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP" };
+            Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", dlindex };
             popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
             SelectedCountry = Countries.First();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
@@ -113,20 +119,27 @@ namespace Crawler.ViewModels
 
         #region Methods
 
+        public void AddItemToDownload(IVideoItem item)
+        {
+            List<IVideoItem> lst;
+
+            if (!popCountriesDictionary.TryGetValue(dlindex, out lst))
+            {
+                popCountriesDictionary.Add(dlindex, lst = new List<IVideoItem>());
+            }
+            if (!lst.Select(x => x.ID).Contains(item.ID))
+            {
+                lst.Add(item);
+            }
+            SelectedCountry = Countries.Single(x => x == dlindex);
+        }
+
         public async Task FillPopular(HashSet<string> ids)
         {
-            if (ChannelItems.Any())
+            if (SelectedCountry == dlindex)
             {
-                // чтоб не удалять список отдельных закачек, но почистить прошлые популярные
-                for (int i = ChannelItems.Count; i > 0; i--)
-                {
-                    if (!(ChannelItems[i - 1].FileState == ItemState.LocalYes || ChannelItems[i - 1].FileState == ItemState.Downloading))
-                    {
-                        ChannelItems.RemoveAt(i - 1);
-                    }
-                }
+                return;
             }
-
             switch (SelectedSite.Cred.Site)
             {
                 case SiteType.YouTube:
@@ -182,7 +195,7 @@ namespace Crawler.ViewModels
 
         public async Task Search(HashSet<string> ids)
         {
-            if (string.IsNullOrEmpty(SearchKey))
+            if (string.IsNullOrEmpty(SearchKey) || SelectedCountry == "DL")
             {
                 return;
             }

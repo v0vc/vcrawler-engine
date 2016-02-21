@@ -637,8 +637,8 @@ namespace Crawler.ViewModels
 
         private void AddItemToDownloadToList(IVideoItem item)
         {
+            ServiceChannel.AddItemToDownload(item);
             SelectedChannel = ServiceChannel;
-            SelectedChannel.AddNewItem(item);
         }
 
         private void AddItemToStateChannel(IVideoItem videoItem, object state)
