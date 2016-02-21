@@ -329,7 +329,7 @@ namespace DataAPI.Database
             }
             command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
 
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
         private static async Task InsertChannelParam(SQLiteCommand command, IChannel channel)
@@ -345,7 +345,7 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
             command.Parameters.AddWithValue("@" + fastsync, channel.UseFast);
 
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
         private static async Task InsertItemParam(SQLiteCommand command, IVideoItem item)
@@ -364,7 +364,8 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
             command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
             command.Parameters.AddWithValue("@" + watchstate, (byte)item.WatchState);
-            await command.ExecuteNonQueryAsync();
+
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
         private static async Task InsertCredParam(SQLiteCommand command, ICred cred)
@@ -376,7 +377,7 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + credExpired, cred.Expired);
             command.Parameters.AddWithValue("@" + credAutorization, cred.Autorization);
 
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
         private static async Task UpdatePlaylistItems(SQLiteCommand command, string playlistid, string itemid, string channelid)
@@ -385,7 +386,7 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + fItemId, itemid);
             command.Parameters.AddWithValue("@" + fChannelId, channelid);
 
-            await command.ExecuteNonQueryAsync();
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
         #endregion
 
@@ -400,7 +401,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -412,7 +413,7 @@ namespace DataAPI.Database
                             {
                                 string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechannels, channelId, id);
                                 command.CommandText = zap;
-                                await command.ExecuteNonQueryAsync();
+                                await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                             }
                             transaction.Commit();
                         }
@@ -439,13 +440,13 @@ namespace DataAPI.Database
         public async Task DeleteChannelAsync(string parID)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechannels, channelId, parID);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         public async Task DeleteChannelPlaylistsAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -462,7 +463,7 @@ namespace DataAPI.Database
                 channelid,
                 tagIdF,
                 tag);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -473,7 +474,7 @@ namespace DataAPI.Database
         public async Task DeleteCredAsync(string site)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablecredentials, credSite, site);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -484,7 +485,7 @@ namespace DataAPI.Database
         public async Task DeleteItemAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableitems, itemId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -495,7 +496,7 @@ namespace DataAPI.Database
         public async Task DeletePlaylistAsync(string id)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistID, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -506,7 +507,7 @@ namespace DataAPI.Database
         public async Task DeleteSettingAsync(string key)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablesettings, setKey, key);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -517,9 +518,9 @@ namespace DataAPI.Database
         public async Task DeleteTagAsync(string tag)
         {
             string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tabletags, tagTitle, tag);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
             zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechanneltags, tagIdF, tag);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -535,11 +536,11 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -548,7 +549,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 TagPOCO tag = CreateTag(reader, tagTitle);
                                 res.Add(tag);
@@ -575,11 +576,11 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -588,7 +589,7 @@ namespace DataAPI.Database
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
-                            if (!await reader.ReadAsync())
+                            if (!await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 transaction.Rollback();
                                 connection.Close();
@@ -617,12 +618,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (res == null || res == DBNull.Value)
                         {
@@ -668,7 +669,7 @@ namespace DataAPI.Database
 
             using (var connection = new SQLiteConnection(dbConnection))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
                     using (SQLiteCommand command = connection.CreateCommand())
@@ -694,7 +695,7 @@ namespace DataAPI.Database
 
                             command.CommandText = zap;
 
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
                             {
                                 if (!reader.HasRows)
                                 {
@@ -703,7 +704,7 @@ namespace DataAPI.Database
                                     return res;
                                 }
 
-                                while (await reader.ReadAsync())
+                                while (await reader.ReadAsync().ConfigureAwait(false))
                                 {
                                     var id = reader[itemId] as string;
                                     if (excepted == null)
@@ -729,7 +730,7 @@ namespace DataAPI.Database
                                     itemId,
                                     id);
 
-                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
                                 {
                                     if (!reader.HasRows)
                                     {
@@ -738,7 +739,7 @@ namespace DataAPI.Database
                                         throw new KeyNotFoundException("No item");
                                     }
 
-                                    while (await reader.ReadAsync())
+                                    while (await reader.ReadAsync().ConfigureAwait(false))
                                     {
                                         VideoItemPOCO vi = CreateVideoItem(reader);
                                         res.Add(vi);
@@ -784,12 +785,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -798,7 +799,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 VideoItemPOCO vi = CreateVideoItem(reader);
                                 res.Add(vi);
@@ -837,12 +838,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -851,7 +852,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 VideoItemPOCO vi = CreateVideoItem(reader);
                                 res.Add(vi);
@@ -885,7 +886,7 @@ namespace DataAPI.Database
             var res = new List<VideoItemPOCO>();
             using (var connection = new SQLiteConnection(dbConnection))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
                     using (SQLiteCommand command = connection.CreateCommand())
@@ -895,7 +896,7 @@ namespace DataAPI.Database
                             command.CommandType = CommandType.Text;
                             command.CommandText = string.Format(@"{0} WHERE {1}='{2}'", itemsSelectString, col, (byte)state);
 
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                             {
                                 if (!reader.HasRows)
                                 {
@@ -904,7 +905,7 @@ namespace DataAPI.Database
                                     throw new KeyNotFoundException("No item");
                                 }
 
-                                while (await reader.ReadAsync())
+                                while (await reader.ReadAsync().ConfigureAwait(false))
                                 {
                                     VideoItemPOCO vi = CreateVideoItem(reader);
                                     res.Add(vi);
@@ -948,7 +949,7 @@ namespace DataAPI.Database
             var res = new List<VideoItemPOCO>();
             using (var connection = new SQLiteConnection(dbConnection))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
                     using (SQLiteCommand command = connection.CreateCommand())
@@ -965,7 +966,7 @@ namespace DataAPI.Database
                                     itemId,
                                     itemID);
 
-                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
                                 {
                                     if (!reader.HasRows)
                                     {
@@ -974,7 +975,7 @@ namespace DataAPI.Database
                                         throw new KeyNotFoundException("No item: " + itemID);
                                     }
 
-                                    if (!await reader.ReadAsync())
+                                    if (!await reader.ReadAsync().ConfigureAwait(false))
                                     {
                                         transaction.Rollback();
                                         connection.Close();
@@ -1014,12 +1015,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (res == null || res == DBNull.Value)
                         {
@@ -1055,12 +1056,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (res == null || res == DBNull.Value)
                         {
@@ -1113,12 +1114,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1127,7 +1128,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var vid = reader[itemId] as string;
                                 res.Add(vid);
@@ -1172,12 +1173,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1186,7 +1187,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var vid = reader[itemId] as string;
                                 res.Add(vid);
@@ -1213,12 +1214,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1227,7 +1228,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 PlaylistPOCO pl = CreatePlaylist(reader);
                                 res.Add(pl);
@@ -1240,7 +1241,7 @@ namespace DataAPI.Database
             }
             foreach (PlaylistPOCO poco in res)
             {
-                poco.PlaylistItems.AddRange(await GetPlaylistItemsIdsListDbAsync(poco.ID));
+                poco.PlaylistItems.AddRange(await GetPlaylistItemsIdsListDbAsync(poco.ID).ConfigureAwait(false));
             }
 
             return res;
@@ -1258,12 +1259,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (res == null || res == DBNull.Value)
                         {
@@ -1293,12 +1294,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1307,7 +1308,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 TagPOCO tag = CreateTag(reader, tagIdF);
                                 res.Add(tag);
@@ -1337,11 +1338,11 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1350,7 +1351,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 lst.Add(reader[channelIdF].ToString());
                             }
@@ -1363,7 +1364,7 @@ namespace DataAPI.Database
             }
             foreach (string id in lst)
             {
-                res.Add(await GetChannelAsync(id));
+                res.Add(await GetChannelAsync(id).ConfigureAwait(false));
             }
 
             return res;
@@ -1383,12 +1384,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1397,7 +1398,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[channelId] as string;
                                 res.Add(ch);
@@ -1426,12 +1427,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1440,7 +1441,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 ChannelPOCO ch = CreateChannel(reader);
                                 res.Add(ch);
@@ -1469,12 +1470,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1483,7 +1484,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[playlistID] as string;
                                 res.Add(ch);
@@ -1511,12 +1512,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1525,7 +1526,7 @@ namespace DataAPI.Database
                                 throw new KeyNotFoundException("No item: " + url);
                             }
 
-                            if (!await reader.ReadAsync())
+                            if (!await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 transaction.Rollback();
                                 connection.Close();
@@ -1553,12 +1554,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1567,7 +1568,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 CredPOCO cred = CreateCred(reader);
                                 res.Add(cred);
@@ -1593,12 +1594,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1607,7 +1608,7 @@ namespace DataAPI.Database
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
-                            if (!await reader.ReadAsync())
+                            if (!await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 transaction.Rollback();
                                 connection.Close();
@@ -1644,12 +1645,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1658,7 +1659,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var r = reader[fItemId] as string;
                                 lst.Add(r);
@@ -1672,7 +1673,7 @@ namespace DataAPI.Database
 
             foreach (string itemid in lst)
             {
-                res.Add(await GetVideoItemAsync(itemid));
+                res.Add(await GetVideoItemAsync(itemid).ConfigureAwait(false));
             }
 
             return res;
@@ -1693,12 +1694,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1707,7 +1708,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var vid = reader[fItemId] as string;
                                 res.Add(vid);
@@ -1733,12 +1734,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1747,7 +1748,7 @@ namespace DataAPI.Database
                                 throw new KeyNotFoundException("No item: " + key);
                             }
 
-                            if (!await reader.ReadAsync())
+                            if (!await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 transaction.Rollback();
                                 connection.Close();
@@ -1777,12 +1778,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1791,7 +1792,7 @@ namespace DataAPI.Database
                                 throw new KeyNotFoundException("No item: " + id);
                             }
 
-                            if (!await reader.ReadAsync())
+                            if (!await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 transaction.Rollback();
                                 connection.Close();
@@ -1820,12 +1821,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None);
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
 
                         if (res == null || res == DBNull.Value)
                         {
@@ -1851,7 +1852,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -1860,7 +1861,7 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            await InsertChannelParam(command, channel);
+                            await InsertChannelParam(command, channel).ConfigureAwait(false);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -1887,7 +1888,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -1899,7 +1900,7 @@ namespace DataAPI.Database
                             #region channel
 
                             command.CommandText = channelsInsertString;
-                            await InsertChannelParam(command, channel);
+                            await InsertChannelParam(command, channel).ConfigureAwait(false);
 
                             #endregion
 
@@ -1908,7 +1909,7 @@ namespace DataAPI.Database
                             command.CommandText = playlistInsertString;
                             foreach (IPlaylist playlist in channel.ChannelPlaylists)
                             {
-                                await InsertPlaylistParam(command, playlist);
+                                await InsertPlaylistParam(command, playlist).ConfigureAwait(false);
                             }
 
                             #endregion
@@ -1918,7 +1919,7 @@ namespace DataAPI.Database
                             command.CommandText = itemsInsertString;
                             foreach (IVideoItem item in channel.ChannelItems)
                             {
-                                await InsertItemParam(command, item);
+                                await InsertItemParam(command, item).ConfigureAwait(false);
                             }
 
                             #endregion
@@ -1930,7 +1931,7 @@ namespace DataAPI.Database
                             {
                                 foreach (string plItem in playlist.PlItems)
                                 {
-                                    await UpdatePlaylistItems(command, playlist.ID, plItem, channel.ID);
+                                    await UpdatePlaylistItems(command, playlist.ID, plItem, channel.ID).ConfigureAwait(false);
                                 }
                             }
 
@@ -1960,11 +1961,11 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task InsertChannelItemsAsync(IChannel channel)
         {
-            await InsertChannelAsync(channel);
+            await InsertChannelAsync(channel).ConfigureAwait(false);
 
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -1975,7 +1976,7 @@ namespace DataAPI.Database
                         {
                             foreach (IVideoItem item in channel.ChannelItems)
                             {
-                                await InsertItemParam(command, item);
+                                await InsertItemParam(command, item).ConfigureAwait(false);
                             }
                             transaction.Commit();
                         }
@@ -2003,7 +2004,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2014,7 +2015,7 @@ namespace DataAPI.Database
                         {
                             foreach (IVideoItem item in channelitems)
                             {
-                                await InsertItemParam(command, item);
+                                await InsertItemParam(command, item).ConfigureAwait(false);
                             }
                             transaction.Commit();
                         }
@@ -2051,7 +2052,7 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + channelIdF, channelid);
                 command.Parameters.AddWithValue("@" + tagIdF, tag);
 
-                await ExecuteNonQueryAsync(command);
+                await ExecuteNonQueryAsync(command).ConfigureAwait(false);
             }
         }
 
@@ -2064,7 +2065,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2073,7 +2074,7 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            await InsertCredParam(command, cred);
+                            await InsertCredParam(command, cred).ConfigureAwait(false);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -2100,7 +2101,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2109,7 +2110,7 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            await InsertItemParam(command, item);
+                            await InsertItemParam(command, item).ConfigureAwait(false);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -2136,7 +2137,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2145,7 +2146,7 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            await InsertPlaylistParam(command, playlist);
+                            await InsertPlaylistParam(command, playlist).ConfigureAwait(false);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -2177,7 +2178,7 @@ namespace DataAPI.Database
                 command.Parameters.AddWithValue("@" + setKey, setting.Key);
                 command.Parameters.AddWithValue("@" + setVal, setting.Value);
 
-                await ExecuteNonQueryAsync(command);
+                await ExecuteNonQueryAsync(command).ConfigureAwait(false);
             }
         }
 
@@ -2193,7 +2194,7 @@ namespace DataAPI.Database
             using (SQLiteCommand command = GetCommand(zap))
             {
                 command.Parameters.AddWithValue("@" + tagTitle, tag.Title);
-                await ExecuteNonQueryAsync(command);
+                await ExecuteNonQueryAsync(command).ConfigureAwait(false);
             }
         }
 
@@ -2231,7 +2232,7 @@ namespace DataAPI.Database
         public async Task RenameChannelAsync(string id, string newName)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, channelTitle, newName, channelId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2291,7 +2292,7 @@ namespace DataAPI.Database
                 autorize,
                 credSite,
                 site);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2303,7 +2304,7 @@ namespace DataAPI.Database
         public async Task UpdateChannelNewCountAsync(string id, int count)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, newcount, count, channelId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2320,7 +2321,7 @@ namespace DataAPI.Database
                 Convert.ToByte(useFast),
                 channelId,
                 id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2332,7 +2333,7 @@ namespace DataAPI.Database
         public async Task UpdateItemSyncState(string id, SyncState state)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, syncstate, (byte)state, itemId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2352,7 +2353,7 @@ namespace DataAPI.Database
                 idChannel,
                 (byte)whereState);
 
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2365,7 +2366,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2381,7 +2382,7 @@ namespace DataAPI.Database
                                     (byte)state,
                                     itemId,
                                     item.ID);
-                                await command.ExecuteNonQueryAsync();
+                                await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                             }
                             transaction.Commit();
                         }
@@ -2409,7 +2410,7 @@ namespace DataAPI.Database
         public async Task UpdateItemWatchState(string id, WatchState state)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, watchstate, (byte)state, itemId, id);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2421,7 +2422,7 @@ namespace DataAPI.Database
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablecredentials, credLogin, newlogin, credSite, site);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2438,7 +2439,7 @@ namespace DataAPI.Database
                 newpassword,
                 credSite,
                 site);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2452,7 +2453,7 @@ namespace DataAPI.Database
         {
             using (var conn = new SQLiteConnection(dbConnection))
             {
-                await conn.OpenAsync();
+                await conn.OpenAsync().ConfigureAwait(false);
                 using (SQLiteTransaction transaction = conn.BeginTransaction())
                 {
                     using (SQLiteCommand command = conn.CreateCommand())
@@ -2461,7 +2462,7 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            await UpdatePlaylistItems(command, playlistid, itemid, channelid);
+                            await UpdatePlaylistItems(command, playlistid, itemid, channelid).ConfigureAwait(false);
                             transaction.Commit();
                         }
                         catch (Exception)
@@ -2488,7 +2489,7 @@ namespace DataAPI.Database
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
             string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablesettings, setVal, newvalue, setKey, key);
-            await RunSqlCodeAsync(zap);
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -2500,9 +2501,9 @@ namespace DataAPI.Database
             var command = new SQLiteCommand { CommandText = "vacuum", CommandType = CommandType.Text };
             using (var connection = new SQLiteConnection(dbConnection))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
                 command.Connection = connection;
-                await command.ExecuteNonQueryAsync();
+                await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 connection.Close();
             }
         }
@@ -2514,7 +2515,7 @@ namespace DataAPI.Database
             if (fnsch.Exists)
             {
                 string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
-                await RunSqlCodeAsync(sqltext);
+                await RunSqlCodeAsync(sqltext).ConfigureAwait(false);
             }
 
             // now can be set from launch param
@@ -2533,14 +2534,14 @@ namespace DataAPI.Database
 
             using (var connection = new SQLiteConnection(dbConnection))
             {
-                await connection.OpenAsync();
+                await connection.OpenAsync().ConfigureAwait(false);
                 command.Connection = connection;
                 using (SQLiteTransaction transaction = connection.BeginTransaction())
                 {
                     command.Transaction = transaction;
                     try
                     {
-                        await command.ExecuteNonQueryAsync();
+                        await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                         command.Transaction.Commit();
                     }
                     catch (Exception)
@@ -2561,7 +2562,7 @@ namespace DataAPI.Database
         {
             using (SQLiteCommand command = GetCommand(sqltext))
             {
-                await ExecuteNonQueryAsync(command);
+                await ExecuteNonQueryAsync(command).ConfigureAwait(false);
             }
         }
 
@@ -2575,12 +2576,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -2588,7 +2589,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[itemId] as string;
                                 res.Add(ch);
@@ -2631,19 +2632,19 @@ namespace DataAPI.Database
                 {
                     using (var connection = new SQLiteConnection(dbConnection))
                     {
-                        await connection.OpenAsync();
+                        await connection.OpenAsync().ConfigureAwait(false);
                         command.Connection = connection;
 
                         using (SQLiteTransaction transaction = connection.BeginTransaction())
                         {
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess))
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
                             {
                                 if (!reader.HasRows)
                                 {
                                     continue;
                                 }
 
-                                while (await reader.ReadAsync())
+                                while (await reader.ReadAsync().ConfigureAwait(false))
                                 {
                                     var ch = reader[itemId] as string;
                                     pair.Value.Add(ch);
@@ -2668,12 +2669,12 @@ namespace DataAPI.Database
             {
                 using (var connection = new SQLiteConnection(dbConnection))
                 {
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
                     command.Connection = connection;
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection))
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -2681,7 +2682,7 @@ namespace DataAPI.Database
                                 return res;
                             }
 
-                            while (await reader.ReadAsync())
+                            while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[itemId] as string;
                                 res.Add(ch);
