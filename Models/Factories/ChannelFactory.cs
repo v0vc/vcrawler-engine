@@ -126,7 +126,8 @@ namespace Models.Factories
 
         public static async void FillChannelItemsFromDbAsync(IChannel channel, int basePage, List<string> excepted = null)
         {
-            List<VideoItemPOCO> items = await db.GetChannelItemsBaseAsync(channel.ID, basePage, excepted).ConfigureAwait(false);
+            List<VideoItemPOCO> items =
+                await Task.Run(() => db.GetChannelItemsBaseAsync(channel.ID, basePage, excepted)).ConfigureAwait(true);
 
             foreach (VideoItemPOCO poco in items)
             {
