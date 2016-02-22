@@ -1147,7 +1147,7 @@ namespace Crawler.ViewModels
             // если канал только что добавили - элементы там есть
             // есть новые элементы после синхронизации - теперь проставляется в самой синхронизации
             // если канал заполнен элементами, но нет новых - уже загружали, не нужно больше
-            if (channel.Loaded || channel.ChannelState == ChannelState.Added || channel.ChannelItems.Count >= basePage)
+            if (channel.Loaded || channel.ChannelState == ChannelState.Added)
             {
                 channel.RefreshView("Timestamp");
                 return;
