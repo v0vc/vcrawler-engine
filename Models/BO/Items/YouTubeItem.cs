@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -74,7 +75,7 @@ namespace Models.BO.Items
                 return;
             }
 
-            IEnumerable<ISubtitle> res = await VideoItemFactory.GetVideoItemSubtitlesAsync(ID);
+            IEnumerable<ISubtitle> res = await VideoItemFactory.GetVideoItemSubtitlesAsync(ID).ConfigureAwait(false);
 
             Subtitles.Clear();
 
@@ -89,6 +90,11 @@ namespace Models.BO.Items
             DownloadPercentage = 0;
             taskbar.SetProgressState(TaskbarProgressBarState.NoProgress);
             FileState = ItemState.LocalNo;
+        }
+
+        private async Task Log(string text)
+        {
+            await Task.Run(() => LogText += text + Environment.NewLine).ConfigureAwait(false);
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -290,7 +296,7 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            var options = "--no-check-certificate --console-title --no-call-home";
+            string options = "--no-check-certificate --console-title --no-call-home";
 
             if (isProxyReady)
             {
@@ -308,9 +314,9 @@ namespace Models.BO.Items
                     string.Format(
                                   isHd
                                       ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}", 
-                        dir, 
-                        MakeLink(), 
+                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
+                        dir,
+                        MakeLink(),
                         options);
             }
 
@@ -330,19 +336,19 @@ namespace Models.BO.Items
 
             var startInfo = new ProcessStartInfo(youPath, param)
             {
-                WindowStyle = ProcessWindowStyle.Hidden, 
-                UseShellExecute = false, 
-                RedirectStandardOutput = true, 
-                RedirectStandardError = true, 
-                RedirectStandardInput = true, 
-                ErrorDialog = false, 
+                WindowStyle = ProcessWindowStyle.Hidden,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                RedirectStandardInput = true,
+                ErrorDialog = false,
                 CreateNoWindow = true
             };
 
             taskbar = TaskbarManager.Instance;
             taskbar.SetProgressState(TaskbarProgressBarState.Normal);
 
-            await Log("======");
+            await Log("======").ConfigureAwait(false);
             await Task.Run(() =>
             {
                 var proc = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
@@ -356,18 +362,13 @@ namespace Models.BO.Items
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
                 proc.WaitForExit();
-            });
+            }).ConfigureAwait(false);
         }
 
         public async Task FillDescriptionAsync()
         {
             string res = await CommonFactory.CreateSqLiteDatabase().GetVideoItemDescriptionAsync(ID).ConfigureAwait(false);
             Description = res.WordWrap(100);
-        }
-
-        public async Task InsertItemAsync()
-        {
-            await CommonFactory.CreateSqLiteDatabase().InsertItemAsync(this);
         }
 
         public void IsHasLocalFileFound(string dir)
@@ -392,11 +393,6 @@ namespace Models.BO.Items
             }
         }
 
-        public async Task Log(string text)
-        {
-            await Task.Run(() => LogText += text + Environment.NewLine);
-        }
-
         public string MakeLink()
         {
             return string.Format("https://www.youtube.com/watch?v={0}", ID);
@@ -416,12 +412,12 @@ namespace Models.BO.Items
                     throw new Exception("Local File Path not set");
                 }
                 string param = string.Format("\"{0}\" /play", LocalFilePath);
-                await Task.Run(() => Process.Start(mpcpath, param));
+                await Task.Run(() => Process.Start(mpcpath, param)).ConfigureAwait(false);
             }
             else
             {
                 string param = string.Format("\"{0}\" /play", MakeLink());
-                await Task.Run(() => Process.Start(mpcpath, param));
+                await Task.Run(() => Process.Start(mpcpath, param)).ConfigureAwait(false);
             }
         }
 
@@ -431,7 +427,7 @@ namespace Models.BO.Items
 
         private async void EncodeOnErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
-            await Log(e.Data);
+            await Log(e.Data).ConfigureAwait(false);
         }
 
         private async void EncodeOnOutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -484,7 +480,7 @@ namespace Models.BO.Items
                 }
             }
 
-            await Log(e.Data);
+            await Log(e.Data).ConfigureAwait(false);
 
             DownloadPercentage = GetPercentFromYoudlOutput(e.Data);
 
@@ -496,7 +492,7 @@ namespace Models.BO.Items
             string logdata = FileState == ItemState.LocalYes
                 ? string.Format("{0} DOWNLOADED!", Title)
                 : string.Format("ERROR DOWNLOADING: {0}", ID);
-            await Log(logdata);
+            await Log(logdata).ConfigureAwait(false);
             var proc = sender as Process;
             if (proc == null)
             {

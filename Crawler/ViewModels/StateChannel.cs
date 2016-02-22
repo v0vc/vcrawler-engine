@@ -1,17 +1,16 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Collections.Specialized;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows.Data;
 using DataAPI.Database;
 using DataAPI.POCO;
@@ -32,8 +31,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added }, 
-            { "Crawler.Images.time_48.png", WatchState.Planned }, 
+            { "Crawler.Images.new_48.png", SyncState.Added },
+            { "Crawler.Images.time_48.png", WatchState.Planned },
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -227,7 +226,7 @@ namespace Crawler.ViewModels
 
         private async void InitIds()
         {
-            Dictionary<object, List<string>> dids = await db.GetStateListItemsAsync();
+            Dictionary<object, List<string>> dids = await db.GetStateListItemsAsync().ConfigureAwait(false);
             dids.TryGetValue(SyncState.Added, out addedListIds);
             dids.TryGetValue(WatchState.Watched, out watchedListIds);
             dids.TryGetValue(WatchState.Planned, out plannedListIds);
@@ -276,7 +275,7 @@ namespace Crawler.ViewModels
                         notreadyList = watchedListIds.Except(readyAddedIds).ToList();
                         if (notreadyList.Any())
                         {
-                            items = await Task.Run(() => db.GetItemsByIdsAndState(WatchState.Watched, notreadyList));
+                            items = await db.GetItemsByIdsAndState(WatchState.Watched, notreadyList).ConfigureAwait(false);
                             foreach (VideoItemPOCO poco in items)
                             {
                                 IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
@@ -305,7 +304,7 @@ namespace Crawler.ViewModels
                         notreadyList = plannedListIds.Except(readyAddedIds).ToList();
                         if (notreadyList.Any())
                         {
-                            items = await Task.Run(() => db.GetItemsByIdsAndState(WatchState.Planned, notreadyList));
+                            items = await db.GetItemsByIdsAndState(WatchState.Planned, notreadyList).ConfigureAwait(false);
                             foreach (VideoItemPOCO poco in items)
                             {
                                 IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
@@ -341,7 +340,8 @@ namespace Crawler.ViewModels
                         List<string> notreadyList = addedListIds.Except(readyAddedIds).ToList();
                         if (notreadyList.Any())
                         {
-                            List<VideoItemPOCO> items = await Task.Run(() => db.GetItemsByIdsAndState(SyncState.Added, notreadyList));
+                            List<VideoItemPOCO> items =
+                                await db.GetItemsByIdsAndState(SyncState.Added, notreadyList).ConfigureAwait(false);
                             foreach (VideoItemPOCO poco in items)
                             {
                                 IChannel parent = allchannels.First(x => x.ID == poco.ParentID);
@@ -386,6 +386,7 @@ namespace Crawler.ViewModels
         public string FilterVideoKey { get; set; }
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
+        public bool Loaded { get; set; }
         public bool IsShowSynced { get; set; }
         public int PlaylistCount { get; set; }
         public IVideoItem SelectedItem { get; set; }
@@ -442,10 +443,8 @@ namespace Crawler.ViewModels
 
         public void RefreshView(string field)
         {
-            if (!ChannelItemsCollectionView.SortDescriptions.Any())
-            {
-                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
-            }
+            ChannelItemsCollectionView.SortDescriptions.Clear();
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
             ChannelItemsCollectionView.Refresh();
         }
 
@@ -454,15 +453,6 @@ namespace Crawler.ViewModels
         #region INotifyPropertyChanged Members
 
         public event PropertyChangedEventHandler PropertyChanged;
-
-        #endregion
-
-        #region Event Handling
-
-        private void ChannelItemsCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-        {
-            ChannelItemsCollectionView.Refresh();
-        }
 
         #endregion
 

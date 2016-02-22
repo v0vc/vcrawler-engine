@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -144,7 +145,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30);
+                    List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30).ConfigureAwait(true);
                     var lstemp = new List<IVideoItem>();
                     foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                     {
@@ -204,7 +205,7 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50);
+                    List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50).ConfigureAwait(true);
                     if (lst.Any())
                     {
                         for (int i = ChannelItems.Count; i > 0; i--)
@@ -292,6 +293,7 @@ namespace Crawler.ViewModels
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced { get; set; }
+        public bool Loaded { get; set; }
         public int PlaylistCount { get; set; }
 
         public IVideoItem SelectedItem
@@ -360,10 +362,8 @@ namespace Crawler.ViewModels
 
         public void RefreshView(string field)
         {
-            if (!ChannelItemsCollectionView.SortDescriptions.Any())
-            {
-                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
-            }
+            ChannelItemsCollectionView.SortDescriptions.Clear();
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
             ChannelItemsCollectionView.Refresh();
         }
 

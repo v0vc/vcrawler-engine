@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Crawler.Common;
 using Extensions.Helpers;
-using Interfaces.Enums;
 using Interfaces.Models;
 using Models.BO.Items;
 
@@ -111,7 +110,7 @@ namespace Crawler.ViewModels
         {
             if (string.IsNullOrEmpty(item.Description))
             {
-                await item.FillDescriptionAsync();
+                await item.FillDescriptionAsync().ConfigureAwait(false);
             }
 
             Description = item.Description;
@@ -125,7 +124,7 @@ namespace Crawler.ViewModels
 
             if (link != null)
             {
-                LargeThumb = await SiteHelper.GetStreamFromUrl(link);
+                LargeThumb = await SiteHelper.GetStreamFromUrl(link).ConfigureAwait(false);
             }
         }
 

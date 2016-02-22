@@ -115,7 +115,7 @@ namespace Crawler.ViewModels
             get
             {
                 return subtitlesDropDownOpenedCommand
-                       ?? (subtitlesDropDownOpenedCommand = new RelayCommand(async x => await FillSubtitles()));
+                       ?? (subtitlesDropDownOpenedCommand = new RelayCommand(async x => await FillSubtitles().ConfigureAwait(false)));
             }
         }
 
@@ -145,7 +145,7 @@ namespace Crawler.ViewModels
 
             if (IsYouTube)
             {
-                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube);
+                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube).ConfigureAwait(false);
                 foreach (ISubtitle subtitle in Subtitles.Where(subtitle => subtitle.IsChecked))
                 {
                     vi.Subtitles.Add(subtitle);
@@ -156,7 +156,7 @@ namespace Crawler.ViewModels
                 {
                     onDownloadYouItem.Invoke(vi);
                 }
-                await vi.DownloadItem(youpath, downloaddir, IsHd, IsAudio);
+                await vi.DownloadItem(youpath, downloaddir, IsHd, IsAudio).ConfigureAwait(false);
             }
             else
             {
@@ -169,7 +169,7 @@ namespace Crawler.ViewModels
                     {
                         process.Close();
                     }
-                });
+                }).ConfigureAwait(false);
             }
         }
 
@@ -180,7 +180,7 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            List<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync(youId);
+            List<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync(youId).ConfigureAwait(false);
             if (res.Any())
             {
                 Subtitles.Clear();

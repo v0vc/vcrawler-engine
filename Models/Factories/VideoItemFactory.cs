@@ -80,7 +80,7 @@ namespace Models.Factories
                 switch (site)
                 {
                     case SiteType.YouTube:
-                        poco = await YouTubeSite.GetVideoItemNetAsync(id);
+                        poco = await YouTubeSite.GetVideoItemNetAsync(id).ConfigureAwait(false);
                         break;
                 }
                 IVideoItem vi = CreateVideoItem(poco, site);
@@ -95,7 +95,7 @@ namespace Models.Factories
         public static async Task<IEnumerable<ISubtitle>> GetVideoItemSubtitlesAsync(string id)
         {
             var res = new List<ISubtitle>();
-            List<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id);
+            List<SubtitlePOCO> poco = await YouTubeSite.GetVideoSubtitlesByIdAsync(id).ConfigureAwait(false);
             res.AddRange(poco.Select(SubtitleFactory.CreateSubtitle));
             if (res.Any())
             {

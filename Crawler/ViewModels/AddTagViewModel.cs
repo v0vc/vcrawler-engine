@@ -92,7 +92,7 @@ namespace Crawler.ViewModels
                     return;
                 }
                 Tags.Add(SelectedTag);
-                await CommonFactory.CreateSqLiteDatabase().InsertTagAsync(SelectedTag);
+                await CommonFactory.CreateSqLiteDatabase().InsertTagAsync(SelectedTag).ConfigureAwait(false);
             }
 
             window.Close();

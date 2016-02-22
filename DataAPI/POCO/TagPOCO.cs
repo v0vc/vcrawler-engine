@@ -1,7 +1,7 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
-
 
 namespace DataAPI.POCO
 {
@@ -16,7 +16,7 @@ namespace DataAPI.POCO
 
         #endregion
 
-        #region ITagPOCO Members
+        #region Properties
 
         public string Title { get; private set; }
 

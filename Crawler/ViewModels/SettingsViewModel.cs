@@ -37,13 +37,13 @@ namespace Crawler.ViewModels
         private const string dirLaunchParam = "dir";
         private const string exeFilter = "EXE files (*.exe)|*.exe";
         private const string mpcLaunchParam = "mpc";
+        private const string onstartupopen = "youtubeBest";
         private const string pathToDownload = "pathToDownload";
         private const string pathToMpc = "pathToMpc";
         private const string pathToYoudl = "pathToYoudl";
         private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
         private const string youtubeDl = "youtube-dl.exe";
-        private const string onstartupopen = "youtubeBest";
 
         #endregion
 
@@ -60,6 +60,7 @@ namespace Crawler.ViewModels
         private RelayCommand deleteTagCommand;
         private string dirPath;
         private RelayCommand fillYouHeaderCommand;
+        private bool isFilterOpen;
         private bool isUpdateButtonEnable = true;
         private string mpcPath;
         private RelayCommand openDirCommand;
@@ -68,7 +69,6 @@ namespace Crawler.ViewModels
         private RelayCommand updateYouDlCommand;
         private string youHeader;
         private string youPath;
-        private bool isFilterOpen;
 
         #endregion
 
@@ -85,19 +85,6 @@ namespace Crawler.ViewModels
         #endregion
 
         #region Properties
-
-        public bool IsFilterOpen
-        {
-            get
-            {
-                return isFilterOpen;
-            }
-            set
-            {
-                isFilterOpen = value;
-                OnPropertyChanged();
-            }
-        }
 
         public RelayCommand AddNewTagCommand
         {
@@ -133,6 +120,19 @@ namespace Crawler.ViewModels
             get
             {
                 return fillYouHeaderCommand ?? (fillYouHeaderCommand = new RelayCommand(x => FillYouHeader()));
+            }
+        }
+
+        public bool IsFilterOpen
+        {
+            get
+            {
+                return isFilterOpen;
+            }
+            set
+            {
+                isFilterOpen = value;
+                OnPropertyChanged();
             }
         }
 
@@ -187,7 +187,8 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return saveSettingsCommand ?? (saveSettingsCommand = new RelayCommand(async x => await SaveSettingsToDb()));
+                return saveSettingsCommand
+                       ?? (saveSettingsCommand = new RelayCommand(async x => await SaveSettingsToDb().ConfigureAwait(false)));
             }
         }
 
@@ -272,23 +273,23 @@ namespace Crawler.ViewModels
 
         public async Task LoadCredsFromDb()
         {
-            List<CredPOCO> fbres = await db.GetCredListAsync();
+            List<CredPOCO> fbres = await db.GetCredListAsync().ConfigureAwait(false);
             SupportedCreds.AddRange(fbres.Select(CredFactory.CreateCred));
         }
 
         public async Task LoadSettingsFromDb()
         {
-            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
+            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload).ConfigureAwait(false);
             DirPath = savedir.Value;
             if (string.IsNullOrEmpty(DirPath))
             {
                 DirPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             }
 
-            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
+            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc).ConfigureAwait(false);
             MpcPath = mpcdir.Value;
 
-            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
+            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl).ConfigureAwait(false);
             YouPath = youpath.Value;
 
             if (string.IsNullOrEmpty(YouPath))
@@ -302,7 +303,7 @@ namespace Crawler.ViewModels
                 }
             }
 
-            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen).ConfigureAwait(false);
             IsFilterOpen = onstartup.Value != "0";
         }
 
@@ -316,7 +317,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
+                ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload).ConfigureAwait(false);
                 DirPath = savedir.Value;
                 if (string.IsNullOrEmpty(DirPath))
                 {
@@ -334,7 +335,7 @@ namespace Crawler.ViewModels
             }
             else
             {
-                ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
+                ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc).ConfigureAwait(false);
                 MpcPath = mpcdir.Value;
             }
 
@@ -348,17 +349,17 @@ namespace Crawler.ViewModels
             }
             else
             {
-                ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
+                ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl).ConfigureAwait(false);
                 YouPath = youpath.Value;
             }
 
-            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen).ConfigureAwait(false);
             IsFilterOpen = onstartup.Value != "0";
         }
 
         public async Task LoadTagsFromDb()
         {
-            List<TagPOCO> fbres = await db.GetAllTagsAsync();
+            List<TagPOCO> fbres = await db.GetAllTagsAsync().ConfigureAwait(false);
             IEnumerable<ITag> lst = fbres.Select(TagFactory.CreateTag);
             foreach (ITag tag in lst)
             {
@@ -396,7 +397,7 @@ namespace Crawler.ViewModels
                 return;
             }
             SupportedTags.Remove(tag);
-            await db.DeleteTagAsync(tag.Title);
+            await db.DeleteTagAsync(tag.Title).ConfigureAwait(false);
         }
 
         private void FillYouHeader()
@@ -456,44 +457,44 @@ namespace Crawler.ViewModels
 
         private async Task SaveSettingsToDb()
         {
-            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload);
+            ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload).ConfigureAwait(false);
             if (savedir.Value != DirPath)
             {
-                await savedir.UpdateSettingAsync(DirPath);
+                await savedir.UpdateSettingAsync(DirPath).ConfigureAwait(false);
                 if (onSaveAction != null)
                 {
                     onSaveAction.Invoke(DirPath);
                 }
             }
 
-            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc);
+            ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc).ConfigureAwait(false);
             if (mpcdir.Value != MpcPath)
             {
-                await mpcdir.UpdateSettingAsync(MpcPath);
+                await mpcdir.UpdateSettingAsync(MpcPath).ConfigureAwait(false);
             }
 
-            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl);
+            ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl).ConfigureAwait(false);
             if (youpath.Value != YouPath)
             {
-                await youpath.UpdateSettingAsync(YouPath);
+                await youpath.UpdateSettingAsync(YouPath).ConfigureAwait(false);
             }
 
-            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen);
+            ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen).ConfigureAwait(false);
             string res = IsFilterOpen ? "1" : "0";
             if (onstartup.Value != res)
             {
-                await onstartup.UpdateSettingAsync(res);
+                await onstartup.UpdateSettingAsync(res).ConfigureAwait(false);
             }
 
             foreach (ICred cred in SupportedCreds)
             {
-                await db.UpdateLoginAsync(cred.SiteAdress, cred.Login);
-                await db.UpdatePasswordAsync(cred.SiteAdress, cred.Pass);
+                await db.UpdateLoginAsync(cred.SiteAdress, cred.Login).ConfigureAwait(false);
+                await db.UpdatePasswordAsync(cred.SiteAdress, cred.Pass).ConfigureAwait(false);
             }
 
             foreach (ITag tag in SupportedTags)
             {
-                await db.InsertTagAsync(tag);
+                await db.InsertTagAsync(tag).ConfigureAwait(false);
             }
 
             if (onSaveAction != null)

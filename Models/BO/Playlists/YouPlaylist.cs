@@ -4,10 +4,8 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Interfaces.Enums;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Models.BO.Playlists
 {
@@ -34,11 +32,6 @@ namespace Models.BO.Playlists
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
         public WatchState WatchState { get; set; }
-
-        public async Task UpdatePlaylistAsync(string videoId)
-        {
-            await PlaylistFactory.UpdatePlaylistAsync(ID, videoId, ChannelId);
-        }
 
         #endregion
     }

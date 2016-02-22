@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace TestAPI
         [TestMethod]
         public void FillChannelCookieDbAsync()
         {
-            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
             if (ch == null)
             {
                 return;
@@ -61,7 +62,7 @@ namespace TestAPI
             }
             ch.ID = "27253";
             ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
-            await tf.FillChannelNetAsync(ch);
+            await tf.FillChannelNetAsync(ch).ConfigureAwait(false);
             Assert.IsTrue(ch.ChannelItems.Any());
         }
 
@@ -69,30 +70,30 @@ namespace TestAPI
         public async Task GetChannelCookieNetAsync()
         {
             IChannel ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
-            CookieContainer cookie = await tf.GetCookieNetAsync(ch);
+            CookieContainer cookie = await tf.GetCookieNetAsync(ch).ConfigureAwait(false);
             Assert.IsTrue(cookie.Count > 0);
         }
 
         [TestMethod]
         public async Task GetChannelItemsAsync()
         {
-            var ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
+            IChannel ch = ChannelFactory.CreateChannel(SiteType.Tapochek);
             if (ch == null)
             {
                 return;
             }
             ch.ID = "27253";
-            
+
             ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
             if (ch.ChannelCookies == null)
             {
-                await ChannelFactory.FillChannelCookieNetAsync(ch);
+                await ChannelFactory.FillChannelCookieNetAsync(ch).ConfigureAwait(false);
             }
-            IEnumerable<VideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
+            IEnumerable<VideoItemPOCO> t = (await tf.GetChannelItemsAsync(ch, 0).ConfigureAwait(false)).ToList();
             if (!t.Any())
             {
-                await ChannelFactory.FillChannelCookieNetAsync(ch);
-                t = (await tf.GetChannelItemsAsync(ch, 0)).ToList();
+                await ChannelFactory.FillChannelCookieNetAsync(ch).ConfigureAwait(false);
+                t = (await tf.GetChannelItemsAsync(ch, 0).ConfigureAwait(false)).ToList();
             }
             Assert.IsTrue(t.Any());
         }
@@ -105,7 +106,7 @@ namespace TestAPI
             {
                 return;
             }
-            CookieContainer cookie = await tf.GetCookieNetAsync(ch);
+            CookieContainer cookie = await tf.GetCookieNetAsync(ch).ConfigureAwait(false);
             ch.ChannelCookies = cookie;
 
             // ch.StoreCookies();

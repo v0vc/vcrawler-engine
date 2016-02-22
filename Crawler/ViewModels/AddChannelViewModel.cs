@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using Crawler.Common;
+using DataAPI.Database;
 using Extensions;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -107,6 +108,7 @@ namespace Crawler.ViewModels
         }
 
         public bool UseFast { get; set; }
+
         #endregion
 
         #region Methods
@@ -122,15 +124,15 @@ namespace Crawler.ViewModels
 
             if (IsEditMode && channel != null)
             {
-                var db = CommonFactory.CreateSqLiteDatabase();
+                SqLiteDatabase db = CommonFactory.CreateSqLiteDatabase();
                 channel.Title = ChannelTitle;
-                await db.RenameChannelAsync(channel.ID, ChannelTitle);
+                await db.RenameChannelAsync(channel.ID, ChannelTitle).ConfigureAwait(false);
                 if (Equals(channel.UseFast, UseFast))
                 {
                     return;
                 }
                 channel.UseFast = UseFast;
-                await db.UpdateChannelFastSync(channel.ID, channel.UseFast);
+                await db.UpdateChannelFastSync(channel.ID, channel.UseFast).ConfigureAwait(false);
             }
             else
             {

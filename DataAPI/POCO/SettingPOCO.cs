@@ -3,7 +3,6 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-
 namespace DataAPI.POCO
 {
     public class SettingPOCO
@@ -18,7 +17,7 @@ namespace DataAPI.POCO
 
         #endregion
 
-        #region ISettingPOCO Members
+        #region Properties
 
         public string Key { get; private set; }
         public string Value { get; private set; }

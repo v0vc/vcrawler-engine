@@ -3,7 +3,6 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -99,7 +98,7 @@ namespace Models.Factories
 
                     foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => item.FileState == ItemState.Planned))
                     {
-                        await item.DownloadItem(youPath, selectedChannel.DirPath, isHd, isAudio);
+                        await item.DownloadItem(youPath, selectedChannel.DirPath, isHd, isAudio).ConfigureAwait(false);
                     }
 
                     break;
@@ -115,7 +114,7 @@ namespace Models.Factories
                 case SiteType.YouTube:
 
                     HashSet<string> dbids = selectedChannel.ChannelItems.Select(x => x.ID).ToHashSet();
-                    List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0);
+                    List<string> plitemsIdsNet = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0).ConfigureAwait(false);
                     List<string> ids = plitemsIdsNet.Where(netid => !playlist.PlItems.Contains(netid)).ToList();
                     if (!ids.Any())
                     {
@@ -136,14 +135,14 @@ namespace Models.Factories
                     }
                     foreach (string id in lstInDb)
                     {
-                        await db.UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID);
+                        await db.UpdatePlaylistAsync(playlist.ID, id, selectedChannel.ID).ConfigureAwait(false);
                         playlist.PlItems.Add(id);
                     }
 
                     IEnumerable<List<string>> chanks = lstNoInDb.SplitList();
                     foreach (List<string> list in chanks)
                     {
-                        List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list); // получим скопом
+                        List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(list).ConfigureAwait(false); // получим скопом
 
                         foreach (IVideoItem vi in res.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
@@ -151,8 +150,8 @@ namespace Models.Factories
                             if (vi.ParentID == selectedChannel.ID)
                             {
                                 selectedChannel.AddNewItem(vi);
-                                await db.InsertItemAsync(vi);
-                                await db.UpdatePlaylistAsync(playlist.ID, vi.ID, selectedChannel.ID);
+                                await db.InsertItemAsync(vi).ConfigureAwait(false);
+                                await db.UpdatePlaylistAsync(playlist.ID, vi.ID, selectedChannel.ID).ConfigureAwait(false);
                             }
                             else
                             {
@@ -163,18 +162,6 @@ namespace Models.Factories
                     }
 
                     break;
-            }
-        }
-
-        public static async Task UpdatePlaylistAsync(string plid, string itemid, string channelid)
-        {
-            try
-            {
-                await db.UpdatePlaylistAsync(plid, itemid, channelid);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
             }
         }
 

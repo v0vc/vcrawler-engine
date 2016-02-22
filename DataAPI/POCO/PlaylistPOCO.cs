@@ -34,6 +34,18 @@ namespace DataAPI.POCO
 
         #endregion
 
+        #region Properties
+
+        public string ChannelID { get; set; }
+        public string ID { get; private set; }
+        public List<string> PlaylistItems { get; set; }
+        public SiteType Site { get; set; }
+        public string SubTitle { get; set; }
+        public byte[] Thumbnail { get; private set; }
+        public string Title { get; private set; }
+
+        #endregion
+
         #region Methods
 
         public async Task FillFieldsFromGetting(JToken record)
@@ -50,7 +62,7 @@ namespace DataAPI.POCO
             JToken link = record.SelectToken("snippet.thumbnails.default.url");
             if (link != null)
             {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>());
+                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>()).ConfigureAwait(false);
             }
         }
 
@@ -68,21 +80,9 @@ namespace DataAPI.POCO
             JToken link = record.SelectToken("items[0].snippet.thumbnails.default.url");
             if (link != null)
             {
-                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>());
+                Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>()).ConfigureAwait(false);
             }
         }
-
-        #endregion
-
-        #region IPlaylistPOCO Members
-
-        public string ChannelID { get; set; }
-        public string ID { get; set; }
-        public string SubTitle { get; set; }
-        public byte[] Thumbnail { get; private set; }
-        public string Title { get; private set; }
-        public List<string> PlaylistItems { get; set; }
-        public SiteType Site { get; set; }
 
         #endregion
     }

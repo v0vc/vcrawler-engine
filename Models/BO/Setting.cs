@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Threading.Tasks;
@@ -18,7 +19,7 @@ namespace Models.BO
         public async Task UpdateSettingAsync(string newvalue)
         {
             // await ((SettingFactory) ServiceLocator.SettingFactory).UpdateSettingAsync(Key, newvalue);
-            await SettingFactory.UpdateSettingAsync(Key, newvalue);
+            await CommonFactory.CreateSqLiteDatabase().UpdateSettingAsync(Key, newvalue).ConfigureAwait(false);
         }
 
         #endregion

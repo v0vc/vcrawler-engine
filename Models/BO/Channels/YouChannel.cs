@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -200,6 +201,7 @@ namespace Models.BO.Channels
 
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
+        public bool Loaded { get; set; }
 
         public bool IsShowSynced
         {
@@ -339,10 +341,8 @@ namespace Models.BO.Channels
 
         public void RefreshView(string field)
         {
-            if (!ChannelItemsCollectionView.SortDescriptions.Any())
-            {
-                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
-            }
+            ChannelItemsCollectionView.SortDescriptions.Clear();
+            ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
             ChannelItemsCollectionView.Refresh();
         }
 

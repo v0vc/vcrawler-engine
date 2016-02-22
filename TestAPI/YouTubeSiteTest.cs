@@ -20,11 +20,11 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelIdByUserNameNetAsync()
         {
-            string res = await YouTubeSite.GetChannelIdByUserNameNetAsync("mcmbmirussian");
+            string res = await YouTubeSite.GetChannelIdByUserNameNetAsync("mcmbmirussian").ConfigureAwait(false);
 
             Assert.AreEqual(res, "UCH0miwnqCojki-ado_lLI5A");
 
-            res = await YouTubeSite.GetChannelIdByUserNameNetAsync("CarCrashCompilation7");
+            res = await YouTubeSite.GetChannelIdByUserNameNetAsync("CarCrashCompilation7").ConfigureAwait(false);
 
             Assert.AreEqual("UCeXeMXzjt21uv5tonZHtOrA", res);
         }
@@ -36,14 +36,15 @@ namespace TestAPI
             // UCQoZVSaWvaJN046F-8SmyPg
             // UCq9B1wrqZKwucNkjHnUW39A
             const int count = 2;
-            IEnumerable<VideoItemPOCO> lst = await YouTubeSite.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count);
+            IEnumerable<VideoItemPOCO> lst =
+                await YouTubeSite.GetChannelItemsAsync("UCGtFbbGApG0s_8mMuJd-zKg", count).ConfigureAwait(false);
             Assert.AreEqual(count, lst.Count());
         }
 
         [TestMethod]
         public async Task GetChannelItemsCountNetAsync()
         {
-            int res = await YouTubeSite.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
+            int res = await YouTubeSite.GetChannelItemsCountNetAsync("UCE27j85FZ8-aZOn6D8vWMWg").ConfigureAwait(false);
 
             Assert.AreEqual(res, 6);
         }
@@ -51,7 +52,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelItemsIdsListNetAsync()
         {
-            List<string> res = await YouTubeSite.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5);
+            List<string> res = await YouTubeSite.GetChannelItemsIdsListNetAsync("UCE27j85FZ8-aZOn6D8vWMWg", 5).ConfigureAwait(false);
 
             Assert.AreEqual(res.Count(), 5);
         }
@@ -59,7 +60,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelNetAsync()
         {
-            ChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg");
+            ChannelPOCO res = await YouTubeSite.GetChannelNetAsync("UCE27j85FZ8-aZOn6D8vWMWg").ConfigureAwait(false);
 
             Assert.AreEqual(res.Title, "Vlad RT");
         }
@@ -67,7 +68,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelPlaylistNetAsync()
         {
-            List<PlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A");
+            List<PlaylistPOCO> res = await YouTubeSite.GetChannelPlaylistsNetAsync("UCq9B1wrqZKwucNkjHnUW39A").ConfigureAwait(false);
 
             Assert.IsTrue(res.Any());
         }
@@ -75,25 +76,19 @@ namespace TestAPI
         [TestMethod]
         public async Task GetChannelRelatedPlaylistsNetAsync()
         {
-            List<PlaylistPOCO> lst = await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            List<PlaylistPOCO> lst =
+                await YouTubeSite.GetChannelRelatedPlaylistsNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A").ConfigureAwait(false);
             Assert.AreEqual(lst.Count(), 3);
         }
 
         [TestMethod]
         public async Task GetFullChannel()
         {
-            ChannelPOCO channel = await YouTubeSite.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
-            int count = await YouTubeSite.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA");
+            ChannelPOCO channel = await YouTubeSite.GetChannelFullNetAsync("UCeXeMXzjt21uv5tonZHtOrA").ConfigureAwait(false);
+            int count = await YouTubeSite.GetChannelItemsCountNetAsync("UCeXeMXzjt21uv5tonZHtOrA").ConfigureAwait(false);
             Assert.IsTrue(channel.Items.Count == count);
             Assert.IsTrue(channel.Items.Any());
             Assert.IsTrue(channel.Playlists.Any());
-        }
-
-        [TestMethod]
-        public async Task GetVideoCommentsNetAsync()
-        {
-            List<string> res = await YouTubeSite.GetVideoCommentsNetAsync("-wA6Qj4oF2E", 0);
-            Assert.IsTrue(res.Any());
         }
 
         [TestMethod]
@@ -101,7 +96,7 @@ namespace TestAPI
         {
             var lst = new List<string> { "-wA6Qj4oF2E" };
 
-            List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lst);
+            List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(lst).ConfigureAwait(false);
 
             Assert.AreEqual(res.Count(), 1);
         }
@@ -109,9 +104,9 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsCountNetAsync()
         {
-            int res = await YouTubeSite.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+            int res = await YouTubeSite.GetPlaylistItemsCountNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A").ConfigureAwait(false);
 
-            int res2 = await YouTubeSite.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A");
+            int res2 = await YouTubeSite.GetChannelItemsCountNetAsync("UC0lT9K8Wfuc1KPqm6YjRf1A").ConfigureAwait(false);
 
             Assert.IsTrue(res == res2);
         }
@@ -119,7 +114,8 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsIdsListNetAsync()
         {
-            IEnumerable<string> res = await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC", 0);
+            IEnumerable<string> res =
+                await YouTubeSite.GetPlaylistItemsIdsListNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC", 0).ConfigureAwait(false);
 
             Assert.IsTrue(res.Any());
         }
@@ -127,7 +123,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistItemsNetAsync()
         {
-            List<VideoItemPOCO> lst = await YouTubeSite.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A");
+            List<VideoItemPOCO> lst = await YouTubeSite.GetPlaylistItemsNetAsync("UU0lT9K8Wfuc1KPqm6YjRf1A").ConfigureAwait(false);
 
             Assert.IsTrue(lst.Any());
         }
@@ -135,7 +131,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetPlaylistNetAsync()
         {
-            PlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC");
+            PlaylistPOCO res = await YouTubeSite.GetPlaylistNetAsync("PLt2cGgt6G8WrItA7KTI5m6EFniMfphWJC").ConfigureAwait(false);
 
             Assert.AreEqual(res.Title, "Creating Windows Services");
 
@@ -149,7 +145,7 @@ namespace TestAPI
             var testindex = new[] { 2 };
             foreach (int i in testindex)
             {
-                List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync("ru", i);
+                List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync("ru", i).ConfigureAwait(false);
                 Assert.AreEqual(lst.Count(), i);
             }
         }
@@ -157,14 +153,21 @@ namespace TestAPI
         [TestMethod]
         public async Task GetRelatedChannelsByIdAsync()
         {
-            List<ChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A");
+            List<ChannelPOCO> res = await YouTubeSite.GetRelatedChannelsByIdAsync("UCsNGRSN63gFoo5z6Oqv1A6A").ConfigureAwait(false);
+            Assert.IsTrue(res.Any());
+        }
+
+        [TestMethod]
+        public async Task GetVideoCommentsNetAsync()
+        {
+            List<string> res = await YouTubeSite.GetVideoCommentsNetAsync("-wA6Qj4oF2E", 0).ConfigureAwait(false);
             Assert.IsTrue(res.Any());
         }
 
         [TestMethod]
         public async Task GetVideoItemNetAsync()
         {
-            VideoItemPOCO res = await YouTubeSite.GetVideoItemNetAsync("lHgIpxQac3w"); // 
+            VideoItemPOCO res = await YouTubeSite.GetVideoItemNetAsync("lHgIpxQac3w").ConfigureAwait(false); // 
 
             Assert.AreEqual(res.Title, "Metallica — Unforgiven (FDM edition)");
         }
@@ -172,7 +175,7 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoSubtitlesByIdAsync()
         {
-            List<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc");
+            List<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc").ConfigureAwait(false);
             Assert.IsTrue(res.Any());
         }
 
@@ -182,7 +185,7 @@ namespace TestAPI
             var testindex = new[] { 5 };
             foreach (int i in testindex)
             {
-                List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync("russia", "RU", i);
+                List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync("russia", "RU", i).ConfigureAwait(false);
                 Assert.AreEqual(lst.Count(), i);
             }
         }

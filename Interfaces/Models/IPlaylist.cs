@@ -4,7 +4,6 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Interfaces.Enums;
 
 namespace Interfaces.Models
@@ -23,12 +22,6 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
         WatchState WatchState { get; set; }
-
-        #endregion
-
-        #region Methods
-
-        Task UpdatePlaylistAsync(string videoId);
 
         #endregion
     }

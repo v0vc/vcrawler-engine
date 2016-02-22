@@ -41,9 +41,9 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<ChannelPOCO> GetChannelFullNetAsync(string channelID)
         {
-            ChannelPOCO ch = await GetChannelNetAsync(channelID);
+            ChannelPOCO ch = await GetChannelNetAsync(channelID).ConfigureAwait(false);
 
-            List<PlaylistPOCO> relatedpls = await GetChannelRelatedPlaylistsNetAsync(channelID);
+            List<PlaylistPOCO> relatedpls = await GetChannelRelatedPlaylistsNetAsync(channelID).ConfigureAwait(false);
 
             PlaylistPOCO uploads = relatedpls.SingleOrDefault(x => x.SubTitle == "uploads");
 
@@ -52,16 +52,16 @@ namespace DataAPI.Videos
                 return ch;
             }
 
-            List<VideoItemPOCO> items = await GetPlaylistItemsNetAsync(uploads.ID);
+            List<VideoItemPOCO> items = await GetPlaylistItemsNetAsync(uploads.ID).ConfigureAwait(false);
 
             ch.Items.AddRange(items);
 
             // ch.Playlists.AddRange(relatedpls.Where(x => x != uploads)); // Liked, favorites and other
-            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID));
+            ch.Playlists.AddRange(await GetChannelPlaylistsNetAsync(channelID).ConfigureAwait(false));
 
             foreach (PlaylistPOCO pl in ch.Playlists)
             {
-                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID, 0);
+                IEnumerable<string> plids = await GetPlaylistItemsIdsListNetAsync(pl.ID, 0).ConfigureAwait(false);
                 foreach (string id in plids.Where(id => ch.Items.Select(x => x.ID).Contains(id)))
                 {
                     pl.PlaylistItems.Add(id);
@@ -90,7 +90,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
@@ -135,7 +135,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -173,7 +173,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id);
-                    await FillFieldsFromGetting(item, pair);
+                    await FillFieldsFromGetting(item, pair).ConfigureAwait(false);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -195,7 +195,7 @@ namespace DataAPI.Videos
                         key,
                         printType);
 
-                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 jsvideo = JObject.Parse(det);
 
@@ -244,7 +244,7 @@ namespace DataAPI.Videos
         {
             string zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
@@ -270,7 +270,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
@@ -281,47 +281,6 @@ namespace DataAPI.Videos
                 throw new Exception(zap);
             }
             return total.Value<int>();
-        }
-
-        /// <summary>
-        ///     Get video comments
-        /// </summary>
-        /// <param name="videoID"></param>
-        /// <param name="maxResult"></param>
-        /// <returns></returns>
-        public static async Task<List<string>> GetVideoCommentsNetAsync(string videoID, int maxResult)
-        {
-            var res = new List<string>();
-
-            int itemsppage = ItemsPerPage;
-
-            if (maxResult < ItemsPerPage & maxResult != 0)
-            {
-                itemsppage = maxResult;
-            }
-
-            string zap =
-                string.Format(
-                              "{0}commentThreads?videoId={1}&key={2}&maxResults={3}&part=snippet&fields=nextPageToken,items(snippet(topLevelComment(snippet(authorDisplayName,textDisplay,authorChannelUrl,authorProfileImageUrl,publishedAt))))&{4}",
-                    url,
-                    videoID,
-                    key,
-                    itemsppage,
-                    printType);
-
-            object pagetoken;
-            do
-            {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
-
-                JObject jsvideo = JObject.Parse(str);
-
-                pagetoken = jsvideo.SelectToken(token);
-
-            }
-            while (pagetoken != null);
-
-            return res;
         }
 
         /// <summary>
@@ -354,7 +313,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -397,7 +356,7 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-                string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 jsvideo = JObject.Parse(det);
 
@@ -409,7 +368,7 @@ namespace DataAPI.Videos
                         continue;
                     }
 
-                    var item = res.FirstOrDefault(x => x.ID == id.Value<string>()) as VideoItemPOCO;
+                    VideoItemPOCO item = res.FirstOrDefault(x => x.ID == id.Value<string>());
                     if (item == null)
                     {
                         continue;
@@ -453,11 +412,11 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
-            ChannelPOCO ch = await ChannelPOCO.CreatePoco(channelID, jsvideo);
+            ChannelPOCO ch = await ChannelPOCO.CreatePoco(channelID, jsvideo).ConfigureAwait(false);
 
             ch.Site = SiteType.YouTube;
 
@@ -484,7 +443,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -521,7 +480,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -531,7 +490,7 @@ namespace DataAPI.Videos
                 {
                     var p = new PlaylistPOCO(channelID, SiteType.YouTube);
 
-                    await p.FillFieldsFromGetting(pair);
+                    await p.FillFieldsFromGetting(pair).ConfigureAwait(false);
 
                     if (res.Select(x => x.ID).Contains(p.ID))
                     {
@@ -561,7 +520,7 @@ namespace DataAPI.Videos
                     channelID,
                     printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
             JObject jsvideo = JObject.Parse(str);
             JToken par = jsvideo.SelectToken("items[0].contentDetails.relatedPlaylists");
             if (par == null)
@@ -581,7 +540,7 @@ namespace DataAPI.Videos
                 }
                 string name = values[0].Trim(' ', '\"');
                 string id = values[1].Trim(' ', '\"');
-                PlaylistPOCO pl = await GetPlaylistNetAsync(id);
+                PlaylistPOCO pl = await GetPlaylistNetAsync(id).ConfigureAwait(false);
                 if (string.IsNullOrEmpty(pl.Title))
                 {
                     continue;
@@ -605,7 +564,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
@@ -648,7 +607,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -724,7 +683,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -760,7 +719,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id);
-                    await FillFieldsFromPlaylist(item, pair);
+                    await FillFieldsFromPlaylist(item, pair).ConfigureAwait(false);
                     res.Add(item);
                     sb.Append(id).Append(',');
                 }
@@ -775,7 +734,7 @@ namespace DataAPI.Videos
                         key,
                         printType);
 
-                det = await SiteHelper.DownloadStringAsync(new Uri(det));
+                det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
                 jsvideo = JObject.Parse(det);
 
@@ -826,11 +785,11 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
-            await pl.FillFieldsFromSingle(jsvideo);
+            await pl.FillFieldsFromSingle(jsvideo).ConfigureAwait(false);
 
             return pl;
         }
@@ -865,7 +824,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -889,7 +848,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id);
-                    await FillFieldsFromGetting(item, pair);
+                    await FillFieldsFromGetting(item, pair).ConfigureAwait(false);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -911,7 +870,7 @@ namespace DataAPI.Videos
                         key,
                         printType);
 
-                det = await SiteHelper.DownloadStringAsync(new Uri(det));
+                det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
                 jsvideo = JObject.Parse(det);
 
                 foreach (JToken pair in jsvideo["items"])
@@ -961,25 +920,66 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(det);
 
             JToken par = jsvideo.SelectToken("items[0].brandingSettings.channel.featuredChannelsUrls");
 
-            if (par != null)
+            if (par == null)
             {
-                foreach (JToken jToken in par)
+                return lst;
+            }
+            foreach (JToken jToken in par)
+            {
+                ChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>()).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(ch.Title))
                 {
-                    ChannelPOCO ch = await GetChannelNetAsync(jToken.Value<string>());
-                    if (!string.IsNullOrEmpty(ch.Title))
-                    {
-                        lst.Add(ch);
-                    }
+                    lst.Add(ch);
                 }
             }
 
             return lst;
+        }
+
+        /// <summary>
+        ///     Get video comments
+        /// </summary>
+        /// <param name="videoID"></param>
+        /// <param name="maxResult"></param>
+        /// <returns></returns>
+        public static async Task<List<string>> GetVideoCommentsNetAsync(string videoID, int maxResult)
+        {
+            var res = new List<string>();
+
+            int itemsppage = ItemsPerPage;
+
+            if (maxResult < ItemsPerPage & maxResult != 0)
+            {
+                itemsppage = maxResult;
+            }
+
+            string zap =
+                string.Format(
+                              "{0}commentThreads?videoId={1}&key={2}&maxResults={3}&part=snippet&fields=nextPageToken,items(snippet(topLevelComment(snippet(authorDisplayName,textDisplay,authorChannelUrl,authorProfileImageUrl,publishedAt))))&{4}",
+                    url,
+                    videoID,
+                    key,
+                    itemsppage,
+                    printType);
+
+            object pagetoken;
+            do
+            {
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+                JObject jsvideo = JObject.Parse(str);
+
+                pagetoken = jsvideo.SelectToken(token);
+            }
+            while (pagetoken != null);
+
+            return res;
         }
 
         /// <summary>
@@ -999,11 +999,11 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
-            await FillFieldsFromSingleVideo(item, jsvideo);
+            await FillFieldsFromSingleVideo(item, jsvideo).ConfigureAwait(false);
 
             return item;
         }
@@ -1021,7 +1021,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(det);
 
@@ -1058,7 +1058,7 @@ namespace DataAPI.Videos
                     key,
                     printType);
 
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(det);
 
@@ -1072,7 +1072,7 @@ namespace DataAPI.Videos
 
                 var item = new VideoItemPOCO(id.Value<string>());
 
-                await FillFieldsFromGetting(item, pair);
+                await FillFieldsFromGetting(item, pair).ConfigureAwait(false);
 
                 FillFieldsFromDetails(item, pair);
 
@@ -1112,7 +1112,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(det);
 
@@ -1162,7 +1162,7 @@ namespace DataAPI.Videos
                     }
 
                     string user = sp[indexuser + 1];
-                    parsedChannelId = await GetChannelIdByUserNameNetAsync(user);
+                    parsedChannelId = await GetChannelIdByUserNameNetAsync(user).ConfigureAwait(false);
                 }
                 else if (sp.Contains(youChannel))
                 {
@@ -1183,7 +1183,7 @@ namespace DataAPI.Videos
                         return parsedChannelId;
                     }
                     string id = match.Groups[1].Value;
-                    VideoItemPOCO vi = await GetVideoItemLiteNetAsync(id);
+                    VideoItemPOCO vi = await GetVideoItemLiteNetAsync(id).ConfigureAwait(false);
                     parsedChannelId = vi.ParentID;
                 }
             }
@@ -1191,7 +1191,7 @@ namespace DataAPI.Videos
             {
                 try
                 {
-                    parsedChannelId = await GetChannelIdByUserNameNetAsync(inputChannelLink);
+                    parsedChannelId = await GetChannelIdByUserNameNetAsync(inputChannelLink).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -1233,7 +1233,7 @@ namespace DataAPI.Videos
 
             do
             {
-                string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+                string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
                 JObject jsvideo = JObject.Parse(str);
 
@@ -1257,7 +1257,7 @@ namespace DataAPI.Videos
                     }
 
                     var item = new VideoItemPOCO(id);
-                    await FillFieldsFromGetting(item, pair);
+                    await FillFieldsFromGetting(item, pair).ConfigureAwait(false);
                     res.Add(item);
 
                     sb.Append(id).Append(',');
@@ -1279,7 +1279,7 @@ namespace DataAPI.Videos
                         key,
                         printType);
 
-                det = await SiteHelper.DownloadStringAsync(new Uri(det));
+                det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
                 jsvideo = JObject.Parse(det);
 
@@ -1350,7 +1350,7 @@ namespace DataAPI.Videos
             JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
             if (tlink != null)
             {
-                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>()).ConfigureAwait(false);
             }
         }
 
@@ -1368,7 +1368,7 @@ namespace DataAPI.Videos
             JToken tlink = record.SelectToken("snippet.thumbnails.default.url");
             if (tlink != null)
             {
-                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>()).ConfigureAwait(false);
             }
         }
 
@@ -1407,7 +1407,7 @@ namespace DataAPI.Videos
             JToken tlink = record.SelectToken("items[0].snippet.thumbnails.default.url");
             if (tlink != null)
             {
-                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>());
+                item.Thumbnail = await SiteHelper.GetStreamFromUrl(tlink.Value<string>()).ConfigureAwait(false);
             }
         }
 
@@ -1426,7 +1426,7 @@ namespace DataAPI.Videos
                 key,
                 printType);
 
-            string str = await SiteHelper.DownloadStringAsync(new Uri(zap));
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 

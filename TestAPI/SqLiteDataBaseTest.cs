@@ -42,7 +42,7 @@ namespace TestAPI
             ch.ID = "testch";
             ch.Title = "тестовая канал, для отладки слоя бд";
             ch.SubTitle = "использутеся для отдладки :)";
-            ch.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
+            ch.Thumbnail = await SiteHelper.GetStreamFromUrl(null).ConfigureAwait(false);
             ch.ChannelItems.Add(v1);
             ch.ChannelItems.Add(v2);
         }
@@ -62,7 +62,7 @@ namespace TestAPI
             pl.ID = "testID";
             pl.Title = "Плейлист №1";
             pl.SubTitle = "test subtitle";
-            pl.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
+            pl.Thumbnail = await SiteHelper.GetStreamFromUrl(null).ConfigureAwait(false);
             pl.ChannelId = ch.ID;
         }
 
@@ -86,7 +86,7 @@ namespace TestAPI
             vi.ViewCount = 123;
             vi.Duration = 321;
             vi.Comments = 123;
-            vi.Thumbnail = await SiteHelper.GetStreamFromUrl(null);
+            vi.Thumbnail = await SiteHelper.GetStreamFromUrl(null).ConfigureAwait(false);
             vi.Timestamp = DateTime.Now;
             vi.SyncState = state;
             vi.WatchState = WatchState.Notset;

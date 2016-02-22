@@ -27,22 +27,9 @@ namespace Models.Factories
 
             try
             {
-                SettingPOCO fbres = await fb.GetSettingAsync(key);
+                SettingPOCO fbres = await fb.GetSettingAsync(key).ConfigureAwait(false);
                 ISetting set = CreateSetting(fbres);
                 return set;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
-        public static async Task UpdateSettingAsync(string key, string newvalue)
-        {
-            SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
-            try
-            {
-                await fb.UpdateSettingAsync(key, newvalue);
             }
             catch (Exception ex)
             {

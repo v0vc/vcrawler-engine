@@ -111,7 +111,7 @@ namespace Crawler.ViewModels
 
             Channel.ChannelTags.Remove(tag);
 
-            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(Channel.ID, tag.Title);
+            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(Channel.ID, tag.Title).ConfigureAwait(false);
 
             if (onTagDelete != null)
             {
@@ -126,7 +126,7 @@ namespace Crawler.ViewModels
                 Channel.ChannelTags.Clear();
             }
 
-            var lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID);
+            List<ITag> lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID).ConfigureAwait(false);
             foreach (ITag tag in lst)
             {
                 Channel.ChannelTags.Add(tag);

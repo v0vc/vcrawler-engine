@@ -17,6 +17,24 @@ namespace Extensions.Helpers
     {
         #region Static Methods
 
+        public static bool CheckForInternetConnection(string url)
+        {
+            try
+            {
+                using (var client = new WebClient())
+                {
+                    using (Stream stream = client.OpenRead(url))
+                    {
+                        return true;
+                    }
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static async Task<string> DownloadStringAsync(Uri uri)
         {
             using (var client = new WebClient())
@@ -24,7 +42,7 @@ namespace Extensions.Helpers
                 client.Encoding = Encoding.UTF8;
                 try
                 {
-                    return await client.DownloadStringTaskAsync(uri);
+                    return await client.DownloadStringTaskAsync(uri).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -57,7 +75,7 @@ namespace Extensions.Helpers
                 DateTime n = DateTime.Now;
                 while (res == null && !cancelledOrError && DateTime.Now.Subtract(n).TotalMilliseconds < timeOut)
                 {
-                    await Task.Delay(100); // wait for respsonse
+                    await Task.Delay(100).ConfigureAwait(false); // wait for respsonse
                 }
             }
             if (res == null)
@@ -82,7 +100,7 @@ namespace Extensions.Helpers
             {
                 Task<string> task = wc.DownloadStringTaskAsync(uri);
                 task.Wait();
-                return await task;
+                return await task.ConfigureAwait(false);
             }
         }
 
@@ -94,7 +112,7 @@ namespace Extensions.Helpers
             {
                 using (var wc = new WebClient())
                 {
-                    imageData = await wc.DownloadDataTaskAsync(url);
+                    imageData = await wc.DownloadDataTaskAsync(url).ConfigureAwait(false);
                 }
             }
             catch
@@ -127,24 +145,6 @@ namespace Extensions.Helpers
                 return false;
             }
             return true;
-        }
-
-        public static bool CheckForInternetConnection(string url)
-        {
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    using (Stream stream = client.OpenRead(url))
-                    {
-                        return true;
-                    }
-                }
-            }
-            catch
-            {
-                return false;
-            }
         }
 
         #endregion

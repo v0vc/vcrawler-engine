@@ -42,7 +42,7 @@ namespace DataAPI.POCO
         public string SubTitle { get; private set; }
         public byte[] Thumbnail { get; private set; }
         public string Title { get; private set; }
-        public bool UseFast { get; set; }
+        public bool UseFast { get; private set; }
 
         #endregion
 
@@ -61,7 +61,7 @@ namespace DataAPI.POCO
             JToken link = record.SelectToken("items[0].snippet.thumbnails.default.url");
             if (link != null)
             {
-                ch.Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>());
+                ch.Thumbnail = await SiteHelper.GetStreamFromUrl(link.Value<string>()).ConfigureAwait(false);
             }
 
             return ch;

@@ -28,7 +28,7 @@ namespace DataAPI.POCO
 
         #endregion
 
-        #region ICredPOCO Members
+        #region Properties
 
         public short Autorization { get; private set; }
         public string Cookie { get; private set; }
