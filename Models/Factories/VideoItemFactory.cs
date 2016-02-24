@@ -35,7 +35,7 @@ namespace Models.Factories
             }
         }
 
-        public static IVideoItem CreateVideoItem(VideoItemPOCO poco, SiteType site)
+        public static IVideoItem CreateVideoItem(VideoItemPOCO poco, SiteType site, SyncState sstate = SyncState.Notset)
         {
             IVideoItem vi;
             switch (site)
@@ -52,7 +52,7 @@ namespace Models.Factories
                         Comments = poco.Comments,
                         Thumbnail = poco.Thumbnail,
                         Timestamp = poco.Timestamp,
-                        SyncState = (SyncState)poco.SyncState,
+                        SyncState = sstate == SyncState.Notset ? (SyncState)poco.SyncState : sstate,
                         WatchState = (WatchState)poco.WatchState,
                         DurationString = IntTostrTime(poco.Duration),
                         DateTimeAgo = TimeAgo(poco.Timestamp),

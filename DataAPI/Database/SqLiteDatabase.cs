@@ -866,13 +866,76 @@ namespace DataAPI.Database
             return res;
         }
 
-
         /// <summary>
-        ///     Get items by state
+        ///     Get channel items ids by state, 0 - all items in base
         /// </summary>
         /// <param name="state"></param>
+        /// <param name="channelID"></param>
         /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetItemsByState(object state)
+        public async Task<List<string>> GetChannelItemsIdsByStateAsync(object state, string channelID = null)
+        {
+            string col = string.Empty;
+            if (state is WatchState)
+            {
+                col = watchstate;
+            }
+            else if (state is SyncState)
+            {
+                col = syncstate;
+            }
+            var res = new List<string>();
+            using (var connection = new SQLiteConnection(dbConnection))
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
+                {
+                    using (SQLiteCommand command = connection.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            command.CommandText = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'",
+                                itemId,
+                                tableitems,
+                                col,
+                                (byte)state);
+
+                            if (channelID != null)
+                            {
+                                command.CommandText += string.Format(" AND {0}='{1}'", parentID, channelID);
+                            }
+                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                            {
+                                while (await reader.ReadAsync().ConfigureAwait(false))
+                                {
+                                    res.Add((string)reader[itemId]);
+                                }
+                                transaction.Commit();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            connection.Close();
+                        }
+                    }
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
+        ///     Get channel items by state, 0 - all items in base
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetChannelItemsByState(object state, string channelID = null)
         {
             string col = string.Empty;
             if (state is WatchState)
@@ -895,7 +958,10 @@ namespace DataAPI.Database
                         {
                             command.CommandType = CommandType.Text;
                             command.CommandText = string.Format(@"{0} WHERE {1}='{2}'", itemsSelectString, col, (byte)state);
-
+                            if (channelID != null)
+                            {
+                                command.CommandText += string.Format(" AND {0}='{1}'", parentID, channelID);
+                            }
                             using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                             {
                                 if (!reader.HasRows)

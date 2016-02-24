@@ -1999,7 +1999,7 @@ namespace Crawler.ViewModels
             Stopwatch watch = Stopwatch.StartNew();
             try
             {
-                await ChannelFactory.SyncChannelAsync(channel, false, true, addItemToStateChannel).ConfigureAwait(false);
+                await ChannelFactory.SyncChannelAsync(channel, false, true, addItemToStateChannel).ConfigureAwait(true);
                 watch.Stop();
                 Info = watch.TakeLogMessage();
                 SetStatus(0);
@@ -2049,7 +2049,7 @@ namespace Crawler.ViewModels
                 Info = "Syncing: " + channel.Title;
                 try
                 {
-                    await ChannelFactory.SyncChannelAsync(channel, isFastSync, false, addItemToStateChannel).ConfigureAwait(false);
+                    await ChannelFactory.SyncChannelAsync(channel, isFastSync, false, addItemToStateChannel).ConfigureAwait(true);
                 }
                 catch (Exception ex)
                 {
