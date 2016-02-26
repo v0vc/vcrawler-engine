@@ -1464,31 +1464,19 @@ namespace Crawler.ViewModels
             adl.ShowDialog();
         }
 
-        private async void OpenCurrentTags()
+        private void OpenCurrentTags()
         {
             if (CurrentTags.Any())
             {
                 return;
             }
 
-            var tmptags = new List<ITag>();
-            foreach (IChannel channel in Channels)
-            {
-                List<ITag> tags = await ChannelFactory.GetChannelTagsAsync(channel.ID).ConfigureAwait(false);
+            Channels.Select(c => ChannelFactory.GetChannelTagsAsync(c.ID))
+                .SelectMany(task => task.Result)
+                .GroupBy(x => x.Title)
+                .Select(x => x.First())
+                .ForEach(x => CurrentTags.Add(x));
 
-                foreach (ITag tag in tags)
-                {
-                    channel.ChannelTags.Add(tag);
-                    if (!tmptags.Select(x => x.Title).Contains(tag.Title))
-                    {
-                        tmptags.Add(tag);
-                    }
-                }
-            }
-            foreach (ITag tag in tmptags.OrderBy(x => x.Title))
-            {
-                CurrentTags.Add(tag);
-            }
             CurrentTags.Add(TagFactory.CreateTag()); // empty tag
         }
 
