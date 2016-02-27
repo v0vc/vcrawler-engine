@@ -1348,6 +1348,39 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get tags, which have been setted
+        /// </summary>
+        /// <returns></returns>
+        //public async Task<List<TagPOCO>> GetTagsInWorkAsync()
+        //{
+        //    var res = new List<TagPOCO>();
+        //    string zap = string.Format(@"SELECT * FROM {0}", viewchanneltags);
+        //    using (SQLiteCommand command = GetCommand(zap))
+        //    {
+        //        using (var connection = new SQLiteConnection(dbConnection))
+        //        {
+        //            await connection.OpenAsync().ConfigureAwait(false);
+        //            command.Connection = connection;
+
+        //            using (SQLiteTransaction transaction = connection.BeginTransaction())
+        //            {
+        //                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+        //                {
+        //                    while (await reader.ReadAsync().ConfigureAwait(false))
+        //                    {
+        //                        TagPOCO tag = CreateTag(reader, tagIdF);
+        //                        res.Add(tag);
+        //                    }
+        //                    transaction.Commit();
+        //                }
+        //            }
+        //        }
+        //    }
+        //    return res;
+        //}
+
+
+        /// <summary>
         ///     Get channel tags
         /// </summary>
         /// <param name="id">channel ID</param>
@@ -1389,62 +1422,14 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get channels by tag
-        /// </summary>
-        /// <param name="tag">tag ID</param>
-        /// <returns></returns>
-        public async Task<List<ChannelPOCO>> GetChannelsByTagAsync(string tag)
-        {
-            var res = new List<ChannelPOCO>();
-
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, tagIdF, tag);
-
-            var lst = new List<string>();
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                connection.Close();
-                                return res;
-                            }
-
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                lst.Add(reader[channelIdF].ToString());
-                            }
-
-                            transaction.Commit();
-                        }
-                    }
-                    connection.Close();
-                }
-            }
-            foreach (string id in lst)
-            {
-                res.Add(await GetChannelAsync(id).ConfigureAwait(false));
-            }
-
-            return res;
-        }
-
-        /// <summary>
-        ///     Get all channels id's
+        ///     Get channels ids by tags
         /// </summary>
         /// <returns></returns>
-        public async Task<List<string>> GetChannelsIdsListDbAsync()
+        public async Task<Dictionary<TagPOCO, IEnumerable<string>>> GetChannelIdsByTagAsync()
         {
-            var res = new List<string>();
+            string zap = string.Format(@"SELECT * FROM {0}", tablechanneltags);
 
-            string zap = string.Format(@"SELECT {0} FROM {1}", channelId, tablechannels);
+            var temp = new List<KeyValuePair<string, TagPOCO>>();
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1461,22 +1446,20 @@ namespace DataAPI.Database
                             {
                                 transaction.Rollback();
                                 connection.Close();
-                                return res;
+                                //return res;
                             }
 
                             while (await reader.ReadAsync().ConfigureAwait(false))
                             {
-                                var ch = reader[channelId] as string;
-                                res.Add(ch);
+                                var row = new KeyValuePair<string, TagPOCO>(reader[channelIdF] as string, CreateTag(reader, tagIdF));
+                                temp.Add(row);
                             }
-
                             transaction.Commit();
                         }
                     }
-                    connection.Close();
                 }
             }
-            return res;
+            return temp.GroupBy(x => x.Value).OrderBy(x => x.Key.Title).ToDictionary(y => y.Key, y => y.Select(z => z.Key));
         }
 
         /// <summary>
@@ -2101,6 +2084,53 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Add tags to channel
+        /// </summary>
+        /// <param name="channelid"></param>
+        /// <param name="tags"></param>
+        /// <returns></returns>
+        public async Task InsertChannelTagsAsync(string channelid, IEnumerable<ITag> tags)
+        {
+            using (var conn = new SQLiteConnection(dbConnection))
+            {
+                await conn.OpenAsync().ConfigureAwait(false);
+                using (SQLiteTransaction transaction = conn.BeginTransaction())
+                {
+                    using (SQLiteCommand command = conn.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            foreach (ITag tag in tags)
+                            {
+                                command.CommandText = string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}') VALUES (@{1},@{2})",
+                                    tablechanneltags,
+                                    channelIdF,
+                                    tagIdF);
+
+                                command.Parameters.AddWithValue("@" + channelIdF, channelid);
+                                command.Parameters.AddWithValue("@" + tagIdF, tag.Title);
+
+                                await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            conn.Close();
+                        }
+                    }
+                }
+            }          
+        }
+
+        /// <summary>
         ///     Add tag to channel
         /// </summary>
         /// <param name="channelid">channel ID</param>
@@ -2649,12 +2679,6 @@ namespace DataAPI.Database
                     {
                         using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                return res;
-                            }
-
                             while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[itemId] as string;
@@ -2742,12 +2766,6 @@ namespace DataAPI.Database
                     {
                         using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                return res;
-                            }
-
                             while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var ch = reader[itemId] as string;

@@ -4,14 +4,12 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
 using Crawler.Common;
 using Crawler.Views;
+using DataAPI.Database;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Crawler.ViewModels
 {
@@ -19,6 +17,7 @@ namespace Crawler.ViewModels
     {
         #region Static and Readonly Fields
 
+        private readonly SqLiteDatabase db;
         private readonly Action<string> onTagDelete;
         private readonly Action<IChannel> onTagsSave;
         private readonly ObservableCollection<ITag> supportedTags;
@@ -29,7 +28,6 @@ namespace Crawler.ViewModels
 
         private RelayCommand addCommand;
         private RelayCommand deleteTagCommand;
-        private RelayCommand fillTagsCommand;
         private RelayCommand saveCommand;
 
         #endregion
@@ -38,10 +36,12 @@ namespace Crawler.ViewModels
 
         public EditTagsViewModel(IChannel channel,
             ObservableCollection<ITag> supportedTags,
+            SqLiteDatabase db,
             Action<string> onTagDelete,
             Action<IChannel> onTagsSave)
         {
             this.supportedTags = supportedTags;
+            this.db = db;
             this.onTagDelete = onTagDelete;
             this.onTagsSave = onTagsSave;
             Channel = channel;
@@ -66,14 +66,6 @@ namespace Crawler.ViewModels
             get
             {
                 return deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
-            }
-        }
-
-        public RelayCommand FillTagsCommand
-        {
-            get
-            {
-                return fillTagsCommand ?? (fillTagsCommand = new RelayCommand(x => FillTags()));
             }
         }
 
@@ -111,7 +103,7 @@ namespace Crawler.ViewModels
 
             Channel.ChannelTags.Remove(tag);
 
-            await CommonFactory.CreateSqLiteDatabase().DeleteChannelTagsAsync(Channel.ID, tag.Title).ConfigureAwait(false);
+            await db.DeleteChannelTagsAsync(Channel.ID, tag.Title).ConfigureAwait(false);
 
             if (onTagDelete != null)
             {
@@ -119,27 +111,15 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void FillTags()
-        {
-            if (Channel.ChannelTags.Any())
-            {
-                Channel.ChannelTags.Clear();
-            }
-
-            List<ITag> lst = await ChannelFactory.GetChannelTagsAsync(Channel.ID).ConfigureAwait(false);
-            foreach (ITag tag in lst)
-            {
-                Channel.ChannelTags.Add(tag);
-            }
-        }
-
-        private void Save(object obj)
+        private async void Save(object obj)
         {
             var window = obj as Window;
             if (window == null)
             {
                 return;
             }
+
+            await db.InsertChannelTagsAsync(Channel.ID, Channel.ChannelTags).ConfigureAwait(false);
 
             if (onTagsSave != null)
             {

@@ -80,6 +80,7 @@ namespace Crawler.ViewModels
         private string info;
         private bool isLogExpand;
         private bool isPlExpand;
+        private bool isTagsFilled;
         private bool isWorking;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
@@ -742,6 +743,21 @@ namespace Crawler.ViewModels
             addview.ShowDialog();
         }
 
+        private async Task AddTags()
+        {
+            Dictionary<TagPOCO, IEnumerable<string>> tagsch = await db.GetChannelIdsByTagAsync().ConfigureAwait(false);
+            foreach (KeyValuePair<TagPOCO, IEnumerable<string>> pair in tagsch)
+            {
+                ITag tag = TagFactory.CreateTag(pair.Key);
+                CurrentTags.Add(tag);
+                foreach (IChannel ch in pair.Value.Select(id => Channels.FirstOrDefault(x => x.ID == id)).Where(ch => ch != null))
+                {
+                    ch.ChannelTags.Add(tag);
+                }
+            }
+            CurrentTags.Add(TagFactory.CreateTag()); // empty tag
+        }
+
         private async Task Backup()
         {
             var dlg = new SaveFileDialog
@@ -890,28 +906,12 @@ namespace Crawler.ViewModels
         {
             if (!CurrentTags.Any())
             {
-                foreach (IChannel ch in Channels)
-                {
-                    List<ITag> tags = await ChannelFactory.GetChannelTagsAsync(ch.ID).ConfigureAwait(false);
-                    foreach (ITag tag in tags)
-                    {
-                        ch.ChannelTags.Add(tag);
-                        if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
-                        {
-                            CurrentTags.Add(tag);
-                        }
-                    }
-                }
+                await AddTags().ConfigureAwait(false);
             }
 
-            foreach (ITag tag in channel.ChannelTags)
+            foreach (ITag tag in channel.ChannelTags.Where(tag => !CurrentTags.Select(x => x.Title).Contains(tag.Title)))
             {
-                await db.InsertChannelTagsAsync(channel.ID, tag.Title).ConfigureAwait(false);
-
-                if (!CurrentTags.Select(x => x.Title).Contains(tag.Title))
-                {
-                    CurrentTags.Insert(0, tag);
-                }
+                CurrentTags.Insert(0, tag);
             }
         }
 
@@ -1275,6 +1275,7 @@ namespace Crawler.ViewModels
             {
                 return false;
             }
+
             if (SelectedTag == null || string.IsNullOrEmpty(SelectedTag.Title))
             {
                 foreach (ITag tag in CurrentTags.Where(tag => tag.IsChecked))
@@ -1464,20 +1465,15 @@ namespace Crawler.ViewModels
             adl.ShowDialog();
         }
 
-        private void OpenCurrentTags()
+        private async void OpenCurrentTags()
         {
-            if (CurrentTags.Any())
+            if (isTagsFilled)
             {
                 return;
             }
 
-            Channels.Select(c => ChannelFactory.GetChannelTagsAsync(c.ID))
-                .SelectMany(task => task.Result)
-                .GroupBy(x => x.Title)
-                .Select(x => x.First())
-                .ForEach(x => CurrentTags.Add(x));
-
-            CurrentTags.Add(TagFactory.CreateTag()); // empty tag
+            await AddTags().ConfigureAwait(false);
+            isTagsFilled = true;
         }
 
         private void OpenSettings()
@@ -1492,7 +1488,7 @@ namespace Crawler.ViewModels
             set.ShowDialog();
         }
 
-        private void OpenTags()
+        private async void OpenTags()
         {
             IChannel channel = SelectedChannel;
             if (channel == null)
@@ -1500,7 +1496,15 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, ChannelTagDelete, ChannelTagsSave);
+            if (channel.ChannelTags.Any())
+            {
+                channel.ChannelTags.Clear();
+            }
+
+            List<TagPOCO> tags = await db.GetChannelTagsAsync(channel.ID).ConfigureAwait(false);
+            tags.ForEach(x => channel.ChannelTags.Add(TagFactory.CreateTag(x)));
+
+            var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, db, ChannelTagDelete, ChannelTagsSave);
             var etv = new EditTagsView
             {
                 DataContext = etvm,

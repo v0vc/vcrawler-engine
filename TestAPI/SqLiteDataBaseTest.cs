@@ -390,17 +390,13 @@ namespace TestAPI
             t = db.InsertChannelTagsAsync(ch.ID, tag.Title);
             Assert.IsTrue(!t.IsFaulted);
 
-            // InsertChannelTagsAsync
-            t = db.InsertChannelTagsAsync(ch.ID, tag.Title);
-            Assert.IsTrue(!t.IsFaulted);
-
             // GetChannelTagsAsync
             t = db.GetChannelTagsAsync(ch.ID);
             Assert.IsTrue(!t.IsFaulted);
 
             // GetChannelsByTagAsync
-            t = db.GetChannelsByTagAsync(tag.Title);
-            Assert.IsTrue(!t.IsFaulted);
+            //t = db.GetChannelsByTagAsync(tag.Title);
+            //Assert.IsTrue(!t.IsFaulted);
 
             // DeleteChannelTagsAsync
             t = db.DeleteChannelTagsAsync(ch.ID, tag.Title);
