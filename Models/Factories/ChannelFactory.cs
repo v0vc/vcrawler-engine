@@ -311,9 +311,12 @@ namespace Models.Factories
                 {
                     await SyncPlaylists(channel, dbids).ConfigureAwait(true);
                 }
+
+                int wnot = channel.ChannelItems.Count(x => x.WatchState != WatchState.Notset);
+                int snot = channel.ChannelItems.Count(x => x.SyncState != SyncState.Notset);
+                channel.IsHasNewFromSync = channel.ChannelItems.Any() && channel.ChannelItems.Count == wnot + snot + preds.Count;
             }
-            channel.IsHasNewFromSync = channel.ChannelItems.Any()
-                                       && channel.ChannelItems.Count == channel.ChannelItems.Count(x => x.SyncState == SyncState.Added);
+
             channel.ChannelState = ChannelState.Notset;
         }
 

@@ -51,9 +51,9 @@ namespace Crawler.ViewModels
 
         #endregion
 
-        #region Static and Readonly Fields
+        //private readonly object _lock = new object();
 
-        private readonly object _lock = new object();
+        #region Static and Readonly Fields
 
         private readonly Action<IVideoItem, object> addItemToStateChannel;
         private readonly ICollectionView channelCollectionView;
@@ -135,7 +135,7 @@ namespace Crawler.ViewModels
             RelatedChannels.Add(StateChannel);
             InitBase();
             addItemToStateChannel = AddItemToStateChannel;
-            BindingOperations.EnableCollectionSynchronization(Channels, _lock);
+            //BindingOperations.EnableCollectionSynchronization(Channels, _lock);
         }
 
         #endregion
