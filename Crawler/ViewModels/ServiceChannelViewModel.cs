@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using System.Windows.Data;
 using DataAPI.POCO;
 using DataAPI.Videos;
+using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -33,14 +34,14 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
-        private readonly Dictionary<string, List<IVideoItem>> popCountriesDictionary;
+        private readonly IEnumerable<string> countrieslist = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", dlindex };
 
         #endregion
 
         #region Fields
 
         private string filterVideoKey;
-        private string selectedCountry;
+        private KeyValuePair<string, List<IVideoItem>> selectedCountry;
         private IVideoItem selectedItem;
         private CredImage selectedSite;
 
@@ -51,23 +52,23 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel()
         {
             Title = "#Popular";
-            Countries = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", dlindex };
-            popCountriesDictionary = new Dictionary<string, List<IVideoItem>>();
-            SelectedCountry = Countries.First();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             SupportedSites = new List<CredImage>();
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
+            Countries = new Dictionary<string, List<IVideoItem>>();
+            countrieslist.ForEach(x => Countries.Add(x, new List<IVideoItem>()));
+            SelectedCountry = Countries.First();
         }
 
         #endregion
 
         #region Properties
 
-        public IEnumerable<string> Countries { get; private set; }
+        public Dictionary<string, List<IVideoItem>> Countries { get; private set; }
         public string SearchKey { get; set; }
 
-        public string SelectedCountry
+        public KeyValuePair<string, List<IVideoItem>> SelectedCountry
         {
             get
             {
@@ -75,26 +76,9 @@ namespace Crawler.ViewModels
             }
             set
             {
-                if (value == selectedCountry)
-                {
-                    return;
-                }
                 selectedCountry = value;
                 OnPropertyChanged();
-                List<IVideoItem> lst;
-                if (!popCountriesDictionary.TryGetValue(selectedCountry, out lst))
-                {
-                    return;
-                }
-                if (!lst.Any())
-                {
-                    return;
-                }
-                ChannelItems.Clear();
-                foreach (IVideoItem item in lst)
-                {
-                    AddNewItem(item);
-                }
+                RefreshItems();
             }
         }
 
@@ -122,47 +106,44 @@ namespace Crawler.ViewModels
 
         public void AddItemToDownload(IVideoItem item)
         {
-            List<IVideoItem> lst;
-
-            if (!popCountriesDictionary.TryGetValue(dlindex, out lst))
+            SelectedCountry = Countries.First(x => x.Key == dlindex);
+            if (!SelectedCountry.Value.Select(x => x.ID).Contains(item.ID))
             {
-                popCountriesDictionary.Add(dlindex, lst = new List<IVideoItem>());
+                SelectedCountry.Value.Add(item);
             }
-            if (!lst.Select(x => x.ID).Contains(item.ID))
-            {
-                lst.Add(item);
-            }
-            SelectedCountry = Countries.Single(x => x == dlindex);
+            RefreshItems();
         }
 
         public async Task FillPopular(HashSet<string> ids)
         {
-            if (SelectedCountry == dlindex)
+            if (SelectedCountry.Key == dlindex)
             {
                 return;
             }
+
+            SelectedCountry.Value.Clear();
+
             switch (SelectedSite.Cred.Site)
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry, 30).ConfigureAwait(true);
-                    var lstemp = new List<IVideoItem>();
-                    foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
+                    List<VideoItemPOCO> lst = await YouTubeSite.GetPopularItemsAsync(SelectedCountry.Key, 30).ConfigureAwait(true);
+
+                    if (lst.Any())
                     {
-                        AddNewItem(item);
-                        item.IsHasLocalFileFound(DirPath);
-                        if (ids.Contains(item.ParentID))
+                        foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
-                            // подсветим видео, если канал уже есть в подписке
-                            item.SyncState = SyncState.Added;
+                            item.IsHasLocalFileFound(DirPath);
+                            if (ids.Contains(item.ParentID))
+                            {
+                                // подсветим видео, если канал уже есть в подписке
+                                item.SyncState = SyncState.Added;
+                            }
+                            SelectedCountry.Value.Add(item);
                         }
-                        lstemp.Add(item);
+                        RefreshItems();
                     }
-                    if (popCountriesDictionary.ContainsKey(SelectedCountry))
-                    {
-                        popCountriesDictionary.Remove(SelectedCountry);
-                    }
-                    popCountriesDictionary.Add(SelectedCountry, lstemp);
+
                     break;
             }
             RefreshView("ViewCount");
@@ -196,7 +177,7 @@ namespace Crawler.ViewModels
 
         public async Task Search(HashSet<string> ids)
         {
-            if (string.IsNullOrEmpty(SearchKey) || SelectedCountry == "DL")
+            if (string.IsNullOrEmpty(SearchKey))
             {
                 return;
             }
@@ -205,28 +186,27 @@ namespace Crawler.ViewModels
             {
                 case SiteType.YouTube:
 
-                    List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry, 50).ConfigureAwait(true);
+                    if (SelectedCountry.Key == dlindex)
+                    {
+                        SelectedCountry = Countries.First();
+                    }
+
+                    SelectedCountry.Value.Clear();
+
+                    List<VideoItemPOCO> lst = await YouTubeSite.SearchItemsAsync(SearchKey, SelectedCountry.Key, 50).ConfigureAwait(true);
                     if (lst.Any())
                     {
-                        for (int i = ChannelItems.Count; i > 0; i--)
-                        {
-                            if (
-                                !(ChannelItems[i - 1].FileState == ItemState.LocalYes
-                                  || ChannelItems[i - 1].FileState == ItemState.Downloading))
-                            {
-                                ChannelItems.RemoveAt(i - 1);
-                            }
-                        }
                         foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
-                            AddNewItem(item);
                             item.IsHasLocalFileFound(DirPath);
                             if (ids.Contains(item.ParentID))
                             {
                                 // подсветим видео, если канал уже есть в подписке
                                 item.SyncState = SyncState.Added;
                             }
+                            SelectedCountry.Value.Add(item);
                         }
+                        RefreshItems();
                     }
                     break;
             }
@@ -255,6 +235,15 @@ namespace Crawler.ViewModels
             {
                 handler(this, new PropertyChangedEventArgs(propertyName));
             }
+        }
+
+        private void RefreshItems()
+        {
+            if (ChannelItems.Any())
+            {
+                ChannelItems.Clear();
+            }
+            SelectedCountry.Value.ForEach(x => AddNewItem(x));
         }
 
         #endregion

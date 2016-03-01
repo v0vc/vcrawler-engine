@@ -145,7 +145,7 @@ namespace Crawler.ViewModels
 
             if (IsYouTube)
             {
-                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube).ConfigureAwait(false);
+                IVideoItem vi = await VideoItemFactory.GetVideoItemNetAsync(youId, SiteType.YouTube).ConfigureAwait(true);
                 foreach (ISubtitle subtitle in Subtitles.Where(subtitle => subtitle.IsChecked))
                 {
                     vi.Subtitles.Add(subtitle);

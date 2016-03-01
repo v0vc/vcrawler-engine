@@ -521,9 +521,8 @@
                                             <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:ServiceChannelViewModel, IsDesignTimeCreatable=False}">
                                                 <DataGridTemplateColumn.CellTemplate>
                                                     <DataTemplate>
-                                                        <ComboBox ItemsSource="{Binding SupportedSites, Mode=OneWay}"
+                                                        <ComboBox ItemsSource="{Binding SupportedSites, Mode=OneWay}" Margin="0.5"
                                                                   SelectedItem="{Binding SelectedSite, Mode=OneWay}"
-                                                                  Margin="0.5"
                                                                   >
 
                                                             <i:Interaction.Triggers>
@@ -612,7 +611,8 @@
                                                     <ComboBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="MediumSeaGreen" Width="55" Margin="0,0,5,0"
                                                               ItemsSource="{Binding Path=DataContext.ServiceChannel.Countries, Mode=OneTime, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
                                                               SelectedItem="{Binding Path=DataContext.ServiceChannel.SelectedCountry, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                                    />
+                                                              DisplayMemberPath="Key" SelectedValuePath="Value"
+                                                              />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
