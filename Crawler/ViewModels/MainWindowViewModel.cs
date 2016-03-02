@@ -120,7 +120,7 @@ namespace Crawler.ViewModels
                 }
             }
 
-            SettingsViewModel = new SettingsViewModel(UpdateChannelsDir);
+            SettingsViewModel = new SettingsViewModel(db, UpdateChannelsDir);
             Version = CommonExtensions.GetFileVersion(Assembly.GetExecutingAssembly());
             Channels = new ObservableCollection<IChannel>();
             channelCollectionView = CollectionViewSource.GetDefaultView(Channels);
@@ -571,32 +571,6 @@ namespace Crawler.ViewModels
             Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
             IPlaylist defpl = PlaylistFactory.CreateUploadPlaylist(channel, ids, StreamHelper.ReadFully(img));
             channel.ChannelPlaylists.Add(defpl);
-        }
-
-        private static async void FillDescription(object obj)
-        {
-            var video = obj as IVideoItem;
-            if (video != null)
-            {
-                if (string.IsNullOrEmpty(video.Description))
-                {
-                    await video.FillDescriptionAsync().ConfigureAwait(false);
-                }
-            }
-            else
-            {
-                var channel = obj as IChannel;
-                if (channel == null)
-                {
-                    return;
-                }
-                if (!string.IsNullOrEmpty(channel.SubTitle))
-                {
-                    return;
-                }
-                string text = await CommonFactory.CreateSqLiteDatabase().GetChannelDescriptionAsync(channel.ID).ConfigureAwait(false);
-                channel.SubTitle = text.WordWrap(80);
-            }
         }
 
         private static void OpenDescription(object obj)
@@ -1156,6 +1130,32 @@ namespace Crawler.ViewModels
             channel.Loaded = true;
             channel.IsHasNewFromSync = false;
             ChannelFactory.SetChannelCountAsync(channel);
+        }
+
+        private async void FillDescription(object obj)
+        {
+            var video = obj as IVideoItem;
+            if (video != null)
+            {
+                if (string.IsNullOrEmpty(video.Description))
+                {
+                    await video.FillDescriptionAsync().ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                var channel = obj as IChannel;
+                if (channel == null)
+                {
+                    return;
+                }
+                if (!string.IsNullOrEmpty(channel.SubTitle))
+                {
+                    return;
+                }
+                string text = await db.GetChannelDescriptionAsync(channel.ID).ConfigureAwait(false);
+                channel.SubTitle = text.WordWrap(80);
+            }
         }
 
         private async void FillPopular()

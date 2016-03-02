@@ -26,6 +26,7 @@ namespace TestAPI
         #region Static and Readonly Fields
 
         private readonly TapochekSite tf;
+        private readonly SqLiteDatabase db;
 
         #endregion
 
@@ -34,6 +35,7 @@ namespace TestAPI
         public TapochekSiteTest()
         {
             tf = CommonFactory.CreateTapochekSite();
+            db = CommonFactory.CreateSqLiteDatabase();
         }
 
         #endregion
@@ -48,7 +50,7 @@ namespace TestAPI
             {
                 return;
             }
-            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
+            ch.ChannelCookies = db.ReadCookies(ch.Site);
             Assert.IsTrue(ch.ChannelCookies.Count > 0);
         }
 
@@ -61,7 +63,7 @@ namespace TestAPI
                 return;
             }
             ch.ID = "27253";
-            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
+            ch.ChannelCookies = db.ReadCookies(ch.Site);
             await tf.FillChannelNetAsync(ch).ConfigureAwait(false);
             Assert.IsTrue(ch.ChannelItems.Any());
         }
@@ -84,7 +86,7 @@ namespace TestAPI
             }
             ch.ID = "27253";
 
-            ch.ChannelCookies = CommonFactory.CreateSqLiteDatabase().ReadCookies(ch.Site);
+            ch.ChannelCookies = db.ReadCookies(ch.Site);
             if (ch.ChannelCookies == null)
             {
                 await ChannelFactory.FillChannelCookieNetAsync(ch).ConfigureAwait(false);
@@ -110,10 +112,10 @@ namespace TestAPI
             ch.ChannelCookies = cookie;
 
             // ch.StoreCookies();
-            SqLiteDatabase c = CommonFactory.CreateSqLiteDatabase();
-            if (c.FileBase.DirectoryName != null)
+           
+            if (db.FileBase.DirectoryName != null)
             {
-                var folder = new DirectoryInfo(Path.Combine(c.FileBase.DirectoryName, "Cookie"));
+                var folder = new DirectoryInfo(Path.Combine(db.FileBase.DirectoryName, "Cookie"));
                 var fn = new FileInfo(Path.Combine(folder.FullName, EnumHelper.GetAttributeOfType(ch.Site)));
                 Assert.IsTrue(fn.Exists);
             }

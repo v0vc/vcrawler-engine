@@ -3,9 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System.Threading.Tasks;
 using Interfaces.Models;
-using Models.Factories;
 
 namespace Models.BO
 {
@@ -15,12 +13,6 @@ namespace Models.BO
 
         public string Key { get; set; }
         public string Value { get; set; }
-
-        public async Task UpdateSettingAsync(string newvalue)
-        {
-            // await ((SettingFactory) ServiceLocator.SettingFactory).UpdateSettingAsync(Key, newvalue);
-            await CommonFactory.CreateSqLiteDatabase().UpdateSettingAsync(Key, newvalue).ConfigureAwait(false);
-        }
 
         #endregion
     }

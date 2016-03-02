@@ -2,8 +2,6 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System.Threading.Tasks;
-
 namespace Interfaces.Models
 {
     public interface ISetting
@@ -16,8 +14,6 @@ namespace Interfaces.Models
         #endregion
 
         #region Methods
-
-        Task UpdateSettingAsync(string newvalue);
 
         #endregion
     }

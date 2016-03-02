@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -41,8 +40,8 @@ namespace Crawler.ViewModels
         private const string pathToDownload = "pathToDownload";
         private const string pathToMpc = "pathToMpc";
         private const string pathToYoudl = "pathToYoudl";
-        private const string youLaunchParam = "you";
         private const string youheader = "Youtube-dl";
+        private const string youLaunchParam = "you";
         private const string youtubeDl = "youtube-dl.exe";
 
         #endregion
@@ -74,12 +73,12 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public SettingsViewModel(Action<string> onSaveAction)
+        public SettingsViewModel(SqLiteDatabase db, Action<string> onSaveAction)
         {
+            this.db = db;
             this.onSaveAction = onSaveAction;
             SupportedTags = new ObservableCollection<ITag>();
             SupportedCreds = new List<ICred>();
-            db = CommonFactory.CreateSqLiteDatabase();
         }
 
         #endregion
@@ -372,8 +371,8 @@ namespace Crawler.ViewModels
             var advm = new AddTagViewModel(true, null, SupportedTags);
             var antv = new AddTagView
             {
-                DataContext = advm,
-                Owner = Application.Current.MainWindow,
+                DataContext = advm, 
+                Owner = Application.Current.MainWindow, 
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             antv.ShowDialog();
@@ -387,9 +386,9 @@ namespace Crawler.ViewModels
                 return;
             }
             MessageBoxResult result =
-                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title),
-                    "Confirm",
-                    MessageBoxButton.OKCancel,
+                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title), 
+                    "Confirm", 
+                    MessageBoxButton.OKCancel, 
                     MessageBoxImage.Information);
 
             if (result != MessageBoxResult.OK)
@@ -460,7 +459,7 @@ namespace Crawler.ViewModels
             ISetting savedir = await SettingFactory.GetSettingDbAsync(pathToDownload).ConfigureAwait(false);
             if (savedir.Value != DirPath)
             {
-                await savedir.UpdateSettingAsync(DirPath).ConfigureAwait(false);
+                await db.UpdateSettingAsync(savedir.Key, DirPath).ConfigureAwait(false);
                 if (onSaveAction != null)
                 {
                     onSaveAction.Invoke(DirPath);
@@ -470,20 +469,20 @@ namespace Crawler.ViewModels
             ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc).ConfigureAwait(false);
             if (mpcdir.Value != MpcPath)
             {
-                await mpcdir.UpdateSettingAsync(MpcPath).ConfigureAwait(false);
+                await db.UpdateSettingAsync(mpcdir.Key, MpcPath).ConfigureAwait(false);
             }
 
             ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl).ConfigureAwait(false);
             if (youpath.Value != YouPath)
             {
-                await youpath.UpdateSettingAsync(YouPath).ConfigureAwait(false);
+                await db.UpdateSettingAsync(youpath.Key, YouPath).ConfigureAwait(false);
             }
 
             ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen).ConfigureAwait(false);
             string res = IsFilterOpen ? "1" : "0";
             if (onstartup.Value != res)
             {
-                await onstartup.UpdateSettingAsync(res).ConfigureAwait(false);
+                await db.UpdateSettingAsync(onstartup.Key, res).ConfigureAwait(false);
             }
 
             foreach (ICred cred in SupportedCreds)
