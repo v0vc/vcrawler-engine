@@ -867,7 +867,7 @@
                                                             <ColumnDefinition Width="120"/>
                                                             <ColumnDefinition/>
                                                         </Grid.ColumnDefinitions>
-                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" VerticalAlignment="Top"/>
+                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" VerticalAlignment="Top" Margin="0,4,0,0"/>
                                                         <StackPanel Grid.Column="1" Orientation="Vertical" Margin="10,0,0,0">
                                                             <TextBlock Text="{Binding ParentTitle, Mode=OneWay}" Margin="0,0,0,10"/>
                                                             <TextBlock Text="{Binding Description, Mode=OneWay}" TextWrapping="Wrap"/>
