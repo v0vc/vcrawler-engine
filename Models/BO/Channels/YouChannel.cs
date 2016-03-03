@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -201,7 +200,6 @@ namespace Models.BO.Channels
 
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
-        public bool Loaded { get; set; }
 
         public bool IsShowSynced
         {
@@ -229,6 +227,8 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
+
+        public bool Loaded { get; set; }
 
         public int PlaylistCount
         {
@@ -298,15 +298,14 @@ namespace Models.BO.Channels
 
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item, bool isIncrease = true)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (item == null)
             {
                 throw new ArgumentException("item");
             }
 
-            item.FileState = ItemState.LocalNo;
-
+            item.ParentTitle = Title;
             if (item.SyncState == SyncState.Added)
             {
                 ChannelItems.Insert(0, item);
@@ -319,7 +318,10 @@ namespace Models.BO.Channels
             {
                 ChannelItems.Add(item);
             }
-            ChannelItemsCount += 1;
+            if (isUpdateCount)
+            {
+                ChannelItemsCount += 1;
+            }
         }
 
         public void DeleteItem(IVideoItem item)

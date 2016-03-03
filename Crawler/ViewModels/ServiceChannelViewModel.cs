@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -315,13 +314,14 @@ namespace Crawler.ViewModels
         public string Title { get; set; }
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item, bool isIncrease = true)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (item == null)
             {
                 throw new ArgumentException("item");
             }
 
+            item.ParentTitle = item.ParentID;
             if (ChannelItems.Select(x => x.ID).Contains(item.ID))
             {
                 ChannelItems.Remove(ChannelItems.First(x => x.ID == item.ID));

@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -60,11 +59,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID,
-                        Title = poco.Title,
+                        ID = poco.ID, 
+                        Title = poco.Title, 
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail,
-                        CountNew = poco.Countnew,
+                        Thumbnail = poco.Thumbnail, 
+                        CountNew = poco.Countnew, 
                         UseFast = poco.UseFast
                     };
 
@@ -133,7 +132,7 @@ namespace Models.Factories
             {
                 IVideoItem vi = VideoItemFactory.CreateVideoItem(poco, channel.Site);
                 vi.IsHasLocalFileFound(channel.DirPath);
-                channel.ChannelItems.Add(vi);
+                channel.AddNewItem(vi, false, false);
             }
             channel.RefreshView("Timestamp");
         }
@@ -188,21 +187,6 @@ namespace Models.Factories
             }
         }
 
-        public static async Task<List<ITag>> GetChannelTagsAsync(string id)
-        {
-            var lst = new List<ITag>();
-            try
-            {
-                List<TagPOCO> fbres = await db.GetChannelTagsAsync(id).ConfigureAwait(false);
-                lst.AddRange(fbres.Select(TagFactory.CreateTag));
-                return lst;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         public static async Task<IEnumerable<IChannel>> GetRelatedChannelNetAsync(IChannel channel)
         {
             IEnumerable<ChannelPOCO> related = null;
@@ -227,9 +211,9 @@ namespace Models.Factories
             }
         }
 
-        public static async Task SyncChannelAsync(IChannel channel,
-            bool isFastSync,
-            bool isSyncPls = false,
+        public static async Task SyncChannelAsync(IChannel channel, 
+            bool isFastSync, 
+            bool isSyncPls = false, 
             Action<IVideoItem, object> stateAction = null)
         {
             channel.ChannelState = ChannelState.InWork;
@@ -368,10 +352,10 @@ namespace Models.Factories
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds,
-            IChannel channel,
-            string playlistId = null,
-            ICollection<string> dbIds = null,
+        private static async Task InsertNewItems(IEnumerable<string> trueIds, 
+            IChannel channel, 
+            string playlistId = null, 
+            ICollection<string> dbIds = null, 
             Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds).ConfigureAwait(true); // получим скопом

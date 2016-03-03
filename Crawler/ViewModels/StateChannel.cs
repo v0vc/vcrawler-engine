@@ -421,7 +421,7 @@ namespace Crawler.ViewModels
 
         public bool UseFast { get; set; }
 
-        public void AddNewItem(IVideoItem item, bool isIncrease = true)
+        public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (ChannelItems.Contains(item))
             {
@@ -429,7 +429,10 @@ namespace Crawler.ViewModels
             }
             item.IsHasLocalFileFound(DirPath);
             ChannelItems.Insert(0, item);
-            ChannelItemsCount += 1;
+            if (isUpdateCount)
+            {
+                ChannelItemsCount += 1;
+            }
         }
 
         public void DeleteItem(IVideoItem item)

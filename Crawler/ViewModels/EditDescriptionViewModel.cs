@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
@@ -32,10 +31,10 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public EditDescriptionViewModel(string chtitle, IVideoItem item)
+        public EditDescriptionViewModel(IVideoItem item)
         {
             this.item = item;
-            Title = string.Format("{0} : {1}", chtitle, item.Title);
+            Title = string.Format("{0} : {1}", item.ParentTitle, item.Title);
             Description = item.Description;
         }
 

@@ -238,6 +238,7 @@ namespace Models.BO.Items
         }
 
         public string ParentID { get; set; }
+        public string ParentTitle { get; set; }
         public string ProxyUrl { get; set; }
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
 

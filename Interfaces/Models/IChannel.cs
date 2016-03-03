@@ -41,7 +41,7 @@ namespace Interfaces.Models
 
         #region Methods
 
-        void AddNewItem(IVideoItem item, bool isIncrease = true);
+        void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true);
 
         void DeleteItem(IVideoItem item);
 

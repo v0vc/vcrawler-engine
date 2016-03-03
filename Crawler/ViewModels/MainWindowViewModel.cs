@@ -573,6 +573,24 @@ namespace Crawler.ViewModels
             channel.ChannelPlaylists.Add(defpl);
         }
 
+        private static void OpenDescription(object obj)
+        {
+            var item = obj as IVideoItem;
+            if (item == null)
+            {
+                return;
+            }
+            var edvm = new EditDescriptionViewModel(item);
+            var edv = new EditDescriptionView
+            {
+                DataContext = edvm, 
+                Owner = Application.Current.MainWindow, 
+                WindowStartupLocation = WindowStartupLocation.CenterOwner
+            };
+
+            edv.Show();
+        }
+
         private static void ScrollToTop(object obj)
         {
             var vGrid = obj as DataGrid;
@@ -1445,28 +1463,6 @@ namespace Crawler.ViewModels
 
             await AddTags().ConfigureAwait(false);
             isTagsFilled = true;
-        }
-
-        private void OpenDescription(object obj)
-        {
-            var item = obj as IVideoItem;
-            if (item == null)
-            {
-                return;
-            }
-            string chtitle = !(SelectedChannel is ServiceChannelViewModel)
-                ? (SelectedChannel is StateChannel ? Channels.First(x => x.ID == item.ParentID).Title : SelectedChannel.Title)
-                : item.ParentID;
-
-            var edvm = new EditDescriptionViewModel(chtitle, item);
-            var edv = new EditDescriptionView
-            {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            };
-
-            edv.Show();
         }
 
         private void OpenSettings()

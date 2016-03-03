@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -25,6 +24,7 @@ namespace Interfaces.Models
         string LocalFilePath { get; set; }
         string LogText { get; set; }
         string ParentID { get; set; }
+        string ParentTitle { get; set; }
         string ProxyUrl { get; set; }
         ObservableCollection<ISubtitle> Subtitles { get; set; }
         SyncState SyncState { get; set; }
@@ -32,7 +32,6 @@ namespace Interfaces.Models
         DateTime Timestamp { get; set; }
         string Title { get; set; }
         long ViewCount { get; set; }
-
         WatchState WatchState { get; set; }
 
         #endregion
