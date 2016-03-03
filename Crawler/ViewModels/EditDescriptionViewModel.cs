@@ -32,10 +32,10 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public EditDescriptionViewModel(IVideoItem item)
+        public EditDescriptionViewModel(string chtitle, IVideoItem item)
         {
             this.item = item;
-            Title = item.Title;
+            Title = string.Format("{0} : {1}", chtitle, item.Title);
             Description = item.Description;
         }
 
