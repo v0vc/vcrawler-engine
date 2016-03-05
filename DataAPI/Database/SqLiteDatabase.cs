@@ -1442,13 +1442,6 @@ namespace DataAPI.Database
                     {
                         using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                connection.Close();
-                                //return res;
-                            }
-
                             while (await reader.ReadAsync().ConfigureAwait(false))
                             {
                                 var row = new KeyValuePair<string, TagPOCO>(reader[channelIdF] as string, CreateTag(reader, tagIdF));

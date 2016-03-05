@@ -19,6 +19,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Crawler.Common;
 using Crawler.Views;
 using DataAPI.Database;
@@ -681,8 +682,14 @@ namespace Crawler.ViewModels
                 channel.Title = channeltitle;
             }
 
-            Channels.Add(channel);
-            SelectedChannel = channel;
+            if (Application.Current.CheckAccess())
+            {
+                Channels.Add(channel);
+            }
+            else
+            {
+                Application.Current.Dispatcher.Invoke(() => Channels.Add(channel));
+            }
             channel.DirPath = SettingsViewModel.DirPath;
             channel.ChannelState = ChannelState.InWork;
             channel.ChannelItemsCount = channel.ChannelItems.Count;
@@ -691,6 +698,7 @@ namespace Crawler.ViewModels
             await Task.Run(() => db.InsertChannelFullAsync(channel)).ConfigureAwait(false);
             AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
             SetStatus(0);
+            SelectedChannel = channel;
         }
 
         private void AddNewItem()
