@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -19,7 +20,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Crawler.Common;
 using Crawler.Views;
 using DataAPI.Database;
@@ -187,8 +187,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<IChannel> Channels { get; private set; }
-
         public RelayCommand ChannelSelectCommand
         {
             get
@@ -196,6 +194,8 @@ namespace Crawler.ViewModels
                 return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
             }
         }
+
+        public ObservableCollection<IChannel> Channels { get; private set; }
 
         public RelayCommand CurrentTagCheckedCommand
         {
@@ -584,8 +584,8 @@ namespace Crawler.ViewModels
             var edvm = new EditDescriptionViewModel(item);
             var edv = new EditDescriptionView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -706,8 +706,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(false, SettingsViewModel.SupportedCreds, AddNewChannel);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -733,9 +733,9 @@ namespace Crawler.ViewModels
         {
             var dlg = new SaveFileDialog
             {
-                FileName = "backup_" + DateTime.Now.ToShortDateString(), 
-                DefaultExt = ".txt", 
-                Filter = txtfilter, 
+                FileName = "backup_" + DateTime.Now.ToShortDateString(),
+                DefaultExt = ".txt",
+                Filter = txtfilter,
                 OverwritePrompt = true
             };
             DialogResult res = dlg.ShowDialog();
@@ -886,6 +886,34 @@ namespace Crawler.ViewModels
             }
         }
 
+        private void CopyToClipboard(VideoMenuItem menu)
+        {
+            try
+            {
+                string res;
+                switch (menu)
+                {
+                    case VideoMenuItem.Link:
+                        res = SelectedChannel.SelectedItem.MakeLink();
+                        break;
+                    case VideoMenuItem.Title:
+                        res = SelectedChannel.SelectedItem.Title;
+                        break;
+                    default:
+                        res = string.Empty;
+                        break;
+                }
+                if (!string.IsNullOrEmpty(res))
+                {
+                    Clipboard.SetText(res);
+                }
+            }
+            catch (Exception ex)
+            {
+                Info = ex.Message;
+            }
+        }
+
         private List<string> DeleteChannels()
         {
             var res = new List<string>();
@@ -901,9 +929,9 @@ namespace Crawler.ViewModels
                 return res;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show(string.Format("Delete:{0}{1}?", Environment.NewLine, sb), 
-                "Confirm", 
-                MessageBoxButton.OKCancel, 
+            MessageBoxResult boxResult = MessageBox.Show(string.Format("Delete:{0}{1}?", Environment.NewLine, sb),
+                "Confirm",
+                MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
 
             if (boxResult != MessageBoxResult.OK)
@@ -986,8 +1014,8 @@ namespace Crawler.ViewModels
                 string.Format(
                               isDeleteFromDbToo
                                   ? "Are you sure to delete FROM DB(!){0}Local file will not be deleted:{0}{1}?"
-                                  : "Are you sure to delete:{0}{1}?", 
-                    Environment.NewLine, 
+                                  : "Are you sure to delete:{0}{1}?",
+                    Environment.NewLine,
                     sb);
 
             MessageBoxResult boxResult = MessageBox.Show(res, "Confirm", MessageBoxButton.OKCancel, MessageBoxImage.Information);
@@ -1074,7 +1102,7 @@ namespace Crawler.ViewModels
                     {
                         var ff = new FfmpegView
                         {
-                            Owner = Application.Current.MainWindow, 
+                            Owner = Application.Current.MainWindow,
                             WindowStartupLocation = WindowStartupLocation.CenterOwner
                         };
 
@@ -1090,8 +1118,8 @@ namespace Crawler.ViewModels
             var edvm = new AddChannelViewModel(true, SettingsViewModel.SupportedCreds, null, SelectedChannel);
             var addview = new AddChanelView
             {
-                DataContext = edvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = edvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1455,8 +1483,8 @@ namespace Crawler.ViewModels
             var dlvm = new DownloadLinkViewModel(SettingsViewModel.YouPath, SettingsViewModel.DirPath, AddItemToDownloadToList);
             var adl = new DownloadLinkView
             {
-                DataContext = dlvm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = dlvm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             adl.ShowDialog();
@@ -1477,8 +1505,8 @@ namespace Crawler.ViewModels
         {
             var set = new SettingsView
             {
-                DataContext = SettingsViewModel, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = SettingsViewModel,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
 
@@ -1504,9 +1532,9 @@ namespace Crawler.ViewModels
             var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, db, ChannelTagDelete, ChannelTagsSave);
             var etv = new EditTagsView
             {
-                DataContext = etvm, 
-                Owner = Application.Current.MainWindow, 
-                WindowStartupLocation = WindowStartupLocation.CenterOwner, 
+                DataContext = etvm,
+                Owner = Application.Current.MainWindow,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 Title = string.Format("Tags: {0}", channel.Title)
             };
 
@@ -1520,7 +1548,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            for (var i = 1; i < args.Length; i++)
+            for (int i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
@@ -1692,7 +1720,7 @@ namespace Crawler.ViewModels
                 SetStatus(1);
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
-                var rest = 0;
+                int rest = 0;
                 HashSet<string> ids = Channels.Select(x => x.ID).ToHashSet();
                 foreach (string s in lst)
                 {
@@ -2025,7 +2053,7 @@ namespace Crawler.ViewModels
         private async Task SyncData(bool isFastSync)
         {
             PrValue = 0;
-            var i = 0;
+            int i = 0;
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -2106,24 +2134,16 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Link:
-                    VideoLinkToClipboard();
+                    CopyToClipboard(VideoMenuItem.Link);
+                    break;
+
+                case VideoMenuItem.Title:
+                    CopyToClipboard(VideoMenuItem.Title);
                     break;
 
                 case VideoMenuItem.Subscribe:
                     SubscribeOnPopular();
                     break;
-            }
-        }
-
-        private void VideoLinkToClipboard()
-        {
-            try
-            {
-                Clipboard.SetText(SelectedChannel.SelectedItem.MakeLink());
-            }
-            catch (Exception ex)
-            {
-                Info = ex.Message;
             }
         }
 

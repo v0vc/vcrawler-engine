@@ -8,6 +8,7 @@ namespace Interfaces.Enums
     public enum VideoMenuItem
     {
         Link,
+        Title,
         Audio,
         HD,
         Delete,

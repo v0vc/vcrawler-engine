@@ -746,6 +746,7 @@
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                             <ContextMenu x:Key="DataRowContextMenu">
                                 <MenuItem Header="Delete" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
+                                <MenuItem Header="Copy Title" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Title}" />
                                 <MenuItem Header="Copy Link" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
                                 <MenuItem Header="Edit" Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
                                 <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
