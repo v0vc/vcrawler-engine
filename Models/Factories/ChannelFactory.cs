@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -59,11 +60,11 @@ namespace Models.Factories
 
                     channel = new YouChannel
                     {
-                        ID = poco.ID, 
-                        Title = poco.Title, 
+                        ID = poco.ID,
+                        Title = poco.Title,
                         SubTitle = poco.SubTitle, // .WordWrap(80);
-                        Thumbnail = poco.Thumbnail, 
-                        CountNew = poco.Countnew, 
+                        Thumbnail = poco.Thumbnail,
+                        CountNew = poco.Countnew,
                         UseFast = poco.UseFast
                     };
 
@@ -211,9 +212,9 @@ namespace Models.Factories
             }
         }
 
-        public static async Task SyncChannelAsync(IChannel channel, 
-            bool isFastSync, 
-            bool isSyncPls = false, 
+        public static async Task SyncChannelAsync(IChannel channel,
+            bool isFastSync,
+            bool isSyncPls = false,
             Action<IVideoItem, object> stateAction = null)
         {
             channel.ChannelState = ChannelState.InWork;
@@ -310,52 +311,59 @@ namespace Models.Factories
             {
                 case SiteType.YouTube:
 
-                    List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID).ConfigureAwait(false);
+                    List<PlaylistPOCO> fbres = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID).ConfigureAwait(true);
                     var pls = new List<IPlaylist>();
                     pls.AddRange(fbres.Select(poco => PlaylistFactory.CreatePlaylist(poco, channel.Site)));
                     if (pls.Any())
                     {
+                        List<string> ids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
                         await db.DeleteChannelPlaylistsAsync(channel.ID).ConfigureAwait(false);
                         channel.ChannelPlaylists.Clear();
-                    }
-                    channel.PlaylistCount = pls.Count;
-                    foreach (IPlaylist playlist in pls)
-                    {
-                        await db.InsertPlaylistAsync(playlist).ConfigureAwait(false);
-
-                        List<string> plv = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0).ConfigureAwait(false);
-
-                        foreach (string id in plv)
+                        channel.PlaylistCount = pls.Count;
+                        foreach (IPlaylist playlist in pls)
                         {
-                            if (channel.ChannelItems.Select(x => x.ID).Contains(id))
+                            await db.InsertPlaylistAsync(playlist).ConfigureAwait(false);
+
+                            List<string> plv = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(playlist.ID, 0).ConfigureAwait(true);
+
+                            foreach (string id in plv)
                             {
-                                await db.UpdatePlaylistAsync(playlist.ID, id, channel.ID).ConfigureAwait(false);
-                            }
-                            else
-                            {
-                                IVideoItem item = await VideoItemFactory.GetVideoItemNetAsync(id, channel.Site).ConfigureAwait(false);
-                                if (item.ParentID != channel.ID)
+                                if (ids.Contains(id))
                                 {
-                                    continue;
+                                    await db.UpdatePlaylistAsync(playlist.ID, id, channel.ID).ConfigureAwait(false);
+                                    if (!playlist.PlItems.Contains(id))
+                                    {
+                                        playlist.PlItems.Add(id);
+                                    }
                                 }
+                                else
+                                {
+                                    IVideoItem item = await VideoItemFactory.GetVideoItemNetAsync(id, channel.Site).ConfigureAwait(false);
+                                    if (item.ParentID != channel.ID)
+                                    {
+                                        continue;
+                                    }
 
-                                channel.AddNewItem(item);
-                                await db.InsertItemAsync(item).ConfigureAwait(false);
-                                await db.UpdatePlaylistAsync(playlist.ID, item.ID, channel.ID).ConfigureAwait(false);
+                                    channel.AddNewItem(item);
+                                    await db.InsertItemAsync(item).ConfigureAwait(false);
+                                    await db.UpdatePlaylistAsync(playlist.ID, item.ID, channel.ID).ConfigureAwait(false);
+                                    if (!playlist.PlItems.Contains(id))
+                                    {
+                                        playlist.PlItems.Add(id);
+                                    }
+                                }
                             }
+                            channel.ChannelPlaylists.Add(playlist);
                         }
-
-                        channel.ChannelPlaylists.Add(playlist);
                     }
-
                     break;
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds, 
-            IChannel channel, 
-            string playlistId = null, 
-            ICollection<string> dbIds = null, 
+        private static async Task InsertNewItems(IEnumerable<string> trueIds,
+            IChannel channel,
+            string playlistId = null,
+            ICollection<string> dbIds = null,
             Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds).ConfigureAwait(true); // получим скопом

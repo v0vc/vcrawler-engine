@@ -19,7 +19,6 @@ namespace Crawler.ViewModels
 
         private readonly SqLiteDatabase db;
         private readonly Action<string> onTagDelete;
-        private readonly Action<IChannel> onTagsSave;
         private readonly ObservableCollection<ITag> supportedTags;
 
         #endregion
@@ -34,16 +33,11 @@ namespace Crawler.ViewModels
 
         #region Constructors
 
-        public EditTagsViewModel(IChannel channel,
-            ObservableCollection<ITag> supportedTags,
-            SqLiteDatabase db,
-            Action<string> onTagDelete,
-            Action<IChannel> onTagsSave)
+        public EditTagsViewModel(IChannel channel, ObservableCollection<ITag> supportedTags, SqLiteDatabase db, Action<string> onTagDelete)
         {
             this.supportedTags = supportedTags;
             this.db = db;
             this.onTagDelete = onTagDelete;
-            this.onTagsSave = onTagsSave;
             Channel = channel;
         }
 
@@ -120,11 +114,6 @@ namespace Crawler.ViewModels
             }
 
             await db.InsertChannelTagsAsync(Channel.ID, Channel.ChannelTags).ConfigureAwait(false);
-
-            if (onTagsSave != null)
-            {
-                onTagsSave.Invoke(Channel);
-            }
 
             window.Close();
         }

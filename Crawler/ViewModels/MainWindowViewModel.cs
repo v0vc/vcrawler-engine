@@ -78,7 +78,6 @@ namespace Crawler.ViewModels
         private string info;
         private bool isLogExpand;
         private bool isPlExpand;
-        private bool isTagsFilled;
         private bool isWorking;
         private RelayCommand mainMenuCommand;
         private RelayCommand openDescriptionCommand;
@@ -873,19 +872,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async void ChannelTagsSave(IChannel channel)
-        {
-            if (!CurrentTags.Any())
-            {
-                await AddTags().ConfigureAwait(false);
-            }
-
-            foreach (ITag tag in channel.ChannelTags.Where(tag => !CurrentTags.Select(x => x.Title).Contains(tag.Title)))
-            {
-                CurrentTags.Insert(0, tag);
-            }
-        }
-
         private void CopyToClipboard(VideoMenuItem menu)
         {
             try
@@ -1328,7 +1314,6 @@ namespace Crawler.ViewModels
                     RelatedChannels.Remove(ch);
                 }
             }
-            //RelatedChannels.Clear();
 
             IEnumerable<IChannel> lst = await ChannelFactory.GetRelatedChannelNetAsync(channel).ConfigureAwait(true);
 
@@ -1496,13 +1481,8 @@ namespace Crawler.ViewModels
 
         private async void OpenCurrentTags()
         {
-            if (isTagsFilled)
-            {
-                return;
-            }
-
+            CurrentTags.Clear();
             await AddTags().ConfigureAwait(false);
-            isTagsFilled = true;
         }
 
         private void OpenSettings()
@@ -1533,7 +1513,7 @@ namespace Crawler.ViewModels
             List<TagPOCO> tags = await db.GetChannelTagsAsync(channel.ID).ConfigureAwait(false);
             tags.ForEach(x => channel.ChannelTags.Add(TagFactory.CreateTag(x)));
 
-            var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, db, ChannelTagDelete, ChannelTagsSave);
+            var etvm = new EditTagsViewModel(channel, SettingsViewModel.SupportedTags, db, ChannelTagDelete);
             var etv = new EditTagsView
             {
                 DataContext = etvm,
