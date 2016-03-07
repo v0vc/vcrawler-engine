@@ -11,6 +11,7 @@
         xmlns:behaviors="clr-namespace:Crawler.Behaviors"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         xmlns:models="clr-namespace:Interfaces.Models;assembly=Interfaces"
+        xmlns:common="clr-namespace:Crawler.Common"
         Title="{Binding Version, Mode=OneTime}" Height="450" Width="1200"
         Icon="../Images/gear.ico"
         d:DataContext="{d:DesignInstance viewModels:MainWindowViewModel, IsDesignTimeCreatable=False}"
@@ -117,30 +118,48 @@
                                               SelectedItem="{Binding SelectedChannel}"
                                               IsSynchronizedWithCurrentItem="True"
                                               >
-                                    <DataGrid.InputBindings>
-                                        <KeyBinding Key="Enter" Command="{Binding ChannelKeyDownCommand, Mode=OneTime}" CommandParameter="{x:Static enums:KeyboardKey.Enter}"/>
-                                    </DataGrid.InputBindings>
 
-                                    <i:Interaction.Triggers>
-                                        <!--<i:EventTrigger EventName="MouseDoubleClick">
-                                            <i:InvokeCommandAction Command="{Binding PopularFillCommand, Mode=OneTime}" />
-                                        </i:EventTrigger>-->
-                                        <i:EventTrigger EventName="MouseLeftButtonUp">
-                                            <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"/>
-                                        </i:EventTrigger>
-                                    </i:Interaction.Triggers>
+                                        <i:Interaction.Triggers>
+                                            <i:EventTrigger EventName="MouseDoubleClick">
+                                                <i:InvokeCommandAction Command="{Binding FillRelatedChannelCommand, Mode=OneTime}" />
+                                            </i:EventTrigger>
+                                            <i:EventTrigger EventName="MouseLeftButtonUp">
+                                                <i:InvokeCommandAction Command="{Binding PopularSelectCommand}" CommandParameter="{Binding ElementName=stateGrid, Path=SelectedItem}"/>
+                                            </i:EventTrigger>
+                                        </i:Interaction.Triggers>
 
-                                    <DataGrid.Resources>
-                                        <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                                    </DataGrid.Resources>
-
-                                    <DataGrid.Columns>
-                                        <DataGridTemplateColumn CanUserResize="False" d:DataContext="{d:DesignInstance viewModels:StateChannel, IsDesignTimeCreatable=False}">
-                                            <DataGridTemplateColumn.CellTemplate>
-                                                <DataTemplate>
-                                                    <ComboBox ItemsSource="{Binding SupportedStates, Mode=OneTime}" Margin="0.5" x:Name="stateBox"
-                                                              SelectedItem="{Binding SelectedState, Mode=OneWay}"
-                                                              >
+                                        <DataGrid.Resources>
+                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
+                                            <ContextMenu x:Key="DataRowContextMenu">
+                                                <MenuItem Header="Subscribe" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Subscribe}" />
+                                            </ContextMenu>
+                                            <DataTemplate x:Key="SimpleTemplate">
+                                                <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
+                                                    <StackPanel.OpacityMask>
+                                                        <VisualBrush Visual="{Binding ElementName=mask}" />
+                                                    </StackPanel.OpacityMask>
+                                                    <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
+                                                                RenderOptions.BitmapScalingMode="Fant"
+                                                                ToolTipService.ShowDuration="120000"
+                                                                Stretch="Fill"
+                                                                Width="48"
+                                                                Height="48"
+                                                                VerticalAlignment="Top"
+                                                                Margin="0"
+                                                                HorizontalAlignment="Center">
+                                                        <Image.ToolTip>
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
+                                                                <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle, Mode=OneWay}" TextWrapping="Wrap"/>
+                                                            </StackPanel>
+                                                        </Image.ToolTip>
+                                                    </Image>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                            <DataTemplate x:Key="StateTemplate">
+                                                <ComboBox ItemsSource="{Binding SupportedStates, Mode=OneTime}" Margin="0.5" x:Name="stateBox"
+                                                          SelectedItem="{Binding SelectedState, Mode=OneWay}"
+                                                          >
 
                                                         <i:Interaction.Triggers>
                                                             <i:EventTrigger EventName="SelectionChanged">
@@ -161,23 +180,41 @@
                                                                         <VisualBrush Visual="{Binding ElementName=mask}" />
                                                                     </StackPanel.OpacityMask>
                                                                     <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
-                                                                               RenderOptions.BitmapScalingMode="Fant"
-                                                                               ToolTipService.ShowDuration="120000"
-                                                                               Stretch="Fill"
-                                                                               Width="45"
-                                                                               Height="45"
-                                                                               VerticalAlignment="Top"
-                                                                               Margin="0"
-                                                                               HorizontalAlignment="Center" 
-                                                                               />
+                                                                            RenderOptions.BitmapScalingMode="Fant"
+                                                                            ToolTipService.ShowDuration="120000"
+                                                                            Stretch="Fill"
+                                                                            Width="45"
+                                                                            Height="45"
+                                                                            VerticalAlignment="Top"
+                                                                            Margin="0"
+                                                                            HorizontalAlignment="Center" 
+                                                                            />
                                                                 </StackPanel>
                                                             </DataTemplate>
                                                         </ComboBox.ItemTemplate>
-
                                                     </ComboBox>
-                                                </DataTemplate>
-                                            </DataGridTemplateColumn.CellTemplate>
-                                        </DataGridTemplateColumn>
+                                            </DataTemplate>
+                                        </DataGrid.Resources>
+
+                                        <DataGrid.RowStyle>
+                                            <Style TargetType="{x:Type DataGridRow}">
+                                                <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
+                                                        <Setter Property="Background" Value="PaleGreen" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </DataGrid.RowStyle>
+
+                                        <DataGrid.Columns>
+                                        <DataGridTemplateColumn CanUserResize="False">
+                                                <DataGridTemplateColumn.CellTemplateSelector>
+                                                    <common:RelatedStyleSelector SimpleTemplate="{StaticResource SimpleTemplate}"
+                                                                             StateTemplate="{StaticResource StateTemplate}" 
+                                                                             />
+                                                </DataGridTemplateColumn.CellTemplateSelector>
+                                            </DataGridTemplateColumn>
 
                                         <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
                                             <DataGridTemplateColumn.CellTemplate>
@@ -208,88 +245,8 @@
 
                                     </DataGrid.Columns>
 
-                                </DataGrid>
-                                </DockPanel>
-                                <!--<DockPanel FlowDirection="LeftToRight" LastChildFill="True">
-                                    <DataGrid CanUserAddRows="False" x:Name="relatedGrid"
-                                              CanUserDeleteRows="False"
-                                              AutoGenerateColumns="False"
-                                              HeadersVisibility="None"
-                                              GridLinesVisibility="Horizontal"
-                                              BorderThickness="1"
-                                              ItemsSource="{Binding RelatedChannels}"
-                                              SelectedItem="{Binding SelectedChannel}"
-                                              >
-                                        <i:Interaction.Triggers>
-                                            <i:EventTrigger EventName="SelectionChanged" SourceName="relatedGrid">
-                                                <i:InvokeCommandAction Command="{Binding FillRelatedChannelCommand, Mode=OneTime}" CommandParameter="25"/>
-                                            </i:EventTrigger>
-                                            <i:EventTrigger EventName="MouseDoubleClick">
-                                                <i:InvokeCommandAction Command="{Binding FillRelatedChannelCommand, Mode=OneTime}" />
-                                            </i:EventTrigger>
-                                        </i:Interaction.Triggers>
-                                        
-                                        <DataGrid.Resources>
-                                            <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
-                                            <ContextMenu x:Key="DataRowContextMenu">
-                                                <MenuItem Header="Subscribe" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Subscribe}" />
-                                            </ContextMenu>
-                                        </DataGrid.Resources>
-
-                                        <DataGrid.RowStyle>
-                                            <Style TargetType="{x:Type DataGridRow}">
-                                                <Setter Property="ContextMenu" Value="{StaticResource DataRowContextMenu}" />
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding ChannelState}" Value="{x:Static enums:ChannelState.Added}">
-                                                        <Setter Property="Background" Value="PaleGreen" />
-                                                    </DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </DataGrid.RowStyle>
-
-                                        <DataGrid.Columns>
-                                            <DataGridTemplateColumn CanUserResize="False">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Margin="1" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
-                                                            <StackPanel.OpacityMask>
-                                                                <VisualBrush Visual="{Binding ElementName=mask}" />
-                                                            </StackPanel.OpacityMask>
-                                                            <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}"
-                                                                    RenderOptions.BitmapScalingMode="Fant"
-                                                                    ToolTipService.ShowDuration="120000"
-                                                                    Stretch="Fill"
-                                                                    Width="48"
-                                                                    Height="48"
-                                                                    VerticalAlignment="Top"
-                                                                    Margin="0"
-                                                                    HorizontalAlignment="Center">
-                                                                <Image.ToolTip>
-                                                                    <StackPanel Orientation="Horizontal">
-                                                                        <Image Source="{Binding Thumbnail, IsAsync=True, Mode=OneWay}" />
-                                                                        <TextBlock Margin="10,0,0,0" Text="{Binding SubTitle, Mode=OneWay}" TextWrapping="Wrap"/>
-                                                                    </StackPanel>
-                                                                </Image.ToolTip>
-                                                            </Image>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-                                            <DataGridTemplateColumn CanUserResize="True" Width="*" d:DataContext="{d:DesignInstance Type=models:IChannel, IsDesignTimeCreatable=False}">
-                                                <DataGridTemplateColumn.CellTemplate>
-                                                    <DataTemplate>
-                                                        <TextBlock Text="{Binding Title, Mode=OneWay}" 
-                                                                   Margin="10,0,5,0" Foreground="MidnightBlue" FontStretch="Normal" FontSize="22" VerticalAlignment="Center" 
-                                                                   />
-                                                    </DataTemplate>
-                                                </DataGridTemplateColumn.CellTemplate>
-                                            </DataGridTemplateColumn>
-
-                                        </DataGrid.Columns>
-
                                     </DataGrid>
-                                </DockPanel>-->
+                                </DockPanel>
                             </Expander.Content>
 
                             <Expander.Header>

@@ -146,7 +146,7 @@ namespace Models.Factories
             switch (site)
             {
                 case SiteType.YouTube:
-                    res = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult).ConfigureAwait(false);
+                    res = await YouTubeSite.GetChannelItemsAsync(channel.ID, maxresult).ConfigureAwait(true);
                     break;
 
                 case SiteType.Tapochek:
@@ -192,7 +192,7 @@ namespace Models.Factories
             IEnumerable<ChannelPOCO> related = null;
             if (channel is YouChannel)
             {
-                related = await YouTubeSite.GetRelatedChannelsByIdAsync(channel.ID).ConfigureAwait(false);
+                related = await YouTubeSite.GetRelatedChannelsByIdAsync(channel.ID).ConfigureAwait(true);
             }
 
             if (related != null)

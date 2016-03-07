@@ -227,7 +227,7 @@ namespace Crawler.ViewModels
         {
             get
             {
-                return fillRelatedChannelCommand ?? (fillRelatedChannelCommand = new RelayCommand(FillRelated));
+                return fillRelatedChannelCommand ?? (fillRelatedChannelCommand = new RelayCommand(x => FillRelated()));
             }
         }
 
@@ -1203,22 +1203,17 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async void FillRelated(object obj)
+        private async void FillRelated()
         {
             var channel = SelectedChannel as YouChannel;
-            if (channel == null)
+            if (channel == null || channel.ChannelItems.Any())
             {
                 return;
             }
-            int count = obj == null ? 0 : YouTubeSite.ItemsPerPage;
 
-            if (obj != null && channel.ChannelItems.Any())
-            {
-                return;
-            }
             SetStatus(1);
             channel.ChannelState = ChannelState.InWork;
-            IEnumerable<IVideoItem> lst = await ChannelFactory.GetChannelItemsNetAsync(channel, count).ConfigureAwait(false);
+            IEnumerable<IVideoItem> lst = await ChannelFactory.GetChannelItemsNetAsync(channel, 0).ConfigureAwait(true);
             foreach (IVideoItem item in lst)
             {
                 channel.AddNewItem(item);
@@ -1325,13 +1320,22 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
-            RelatedChannels.Clear();
+            for (int i = RelatedChannels.Count; i > 0; i--)
+            {
+                IChannel ch = RelatedChannels[i - 1];
+                if (!(ch is StateChannel))
+                {
+                    RelatedChannels.Remove(ch);
+                }
+            }
+            //RelatedChannels.Clear();
 
-            IEnumerable<IChannel> lst = await ChannelFactory.GetRelatedChannelNetAsync(channel).ConfigureAwait(false);
+            IEnumerable<IChannel> lst = await ChannelFactory.GetRelatedChannelNetAsync(channel).ConfigureAwait(true);
 
+            var ids = new HashSet<string>(Channels.Select(x => x.ID));
             foreach (IChannel ch in lst)
             {
-                if (Channels.Select(x => x.ID).Contains(ch.ID))
+                if (ids.Contains(ch.ID))
                 {
                     ch.ChannelState = ChannelState.Added;
                 }
@@ -1968,39 +1972,19 @@ namespace Crawler.ViewModels
                 return;
             }
 
-            Channels.Add(channel);
-
-            IChannel ch = Channels[Channels.IndexOf(channel)];
-            ch.DirPath = SettingsViewModel.DirPath;
-
-            var lst = new List<IVideoItem>();
-            channel.ChannelItems.ForEach(lst.Add);
-
-            foreach (IVideoItem item in lst)
-            {
-                ch.AddNewItem(item);
-            }
             SetStatus(1);
-
-            if (ch.ChannelItems.Count == YouTubeSite.ItemsPerPage)
-            {
-                IEnumerable<VideoItemPOCO> allitem = await YouTubeSite.GetChannelItemsAsync(channel.ID, 0, true).ConfigureAwait(false);
-                foreach (IVideoItem item in allitem.Select(poco => VideoItemFactory.CreateVideoItem(poco, ch.Site)))
-                {
-                    ch.AddNewItem(item);
-                }
-            }
-
-            List<PlaylistPOCO> pls = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID).ConfigureAwait(false);
+            List<PlaylistPOCO> pls = await YouTubeSite.GetChannelPlaylistsNetAsync(channel.ID).ConfigureAwait(true);
             foreach (PlaylistPOCO poco in pls)
             {
-                poco.PlaylistItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(poco.ID, 0).ConfigureAwait(false);
-                ch.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco, ch.Site));
+                poco.PlaylistItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(poco.ID, 0).ConfigureAwait(true);
+                channel.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco, channel.Site));
             }
-
             await db.InsertChannelFullAsync(channel).ConfigureAwait(false);
             channel.ChannelState = ChannelState.Added;
+            channel.PlaylistCount = channel.ChannelPlaylists.Count;
             SetStatus(0);
+            Channels.Add(channel);
+            RelatedChannels.Remove(RelatedChannels.First(x => x.ID == channel.ID));
         }
 
         private async void SyncChannel(object obj)

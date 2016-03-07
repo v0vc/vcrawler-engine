@@ -1973,7 +1973,14 @@ namespace DataAPI.Database
                             {
                                 foreach (string plItem in playlist.PlItems)
                                 {
-                                    await UpdatePlaylistItems(command, playlist.ID, plItem, channel.ID).ConfigureAwait(false);
+                                    try
+                                    {
+                                        await UpdatePlaylistItems(command, playlist.ID, plItem, channel.ID).ConfigureAwait(false);
+                                    }
+                                    catch
+                                    {
+                                    }
+                                    
                                 }
                             }
 
