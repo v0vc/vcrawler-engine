@@ -1,6 +1,5 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
-// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -31,8 +30,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added },
-            { "Crawler.Images.time_48.png", WatchState.Planned },
+            { "Crawler.Images.new_48.png", SyncState.Added }, 
+            { "Crawler.Images.time_48.png", WatchState.Planned }, 
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -46,6 +45,7 @@ namespace Crawler.ViewModels
         private ObservableCollection<IChannel> allchannels;
         private int channelItemsCount;
         private List<string> plannedListIds;
+        private IVideoItem selectedItem;
         private StateImage selectedState;
         private string title;
         private List<string> watchedListIds;
@@ -386,10 +386,26 @@ namespace Crawler.ViewModels
         public string FilterVideoKey { get; set; }
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
-        public bool Loaded { get; set; }
         public bool IsShowSynced { get; set; }
+        public bool Loaded { get; set; }
         public int PlaylistCount { get; set; }
-        public IVideoItem SelectedItem { get; set; }
+
+        public IVideoItem SelectedItem
+        {
+            get
+            {
+                return selectedItem;
+            }
+            set
+            {
+                if (value == selectedItem)
+                {
+                    return;
+                }
+                selectedItem = value;
+                OnPropertyChanged();
+            }
+        }
 
         public SiteType Site
         {
