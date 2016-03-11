@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
@@ -30,8 +31,8 @@ namespace Crawler.ViewModels
 
         private readonly Dictionary<string, object> supportedStates = new Dictionary<string, object>
         {
-            { "Crawler.Images.new_48.png", SyncState.Added }, 
-            { "Crawler.Images.time_48.png", WatchState.Planned }, 
+            { "Crawler.Images.new_48.png", SyncState.Added },
+            { "Crawler.Images.time_48.png", WatchState.Planned },
             { "Crawler.Images.done_48.png", WatchState.Watched }
         };
 
@@ -44,6 +45,7 @@ namespace Crawler.ViewModels
         private List<string> addedListIds;
         private ObservableCollection<IChannel> allchannels;
         private int channelItemsCount;
+        private string filterVideoKey;
         private List<string> plannedListIds;
         private IVideoItem selectedItem;
         private StateImage selectedState;
@@ -224,6 +226,17 @@ namespace Crawler.ViewModels
             SelectedState = SupportedStates.First();
         }
 
+        private bool FilterVideoByTitle(object item)
+        {
+            var value = (IVideoItem)item;
+            if (value == null || value.Title == null)
+            {
+                return false;
+            }
+
+            return value.Title.ToLower().Contains(FilterVideoKey.ToLower());
+        }
+
         private async void InitIds()
         {
             Dictionary<object, List<string>> dids = await db.GetStateListItemsAsync().ConfigureAwait(false);
@@ -383,7 +396,20 @@ namespace Crawler.ViewModels
         public ObservableCollection<ITag> ChannelTags { get; set; }
         public int CountNew { get; set; }
         public string DirPath { get; set; }
-        public string FilterVideoKey { get; set; }
+
+        public string FilterVideoKey
+        {
+            get
+            {
+                return filterVideoKey;
+            }
+            set
+            {
+                filterVideoKey = value;
+                ChannelItemsCollectionView.Filter = FilterVideoByTitle;
+            }
+        }
+
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced { get; set; }

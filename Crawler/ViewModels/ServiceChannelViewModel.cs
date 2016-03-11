@@ -274,7 +274,6 @@ namespace Crawler.ViewModels
 
                 filterVideoKey = value;
                 ChannelItemsCollectionView.Filter = FilterVideo;
-                OnPropertyChanged();
             }
         }
 

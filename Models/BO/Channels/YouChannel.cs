@@ -194,7 +194,6 @@ namespace Models.BO.Channels
                 filterVideoKey = value;
                 RestoreFullChannelItems();
                 ChannelItemsCollectionView.Filter = FilterVideoByTitle;
-                OnPropertyChanged();
             }
         }
 
@@ -224,7 +223,6 @@ namespace Models.BO.Channels
                 {
                     ChannelItemsCollectionView.Filter = null;
                 }
-                OnPropertyChanged();
             }
         }
 
