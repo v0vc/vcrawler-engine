@@ -1183,8 +1183,8 @@ namespace Crawler.ViewModels
         private async void FillPopular()
         {
             SetStatus(1);
-            var ids = new HashSet<string>(Channels.Select(x => x.ID));
-            await ServiceChannel.FillPopular(ids).ConfigureAwait(true);
+            Dictionary<string, string> dic = Channels.ToDictionary(x => x.ID, y => y.Title);
+            await ServiceChannel.FillPopular(dic).ConfigureAwait(true);
             SelectedChannel.ChannelItemsCount = ServiceChannel.ChannelItems.Count;
             SetStatus(0);
         }
@@ -1841,8 +1841,8 @@ namespace Crawler.ViewModels
         private async Task SearchExecute()
         {
             SetStatus(1);
-            var ids = new HashSet<string>(Channels.Select(x => x.ID));
-            await ServiceChannel.Search(ids).ConfigureAwait(true);
+            Dictionary<string, string> dic = Channels.ToDictionary(x => x.ID, y => y.Title);
+            await ServiceChannel.Search(dic).ConfigureAwait(true);
             SelectedChannel = ServiceChannel;
             SetStatus(0);
         }

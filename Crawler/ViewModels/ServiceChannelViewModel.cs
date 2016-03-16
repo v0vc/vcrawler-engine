@@ -113,7 +113,7 @@ namespace Crawler.ViewModels
             RefreshItems();
         }
 
-        public async Task FillPopular(HashSet<string> ids)
+        public async Task FillPopular(Dictionary<string, string> dic)
         {
             if (SelectedCountry.Key == dlindex)
             {
@@ -133,10 +133,12 @@ namespace Crawler.ViewModels
                         foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
                             item.IsHasLocalFileFound(DirPath);
-                            if (ids.Contains(item.ParentID))
+                            string title;
+                            if (dic.TryGetValue(item.ParentID, out title))
                             {
                                 // подсветим видео, если канал уже есть в подписке
                                 item.SyncState = SyncState.Added;
+                                item.ParentTitle = title;
                             }
                             SelectedCountry.Value.Add(item);
                         }
@@ -174,7 +176,7 @@ namespace Crawler.ViewModels
             SelectedSite = SupportedSites.First();
         }
 
-        public async Task Search(HashSet<string> ids)
+        public async Task Search(Dictionary<string, string> dic)
         {
             if (string.IsNullOrEmpty(SearchKey))
             {
@@ -198,10 +200,12 @@ namespace Crawler.ViewModels
                         foreach (IVideoItem item in lst.Select(poco => VideoItemFactory.CreateVideoItem(poco, SiteType.YouTube)))
                         {
                             item.IsHasLocalFileFound(DirPath);
-                            if (ids.Contains(item.ParentID))
+                            string title;
+                            if (dic.TryGetValue(item.ParentID, out title))
                             {
                                 // подсветим видео, если канал уже есть в подписке
                                 item.SyncState = SyncState.Added;
+                                item.ParentTitle = title;
                             }
                             SelectedCountry.Value.Add(item);
                         }
@@ -320,7 +324,10 @@ namespace Crawler.ViewModels
                 throw new ArgumentException("item");
             }
 
-            item.ParentTitle = item.ParentID;
+            if (item.ParentTitle == null)
+            {
+                item.ParentTitle = item.ParentID;
+            }
             if (ChannelItems.Select(x => x.ID).Contains(item.ID))
             {
                 ChannelItems.Remove(ChannelItems.First(x => x.ID == item.ID));
