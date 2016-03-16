@@ -1930,16 +1930,11 @@ namespace Crawler.ViewModels
                 return;
             }
             IChannel channel = SelectedChannel;
-            if (channel.SelectedItem == null)
+            if (channel.SelectedItem == null || Channels.Select(x => x.ID).Contains(channel.SelectedItem.ParentID))
             {
                 return;
             }
             IVideoItem item = channel.SelectedItem;
-            HashSet<string> ids = Channels.Select(x => x.ID).ToHashSet();
-            if (ids.Contains(item.ParentID))
-            {
-                return;
-            }
             await AddNewChannelAsync(item.ParentID, string.Empty, SiteType.YouTube).ConfigureAwait(false);
             item.SyncState = SyncState.Added;
         }
