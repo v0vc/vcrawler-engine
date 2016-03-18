@@ -2096,6 +2096,17 @@ namespace Crawler.ViewModels
                     CopyToClipboard(VideoMenuItem.Link);
                     break;
 
+                case VideoMenuItem.Parent:
+                    if (SelectedChannel is StateChannel || SelectedChannel is ServiceChannelViewModel)
+                    {
+                        IChannel channel = Channels.FirstOrDefault(x => x.ID == SelectedChannel.SelectedItem.ParentID);
+                        if (channel != null)
+                        {
+                            SelectedChannel = channel;
+                        }
+                    }
+                    break;
+
                 case VideoMenuItem.Title:
                     CopyToClipboard(VideoMenuItem.Title);
                     break;
