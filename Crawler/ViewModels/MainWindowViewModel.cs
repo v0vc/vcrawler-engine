@@ -1401,7 +1401,18 @@ namespace Crawler.ViewModels
                         break;
 
                     case MainMenuItem.About:
-                        MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+                        //MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
+
+
+                        var aboutVm = new AboutViewModel { Result = await db.GetWatchedStatistics() };
+                        var abview = new AboutView
+                        {
+                            DataContext = aboutVm,
+                            Owner = Application.Current.MainWindow,
+                            WindowStartupLocation = WindowStartupLocation.CenterOwner
+                        };
+                        abview.ShowDialog();
+
                         break;
                 }
             }

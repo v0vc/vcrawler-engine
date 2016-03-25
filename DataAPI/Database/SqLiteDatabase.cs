@@ -2781,5 +2781,14 @@ namespace DataAPI.Database
         }
 
         #endregion
+
+        public async Task<Dictionary<string, string>> GetWatchedStatistics()
+        {
+            var res = new Dictionary<string, string>();
+
+
+
+            return res;
+        }
     }
 }
