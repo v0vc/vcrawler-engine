@@ -2604,6 +2604,67 @@ namespace DataAPI.Database
             }
         }
 
+        /// <summary>
+        ///     Get watch statistics
+        /// </summary>
+        /// <returns></returns>
+        public async Task<DataTable> GetWatchedStatistics()
+        {
+            const string sitecol = "Site";
+            string watchcol = WatchState.Watched.ToString();
+            string plancol = WatchState.Planned.ToString();
+
+            var res = new DataTable();
+            res.Columns.Add(sitecol, typeof(string));
+            res.Columns.Add(watchcol, typeof(string));
+            res.Columns.Add(plancol, typeof(string));
+
+            string zap =
+                string.Format(
+                              @"SELECT B.{0}, SUM(CASE WHEN A.{1} = '1' THEN A.{1} END) AS '{8}', 
+                                SUM(CASE WHEN A.{1} = '2' THEN A.{1} END) AS '{9}' 
+                                FROM {2} A 
+                                INNER JOIN {3} C ON A.{4} = C.{5} 
+                                INNER JOIN {6} B ON  B.{0} = C.{7}",
+                    credSite,
+                    watchstate,
+                    tableitems,
+                    tablechannels,
+                    parentID,
+                    channelId,
+                    tablecredentials,
+                    credSite,
+                    watchcol,
+                    plancol);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                var site = reader[sitecol] as string;
+                                string wathed = Extensions.StringExtensions.IntTostrTime(Convert.ToInt32(reader[watchcol]));
+                                string planed = Extensions.StringExtensions.IntTostrTime(Convert.ToInt32(reader[plancol]));
+                                res.Rows.Add(site, wathed, planed);
+                            }
+
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return res;
+        }
+
         private async void CreateDb()
         {
             string sqliteschema = Path.Combine(appstartdir, sqlSchemaFolder, sqlFile);
@@ -2781,14 +2842,5 @@ namespace DataAPI.Database
         }
 
         #endregion
-
-        public async Task<Dictionary<string, string>> GetWatchedStatistics()
-        {
-            var res = new Dictionary<string, string>();
-
-
-
-            return res;
-        }
     }
 }

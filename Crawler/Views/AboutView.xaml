@@ -10,7 +10,11 @@
         d:DataContext="{d:DesignInstance viewModels:AboutViewModel, IsDesignTimeCreatable=False}"
         >
     <Grid>
-        <DataGrid ItemsSource="{Binding Result}" AutoGenerateColumns="True">
+        <DataGrid ItemsSource="{Binding Result}" AutoGenerateColumns="True" 
+                  CanUserAddRows="False"
+                  CanUserDeleteRows="False"
+                  GridLinesVisibility="Horizontal"
+                  >
             
         </DataGrid>
     </Grid>

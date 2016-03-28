@@ -4,6 +4,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Collections.Generic;
+using System.Data;
 
 namespace Crawler.ViewModels
 {
@@ -11,7 +12,7 @@ namespace Crawler.ViewModels
     {
         #region Properties
 
-        public Dictionary<string, string> Result { get; set; }
+        public DataTable Result { get; set; }
 
         #endregion
     }
