@@ -67,9 +67,11 @@ namespace Extensions
         public static string IntTostrTime(int duration)
         {
             TimeSpan t = TimeSpan.FromSeconds(duration);
-            return t.Hours > 0
-                ? string.Format("{0:D2}:{1:D2}:{2:D2}", t.Hours, t.Minutes, t.Seconds)
-                : string.Format("{0:D2}:{1:D2}", t.Minutes, t.Seconds);
+            if (t.Days > 0)
+            {
+                return $"{t.Days:D2}:{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}";
+            }
+            return t.Hours > 0 ? $"{t.Hours:D2}:{t.Minutes:D2}:{t.Seconds:D2}" : $"{t.Minutes:D2}:{t.Seconds:D2}";
         }
 
         public static string AviodTooLongFileName(this string path)

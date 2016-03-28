@@ -2621,8 +2621,8 @@ namespace DataAPI.Database
 
             string zap =
                 string.Format(
-                              @"SELECT B.{0}, SUM(CASE WHEN A.{1} = '1' THEN A.{1} END) AS '{8}', 
-                                SUM(CASE WHEN A.{1} = '2' THEN A.{1} END) AS '{9}' 
+                              @"SELECT B.{0}, SUM(CASE WHEN A.{1} = '1' THEN A.{10} END) AS '{8}', 
+                                SUM(CASE WHEN A.{1} = '2' THEN A.{10} END) AS '{9}' 
                                 FROM {2} A 
                                 INNER JOIN {3} C ON A.{4} = C.{5} 
                                 INNER JOIN {6} B ON  B.{0} = C.{7}",
@@ -2635,7 +2635,8 @@ namespace DataAPI.Database
                     tablecredentials,
                     credSite,
                     watchcol,
-                    plancol);
+                    plancol,
+                    duration);
 
             using (SQLiteCommand command = GetCommand(zap))
             {
