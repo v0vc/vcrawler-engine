@@ -3,7 +3,6 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
-using System.Collections.Generic;
 using System.Data;
 
 namespace Crawler.ViewModels

@@ -18,18 +18,18 @@ namespace Crawler.Views
         public EditDescriptionView()
         {
             InitializeComponent();
-            KeyDown += AddChanelViewKeyDown;
+            KeyDown += ViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void AddChanelViewKeyDown(object sender, KeyEventArgs e)
+        private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                KeyDown -= AddChanelViewKeyDown;
+                KeyDown -= ViewKeyDown;
                 Close();
             }
         }

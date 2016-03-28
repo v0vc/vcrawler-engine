@@ -18,18 +18,18 @@ namespace Crawler.Views
         public SettingsView()
         {
             InitializeComponent();
-            KeyDown += SettingsViewKeyDown;
+            KeyDown += ViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void SettingsViewKeyDown(object sender, KeyEventArgs e)
+        private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                KeyDown -= SettingsViewKeyDown;
+                KeyDown -= ViewKeyDown;
                 Close();
             }
         }

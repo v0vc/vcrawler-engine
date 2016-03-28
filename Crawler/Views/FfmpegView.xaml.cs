@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Windows;
@@ -17,18 +18,18 @@ namespace Crawler.Views
         public FfmpegView()
         {
             InitializeComponent();
-            KeyDown += FfmpegViewKeyDown;
+            KeyDown += ViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void FfmpegViewKeyDown(object sender, KeyEventArgs e)
+        private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                KeyDown -= FfmpegViewKeyDown;
+                KeyDown -= ViewKeyDown;
                 Close();
             }
         }

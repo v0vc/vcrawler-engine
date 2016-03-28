@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Windows;
@@ -19,7 +20,7 @@ namespace Crawler.Views
         public DownloadLinkView()
         {
             InitializeComponent();
-            KeyDown += AddLinkViewKeyDown;
+            KeyDown += ViewKeyDown;
         }
 
         #endregion
@@ -36,16 +37,16 @@ namespace Crawler.Views
             checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
         }
 
-        private void AddLinkViewKeyDown(object sender, KeyEventArgs e)
+        private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                KeyDown -= AddLinkViewKeyDown;
+                KeyDown -= ViewKeyDown;
                 Close();
             }
             if (e.Key == Key.Enter)
             {
-                KeyDown -= AddLinkViewKeyDown;
+                KeyDown -= ViewKeyDown;
 
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonGo);

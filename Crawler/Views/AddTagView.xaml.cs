@@ -20,23 +20,24 @@ namespace Crawler.Views
         public AddTagView()
         {
             InitializeComponent();
-            KeyDown += AddTagKeyDown;
+            KeyDown += ViewKeyDown;
         }
 
         #endregion
 
         #region Event Handling
 
-        private void AddTagKeyDown(object sender, KeyEventArgs e)
+        private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
             {
-                KeyDown -= AddTagKeyDown;
+                KeyDown -= ViewKeyDown;
                 Close();
             }
             if (e.Key == Key.Enter)
             {
-                KeyDown -= AddTagKeyDown;
+                KeyDown -= ViewKeyDown;
+
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonOk);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;

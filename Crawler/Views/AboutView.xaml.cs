@@ -4,6 +4,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.Windows;
+using System.Windows.Input;
 
 namespace Crawler.Views
 {
@@ -17,6 +18,21 @@ namespace Crawler.Views
         public AboutView()
         {
             InitializeComponent();
+            KeyDown += ViewKeyDown;
+        }
+
+        #endregion
+
+        #region Event Handling
+
+        private void ViewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key != Key.Escape)
+            {
+                return;
+            }
+            KeyDown -= ViewKeyDown;
+            Close();
         }
 
         #endregion
