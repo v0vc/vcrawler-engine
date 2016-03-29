@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -18,8 +19,8 @@ namespace Crawler.Common
     {
         #region Static and Readonly Fields
 
-        private readonly Predicate<object> _canExecute;
-        private readonly Action<object> _execute;
+        private readonly Predicate<object> canExecute;
+        private readonly Action<object> execute;
 
         #endregion
 
@@ -45,24 +46,26 @@ namespace Crawler.Common
                 throw new ArgumentNullException("execute");
             }
 
-            _execute = execute;
-            _canExecute = canExecute;
+            this.execute = execute;
+            this.canExecute = canExecute;
         }
 
         #endregion
 
         #region ICommand Members
 
+#pragma warning disable 67
         public event EventHandler CanExecuteChanged;
+#pragma warning restore 67
 
         public bool CanExecute(object parameters)
         {
-            return _canExecute == null || _canExecute(parameters);
+            return canExecute == null || canExecute(parameters);
         }
 
         public void Execute(object parameters)
         {
-            _execute(parameters);
+            execute(parameters);
         }
 
         #endregion
