@@ -2125,6 +2125,11 @@ namespace Crawler.ViewModels
                 case VideoMenuItem.Subscribe:
                     SubscribeOnPopular();
                     break;
+
+                case VideoMenuItem.Cancel:
+                    var item = SelectedChannel.SelectedItem as YouTubeItem;
+                    item?.CancelDownload();
+                    break;
             }
         }
 

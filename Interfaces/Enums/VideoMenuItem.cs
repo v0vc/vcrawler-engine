@@ -14,6 +14,7 @@ namespace Interfaces.Enums
         HD,
         Delete,
         DeleteDb,
-        Subscribe
+        Subscribe,
+        Cancel
     }
 }

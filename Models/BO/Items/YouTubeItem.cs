@@ -13,6 +13,7 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Extensions;
 using Interfaces.Enums;
@@ -25,6 +26,8 @@ namespace Models.BO.Items
     public sealed class YouTubeItem : IVideoItem, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
+
+        private readonly CancellationTokenSource cancelToken;
 
         private readonly string[] exts = { "mp4", "mkv", "mp3" };
 
@@ -42,6 +45,15 @@ namespace Models.BO.Items
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
         private WatchState watchState;
+
+        #endregion
+
+        #region Constructors
+
+        public YouTubeItem()
+        {
+            cancelToken = new CancellationTokenSource();
+        }
 
         #endregion
 
@@ -67,6 +79,11 @@ namespace Models.BO.Items
         #endregion
 
         #region Methods
+
+        public void CancelDownload()
+        {
+            cancelToken.Cancel();
+        }
 
         public async Task FillSubtitles()
         {
@@ -178,6 +195,10 @@ namespace Models.BO.Items
             }
             set
             {
+                if (value == description)
+                {
+                    return;
+                }
                 description = value;
                 OnPropertyChanged();
             }
@@ -297,7 +318,7 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            string options = "--no-check-certificate --console-title --no-call-home";
+            var options = "--no-check-certificate --console-title --no-call-home";
 
             if (isProxyReady)
             {
@@ -363,7 +384,8 @@ namespace Models.BO.Items
                 proc.BeginOutputReadLine();
                 proc.BeginErrorReadLine();
                 proc.WaitForExit();
-            }).ConfigureAwait(false);
+            },
+                cancelToken.Token).ConfigureAwait(false);
         }
 
         public async Task FillDescriptionAsync()
@@ -433,6 +455,19 @@ namespace Models.BO.Items
 
         private async void EncodeOnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
+            if (cancelToken.IsCancellationRequested)
+            {
+                var proc = sender as Process;
+                if (proc != null)
+                {
+                    proc.OutputDataReceived -= EncodeOnOutputDataReceived;
+                    proc.ErrorDataReceived -= EncodeOnErrorDataReceived;
+                    proc.Exited -= EncodeOnProcessExited;
+                    proc.Kill();
+                    ProcessExited();
+                    return;
+                }
+            }
             if (e.Data == null)
             {
                 ProcessExited();
