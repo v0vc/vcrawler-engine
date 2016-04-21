@@ -62,13 +62,7 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand DownloadLinkCommand
-        {
-            get
-            {
-                return downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(DownloadLink));
-            }
-        }
+        public RelayCommand DownloadLinkCommand => downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(DownloadLink));
 
         public bool IsAudio { get; set; }
         public bool IsHd { get; set; }
@@ -111,13 +105,9 @@ namespace Crawler.ViewModels
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
 
         public RelayCommand SubtitlesDropDownOpenedCommand
-        {
-            get
-            {
-                return subtitlesDropDownOpenedCommand
-                       ?? (subtitlesDropDownOpenedCommand = new RelayCommand(async x => await FillSubtitles().ConfigureAwait(false)));
-            }
-        }
+            =>
+                subtitlesDropDownOpenedCommand
+                ?? (subtitlesDropDownOpenedCommand = new RelayCommand(async x => await FillSubtitles().ConfigureAwait(false)));
 
         #endregion
 
@@ -152,23 +142,17 @@ namespace Crawler.ViewModels
                 }
                 vi.ParentID = null;
                 vi.SyncState = SyncState.Added;
-                if (onDownloadYouItem != null)
-                {
-                    onDownloadYouItem.Invoke(vi);
-                }
+                onDownloadYouItem?.Invoke(vi);
                 await vi.DownloadItem(youpath, downloaddir, IsHd, IsAudio).ConfigureAwait(false);
             }
             else
             {
-                string param = string.Format("-o {0}\\%(title)s.%(ext)s {1} --no-check-certificate -i --console-title", downloaddir, Link);
+                string param = $"-o {downloaddir}\\%(title)s.%(ext)s {Link} --no-check-certificate -i --console-title";
 
                 await Task.Run(() =>
                 {
                     Process process = Process.Start(youpath, param);
-                    if (process != null)
-                    {
-                        process.Close();
-                    }
+                    process?.Close();
                 }).ConfigureAwait(false);
             }
         }
@@ -194,10 +178,7 @@ namespace Crawler.ViewModels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void ParseYou(string text)

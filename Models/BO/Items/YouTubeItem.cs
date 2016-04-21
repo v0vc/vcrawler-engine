@@ -117,10 +117,7 @@ namespace Models.BO.Items
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void ProcessExited()
@@ -328,7 +325,7 @@ namespace Models.BO.Items
             string param;
             if (isAudio)
             {
-                param = string.Format("--extract-audio -o {0}\\%(title)s.%(ext)s \"{1}\" --audio-format mp3 {2}", dir, MakeLink(), options);
+                param = $"--extract-audio -o {dir}\\%(title)s.%(ext)s \"{MakeLink()}\" --audio-format mp3 {options}";
             }
             else
             {
@@ -351,9 +348,9 @@ namespace Models.BO.Items
                 }
                 string res = sb.ToString().TrimEnd(',');
 
-                string srt = res == "Auto" ? "--write-srt --write-auto-sub" : string.Format("--write-srt --srt-lang {0}", res);
+                string srt = res == "Auto" ? "--write-srt --write-auto-sub" : $"--write-srt --srt-lang {res}";
 
-                param = string.Format("{0} {1}", param, srt);
+                param = $"{param} {srt}";
             }
 
             var startInfo = new ProcessStartInfo(youPath, param)
@@ -404,7 +401,7 @@ namespace Models.BO.Items
             foreach (string ext in exts)
             {
                 string cleartitle = Title.MakeValidFileName();
-                string pathvid = Path.Combine(dir, ParentID, string.Format("{0}.{1}", cleartitle, ext));
+                string pathvid = Path.Combine(dir, ParentID, $"{cleartitle}.{ext}");
                 var fnvid = new FileInfo(pathvid);
                 if (fnvid.Exists)
                 {
@@ -418,7 +415,7 @@ namespace Models.BO.Items
 
         public string MakeLink()
         {
-            return string.Format("https://www.youtube.com/watch?v={0}", ID);
+            return $"https://www.youtube.com/watch?v={ID}";
         }
 
         public async Task RunItem(string mpcpath)
@@ -434,12 +431,12 @@ namespace Models.BO.Items
                 {
                     throw new Exception("Local File Path not set");
                 }
-                string param = string.Format("\"{0}\" /play", LocalFilePath);
+                string param = $"\"{LocalFilePath}\" /play";
                 await Task.Run(() => Process.Start(mpcpath, param)).ConfigureAwait(false);
             }
             else
             {
-                string param = string.Format("\"{0}\" /play", MakeLink());
+                string param = $"\"{MakeLink()}\" /play";
                 await Task.Run(() => Process.Start(mpcpath, param)).ConfigureAwait(false);
             }
         }
@@ -525,9 +522,7 @@ namespace Models.BO.Items
 
         private async void EncodeOnProcessExited(object sender, EventArgs e)
         {
-            string logdata = FileState == ItemState.LocalYes
-                ? string.Format("{0} DOWNLOADED!", Title)
-                : string.Format("ERROR DOWNLOADING: {0}", ID);
+            string logdata = FileState == ItemState.LocalYes ? $"{Title} DOWNLOADED!" : $"ERROR DOWNLOADING: {ID}";
             await Log(logdata).ConfigureAwait(false);
             var proc = sender as Process;
             if (proc == null)

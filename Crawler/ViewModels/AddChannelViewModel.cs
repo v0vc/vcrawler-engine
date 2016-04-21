@@ -76,36 +76,18 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public string ButtonContent
-        {
-            get
-            {
-                return IsEditMode ? "SAVE" : "OK";
-            }
-        }
+        public string ButtonContent => IsEditMode ? "SAVE" : "OK";
 
         public string ChannelLink { get; set; }
         public string ChannelTitle { get; set; }
-        public bool IsEditMode { get; private set; }
+        public bool IsEditMode { get; }
 
-        public RelayCommand SaveNewItemCommand
-        {
-            get
-            {
-                return saveNewItemCommand ?? (saveNewItemCommand = new RelayCommand(SaveChannel));
-            }
-        }
+        public RelayCommand SaveNewItemCommand => saveNewItemCommand ?? (saveNewItemCommand = new RelayCommand(SaveChannel));
 
         public ICred SelectedCred { get; set; }
         public List<ICred> SupportedCreds { get; set; }
 
-        public string TitleContent
-        {
-            get
-            {
-                return IsEditMode ? "Edit" : "Add";
-            }
-        }
+        public string TitleContent => IsEditMode ? "Edit" : "Add";
 
         public bool UseFast { get; set; }
 
@@ -141,10 +123,7 @@ namespace Crawler.ViewModels
                     MessageBox.Show("Fill channel link");
                     return;
                 }
-                if (onAddNewChannel != null)
-                {
-                    onAddNewChannel.Invoke(ChannelLink, ChannelTitle, SelectedCred.Site);
-                }
+                onAddNewChannel?.Invoke(ChannelLink, ChannelTitle, SelectedCred.Site);
             }
         }
 

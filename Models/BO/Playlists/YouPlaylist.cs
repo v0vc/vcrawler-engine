@@ -18,13 +18,7 @@ namespace Models.BO.Playlists
         public bool IsDefault { get; set; }
         public List<string> PlItems { get; set; }
 
-        public SiteType Site
-        {
-            get
-            {
-                return SiteType.YouTube;
-            }
-        }
+        public SiteType Site => SiteType.YouTube;
 
         public SyncState State { get; set; }
 

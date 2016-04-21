@@ -1,11 +1,11 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using Autofac;
 using DataAPI.Database;
 using DataAPI.Trackers;
-using DataAPI.Videos;
 
 namespace Models
 {
@@ -62,13 +62,7 @@ namespace Models
 
         #region Static Properties
 
-        public static IContainer Kernel
-        {
-            get
-            {
-                return kernel ?? (kernel = GetKernel());
-            }
-        }
+        public static IContainer Kernel => kernel ?? (kernel = GetKernel());
 
         #endregion
 

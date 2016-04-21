@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System.ComponentModel;
@@ -34,7 +35,7 @@ namespace Crawler.ViewModels
         public EditDescriptionViewModel(IVideoItem item)
         {
             this.item = item;
-            Title = string.Format("{0} : {1}", item.ParentTitle, item.Title);
+            Title = $"{item.ParentTitle} : {item.Title}";
             Description = item.Description;
         }
 
@@ -59,13 +60,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public RelayCommand FillDataCommand
-        {
-            get
-            {
-                return fillDataCommand ?? (fillDataCommand = new RelayCommand(async x => await FillData()));
-            }
-        }
+        public RelayCommand FillDataCommand => fillDataCommand ?? (fillDataCommand = new RelayCommand(async x => await FillData()));
 
         public byte[] LargeThumb
         {
@@ -118,7 +113,7 @@ namespace Crawler.ViewModels
 
             if (item is YouTubeItem)
             {
-                link = string.Format("http://img.youtube.com/vi/{0}/0.jpg", item.ID);
+                link = $"http://img.youtube.com/vi/{item.ID}/0.jpg";
             }
 
             if (link != null)
@@ -130,10 +125,7 @@ namespace Crawler.ViewModels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion

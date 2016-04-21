@@ -45,31 +45,13 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand AddCommand
-        {
-            get
-            {
-                return addCommand ?? (addCommand = new RelayCommand(Add));
-            }
-        }
+        public RelayCommand AddCommand => addCommand ?? (addCommand = new RelayCommand(Add));
 
         public IChannel Channel { get; set; }
 
-        public RelayCommand DeleteTagCommand
-        {
-            get
-            {
-                return deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
-            }
-        }
+        public RelayCommand DeleteTagCommand => deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
 
-        public RelayCommand SaveCommand
-        {
-            get
-            {
-                return saveCommand ?? (saveCommand = new RelayCommand(Save));
-            }
-        }
+        public RelayCommand SaveCommand => saveCommand ?? (saveCommand = new RelayCommand(Save));
 
         #endregion
 
@@ -99,10 +81,7 @@ namespace Crawler.ViewModels
 
             await db.DeleteChannelTagsAsync(Channel.ID, tag.Title).ConfigureAwait(false);
 
-            if (onTagDelete != null)
-            {
-                onTagDelete.Invoke(tag.Title);
-            }
+            onTagDelete?.Invoke(tag.Title);
         }
 
         private async void Save(object obj)

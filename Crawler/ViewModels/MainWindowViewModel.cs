@@ -47,6 +47,7 @@ namespace Crawler.ViewModels
 
         private const int basePage = 25;
         private const string dbLaunchParam = "db";
+        private const string defPlIcon = "Crawler.Images.pop.png";
         private const string txtfilter = "Text documents (.txt)|*.txt";
 
         #endregion
@@ -138,105 +139,37 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand AddNewItemCommand
-        {
-            get
-            {
-                return addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem()));
-            }
-        }
+        public RelayCommand AddNewItemCommand => addNewItemCommand ?? (addNewItemCommand = new RelayCommand(x => AddNewItem()));
 
-        public RelayCommand ChangeWatchedCommand
-        {
-            get
-            {
-                return changeWatchedCommand ?? (changeWatchedCommand = new RelayCommand(ChangeWatchState));
-            }
-        }
+        public RelayCommand ChangeWatchedCommand => changeWatchedCommand ?? (changeWatchedCommand = new RelayCommand(ChangeWatchState));
 
         public RelayCommand ChannelDoubleClickCommand
-        {
-            get
-            {
-                return channelDoubleClickCommand ?? (channelDoubleClickCommand = new RelayCommand(SyncChannel));
-            }
-        }
+            => channelDoubleClickCommand ?? (channelDoubleClickCommand = new RelayCommand(SyncChannel));
 
-        public RelayCommand ChannelGridFocusCommand
-        {
-            get
-            {
-                return channelGridFocusCommand ?? (channelGridFocusCommand = new RelayCommand(FocusRow));
-            }
-        }
+        public RelayCommand ChannelGridFocusCommand => channelGridFocusCommand ?? (channelGridFocusCommand = new RelayCommand(FocusRow));
 
-        public RelayCommand ChannelKeyDownCommand
-        {
-            get
-            {
-                return channelKeyDownCommand ?? (channelKeyDownCommand = new RelayCommand(ChannelKeyDown));
-            }
-        }
+        public RelayCommand ChannelKeyDownCommand => channelKeyDownCommand ?? (channelKeyDownCommand = new RelayCommand(ChannelKeyDown));
 
-        public RelayCommand ChannelMenuCommand
-        {
-            get
-            {
-                return channelMenuCommand ?? (channelMenuCommand = new RelayCommand(ChannelMenuClick));
-            }
-        }
+        public RelayCommand ChannelMenuCommand => channelMenuCommand ?? (channelMenuCommand = new RelayCommand(ChannelMenuClick));
 
-        public RelayCommand ChannelSelectCommand
-        {
-            get
-            {
-                return channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
-            }
-        }
+        public ObservableCollection<IChannel> Channels { get; }
 
-        public ObservableCollection<IChannel> Channels { get; private set; }
+        public RelayCommand ChannelSelectCommand => channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
 
         public RelayCommand CurrentTagCheckedCommand
-        {
-            get
-            {
-                return currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
-            }
-        }
+            => currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
 
-        public ObservableCollection<ITag> CurrentTags { get; private set; }
+        public ObservableCollection<ITag> CurrentTags { get; }
 
-        public RelayCommand FillChannelsCommand
-        {
-            get
-            {
-                return fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(OnStartup));
-            }
-        }
+        public RelayCommand FillChannelsCommand => fillChannelsCommand ?? (fillChannelsCommand = new RelayCommand(OnStartup));
 
         public RelayCommand FillDescriptionCommand
-        {
-            get
-            {
-                return fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
-            }
-        }
+            => fillDescriptionCommand ?? (fillDescriptionCommand = new RelayCommand(FillDescription));
 
         public RelayCommand FillRelatedChannelCommand
-        {
-            get
-            {
-                return fillRelatedChannelCommand ?? (fillRelatedChannelCommand = new RelayCommand(x => FillRelated()));
-            }
-        }
+            => fillRelatedChannelCommand ?? (fillRelatedChannelCommand = new RelayCommand(x => FillRelated()));
 
-        public RelayCommand FillSubitlesCommand
-        {
-            get
-            {
-                return fillSubitlesCommand ?? (fillSubitlesCommand = new RelayCommand(FillSubtitles));
-            }
-        }
+        public RelayCommand FillSubitlesCommand => fillSubitlesCommand ?? (fillSubitlesCommand = new RelayCommand(FillSubtitles));
 
         public string FilterChannelKey
         {
@@ -264,6 +197,10 @@ namespace Crawler.ViewModels
             }
             private set
             {
+                if (value == info)
+                {
+                    return;
+                }
                 info = value;
                 OnPropertyChanged();
             }
@@ -313,66 +250,29 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == isWorking)
+                {
+                    return;
+                }
                 isWorking = value;
                 OnPropertyChanged();
             }
         }
 
-        public RelayCommand MainMenuCommand
-        {
-            get
-            {
-                return mainMenuCommand ?? (mainMenuCommand = new RelayCommand(MainMenuClick));
-            }
-        }
+        public RelayCommand MainMenuCommand => mainMenuCommand ?? (mainMenuCommand = new RelayCommand(MainMenuClick));
 
         public RelayCommand OpenDescriptionCommand
-        {
-            get
-            {
-                return openDescriptionCommand ?? (openDescriptionCommand = new RelayCommand(OpenDescription));
-            }
-        }
+            => openDescriptionCommand ?? (openDescriptionCommand = new RelayCommand(OpenDescription));
 
-        public RelayCommand PlaylistExpandCommand
-        {
-            get
-            {
-                return playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(PlaylistExpand));
-            }
-        }
+        public RelayCommand PlaylistExpandCommand => playlistExpandCommand ?? (playlistExpandCommand = new RelayCommand(PlaylistExpand));
 
-        public RelayCommand PlaylistMenuCommand
-        {
-            get
-            {
-                return playlistMenuCommand ?? (playlistMenuCommand = new RelayCommand(PlaylistMenuClick));
-            }
-        }
+        public RelayCommand PlaylistMenuCommand => playlistMenuCommand ?? (playlistMenuCommand = new RelayCommand(PlaylistMenuClick));
 
-        public RelayCommand PlaylistSelectCommand
-        {
-            get
-            {
-                return playlistSelectCommand ?? (playlistSelectCommand = new RelayCommand(SelectPlaylist));
-            }
-        }
+        public RelayCommand PlaylistSelectCommand => playlistSelectCommand ?? (playlistSelectCommand = new RelayCommand(SelectPlaylist));
 
-        public RelayCommand PopularFillCommand
-        {
-            get
-            {
-                return popularFillCommand ?? (popularFillCommand = new RelayCommand(x => FillPopular()));
-            }
-        }
+        public RelayCommand PopularFillCommand => popularFillCommand ?? (popularFillCommand = new RelayCommand(x => FillPopular()));
 
-        public RelayCommand PopularSelectCommand
-        {
-            get
-            {
-                return popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
-            }
-        }
+        public RelayCommand PopularSelectCommand => popularSelectCommand ?? (popularSelectCommand = new RelayCommand(SelectPopular));
 
         public double PrValue
         {
@@ -387,7 +287,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public ObservableCollection<IChannel> RelatedChannels { get; private set; }
+        public ObservableCollection<IChannel> RelatedChannels { get; }
 
         public string Result
         {
@@ -397,26 +297,19 @@ namespace Crawler.ViewModels
             }
             private set
             {
+                if (value == result)
+                {
+                    return;
+                }
                 result = value;
                 OnPropertyChanged();
             }
         }
 
-        public RelayCommand ScrollChangedCommand
-        {
-            get
-            {
-                return scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
-            }
-        }
+        public RelayCommand ScrollChangedCommand => scrollChangedCommand ?? (scrollChangedCommand = new RelayCommand(ScrollChanged));
 
         public RelayCommand SearchCommand
-        {
-            get
-            {
-                return searchCommand ?? (searchCommand = new RelayCommand(async x => await SearchExecute().ConfigureAwait(false)));
-            }
-        }
+            => searchCommand ?? (searchCommand = new RelayCommand(async x => await SearchExecute().ConfigureAwait(false)));
 
         public IChannel SelectedChannel
         {
@@ -508,59 +401,26 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
 
-        public RelayCommand SiteChangedCommand
-        {
-            get
-            {
-                return siteChangedCommand ?? (siteChangedCommand = new RelayCommand(SiteChanged));
-            }
-        }
+        public RelayCommand SiteChangedCommand => siteChangedCommand ?? (siteChangedCommand = new RelayCommand(SiteChanged));
 
-        public StateChannel StateChannel { get; set; }
+        public StateChannel StateChannel { get; }
 
         public RelayCommand SyncDataCommand
-        {
-            get
-            {
-                return syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData(true).ConfigureAwait(false)));
-            }
-        }
+            => syncDataCommand ?? (syncDataCommand = new RelayCommand(async x => await SyncData(true).ConfigureAwait(false)));
 
         public RelayCommand TagsDropDownOpenedCommand
-        {
-            get
-            {
-                return tagsDropDownOpenedCommand ?? (tagsDropDownOpenedCommand = new RelayCommand(x => OpenCurrentTags()));
-            }
-        }
+            => tagsDropDownOpenedCommand ?? (tagsDropDownOpenedCommand = new RelayCommand(x => OpenCurrentTags()));
 
         public string Version { get; private set; }
 
-        public RelayCommand VideoClickCommand
-        {
-            get
-            {
-                return videoClickCommand ?? (videoClickCommand = new RelayCommand(RunItemOneClick));
-            }
-        }
+        public RelayCommand VideoClickCommand => videoClickCommand ?? (videoClickCommand = new RelayCommand(RunItemOneClick));
 
         public RelayCommand VideoDoubleClickCommand
-        {
-            get
-            {
-                return videoDoubleClickCommand ?? (videoDoubleClickCommand = new RelayCommand(RunItemDoubleClick));
-            }
-        }
+            => videoDoubleClickCommand ?? (videoDoubleClickCommand = new RelayCommand(RunItemDoubleClick));
 
-        public RelayCommand VideoItemMenuCommand
-        {
-            get
-            {
-                return videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
-            }
-        }
+        public RelayCommand VideoItemMenuCommand => videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
 
-        private SettingsViewModel SettingsViewModel { get; set; }
+        private SettingsViewModel SettingsViewModel { get; }
 
         #endregion
 
@@ -568,7 +428,7 @@ namespace Crawler.ViewModels
 
         private static void AddDefPlaylist(IChannel channel, List<string> ids)
         {
-            Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream("Crawler.Images.pop.png");
+            Stream img = Assembly.GetExecutingAssembly().GetManifestResourceStream(defPlIcon);
             IPlaylist defpl = PlaylistFactory.CreateUploadPlaylist(channel, ids, StreamHelper.ReadFully(img));
             channel.ChannelPlaylists.Add(defpl);
         }
@@ -599,10 +459,7 @@ namespace Crawler.ViewModels
                 return;
             }
             ScrollViewer scr = UiExtensions.GetScrollbar(vGrid);
-            if (scr != null)
-            {
-                scr.ScrollToTop();
-            }
+            scr?.ScrollToTop();
         }
 
         #endregion
@@ -749,7 +606,7 @@ namespace Crawler.ViewModels
                 try
                 {
                     File.WriteAllText(dlg.FileName, sb.ToString().TrimEnd('\r', '\n'));
-                    Info = string.Format("{0} channels has been stored", lst.Count);
+                    Info = $"{lst.Count} channels has been stored";
                     SetStatus(0);
                 }
                 catch (Exception ex)
@@ -762,13 +619,13 @@ namespace Crawler.ViewModels
 
         private async void ChangeWatchState(object obj)
         {
-            if (SelectedChannel is ServiceChannelViewModel)
+            var item = obj as IVideoItem;
+            if (item == null)
             {
                 return;
             }
 
-            var item = obj as IVideoItem;
-            if (item == null)
+            if (SelectedChannel is ServiceChannelViewModel && item.SyncState != SyncState.Added)
             {
                 return;
             }
@@ -785,7 +642,6 @@ namespace Crawler.ViewModels
                     item.WatchState = WatchState.Notset;
                     break;
             }
-            ServiceChannel.ChannelItems.Clear();
             StateChannel.AddToStateList(item.WatchState, item);
             await db.UpdateItemWatchState(item.ID, item.WatchState).ConfigureAwait(false);
         }
@@ -915,7 +771,7 @@ namespace Crawler.ViewModels
                 return res;
             }
 
-            MessageBoxResult boxResult = MessageBox.Show(string.Format("Delete:{0}{1}?", Environment.NewLine, sb),
+            MessageBoxResult boxResult = MessageBox.Show($"Delete:{Environment.NewLine}{sb}?",
                 "Confirm",
                 MessageBoxButton.OKCancel,
                 MessageBoxImage.Information);
@@ -1229,7 +1085,7 @@ namespace Crawler.ViewModels
         private bool FilterByCheckedTag(object item)
         {
             var channel = (IChannel)item;
-            if (channel == null || channel.ChannelTags == null)
+            if (channel?.ChannelTags == null)
             {
                 return false;
             }
@@ -1264,7 +1120,7 @@ namespace Crawler.ViewModels
         private bool FilterChannelByTitleOrId(object item)
         {
             var value = (IChannel)item;
-            if (value == null || value.Title == null)
+            if (value?.Title == null)
             {
                 return false;
             }
@@ -1277,12 +1133,12 @@ namespace Crawler.ViewModels
         private bool FilterChannelsByTag(object item)
         {
             var channel = (IChannel)item;
-            if (channel == null || channel.ChannelTags == null)
+            if (channel?.ChannelTags == null)
             {
                 return false;
             }
 
-            if (SelectedTag == null || string.IsNullOrEmpty(SelectedTag.Title))
+            if (string.IsNullOrEmpty(SelectedTag?.Title))
             {
                 foreach (ITag tag in CurrentTags.Where(tag => tag.IsChecked))
                 {
@@ -1401,8 +1257,6 @@ namespace Crawler.ViewModels
                         break;
 
                     case MainMenuItem.About:
-                        //MessageBox.Show("by v0v © 2015", "About", MessageBoxButton.OK, MessageBoxImage.Information);
-
 
                         var aboutVm = new AboutViewModel { Result = await db.GetWatchedStatistics() };
                         var abview = new AboutView
@@ -1421,10 +1275,7 @@ namespace Crawler.ViewModels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private async void OnStartup(object obj)
@@ -1466,11 +1317,7 @@ namespace Crawler.ViewModels
             }
             channelGrid.UpdateLayout();
             var selectedRow = (DataGridRow)channelGrid.ItemContainerGenerator.ContainerFromIndex(channelGrid.SelectedIndex);
-            if (selectedRow == null)
-            {
-                return;
-            }
-            selectedRow.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
+            selectedRow?.MoveFocus(new TraversalRequest(FocusNavigationDirection.Next));
         }
 
         private void OpenAddLink()
@@ -1530,7 +1377,7 @@ namespace Crawler.ViewModels
                 DataContext = etvm,
                 Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                Title = string.Format("Tags: {0}", channel.Title)
+                Title = $"Tags: {channel.Title}"
             };
 
             etv.ShowDialog();
@@ -1543,7 +1390,7 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            for (int i = 1; i < args.Length; i++)
+            for (var i = 1; i < args.Length; i++)
             {
                 string[] param = args[i].Split('|');
                 if (param.Length != 2)
@@ -1601,7 +1448,7 @@ namespace Crawler.ViewModels
                 switch (SelectedPlaylist.Site)
                 {
                     case SiteType.YouTube:
-                        link = string.Format("https://www.youtube.com/playlist?list={0}", SelectedPlaylist.ID);
+                        link = $"https://www.youtube.com/playlist?list={SelectedPlaylist.ID}";
                         break;
                 }
 
@@ -1715,7 +1562,7 @@ namespace Crawler.ViewModels
                 SetStatus(1);
                 TaskbarManager prog = TaskbarManager.Instance;
                 prog.SetProgressState(TaskbarProgressBarState.Normal);
-                int rest = 0;
+                var rest = 0;
                 HashSet<string> ids = Channels.Select(x => x.ID).ToHashSet();
                 foreach (string s in lst)
                 {
@@ -1761,7 +1608,7 @@ namespace Crawler.ViewModels
                     }
 
                     rest++;
-                    PrValue = Math.Round((double)(100 * rest) / lst.Count());
+                    PrValue = Math.Round((double)(100 * rest) / lst.Length);
                     prog.SetProgressValue((int)PrValue, 100);
                 }
 
@@ -1778,10 +1625,7 @@ namespace Crawler.ViewModels
             if (item == null)
             {
                 var chanell = SelectedChannel as YouChannel;
-                if (chanell != null)
-                {
-                    chanell.RestoreFullChannelItems();
-                }
+                chanell?.RestoreFullChannelItems();
             }
             else if (SettingsViewModel.IsMpcExist())
             {
@@ -1842,11 +1686,7 @@ namespace Crawler.ViewModels
                 return;
             }
             var channel = SelectedChannel as YouChannel;
-            if (channel == null)
-            {
-                return;
-            }
-            channel.RestoreFullChannelItems();
+            channel?.RestoreFullChannelItems();
         }
 
         private async Task SearchExecute()
@@ -1936,12 +1776,8 @@ namespace Crawler.ViewModels
 
         private async void SubscribeOnPopular()
         {
-            if (SelectedChannel == null)
-            {
-                return;
-            }
             IChannel channel = SelectedChannel;
-            if (channel.SelectedItem == null || Channels.Select(x => x.ID).Contains(channel.SelectedItem.ParentID))
+            if (channel?.SelectedItem == null || Channels.Select(x => x.ID).Contains(channel.SelectedItem.ParentID))
             {
                 return;
             }
@@ -2023,7 +1859,7 @@ namespace Crawler.ViewModels
         private async Task SyncData(bool isFastSync)
         {
             PrValue = 0;
-            int i = 0;
+            var i = 0;
             SetStatus(1);
             TaskbarManager prog = TaskbarManager.Instance;
             prog.SetProgressState(TaskbarProgressBarState.Normal);
@@ -2049,7 +1885,7 @@ namespace Crawler.ViewModels
             PrValue = 0;
             SetStatus(0);
 
-            Info = string.Format("Total: {0}. New: {1}. {2}", i, Channels.Sum(x => x.CountNew), watch.TakeLogMessage());
+            Info = $"Total: {i}. New: {Channels.Sum(x => x.CountNew)}. {watch.TakeLogMessage()}";
         }
 
         private void TagCheck()
@@ -2061,10 +1897,7 @@ namespace Crawler.ViewModels
         {
             if (!string.IsNullOrEmpty(obj))
             {
-                foreach (IChannel channel in Channels)
-                {
-                    channel.DirPath = obj;
-                }
+                Channels.ForEach(x => x.DirPath = obj);
                 ServiceChannel.DirPath = obj;
                 StateChannel.DirPath = obj;
             }
@@ -2079,7 +1912,7 @@ namespace Crawler.ViewModels
             long sizebefore = db.FileBase.Length;
             await db.VacuumAsync().ConfigureAwait(false);
             long sizeafter = new FileInfo(db.FileBase.FullName).Length;
-            Info = string.Format("Database compacted (bytes): {0} -> {1}", sizebefore, sizeafter);
+            Info = $"Database compacted (bytes): {sizebefore} -> {sizeafter}";
         }
 
         private async void VideoItemMenuClick(object param)

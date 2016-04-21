@@ -50,13 +50,7 @@ namespace Crawler.ViewModels
 
         public bool IsAddNewTag { get; set; }
 
-        public RelayCommand SaveCommand
-        {
-            get
-            {
-                return saveCommand ?? (saveCommand = new RelayCommand(Save));
-            }
-        }
+        public RelayCommand SaveCommand => saveCommand ?? (saveCommand = new RelayCommand(Save));
 
         public ITag SelectedTag { get; set; }
 

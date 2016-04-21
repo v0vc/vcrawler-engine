@@ -227,10 +227,7 @@ namespace Models.Factories
                 foreach (IVideoItem item in preds)
                 {
                     item.SyncState = SyncState.Notset;
-                    if (stateAction != null)
-                    {
-                        stateAction.Invoke(item, SyncState.Notset);
-                    }
+                    stateAction?.Invoke(item, SyncState.Notset);
                 }
                 if (channel.CountNew > 0)
                 {
@@ -376,10 +373,7 @@ namespace Models.Factories
             foreach (IVideoItem vi in result)
             {
                 channel.AddNewItem(vi);
-                if (stateAction != null)
-                {
-                    stateAction.Invoke(vi, SyncState.Added);
-                }
+                stateAction?.Invoke(vi, SyncState.Added);
                 if (playlistId != null)
                 {
                     await db.UpdatePlaylistAsync(playlistId, vi.ID, channel.ID).ConfigureAwait(false);

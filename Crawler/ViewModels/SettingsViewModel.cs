@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -85,21 +86,9 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public RelayCommand AddNewTagCommand
-        {
-            get
-            {
-                return addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
-            }
-        }
+        public RelayCommand AddNewTagCommand => addNewTagCommand ?? (addNewTagCommand = new RelayCommand(x => AddNewTag()));
 
-        public RelayCommand DeleteTagCommand
-        {
-            get
-            {
-                return deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
-            }
-        }
+        public RelayCommand DeleteTagCommand => deleteTagCommand ?? (deleteTagCommand = new RelayCommand(DeleteTag));
 
         public string DirPath
         {
@@ -109,18 +98,17 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == dirPath)
+                {
+                    return;
+                }
                 dirPath = value;
                 OnPropertyChanged();
             }
         }
 
         public RelayCommand FillYouHeaderCommand
-        {
-            get
-            {
-                return fillYouHeaderCommand ?? (fillYouHeaderCommand = new RelayCommand(x => FillYouHeader()));
-            }
-        }
+            => fillYouHeaderCommand ?? (fillYouHeaderCommand = new RelayCommand(x => FillYouHeader()));
 
         public bool IsFilterOpen
         {
@@ -130,6 +118,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == isFilterOpen)
+                {
+                    return;
+                }
                 isFilterOpen = value;
                 OnPropertyChanged();
             }
@@ -143,6 +135,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == isUpdateButtonEnable)
+                {
+                    return;
+                }
                 isUpdateButtonEnable = value;
                 OnPropertyChanged();
             }
@@ -156,18 +152,16 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == mpcPath)
+                {
+                    return;
+                }
                 mpcPath = value;
                 OnPropertyChanged();
             }
         }
 
-        public RelayCommand OpenDirCommand
-        {
-            get
-            {
-                return openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
-            }
-        }
+        public RelayCommand OpenDirCommand => openDirCommand ?? (openDirCommand = new RelayCommand(OpenDir));
 
         public double PrValue
         {
@@ -183,24 +177,12 @@ namespace Crawler.ViewModels
         }
 
         public RelayCommand SaveSettingsCommand
-        {
-            get
-            {
-                return saveSettingsCommand
-                       ?? (saveSettingsCommand = new RelayCommand(async x => await SaveSettingsToDb().ConfigureAwait(false)));
-            }
-        }
+            => saveSettingsCommand ?? (saveSettingsCommand = new RelayCommand(async x => await SaveSettingsToDb().ConfigureAwait(false)));
 
         public List<ICred> SupportedCreds { get; set; }
         public ObservableCollection<ITag> SupportedTags { get; set; }
 
-        public RelayCommand UpdateYouDlCommand
-        {
-            get
-            {
-                return updateYouDlCommand ?? (updateYouDlCommand = new RelayCommand(x => UpdateYouDl()));
-            }
-        }
+        public RelayCommand UpdateYouDlCommand => updateYouDlCommand ?? (updateYouDlCommand = new RelayCommand(x => UpdateYouDl()));
 
         public string YouHeader
         {
@@ -210,6 +192,10 @@ namespace Crawler.ViewModels
             }
             private set
             {
+                if (value == youHeader)
+                {
+                    return;
+                }
                 youHeader = value;
                 OnPropertyChanged();
             }
@@ -223,6 +209,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == youPath)
+                {
+                    return;
+                }
                 youPath = value;
                 OnPropertyChanged();
             }
@@ -371,8 +361,8 @@ namespace Crawler.ViewModels
             var advm = new AddTagViewModel(true, null, SupportedTags);
             var antv = new AddTagView
             {
-                DataContext = advm, 
-                Owner = Application.Current.MainWindow, 
+                DataContext = advm,
+                Owner = Application.Current.MainWindow,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner
             };
             antv.ShowDialog();
@@ -385,11 +375,10 @@ namespace Crawler.ViewModels
             {
                 return;
             }
-            MessageBoxResult result =
-                MessageBox.Show(string.Format("Are you sure to delete Tag:{0}[{1}]" + "?", Environment.NewLine, tag.Title), 
-                    "Confirm", 
-                    MessageBoxButton.OKCancel, 
-                    MessageBoxImage.Information);
+            MessageBoxResult result = MessageBox.Show($"Are you sure to delete Tag:{Environment.NewLine}[{tag.Title}]" + "?",
+                "Confirm",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Information);
 
             if (result != MessageBoxResult.OK)
             {
@@ -403,16 +392,13 @@ namespace Crawler.ViewModels
         {
             YouHeader = string.IsNullOrEmpty(YouPath)
                 ? youheader
-                : string.Format("{0} ({1})", youheader, CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim());
+                : $"{youheader} ({CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim()})";
         }
 
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void OpenDir(object obj)
@@ -460,10 +446,7 @@ namespace Crawler.ViewModels
             if (savedir.Value != DirPath)
             {
                 await db.UpdateSettingAsync(savedir.Key, DirPath).ConfigureAwait(false);
-                if (onSaveAction != null)
-                {
-                    onSaveAction.Invoke(DirPath);
-                }
+                onSaveAction?.Invoke(DirPath);
             }
 
             ISetting mpcdir = await SettingFactory.GetSettingDbAsync(pathToMpc).ConfigureAwait(false);
@@ -496,10 +479,7 @@ namespace Crawler.ViewModels
                 await db.InsertTagAsync(tag).ConfigureAwait(false);
             }
 
-            if (onSaveAction != null)
-            {
-                onSaveAction.Invoke(null);
-            }
+            onSaveAction?.Invoke(null);
         }
 
         private void UpdateYouDl()
@@ -543,7 +523,7 @@ namespace Crawler.ViewModels
         {
             IsUpdateButtonEnable = true;
             PrValue = 0;
-            YouHeader = string.Format("{0} ({1})", youheader, CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim());
+            YouHeader = $"{youheader} ({CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim()})";
 
             var webClient = sender as WebClient;
             if (webClient == null)

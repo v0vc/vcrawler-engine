@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -64,7 +65,7 @@ namespace Crawler.ViewModels
 
         #region Properties
 
-        public Dictionary<string, List<IVideoItem>> Countries { get; private set; }
+        public Dictionary<string, List<IVideoItem>> Countries { get; }
         public string SearchKey { get; set; }
 
         public KeyValuePair<string, List<IVideoItem>> SelectedCountry
@@ -97,7 +98,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public List<CredImage> SupportedSites { get; private set; }
+        public List<CredImage> SupportedSites { get; }
 
         #endregion
 
@@ -223,7 +224,7 @@ namespace Crawler.ViewModels
         private bool FilterVideo(object item)
         {
             var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
+            if (value?.Title == null)
             {
                 return false;
             }
@@ -234,10 +235,7 @@ namespace Crawler.ViewModels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void RefreshItems()
@@ -304,13 +302,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public SiteType Site
-        {
-            get
-            {
-                return SiteType.NotSet;
-            }
-        }
+        public SiteType Site => SiteType.NotSet;
 
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
@@ -390,7 +382,7 @@ namespace Crawler.ViewModels
 
             #region Properties
 
-            public ICred Cred { get; private set; }
+            public ICred Cred { get; }
             public byte[] Thumbnail { get; private set; }
 
             #endregion

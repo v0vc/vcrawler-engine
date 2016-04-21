@@ -24,8 +24,6 @@ namespace Models.Factories
 
         public static async Task<ISetting> GetSettingDbAsync(string key)
         {
-            // var fb = ServiceLocator.SqLiteDatabase;
-            // SqLiteDatabase fb = CommonFactory.CreateSqLiteDatabase();
 
             try
             {

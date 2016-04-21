@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Extensions
 {
-    public static class StopWathExtensions
+    public static class StopWatchExtensions
     {
         #region Constants
 

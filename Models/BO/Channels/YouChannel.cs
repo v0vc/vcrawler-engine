@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -104,7 +105,7 @@ namespace Models.BO.Channels
         private bool FilterVideoByTitle(object item)
         {
             var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
+            if (value?.Title == null)
             {
                 return false;
             }
@@ -115,10 +116,7 @@ namespace Models.BO.Channels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion
@@ -137,6 +135,10 @@ namespace Models.BO.Channels
             }
             set
             {
+                if (value == channelItemsCount)
+                {
+                    return;
+                }
                 channelItemsCount = value;
                 OnPropertyChanged();
             }
@@ -171,6 +173,10 @@ namespace Models.BO.Channels
             }
             set
             {
+                if (value == countNew)
+                {
+                    return;
+                }
                 countNew = value;
                 OnPropertyChanged();
             }
@@ -236,6 +242,10 @@ namespace Models.BO.Channels
             }
             set
             {
+                if (value == playlistCount)
+                {
+                    return;
+                }
                 playlistCount = value;
                 OnPropertyChanged();
             }
@@ -258,13 +268,7 @@ namespace Models.BO.Channels
             }
         }
 
-        public SiteType Site
-        {
-            get
-            {
-                return SiteType.YouTube;
-            }
-        }
+        public SiteType Site => SiteType.YouTube;
 
         public string SubTitle
         {
@@ -274,6 +278,10 @@ namespace Models.BO.Channels
             }
             set
             {
+                if (value == subTitle)
+                {
+                    return;
+                }
                 subTitle = value;
                 OnPropertyChanged();
             }
@@ -289,6 +297,10 @@ namespace Models.BO.Channels
             }
             set
             {
+                if (value == title)
+                {
+                    return;
+                }
                 title = value;
                 OnPropertyChanged();
             }

@@ -20,13 +20,7 @@ namespace Models.BO
         public string Pass { get; set; }
         public SiteType Site { get; set; }
 
-        public string SiteAdress
-        {
-            get
-            {
-                return EnumHelper.GetAttributeOfType(Site);
-            } 
-        }
+        public string SiteAdress => EnumHelper.GetAttributeOfType(Site);
 
         #endregion
     }

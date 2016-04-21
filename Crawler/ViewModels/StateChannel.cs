@@ -96,7 +96,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public List<StateImage> SupportedStates { get; private set; }
+        public List<StateImage> SupportedStates { get; }
 
         #endregion
 
@@ -229,7 +229,7 @@ namespace Crawler.ViewModels
         private bool FilterVideoByTitle(object item)
         {
             var value = (IVideoItem)item;
-            if (value == null || value.Title == null)
+            if (value?.Title == null)
             {
                 return false;
             }
@@ -248,10 +248,7 @@ namespace Crawler.ViewModels
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void OnStateChanged(StateImage stateImage)
@@ -386,6 +383,10 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == channelItemsCount)
+                {
+                    return;
+                }
                 channelItemsCount = value;
                 OnPropertyChanged();
             }
@@ -433,13 +434,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public SiteType Site
-        {
-            get
-            {
-                return SiteType.NotSet;
-            }
-        }
+        public SiteType Site => SiteType.NotSet;
 
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
@@ -521,7 +516,7 @@ namespace Crawler.ViewModels
 
             #region Properties
 
-            public object State { get; private set; }
+            public object State { get; }
             public byte[] Thumbnail { get; private set; }
 
             #endregion

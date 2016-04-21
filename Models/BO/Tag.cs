@@ -22,10 +22,7 @@ namespace Models.BO
         private void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             PropertyChangedEventHandler handler = PropertyChanged;
-            if (handler != null)
-            {
-                handler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            handler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #endregion
@@ -46,6 +43,10 @@ namespace Models.BO
             }
             set
             {
+                if (value == isChecked)
+                {
+                    return;
+                }
                 isChecked = value;
                 OnPropertyChanged();
             }

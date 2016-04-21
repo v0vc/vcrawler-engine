@@ -47,8 +47,7 @@ namespace Extensions.Helpers
                     }
                 }
             }
-            throw new ArgumentException("Not found.", "description");
-            // or return default(T);
+            throw new ArgumentException("Not found.");
         }
 
         #endregion

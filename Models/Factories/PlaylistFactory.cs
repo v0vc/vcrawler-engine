@@ -107,8 +107,6 @@ namespace Models.Factories
 
         public static async Task UpdatePlaylist(IPlaylist playlist, IChannel selectedChannel)
         {
-            //selectedChannel.ChannelItemsCollectionView.Filter = null;
-
             switch (playlist.Site)
             {
                 case SiteType.YouTube:
