@@ -37,8 +37,8 @@ namespace Models.BO.Items
 
         private string description;
         private double downloadPercentage;
+        private PlaylistMenuItem downType;
         private ItemState fileState;
-        private bool isAudio;
         private bool isProxyReady;
         private string logText;
         private SyncState syncState;
@@ -299,15 +299,15 @@ namespace Models.BO.Items
             }
         }
 
-        public async Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudiOnly)
+        public async Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype)
         {
+            downType = dtype;
             if (!string.IsNullOrEmpty(ProxyUrl))
             {
                 // isProxyReady = CommonExtensions.IsValidUrl(ProxyUrl) && CommonExtensions.IsUrlExist(ProxyUrl);
                 isProxyReady = true;
             }
 
-            isAudio = isAudiOnly;
             FileState = ItemState.Downloading;
             DirectoryInfo dir = ParentID != null ? new DirectoryInfo(Path.Combine(dirPath, ParentID)) : new DirectoryInfo(dirPath);
             if (!dir.Exists)
@@ -315,7 +315,7 @@ namespace Models.BO.Items
                 dir.Create();
             }
 
-            var options = "--no-check-certificate --console-title --no-call-home";
+            var options = "--no-check-certificate --console-title --no-call-home --no-cache-dir";
 
             if (isProxyReady)
             {
@@ -323,20 +323,22 @@ namespace Models.BO.Items
             }
 
             string param;
-            if (isAudio)
+            switch (dtype)
             {
-                param = $"--extract-audio -o {dir}\\%(title)s.%(ext)s \"{MakeLink()}\" --audio-format mp3 {options}";
-            }
-            else
-            {
-                param =
-                    string.Format(
-                                  isHd
-                                      ? "-f bestvideo+bestaudio, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}"
-                                      : "-f best, -o {0}\\%(title)s.%(ext)s \"{1}\" {2}",
-                        dir,
-                        MakeLink(),
-                        options);
+                case PlaylistMenuItem.Audio:
+                    param = $"--extract-audio -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" --audio-format mp3 {options}";
+                    break;
+                case PlaylistMenuItem.DownloadHd:
+                    param = $"-f bestvideo+bestaudio, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
+                    break;
+                case PlaylistMenuItem.Download:
+                    param = $"-f best, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
+                    break;
+                case PlaylistMenuItem.Video:
+                    param = $"-f bestvideo, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(dtype), dtype, null);
             }
 
             if (Subtitles.Select(x => x.IsChecked).Contains(true))
@@ -471,7 +473,7 @@ namespace Models.BO.Items
                 return;
             }
 
-            if (isAudio && e.Data.StartsWith("[ffmpeg] Destination"))
+            if (downType == PlaylistMenuItem.Audio && e.Data.StartsWith("[ffmpeg] Destination"))
             {
                 var regex = new Regex(@"(\[ffmpeg\] Destination: )(.+?)(\.(mp3))(.+)?");
                 Match match = regex.Match(e.Data);

@@ -38,7 +38,7 @@ namespace Interfaces.Models
 
         #region Methods
 
-        Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio);
+        Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype);
 
         Task FillDescriptionAsync();
 

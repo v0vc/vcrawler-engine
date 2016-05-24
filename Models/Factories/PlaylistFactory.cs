@@ -82,8 +82,7 @@ namespace Models.Factories
         public static async Task DownloadPlaylist(IPlaylist playlist,
             IChannel selectedChannel,
             string youPath,
-            bool isHd = false,
-            bool isAudio = false)
+            PlaylistMenuItem dtype)
         {
             switch (playlist.Site)
             {
@@ -98,7 +97,7 @@ namespace Models.Factories
 
                     foreach (IVideoItem item in selectedChannel.ChannelItems.Where(item => item.FileState == ItemState.Planned))
                     {
-                        await item.DownloadItem(youPath, selectedChannel.DirPath, isHd, isAudio).ConfigureAwait(false);
+                        await item.DownloadItem(youPath, selectedChannel.DirPath, dtype).ConfigureAwait(false);
                     }
 
                     break;

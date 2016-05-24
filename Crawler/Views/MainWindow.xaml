@@ -703,12 +703,15 @@
                             <SolidColorBrush x:Key="{x:Static SystemColors.HighlightBrushKey}" Color="Lavender" />
                             <ContextMenu x:Key="DataRowContextMenu">
                                 <MenuItem Header="Delete" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Delete}" />
+                                <MenuItem Header="Go To Parent" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Parent}" />
                                 <MenuItem Header="Copy Title" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Title}" />
                                 <MenuItem Header="Copy Link" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Link}" />
-                                <MenuItem Header="Go To Parent" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Parent}" />
                                 <MenuItem Header="Edit" Command="{Binding DataContext.OpenDescriptionCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{Binding}"/>
-                                <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
-                                <MenuItem Header="Download Audio" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
+                                <MenuItem Header="Download" StaysOpenOnClick="True">
+                                    <MenuItem Header="Download HD" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.HD}" />
+                                    <MenuItem Header="Download Audio Only" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Audio}" />
+                                    <MenuItem Header="Download Video Only" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Video}" />
+                                </MenuItem>
                                 <MenuItem Header="Delete from DB" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.DeleteDb}" />
                                 <MenuItem Header="Subscribe" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Subscribe}" />
                                 <MenuItem Header="Cancel Download" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Cancel}" />
@@ -732,11 +735,8 @@
                                         </ListView.ItemTemplate>
                                     </ListView>
                                 </MenuItem>
-                                
                                 <MenuItem Header="Proxy" StaysOpenOnClick="True">
-                                    <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" 
-                                             Width="140"
-                                             />
+                                    <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="140" />
                                 </MenuItem>
 
                             </ContextMenu>
@@ -1065,8 +1065,9 @@
                                     <MenuItem Header="Copy Link" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Link}" />
                                     <MenuItem Header="Download" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Download}" />
                                     <MenuItem Header="Download HD" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.DownloadHd}" />
-                                    <MenuItem Header="Download Audio" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Audio}" />
-                                    <MenuItem Header="Update" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Update}" />
+                                    <MenuItem Header="Download Audio Only" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Audio}" />
+                                    <MenuItem Header="Download Video Only" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Video}" />
+                                    <MenuItem Header="Update Playlist" Command="{Binding DataContext.PlaylistMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:PlaylistMenuItem.Update}" />
                                 </ContextMenu>
                             </DataGrid.Resources>
                             

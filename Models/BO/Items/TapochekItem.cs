@@ -45,7 +45,7 @@ namespace Models.BO.Items
             throw new NotImplementedException();
         }
 
-        public Task DownloadItem(string youPath, string dirPath, bool isHd, bool isAudio)
+        public Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype)
         {
             throw new NotImplementedException();
         }

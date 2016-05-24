@@ -27,16 +27,6 @@ namespace Crawler.Views
 
         #region Event Handling
 
-        private void AddLink_OnAudioMouseEnter(object sender, MouseButtonEventArgs e)
-        {
-            checkBoxAudio.IsChecked = !checkBoxAudio.IsChecked;
-        }
-
-        private void AddLink_OnHdMouseEnter(object sender, MouseButtonEventArgs e)
-        {
-            checkBoxHd.IsChecked = !checkBoxHd.IsChecked;
-        }
-
         private void ViewKeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Escape)
@@ -51,10 +41,7 @@ namespace Crawler.Views
                 // нажмем кнопку программно
                 var peer = new ButtonAutomationPeer(buttonGo);
                 var invokeProv = peer.GetPattern(PatternInterface.Invoke) as IInvokeProvider;
-                if (invokeProv != null)
-                {
-                    invokeProv.Invoke();
-                }
+                invokeProv?.Invoke();
             }
         }
 

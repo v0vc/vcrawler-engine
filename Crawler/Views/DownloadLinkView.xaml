@@ -48,15 +48,17 @@
                 </TextBox.Style>
             </TextBox>
             <StackPanel Grid.Row="1" Orientation="Horizontal" IsEnabled="{Binding IsYouTube, Mode=OneWay}">
-                
-                <CheckBox IsChecked="{Binding IsHd, Mode=OneWayToSource}" x:Name="checkBoxHd" Margin="7,0,0,0" VerticalAlignment="Center" />
-                <Label Content="HD" VerticalAlignment="Center" MouseLeftButtonDown="AddLink_OnHdMouseEnter" />
-                
-                <CheckBox IsChecked="{Binding IsAudio, Mode=OneWayToSource}" x:Name="checkBoxAudio" Margin="20,0,0,0" VerticalAlignment="Center" />
-                <Label Content="Only Audio" VerticalAlignment="Center" MouseLeftButtonDown="AddLink_OnAudioMouseEnter" />
 
-                <Label Content="Subtitles" VerticalAlignment="Center" Margin="15,0,0,0"/>
-                <ComboBox ItemsSource="{Binding Path=Subtitles}" BorderThickness="0" Background="WhiteSmoke" Width="70" Margin="5,2,0,5">
+                <Label Content="Quality:" VerticalAlignment="Center" Margin="5,0,0,0"/>
+
+                <ComboBox BorderThickness="0" Background="WhiteSmoke" Width="83" Margin="5,2,0,3"
+                          ItemsSource="{Binding DownOptions, Mode=OneTime}"
+                          DisplayMemberPath="Key" SelectedValuePath="Value"
+                          SelectedValue="{Binding SelectedOption}"
+                          />
+
+                <Label Content="Subtitles:" VerticalAlignment="Center" Margin="20,0,0,0"/>
+                <ComboBox ItemsSource="{Binding Path=Subtitles}" BorderThickness="0" Background="WhiteSmoke" Width="70" Margin="5,2,0,3">
                     <ComboBox.ItemTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal">

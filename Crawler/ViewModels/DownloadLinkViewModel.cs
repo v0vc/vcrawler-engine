@@ -16,6 +16,7 @@ using Crawler.Common;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
+using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
 using Models.Factories;
@@ -37,6 +38,7 @@ namespace Crawler.ViewModels
         private RelayCommand downloadLinkCommand;
         private bool isYouTube;
         private string link;
+        private PlaylistMenuItem selectedOption;
         private RelayCommand subtitlesDropDownOpenedCommand;
         private string youId;
 
@@ -60,12 +62,25 @@ namespace Crawler.ViewModels
 
         #endregion
 
+        #region Static Properties
+
+        public static Dictionary<string, PlaylistMenuItem> DownOptions
+        {
+            get
+            {
+                return
+                    Enum.GetValues(typeof(PlaylistMenuItem))
+                        .Cast<PlaylistMenuItem>()
+                        .Where(x => x != PlaylistMenuItem.Link & x != PlaylistMenuItem.Update)
+                        .ToDictionary(x => EnumHelper.GetAttributeOfType(x), y => y);
+            }
+        }
+
+        #endregion
+
         #region Properties
 
         public RelayCommand DownloadLinkCommand => downloadLinkCommand ?? (downloadLinkCommand = new RelayCommand(DownloadLink));
-
-        public bool IsAudio { get; set; }
-        public bool IsHd { get; set; }
 
         public bool IsYouTube
         {
@@ -98,6 +113,19 @@ namespace Crawler.ViewModels
                 }
                 link = value;
                 ParseYou(link);
+                OnPropertyChanged();
+            }
+        }
+
+        public PlaylistMenuItem SelectedOption
+        {
+            get
+            {
+                return selectedOption;
+            }
+            set
+            {
+                selectedOption = value;
                 OnPropertyChanged();
             }
         }
@@ -143,7 +171,7 @@ namespace Crawler.ViewModels
                 vi.ParentID = null;
                 vi.SyncState = SyncState.Added;
                 onDownloadYouItem?.Invoke(vi);
-                await vi.DownloadItem(youpath, downloaddir, IsHd, IsAudio).ConfigureAwait(false);
+                await vi.DownloadItem(youpath, downloaddir, SelectedOption).ConfigureAwait(false);
             }
             else
             {
@@ -188,6 +216,7 @@ namespace Crawler.ViewModels
             {
                 IsYouTube = true;
                 youId = id;
+                SelectedOption = DownOptions.Select(x => x.Value).First();
             }
             else
             {

@@ -914,20 +914,32 @@ namespace Crawler.ViewModels
             {
                 return;
             }
+
             IChannel channel = SelectedChannel;
             if (channel == null)
             {
                 return;
             }
+
             switch (item)
             {
+                case VideoMenuItem.Video:
+
+                    channel.ChannelState = ChannelState.InWork;
+                    await
+                        channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, PlaylistMenuItem.Video)
+                            .ConfigureAwait(false);
+                    channel.ChannelState = ChannelState.HasDownload;
+
+                    break;
                 case VideoMenuItem.Audio:
 
                     channel.ChannelState = ChannelState.InWork;
                     await
-                        channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, false, true)
+                        channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, PlaylistMenuItem.Audio)
                             .ConfigureAwait(false);
                     channel.ChannelState = ChannelState.HasDownload;
+
                     break;
 
                 case VideoMenuItem.HD:
@@ -936,8 +948,9 @@ namespace Crawler.ViewModels
                     {
                         channel.ChannelState = ChannelState.InWork;
                         await
-                            channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, true, false)
-                                .ConfigureAwait(false);
+                            channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath,
+                                SettingsViewModel.DirPath,
+                                PlaylistMenuItem.DownloadHd).ConfigureAwait(false);
                         channel.ChannelState = ChannelState.HasDownload;
                     }
                     else
@@ -1477,7 +1490,9 @@ namespace Crawler.ViewModels
                 case PlaylistMenuItem.Download:
                     try
                     {
-                        await PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath).ConfigureAwait(false);
+                        await
+                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
+                                .ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -1490,7 +1505,7 @@ namespace Crawler.ViewModels
                     try
                     {
                         await
-                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, true)
+                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
                                 .ConfigureAwait(false);
                     }
                     catch (Exception ex)
@@ -1504,7 +1519,7 @@ namespace Crawler.ViewModels
                     try
                     {
                         await
-                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, false, true)
+                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
                                 .ConfigureAwait(false);
                     }
                     catch (Exception ex)
@@ -1512,6 +1527,19 @@ namespace Crawler.ViewModels
                         Info = ex.Message;
                     }
 
+                    break;
+
+                case PlaylistMenuItem.Video:
+                    try
+                    {
+                        await
+                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
+                                .ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        Info = ex.Message;
+                    }
                     break;
 
                 case PlaylistMenuItem.Update:
@@ -1664,7 +1692,7 @@ namespace Crawler.ViewModels
                     return;
                 }
                 channel.ChannelState = ChannelState.InWork;
-                await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, false, false).ConfigureAwait(false);
+                await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, PlaylistMenuItem.Download).ConfigureAwait(false);
                 channel.ChannelState = ChannelState.HasDownload;
             }
         }

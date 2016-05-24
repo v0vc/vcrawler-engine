@@ -12,6 +12,7 @@ namespace Interfaces.Enums
         Title,
         Audio,
         HD,
+        Video,
         Delete,
         DeleteDb,
         Subscribe,
