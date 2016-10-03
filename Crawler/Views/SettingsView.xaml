@@ -133,7 +133,7 @@
                             <ColumnDefinition/>
                             <ColumnDefinition/>
                         </Grid.ColumnDefinitions>
-                        <GroupBox Header="Open on starup:">
+                        <GroupBox Header="Open on startup:">
                             <StackPanel>
                                 <RadioButton Content="First channel" IsChecked="True"/>
                                 <RadioButton Content="Filter result" IsChecked="{Binding IsFilterOpen, Mode=TwoWay}"/>

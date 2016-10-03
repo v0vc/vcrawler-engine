@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -12,28 +13,7 @@ namespace Models.BO.Items
 {
     public class TapochekItem : IVideoItem
     {
-        #region IVideoItem Members
-
-        public int Comments { get; set; }
-        public string DateTimeAgo { get; set; }
-        public string Description { get; set; }
-        public double DownloadPercentage { get; set; }
-        public int Duration { get; set; }
-        public string DurationString { get; set; }
-        public string ID { get; set; }
-        public string LocalFilePath { get; set; }
-        public string LogText { get; set; }
-        public string ParentID { get; set; }
-        public string ParentTitle { get; set; }
-        public ItemState FileState { get; set; }
-        public string ProxyUrl { get; set; }
-        public SyncState SyncState { get; set; }
-        public byte[] Thumbnail { get; set; }
-        public DateTime Timestamp { get; set; }
-        public string Title { get; set; }
-        public ObservableCollection<ISubtitle> Subtitles { get; set; }
-        public long ViewCount { get; set; }
-        public WatchState WatchState { get; set; }
+        #region Methods
 
         public IVideoItem CreateVideoItem()
         {
@@ -41,16 +21,6 @@ namespace Models.BO.Items
         }
 
         public Task DeleteItemAsync()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task FillDescriptionAsync()
         {
             throw new NotImplementedException();
         }
@@ -75,17 +45,57 @@ namespace Models.BO.Items
             throw new NotImplementedException();
         }
 
-        public void IsHasLocalFileFound(string dir)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task Log(string text)
         {
             throw new NotImplementedException();
         }
 
+        #endregion
+
+        #region IVideoItem Members
+
+        public int Comments { get; set; }
+        public string DateTimeAgo { get; set; }
+        public string Description { get; set; }
+        public double DownloadPercentage { get; set; }
+        public int Duration { get; set; }
+        public string DurationString { get; set; }
+        public ItemState FileState { get; set; }
+        public string ID { get; set; }
+        public string LocalFilePath { get; set; }
+        public string LogText { get; set; }
+        public string ParentID { get; set; }
+        public string ParentTitle { get; set; }
+        public string ProxyUrl { get; set; }
+        public ObservableCollection<ISubtitle> Subtitles { get; set; }
+        public SyncState SyncState { get; set; }
+        public byte[] Thumbnail { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Title { get; set; }
+        public long ViewCount { get; set; }
+        public WatchState WatchState { get; set; }
+
+        public Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task FillDescriptionAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void IsHasLocalFileFound(string dir)
+        {
+            throw new NotImplementedException();
+        }
+
         public string MakeLink()
+        {
+            throw new NotImplementedException();
+        }
+
+        public void OpenInFolder(string parentDir)
         {
             throw new NotImplementedException();
         }

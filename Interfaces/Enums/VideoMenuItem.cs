@@ -11,10 +11,12 @@ namespace Interfaces.Enums
         Parent,
         Title,
         Audio,
+        Folder,
         HD,
         Video,
         Delete,
         DeleteDb,
+        Subtitles,
         Subscribe,
         Cancel
     }

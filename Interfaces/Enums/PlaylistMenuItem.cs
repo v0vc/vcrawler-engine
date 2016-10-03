@@ -17,6 +17,9 @@ namespace Interfaces.Enums
         Audio,
         [Description("Video only")]
         Video,
-        Update
+        Update,
+        [Description("With Subtitles")]
+        DownloadSubs,
+        DownloadSubsOnly
     }
 }

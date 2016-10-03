@@ -1,5 +1,6 @@
 ﻿// This file contains my intellectual property. Release of this file requires prior approval from me.
 // 
+// 
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
@@ -45,6 +46,8 @@ namespace Interfaces.Models
         void IsHasLocalFileFound(string dir);
 
         string MakeLink();
+
+        void OpenInFolder(string parentDir);
 
         Task RunItem(string mpcpath);
 

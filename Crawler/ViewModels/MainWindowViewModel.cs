@@ -932,6 +932,7 @@ namespace Crawler.ViewModels
                     channel.ChannelState = ChannelState.HasDownload;
 
                     break;
+
                 case VideoMenuItem.Audio:
 
                     channel.ChannelState = ChannelState.InWork;
@@ -940,6 +941,14 @@ namespace Crawler.ViewModels
                             .ConfigureAwait(false);
                     channel.ChannelState = ChannelState.HasDownload;
 
+                    break;
+
+                case VideoMenuItem.Subtitles:
+                    channel.ChannelState = ChannelState.InWork;
+                    await
+                        channel.SelectedItem.DownloadItem(SettingsViewModel.YouPath,
+                            SettingsViewModel.DirPath,
+                            PlaylistMenuItem.DownloadSubsOnly).ConfigureAwait(false);
                     break;
 
                 case VideoMenuItem.HD:
@@ -1488,47 +1497,9 @@ namespace Crawler.ViewModels
                     break;
 
                 case PlaylistMenuItem.Download:
-                    try
-                    {
-                        await
-                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
-                                .ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Info = ex.Message;
-                    }
-
-                    break;
-
                 case PlaylistMenuItem.DownloadHd:
-                    try
-                    {
-                        await
-                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
-                                .ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Info = ex.Message;
-                    }
-
-                    break;
-
+                case PlaylistMenuItem.DownloadSubs:
                 case PlaylistMenuItem.Audio:
-                    try
-                    {
-                        await
-                            PlaylistFactory.DownloadPlaylist(playlist, SelectedChannel, SettingsViewModel.YouPath, menu)
-                                .ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        Info = ex.Message;
-                    }
-
-                    break;
-
                 case PlaylistMenuItem.Video:
                     try
                     {
@@ -1540,6 +1511,7 @@ namespace Crawler.ViewModels
                     {
                         Info = ex.Message;
                     }
+
                     break;
 
                 case PlaylistMenuItem.Update:
@@ -1957,10 +1929,8 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Audio:
-                    await DownloadWithOptions(menu).ConfigureAwait(false);
-                    break;
-
                 case VideoMenuItem.HD:
+                case VideoMenuItem.Subtitles:
                     await DownloadWithOptions(menu).ConfigureAwait(false);
                     break;
 
@@ -1990,6 +1960,12 @@ namespace Crawler.ViewModels
                 case VideoMenuItem.Cancel:
                     var item = SelectedChannel.SelectedItem as YouTubeItem;
                     item?.CancelDownload();
+                    break;
+
+                case VideoMenuItem.Folder:
+                    var dir = new DirectoryInfo(Path.Combine(SelectedChannel.DirPath, SelectedChannel.ID));
+                    string par = dir.Exists ? dir.FullName : SelectedChannel.DirPath;
+                    SelectedChannel.SelectedItem.OpenInFolder(par);
                     break;
             }
         }

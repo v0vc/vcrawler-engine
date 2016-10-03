@@ -29,7 +29,7 @@ namespace Models.BO.Items
 
         private readonly CancellationTokenSource cancelToken;
 
-        private readonly string[] exts = { "mp4", "mkv", "mp3" };
+        private readonly string[] exts = { "mp4", "mkv", "mp3", "webm" };
 
         #endregion
 
@@ -92,14 +92,9 @@ namespace Models.BO.Items
                 return;
             }
 
-            IEnumerable<ISubtitle> res = await VideoItemFactory.GetVideoItemSubtitlesAsync(ID).ConfigureAwait(false);
-
+            IEnumerable<ISubtitle> res = await VideoItemFactory.GetVideoItemSubtitlesAsync(ID).ConfigureAwait(true);
             Subtitles.Clear();
-
-            foreach (ISubtitle sub in res)
-            {
-                Subtitles.Add(sub);
-            }
+            res.ForEach(x => Subtitles.Add(x));
         }
 
         private void ErrorOccured()
@@ -331,17 +326,24 @@ namespace Models.BO.Items
                 case PlaylistMenuItem.DownloadHd:
                     param = $"-f bestvideo+bestaudio, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
                     break;
+
+                case PlaylistMenuItem.DownloadSubs:
+                    param = $"-f best, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options} --all-subs";
+                    break;
                 case PlaylistMenuItem.Download:
                     param = $"-f best, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
                     break;
                 case PlaylistMenuItem.Video:
                     param = $"-f bestvideo, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options}";
                     break;
+                case PlaylistMenuItem.DownloadSubsOnly:
+                    param = $"-f best, -o \"{dir}\\%(title)s.%(ext)s\" \"{MakeLink()}\" {options} --all-subs --skip-download";
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dtype), dtype, null);
             }
 
-            if (Subtitles.Select(x => x.IsChecked).Contains(true))
+            if (Subtitles.Select(x => x.IsChecked).Contains(true) && dtype != PlaylistMenuItem.DownloadSubsOnly)
             {
                 var sb = new StringBuilder();
                 foreach (ISubtitle sub in Subtitles.Where(sub => sub.IsChecked))
@@ -350,7 +352,7 @@ namespace Models.BO.Items
                 }
                 string res = sb.ToString().TrimEnd(',');
 
-                string srt = res == "Auto" ? "--write-srt --write-auto-sub" : $"--write-srt --srt-lang {res}";
+                string srt = res == "Auto" ? "--write-auto-sub" : $"--write-sub --sub-lang {res}";
 
                 param = $"{param} {srt}";
             }
@@ -418,6 +420,12 @@ namespace Models.BO.Items
         public string MakeLink()
         {
             return $"https://www.youtube.com/watch?v={ID}";
+        }
+
+        public void OpenInFolder(string parentDir)
+        {
+            string argument = FileState != ItemState.LocalYes ? parentDir + "\"" : "/select, \"" + LocalFilePath + "\"";
+            Process.Start("explorer.exe", argument);
         }
 
         public async Task RunItem(string mpcpath)
