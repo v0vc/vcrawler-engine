@@ -14,6 +14,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Data;
 using DataAPI.Database;
 using DataAPI.POCO;
+using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -295,7 +296,7 @@ namespace Crawler.ViewModels
                                 watchedList.Add(item);
                             }
                         }
-                        watchedList.ForEach(x => AddNewItem(x));
+                        watchedList.OrderBy(x => x.ParentID).ForEach(x => AddNewItem(x));
 
                         break;
                     case WatchState.Planned:

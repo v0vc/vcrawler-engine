@@ -34,7 +34,7 @@ namespace Crawler.ViewModels
 
         #region Static and Readonly Fields
 
-        private readonly IEnumerable<string> countrieslist = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", dlindex };
+        private readonly IEnumerable<string> countrieslist = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", "UA", "SG", dlindex };
 
         #endregion
 

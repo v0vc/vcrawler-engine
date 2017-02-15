@@ -239,37 +239,32 @@ namespace Models.Factories
                 // получаем списки id в базе и в нете
                 List<string> netids;
                 List<string> dbids;
-                if (!isFastSync && !channel.UseFast)
+                if (isFastSync)
                 {
-                    // полная проверка, с учетом индивдуальной опции (для больших каналов)
-                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
-                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0).ConfigureAwait(true);
-
-                    // проставляем в базе признак того, что видео больше нет на канале, а так же если видео было удалено, а теперь вернулось
-                    List<string> deletedlist =
-                        await db.GetChannelItemsIdsByStateAsync(SyncState.Deleted, channel.ID).ConfigureAwait(false);
-                    foreach (string dbid in dbids)
+                    // быстрая проверка
+                    if (channel.UseFast)
                     {
-                        if (!netids.Contains(dbid))
-                        {
-                            await db.UpdateItemSyncState(dbid, SyncState.Deleted).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            if (deletedlist.Any() && deletedlist.Contains(dbid))
-                            {
-                                await db.UpdateItemSyncState(dbid, SyncState.Notset).ConfigureAwait(false);
-                            }
-                        }
+                        dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted).ConfigureAwait(false);
+                        int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID).ConfigureAwait(true);
+                        int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
+                        netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint).ConfigureAwait(true);
+                    }
+                    else
+                    {
+                        // некоторые каналы хотим проверять жестко (добавляют, удаляют часто)
+                        dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
+                        netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0).ConfigureAwait(true);
+                        await SetDeletedInDb(channel, dbids, netids);
                     }
                 }
                 else
                 {
-                    // быстрая проверка
-                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0, SyncState.Deleted).ConfigureAwait(false);
-                    int netcount = await YouTubeSite.GetChannelItemsCountNetAsync(channel.ID).ConfigureAwait(true);
-                    int resint = Math.Abs(netcount - dbids.Count) + 3; // буфер, можно регулировать
-                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, resint).ConfigureAwait(true);
+                    // полная проверка
+                    dbids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
+                    netids = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(pluploadsid, 0).ConfigureAwait(true);
+
+                    // проставляем в базе признак того, что видео больше нет на канале, а так же если видео было удалено, а теперь вернулось
+                    await SetDeletedInDb(channel, dbids, netids);
                 }
 
                 // cобираем новые
@@ -385,6 +380,25 @@ namespace Models.Factories
                 if (!dbIds.Contains(vi.ID))
                 {
                     dbIds.Add(vi.ID);
+                }
+            }
+        }
+
+        private static async Task SetDeletedInDb(IChannel channel, IEnumerable<string> dbids, ICollection<string> netids)
+        {
+            List<string> deletedlist = await db.GetChannelItemsIdsByStateAsync(SyncState.Deleted, channel.ID).ConfigureAwait(false);
+            foreach (string dbid in dbids)
+            {
+                if (!netids.Contains(dbid))
+                {
+                    await db.UpdateItemSyncState(dbid, SyncState.Deleted).ConfigureAwait(false);
+                }
+                else
+                {
+                    if (deletedlist.Any() && deletedlist.Contains(dbid))
+                    {
+                        await db.UpdateItemSyncState(dbid, SyncState.Notset).ConfigureAwait(false);
+                    }
                 }
             }
         }

@@ -512,7 +512,7 @@ namespace Crawler.ViewModels
                 {
                     try
                     {
-                        await AddNewChannelAsync(parsedId, channelTitle, site).ConfigureAwait(false);
+                        await AddNewChannelAsync(parsedId, channelTitle, site, true).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -522,7 +522,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site)
+        private async Task AddNewChannelAsync(string channelid, string channeltitle, SiteType site, bool useFast)
         {
             SetStatus(1);
 
@@ -551,6 +551,7 @@ namespace Crawler.ViewModels
             channel.ChannelItemsCount = channel.ChannelItems.Count;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;
             channel.ChannelState = ChannelState.Added;
+            channel.UseFast = useFast;
             await Task.Run(() => db.InsertChannelFullAsync(channel)).ConfigureAwait(false);
             AddDefPlaylist(channel, channel.ChannelItems.Select(x => x.ID).ToList());
             SetStatus(0);
@@ -790,6 +791,13 @@ namespace Crawler.ViewModels
                 res.Add(channel.ID);
                 channelCollectionView.Filter = null;
                 FilterChannelKey = string.Empty;
+                foreach (IVideoItem elem in
+                    channel.ChannelItems.Select(item => StateChannel.ChannelItems.FirstOrDefault(x => x.ID == item.ID))
+                        .Where(elem => elem != null))
+                {
+                    StateChannel.ChannelItems.Remove(elem);
+                    StateChannel.ChannelItemsCount--;
+                }
             }
 
             if (!Channels.Any() || !indexes.Any())
@@ -1584,7 +1592,7 @@ namespace Crawler.ViewModels
                                     case SiteType.YouTube:
                                         SetStatus(1);
                                         Info = "Restoring: " + sp[0];
-                                        await AddNewChannelAsync(sp[1], sp[0], backupSiteType).ConfigureAwait(false);
+                                        await AddNewChannelAsync(sp[1], sp[0], backupSiteType, true).ConfigureAwait(false);
                                         ids.Add(sp[1]);
                                         break;
 
@@ -1782,7 +1790,7 @@ namespace Crawler.ViewModels
                 return;
             }
             IVideoItem item = channel.SelectedItem;
-            await AddNewChannelAsync(item.ParentID, string.Empty, SiteType.YouTube).ConfigureAwait(false);
+            await AddNewChannelAsync(item.ParentID, string.Empty, SiteType.YouTube, true).ConfigureAwait(false);
             item.SyncState = SyncState.Added;
         }
 
@@ -1801,6 +1809,7 @@ namespace Crawler.ViewModels
                 poco.PlaylistItems = await YouTubeSite.GetPlaylistItemsIdsListNetAsync(poco.ID, 0).ConfigureAwait(true);
                 channel.ChannelPlaylists.Add(PlaylistFactory.CreatePlaylist(poco, channel.Site));
             }
+            channel.UseFast = true;
             await db.InsertChannelFullAsync(channel).ConfigureAwait(false);
             channel.ChannelState = ChannelState.Added;
             channel.PlaylistCount = channel.ChannelPlaylists.Count;

@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DataAPI.POCO;
+using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
@@ -25,8 +26,6 @@ namespace DataAPI.Database
 {
     public class SqLiteDatabase
     {
-        #region Constants
-
         private const string cookieFolder = "Cookies";
         private const string dbfile = "db.sqlite";
         private const string sqlFile = "sqlite.sql";
@@ -122,46 +121,9 @@ namespace DataAPI.Database
 
         #endregion
 
-        #endregion
-
         #region Static and Readonly Fields
 
         private readonly string appstartdir;
-
-        private readonly string playlistItemsString =
-            string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
-                tableplaylistitems,
-                fPlaylistId,
-                fItemId,
-                fChannelId);
-
-        private readonly string credInsertString =
-            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
-                tablecredentials,
-                credSite,
-                credLogin,
-                credPass,
-                credCookie,
-                credExpired,
-                credAutorization);
-
-        private readonly string playlistInsertString =
-            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
-                tableplaylists,
-                playlistID,
-                playlistTitle,
-                playlistSubTitle,
-                playlistThumbnail,
-                playlistChannelId);
-
-        private readonly string channelsSelectString = string.Format(@"SELECT {0},{1},{2},{3},{4},{5} FROM {6}",
-                channelId,
-                channelTitle,
-                channelThumbnail,
-                channelSite,
-                newcount,
-                fastsync,
-                tablechannels);
 
         private readonly string channelsInsertString =
             string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7})",
@@ -173,6 +135,19 @@ namespace DataAPI.Database
                 channelSite,
                 newcount,
                 fastsync);
+
+        private readonly string channelsSelectString =
+            $@"SELECT {channelId},{channelTitle},{channelThumbnail},{channelSite},{newcount},{fastsync} FROM {tablechannels}";
+
+        private readonly string credInsertString =
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6})",
+                tablecredentials,
+                credSite,
+                credLogin,
+                credPass,
+                credCookie,
+                credExpired,
+                credAutorization);
 
         private readonly string itemsInsertString =
             string.Format(
@@ -190,18 +165,24 @@ namespace DataAPI.Database
                 syncstate,
                 watchstate);
 
-        private readonly string itemsSelectString = string.Format(@"SELECT {0},{1},{2},{3},{4},{5},{6},{7},{8},{9} FROM {10}",
-            itemId,
-            parentID,
-            title,
-            viewCount,
-            duration,
-            comments,
-            thumbnail,
-            timestamp,
-            syncstate,
-            watchstate,
-            tableitems);
+        private readonly string itemsSelectString =
+            $@"SELECT {itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate} FROM {tableitems}";
+
+        private readonly string playlistInsertString =
+            string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
+                tableplaylists,
+                playlistID,
+                playlistTitle,
+                playlistSubTitle,
+                playlistThumbnail,
+                playlistChannelId);
+
+        private readonly string playlistItemsString =
+            string.Format(@"INSERT OR IGNORE INTO '{0}' ('{1}','{2}','{3}') VALUES (@{1},@{2},@{3})",
+                tableplaylistitems,
+                fPlaylistId,
+                fItemId,
+                fChannelId);
 
         #endregion
 
@@ -248,9 +229,7 @@ namespace DataAPI.Database
                 if (fileBase != null)
                 {
                     dbConnection =
-                        string.Format(
-                                      "Data Source={0};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off",
-                            FileBase.FullName);
+                        $"Data Source={FileBase.FullName};Version=3;foreign keys=true;Count Changes=off;Journal Mode=off;Pooling=true;Cache Size=10000;Page Size=4096;Synchronous=off";
                 }
             }
         }
@@ -317,21 +296,6 @@ namespace DataAPI.Database
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
         }
 
-        private static async Task InsertPlaylistParam(SQLiteCommand command, IPlaylist playlist)
-        {
-            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
-            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
-            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
-            if (playlist.Thumbnail != null)
-            {
-                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value =
-                    playlist.Thumbnail;
-            }
-            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
-
-            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
-        }
-
         private static async Task InsertChannelParam(SQLiteCommand command, IChannel channel)
         {
             command.Parameters.AddWithValue("@" + channelId, channel.ID);
@@ -344,6 +308,18 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + channelSite, EnumHelper.GetAttributeOfType(channel.Site));
             command.Parameters.AddWithValue("@" + newcount, channel.CountNew);
             command.Parameters.AddWithValue("@" + fastsync, channel.UseFast);
+
+            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+        }
+
+        private static async Task InsertCredParam(SQLiteCommand command, ICred cred)
+        {
+            command.Parameters.AddWithValue("@" + credSite, cred.SiteAdress);
+            command.Parameters.AddWithValue("@" + credLogin, cred.Login);
+            command.Parameters.AddWithValue("@" + credPass, cred.Pass);
+            command.Parameters.AddWithValue("@" + credCookie, cred.Cookie);
+            command.Parameters.AddWithValue("@" + credExpired, cred.Expired);
+            command.Parameters.AddWithValue("@" + credAutorization, cred.Autorization);
 
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
@@ -368,14 +344,16 @@ namespace DataAPI.Database
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
-        private static async Task InsertCredParam(SQLiteCommand command, ICred cred)
+        private static async Task InsertPlaylistParam(SQLiteCommand command, IPlaylist playlist)
         {
-            command.Parameters.AddWithValue("@" + credSite, cred.SiteAdress);
-            command.Parameters.AddWithValue("@" + credLogin, cred.Login);
-            command.Parameters.AddWithValue("@" + credPass, cred.Pass);
-            command.Parameters.AddWithValue("@" + credCookie, cred.Cookie);
-            command.Parameters.AddWithValue("@" + credExpired, cred.Expired);
-            command.Parameters.AddWithValue("@" + credAutorization, cred.Autorization);
+            command.Parameters.AddWithValue("@" + playlistID, playlist.ID);
+            command.Parameters.AddWithValue("@" + playlistTitle, playlist.Title);
+            command.Parameters.AddWithValue("@" + playlistSubTitle, playlist.SubTitle);
+            if (playlist.Thumbnail != null)
+            {
+                command.Parameters.Add("@" + playlistThumbnail, DbType.Binary, playlist.Thumbnail.Length).Value = playlist.Thumbnail;
+            }
+            command.Parameters.AddWithValue("@" + playlistChannelId, playlist.ChannelId);
 
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
@@ -388,9 +366,27 @@ namespace DataAPI.Database
 
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
+
         #endregion
 
         #region Methods
+
+        /// <summary>
+        ///     Delete
+        /// </summary>
+        /// <param name="parID">channel ID</param>
+        /// <returns></returns>
+        public async Task DeleteChannelAsync(string parID)
+        {
+            string zap = $@"DELETE FROM {tablechannels} WHERE {channelId}='{parID}'";
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
+        }
+
+        public async Task DeleteChannelPlaylistsAsync(string id)
+        {
+            string zap = $@"DELETE FROM {tableplaylists} WHERE {playlistChannelId}='{id}'";
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
+        }
 
         /// <summary>
         ///     Delete channels
@@ -409,9 +405,8 @@ namespace DataAPI.Database
                         command.CommandType = CommandType.Text;
                         try
                         {
-                            foreach (string id in ids)
+                            foreach (string zap in ids.Select(id => $@"DELETE FROM {tablechannels} WHERE {channelId}='{id}'"))
                             {
-                                string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechannels, channelId, id);
                                 command.CommandText = zap;
                                 await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                             }
@@ -433,23 +428,6 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Delete
-        /// </summary>
-        /// <param name="parID">channel ID</param>
-        /// <returns></returns>
-        public async Task DeleteChannelAsync(string parID)
-        {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechannels, channelId, parID);
-            await RunSqlCodeAsync(zap).ConfigureAwait(false);
-        }
-
-        public async Task DeleteChannelPlaylistsAsync(string id)
-        {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, id);
-            await RunSqlCodeAsync(zap).ConfigureAwait(false);
-        }
-
-        /// <summary>
         ///     Delete channel tag
         /// </summary>
         /// <param name="channelid">channel ID</param>
@@ -457,12 +435,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteChannelTagsAsync(string channelid, string tag)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}' AND {3}='{4}'",
-                tablechanneltags,
-                channelIdF,
-                channelid,
-                tagIdF,
-                tag);
+            string zap = $@"DELETE FROM {tablechanneltags} WHERE {channelIdF}='{channelid}' AND {tagIdF}='{tag}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -473,7 +446,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteCredAsync(string site)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablecredentials, credSite, site);
+            string zap = $@"DELETE FROM {tablecredentials} WHERE {credSite}='{site}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -484,7 +457,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteItemAsync(string id)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableitems, itemId, id);
+            string zap = $@"DELETE FROM {tableitems} WHERE {itemId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -495,7 +468,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeletePlaylistAsync(string id)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tableplaylists, playlistID, id);
+            string zap = $@"DELETE FROM {tableplaylists} WHERE {playlistID}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -506,7 +479,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteSettingAsync(string key)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablesettings, setKey, key);
+            string zap = $@"DELETE FROM {tablesettings} WHERE {setKey}='{key}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -517,9 +490,9 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task DeleteTagAsync(string tag)
         {
-            string zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tabletags, tagTitle, tag);
+            string zap = $@"DELETE FROM {tabletags} WHERE {tagTitle}='{tag}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
-            zap = string.Format(@"DELETE FROM {0} WHERE {1}='{2}'", tablechanneltags, tagIdF, tag);
+            zap = $@"DELETE FROM {tablechanneltags} WHERE {tagIdF}='{tag}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -531,7 +504,7 @@ namespace DataAPI.Database
         {
             var res = new List<TagPOCO>();
 
-            string zap = string.Format(@"SELECT * FROM {0}", tabletags);
+            string zap = $@"SELECT * FROM {tabletags}";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -540,7 +513,8 @@ namespace DataAPI.Database
                     command.Connection = connection;
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -570,7 +544,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<ChannelPOCO> GetChannelAsync(string id)
         {
-            string zap = string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", channelsSelectString, channelId, id);
+            string zap = $@"{channelsSelectString} WHERE {channelId}='{id}' LIMIT 1";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -580,7 +554,8 @@ namespace DataAPI.Database
                     command.Connection = connection;
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -612,7 +587,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<string> GetChannelDescriptionAsync(string channelID)
         {
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", channelSubTitle, tablechannels, channelId, channelID);
+            string zap = $@"SELECT {channelSubTitle} FROM {tablechannels} WHERE {channelId}='{channelID}'";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -641,6 +616,41 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get channels ids by tags
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Dictionary<TagPOCO, IEnumerable<string>>> GetChannelIdsByTagAsync()
+        {
+            string zap = $@"SELECT * FROM {tablechanneltags}";
+
+            var temp = new List<KeyValuePair<string, TagPOCO>>();
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                var row = new KeyValuePair<string, TagPOCO>(reader[channelIdF] as string, CreateTag(reader, tagIdF));
+                                temp.Add(row);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+            return temp.GroupBy(x => x.Value).OrderBy(x => x.Key.Title).ToDictionary(y => y.Key, y => y.Select(z => z.Key));
+        }
+
+        /// <summary>
         ///     Common wrapper
         /// </summary>
         /// <param name="channelID"></param>
@@ -657,467 +667,13 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get channel items, except ids
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <param name="basePage"></param>
-        /// <param name="excepted"></param>
-        /// <returns></returns>
-        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, ICollection<string> excepted)
-        {
-            var res = new List<VideoItemPOCO>();
-
-            using (var connection = new SQLiteConnection(dbConnection))
-            {
-                await connection.OpenAsync().ConfigureAwait(false);
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    using (SQLiteCommand command = connection.CreateCommand())
-                    {
-                        try
-                        {
-                            var ids = new List<string>(basePage);
-                            command.CommandType = CommandType.Text;
-                            string zap = basePage == 0
-                                ? string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC",
-                                    itemId,
-                                    tableitems,
-                                    parentID,
-                                    channelID,
-                                    timestamp)
-                                : string.Format("SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC LIMIT {5}",
-                                    itemId,
-                                    tableitems,
-                                    parentID,
-                                    channelID,
-                                    timestamp,
-                                    basePage);
-
-                            command.CommandText = zap;
-
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
-                            {
-                                if (!reader.HasRows)
-                                {
-                                    transaction.Rollback();
-                                    connection.Close();
-                                    return res;
-                                }
-
-                                while (await reader.ReadAsync().ConfigureAwait(false))
-                                {
-                                    var id = reader[itemId] as string;
-                                    if (excepted == null)
-                                    {
-                                        ids.Add(id);
-                                    }
-                                    else
-                                    {
-                                        if (!excepted.Contains(id))
-                                        {
-                                            ids.Add(id);
-                                        }    
-                                    }
-                                }
-                            }
-
-                            foreach (string id in ids)
-                            {
-                                command.CommandText = string.Format("{0} WHERE {1}='{2}' AND {3}='{4}' LIMIT 1",
-                                    itemsSelectString,
-                                    parentID,
-                                    channelID,
-                                    itemId,
-                                    id);
-
-                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
-                                {
-                                    if (!reader.HasRows)
-                                    {
-                                        transaction.Rollback();
-                                        connection.Close();
-                                        throw new KeyNotFoundException("No item");
-                                    }
-
-                                    while (await reader.ReadAsync().ConfigureAwait(false))
-                                    {
-                                        VideoItemPOCO vi = CreateVideoItem(reader);
-                                        res.Add(vi);
-                                    }
-                                }
-                            }
-                            transaction.Commit();
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                        finally
-                        {
-                            command.Dispose();
-                            connection.Close();
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        ///     Get channel items
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <param name="basePage"></param>
-        /// <returns></returns>
-        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage)
-        {
-            var res = new List<VideoItemPOCO>();
-
-            string zap = string.Format(@"{0} WHERE {1}='{2}' ORDER BY {3} DESC LIMIT {4}",
-                itemsSelectString,
-                parentID,
-                channelID,
-                timestamp,
-                basePage);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                connection.Close();
-                                return res;
-                            }
-
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                VideoItemPOCO vi = CreateVideoItem(reader);
-                                res.Add(vi);
-                            }
-                            transaction.Commit();
-                        }
-                    }
-                    connection.Close();
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        ///     Get channel items, 0 - all
-        /// </summary>
-        /// <param name="channelID">channel ID</param>
-        /// <param name="count"></param>
-        /// <param name="offset"></param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int count, int offset)
-        {
-            var res = new List<VideoItemPOCO>();
-
-            string zap = count == 0
-                ? string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", itemsSelectString, parentID, channelID)
-                : string.Format(@"{0} WHERE {1}='{2}' ORDER BY {3} DESC LIMIT {4} OFFSET {5}",
-                    itemsSelectString,
-                    parentID,
-                    channelID,
-                    timestamp,
-                    count,
-                    offset);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                connection.Close();
-                                return res;
-                            }
-
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                VideoItemPOCO vi = CreateVideoItem(reader);
-                                res.Add(vi);
-                            }
-                            transaction.Commit();
-                        }
-                    }
-                    connection.Close();
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        ///     Get channel items ids by state, 0 - all items in base
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<List<string>> GetChannelItemsIdsByStateAsync(object state, string channelID = null)
-        {
-            string col = string.Empty;
-            if (state is WatchState)
-            {
-                col = watchstate;
-            }
-            else if (state is SyncState)
-            {
-                col = syncstate;
-            }
-            var res = new List<string>();
-            using (var connection = new SQLiteConnection(dbConnection))
-            {
-                await connection.OpenAsync().ConfigureAwait(false);
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    using (SQLiteCommand command = connection.CreateCommand())
-                    {
-                        try
-                        {
-                            command.CommandType = CommandType.Text;
-                            command.CommandText = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'",
-                                itemId,
-                                tableitems,
-                                col,
-                                (byte)state);
-
-                            if (channelID != null)
-                            {
-                                command.CommandText += string.Format(" AND {0}='{1}'", parentID, channelID);
-                            }
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                            {
-                                while (await reader.ReadAsync().ConfigureAwait(false))
-                                {
-                                    res.Add((string)reader[itemId]);
-                                }
-                                transaction.Commit();
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                        finally
-                        {
-                            command.Dispose();
-                            connection.Close();
-                        }
-                    }
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        ///     Get channel items by state, 0 - all items in base
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="channelID"></param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetChannelItemsByState(object state, string channelID = null)
-        {
-            string col = string.Empty;
-            if (state is WatchState)
-            {
-                col = watchstate;
-            }
-            else if (state is SyncState)
-            {
-                col = syncstate;
-            }
-            var res = new List<VideoItemPOCO>();
-            using (var connection = new SQLiteConnection(dbConnection))
-            {
-                await connection.OpenAsync().ConfigureAwait(false);
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    using (SQLiteCommand command = connection.CreateCommand())
-                    {
-                        try
-                        {
-                            command.CommandType = CommandType.Text;
-                            command.CommandText = string.Format(@"{0} WHERE {1}='{2}'", itemsSelectString, col, (byte)state);
-                            if (channelID != null)
-                            {
-                                command.CommandText += string.Format(" AND {0}='{1}'", parentID, channelID);
-                            }
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                            {
-                                if (!reader.HasRows)
-                                {
-                                    transaction.Rollback();
-                                    connection.Close();
-                                    throw new KeyNotFoundException("No item");
-                                }
-
-                                while (await reader.ReadAsync().ConfigureAwait(false))
-                                {
-                                    VideoItemPOCO vi = CreateVideoItem(reader);
-                                    res.Add(vi);
-                                }
-                                transaction.Commit();
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                        finally
-                        {
-                            command.Dispose();
-                            connection.Close();
-                        }
-                    }
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
-        ///     Get items by state and id
-        /// </summary>
-        /// <param name="state"></param>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public async Task<List<VideoItemPOCO>> GetItemsByIdsAndState(object state, IEnumerable<string> ids)
-        {
-            string col = string.Empty;
-            if (state is WatchState)
-            {
-                col = watchstate;
-            }
-            else if (state is SyncState)
-            {
-                col = syncstate;
-            }
-            var res = new List<VideoItemPOCO>();
-            using (var connection = new SQLiteConnection(dbConnection))
-            {
-                await connection.OpenAsync().ConfigureAwait(false);
-                using (SQLiteTransaction transaction = connection.BeginTransaction())
-                {
-                    using (SQLiteCommand command = connection.CreateCommand())
-                    {
-                        try
-                        {
-                            command.CommandType = CommandType.Text;
-                            foreach (string itemID in ids)
-                            {
-                                command.CommandText = string.Format(@"{0} WHERE {1}='{2}' AND {3}='{4}' LIMIT 1",
-                                    itemsSelectString,
-                                    col,
-                                    (byte)state,
-                                    itemId,
-                                    itemID);
-
-                                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
-                                {
-                                    if (!reader.HasRows)
-                                    {
-                                        transaction.Rollback();
-                                        connection.Close();
-                                        throw new KeyNotFoundException("No item: " + itemID);
-                                    }
-
-                                    if (!await reader.ReadAsync().ConfigureAwait(false))
-                                    {
-                                        transaction.Rollback();
-                                        connection.Close();
-                                        throw new Exception(command.CommandText);
-                                    }
-                                    VideoItemPOCO vi = CreateVideoItem(reader);
-                                    res.Add(vi);
-                                }
-                            }
-                            transaction.Commit();
-                        }
-                        catch (Exception)
-                        {
-                            transaction.Rollback();
-                            throw;
-                        }
-                        finally
-                        {
-                            command.Dispose();
-                            connection.Close();
-                        }
-                    }
-                }
-                return res;
-            }
-        }
-
-        /// <summary>
         ///     Get channel items count
         /// </summary>
         /// <param name="channelID">channel ID</param>
         /// <returns></returns>
         public async Task<int> GetChannelItemsCountDbAsync(string channelID)
         {
-            string zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", tableitems, parentID, channelID);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
-
-                        if (res == null || res == DBNull.Value)
-                        {
-                            transaction.Rollback();
-                            connection.Close();
-                            throw new Exception(zap);
-                        }
-
-                        transaction.Commit();
-                        connection.Close();
-                        return Convert.ToInt32(res);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        ///     Get channel count exclude specific state
-        /// </summary>
-        /// <param name="channelID"></param>
-        /// <param name="excludeState"></param>
-        /// <returns></returns>
-        public async Task<int> GetChannelItemsCountDbAsync(string channelID, SyncState excludeState)
-        {
-            string zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}' AND {3}!='{4}'",
-                tableitems,
-                parentID,
-                channelID,
-                syncstate,
-                (byte)excludeState);
-
+            string zap = $@"SELECT COUNT(*) FROM {tableitems} WHERE {parentID}='{channelID}'";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1157,24 +713,8 @@ namespace DataAPI.Database
             var res = new List<string>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' AND {4}!='{5}' ORDER BY {6} DESC",
-                    itemId,
-                    tableitems,
-                    parentID,
-                    channelID,
-                    syncstate,
-                    (byte)excludedState,
-                    timestamp)
-                : string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' AND {4}!='{5}' ORDER BY {6} DESC LIMIT {7} OFFSET {8}",
-                    itemId,
-                    tableitems,
-                    parentID,
-                    channelID,
-                    syncstate,
-                    (byte)excludedState,
-                    timestamp,
-                    count,
-                    offset);
+                ? $@"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' AND {syncstate}!='{(byte)excludedState}' ORDER BY {timestamp} DESC"
+                : $@"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' AND {syncstate}!='{(byte)excludedState}' ORDER BY {timestamp} DESC LIMIT {count} OFFSET {offset}";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1185,7 +725,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1220,20 +761,8 @@ namespace DataAPI.Database
             var res = new List<string>();
 
             string zap = count == 0
-                ? string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC",
-                    itemId,
-                    tableitems,
-                    parentID,
-                    channelID,
-                    timestamp)
-                : string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' ORDER BY {4} DESC LIMIT {5} OFFSET {6}",
-                    itemId,
-                    tableitems,
-                    parentID,
-                    channelID,
-                    timestamp,
-                    count,
-                    offset);
+                ? $@"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' ORDER BY {timestamp} DESC"
+                : $@"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' ORDER BY {timestamp} DESC LIMIT {count} OFFSET {offset}";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1244,7 +773,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1268,6 +798,67 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get channel items ids by state, 0 - all items in base
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="channelID"></param>
+        /// <returns></returns>
+        public async Task<List<string>> GetChannelItemsIdsByStateAsync(object state, string channelID = null)
+        {
+            string col = string.Empty;
+            if (state is WatchState)
+            {
+                col = watchstate;
+            }
+            else if (state is SyncState)
+            {
+                col = syncstate;
+            }
+            var res = new List<string>();
+            using (var connection = new SQLiteConnection(dbConnection))
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
+                {
+                    using (SQLiteCommand command = connection.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            command.CommandText = $@"SELECT {itemId} FROM {tableitems} WHERE {col}='{(byte)state}'";
+
+                            if (channelID != null)
+                            {
+                                command.CommandText += $" AND {parentID}='{channelID}'";
+                            }
+                            using (
+                                DbDataReader reader =
+                                    await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                            {
+                                while (await reader.ReadAsync().ConfigureAwait(false))
+                                {
+                                    res.Add((string)reader[itemId]);
+                                }
+                                transaction.Commit();
+                            }
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            connection.Close();
+                        }
+                    }
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
         ///     Get channel playlists
         /// </summary>
         /// <param name="channelID">channel ID</param>
@@ -1275,7 +866,7 @@ namespace DataAPI.Database
         public async Task<List<PlaylistPOCO>> GetChannelPlaylistAsync(string channelID)
         {
             var res = new List<PlaylistPOCO>();
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, channelID);
+            string zap = $@"SELECT * FROM {tableplaylists} WHERE {playlistChannelId}='{channelID}'";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1285,7 +876,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1320,7 +912,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<int> GetChannelPlaylistCountDbAsync(string channelID)
         {
-            string zap = string.Format(@"SELECT COUNT(*) FROM {0} WHERE {1}='{2}'", tableplaylists, playlistChannelId, channelID);
+            string zap = $@"SELECT COUNT(*) FROM {tableplaylists} WHERE {playlistChannelId}='{channelID}'";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1348,114 +940,6 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get tags, which have been setted
-        /// </summary>
-        /// <returns></returns>
-        //public async Task<List<TagPOCO>> GetTagsInWorkAsync()
-        //{
-        //    var res = new List<TagPOCO>();
-        //    string zap = string.Format(@"SELECT * FROM {0}", viewchanneltags);
-        //    using (SQLiteCommand command = GetCommand(zap))
-        //    {
-        //        using (var connection = new SQLiteConnection(dbConnection))
-        //        {
-        //            await connection.OpenAsync().ConfigureAwait(false);
-        //            command.Connection = connection;
-
-        //            using (SQLiteTransaction transaction = connection.BeginTransaction())
-        //            {
-        //                using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-        //                {
-        //                    while (await reader.ReadAsync().ConfigureAwait(false))
-        //                    {
-        //                        TagPOCO tag = CreateTag(reader, tagIdF);
-        //                        res.Add(tag);
-        //                    }
-        //                    transaction.Commit();
-        //                }
-        //            }
-        //        }
-        //    }
-        //    return res;
-        //}
-
-
-        /// <summary>
-        ///     Get channel tags
-        /// </summary>
-        /// <param name="id">channel ID</param>
-        /// <returns></returns>
-        public async Task<List<TagPOCO>> GetChannelTagsAsync(string id)
-        {
-            var res = new List<TagPOCO>();
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}'", tablechanneltags, channelIdF, id);
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            if (!reader.HasRows)
-                            {
-                                transaction.Rollback();
-                                connection.Close();
-                                return res;
-                            }
-
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                TagPOCO tag = CreateTag(reader, tagIdF);
-                                res.Add(tag);
-                            }
-                            transaction.Commit();
-                        }
-                    }
-                    connection.Close();
-                }
-            }
-            return res;
-        }
-
-        /// <summary>
-        ///     Get channels ids by tags
-        /// </summary>
-        /// <returns></returns>
-        public async Task<Dictionary<TagPOCO, IEnumerable<string>>> GetChannelIdsByTagAsync()
-        {
-            string zap = string.Format(@"SELECT * FROM {0}", tablechanneltags);
-
-            var temp = new List<KeyValuePair<string, TagPOCO>>();
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                var row = new KeyValuePair<string, TagPOCO>(reader[channelIdF] as string, CreateTag(reader, tagIdF));
-                                temp.Add(row);
-                            }
-                            transaction.Commit();
-                        }
-                    }
-                }
-            }
-            return temp.GroupBy(x => x.Value).OrderBy(x => x.Key.Title).ToDictionary(y => y.Key, y => y.Select(z => z.Key));
-        }
-
-        /// <summary>
         ///     Get channels list
         /// </summary>
         /// <returns></returns>
@@ -1463,7 +947,7 @@ namespace DataAPI.Database
         {
             var res = new List<ChannelPOCO>();
 
-            string zap = string.Format(@"{0} ORDER BY {1} ASC", channelsSelectString, channelTitle);
+            string zap = $@"{channelsSelectString} ORDER BY {channelTitle} ASC";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1474,7 +958,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1506,7 +991,7 @@ namespace DataAPI.Database
         {
             var res = new List<string>();
 
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", playlistID, tableplaylists, playlistChannelId, id);
+            string zap = $@"SELECT {playlistID} FROM {tableplaylists} WHERE {playlistChannelId}='{id}'";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1517,7 +1002,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1542,14 +1028,14 @@ namespace DataAPI.Database
         }
 
         /// <summary>
-        ///     Get site credentials
+        ///     Get channel tags
         /// </summary>
-        /// <param name="site">site ID</param>
+        /// <param name="id">channel ID</param>
         /// <returns></returns>
-        public async Task<CredPOCO> GetCredAsync(SiteType site)
+        public async Task<List<TagPOCO>> GetChannelTagsAsync(string id)
         {
-            string url = EnumHelper.GetAttributeOfType(site);
-            string zap = string.Format("SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablecredentials, credSite, url);
+            var res = new List<TagPOCO>();
+            string zap = $@"SELECT * FROM {tablechanneltags} WHERE {channelIdF}='{id}'";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1559,7 +1045,50 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Rollback();
+                                connection.Close();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                TagPOCO tag = CreateTag(reader, tagIdF);
+                                res.Add(tag);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        ///     Get site credentials
+        /// </summary>
+        /// <param name="site">site ID</param>
+        /// <returns></returns>
+        public async Task<CredPOCO> GetCredAsync(SiteType site)
+        {
+            string url = EnumHelper.GetAttributeOfType(site);
+            string zap = $"SELECT * FROM {tablecredentials} WHERE {credSite}='{url}' LIMIT 1";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1591,7 +1120,7 @@ namespace DataAPI.Database
         public async Task<List<CredPOCO>> GetCredListAsync()
         {
             var res = new List<CredPOCO>();
-            string zap = string.Format("SELECT * FROM {0}", tablecredentials);
+            string zap = $"SELECT * FROM {tablecredentials}";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1601,7 +1130,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1625,13 +1155,84 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Get items by state and id
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetItemsByIdsAndState(object state, IEnumerable<string> ids)
+        {
+            string col = string.Empty;
+            if (state is WatchState)
+            {
+                col = watchstate;
+            }
+            else if (state is SyncState)
+            {
+                col = syncstate;
+            }
+            var res = new List<VideoItemPOCO>();
+            using (var connection = new SQLiteConnection(dbConnection))
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
+                {
+                    using (SQLiteCommand command = connection.CreateCommand())
+                    {
+                        try
+                        {
+                            command.CommandType = CommandType.Text;
+                            foreach (string itemID in ids)
+                            {
+                                command.CommandText = $@"{itemsSelectString} WHERE {col}='{(byte)state}' AND {itemId}='{itemID}' LIMIT 1";
+
+                                using (
+                                    DbDataReader reader =
+                                        await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
+                                {
+                                    if (!reader.HasRows)
+                                    {
+                                        transaction.Rollback();
+                                        connection.Close();
+                                        throw new KeyNotFoundException("No item: " + itemID);
+                                    }
+
+                                    if (!await reader.ReadAsync().ConfigureAwait(false))
+                                    {
+                                        transaction.Rollback();
+                                        connection.Close();
+                                        throw new Exception(command.CommandText);
+                                    }
+                                    VideoItemPOCO vi = CreateVideoItem(reader);
+                                    res.Add(vi);
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            connection.Close();
+                        }
+                    }
+                }
+                return res;
+            }
+        }
+
+        /// <summary>
         ///     Get playlist
         /// </summary>
         /// <param name="id">playlist ID</param>
         /// <returns></returns>
         public async Task<PlaylistPOCO> GetPlaylistAsync(string id)
         {
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tableplaylists, playlistID, id);
+            string zap = $@"SELECT * FROM {tableplaylists} WHERE {playlistID}='{id}' LIMIT 1";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1676,12 +1277,7 @@ namespace DataAPI.Database
         {
             var res = new List<VideoItemPOCO>();
             var lst = new List<string>();
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' AND {3}='{4}'",
-                tableplaylistitems,
-                fPlaylistId,
-                id,
-                fChannelId,
-                channelID);
+            string zap = $@"SELECT * FROM {tableplaylistitems} WHERE {fPlaylistId}='{id}' AND {fChannelId}='{channelID}'";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1692,7 +1288,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1730,7 +1327,7 @@ namespace DataAPI.Database
         {
             var res = new List<string>();
 
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", fItemId, tableplaylistitems, fPlaylistId, id);
+            string zap = $@"SELECT {fItemId} FROM {tableplaylistitems} WHERE {fPlaylistId}='{id}'";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1741,7 +1338,8 @@ namespace DataAPI.Database
 
                     using (SQLiteTransaction transaction = connection.BeginTransaction())
                     {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
                         {
                             if (!reader.HasRows)
                             {
@@ -1771,7 +1369,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<SettingPOCO> GetSettingAsync(string key)
         {
-            string zap = string.Format(@"SELECT * FROM {0} WHERE {1}='{2}' LIMIT 1", tablesettings, setKey, key);
+            string zap = $@"SELECT * FROM {tablesettings} WHERE {setKey}='{key}' LIMIT 1";
             using (SQLiteCommand command = GetCommand(zap))
             {
                 using (var connection = new SQLiteConnection(dbConnection))
@@ -1807,6 +1405,60 @@ namespace DataAPI.Database
             }
         }
 
+        public async Task<Dictionary<object, List<string>>> GetStateListItemsAsync()
+        {
+            var dic = new Dictionary<object, List<string>>
+            {
+                { SyncState.Added, new List<string>() },
+                { WatchState.Watched, new List<string>() },
+                { WatchState.Planned, new List<string>() }
+            };
+
+            foreach (KeyValuePair<object, List<string>> pair in dic)
+            {
+                string zap = string.Empty;
+                if (pair.Key is SyncState)
+                {
+                    zap = $@"SELECT {itemId} FROM {tableitems} WHERE {syncstate}='{1}'";
+                }
+                else if (pair.Key is WatchState)
+                {
+                    var st = (WatchState)pair.Key;
+                    zap = $@"SELECT {itemId} FROM {tableitems} WHERE {watchstate}='{(st == WatchState.Watched ? 1 : 2)}'";
+                }
+                using (SQLiteCommand command = GetCommand(zap))
+                {
+                    using (var connection = new SQLiteConnection(dbConnection))
+                    {
+                        await connection.OpenAsync().ConfigureAwait(false);
+                        command.Connection = connection;
+
+                        using (SQLiteTransaction transaction = connection.BeginTransaction())
+                        {
+                            using (
+                                DbDataReader reader =
+                                    await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
+                            {
+                                if (!reader.HasRows)
+                                {
+                                    continue;
+                                }
+
+                                while (await reader.ReadAsync().ConfigureAwait(false))
+                                {
+                                    var ch = reader[itemId] as string;
+                                    pair.Value.Add(ch);
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        connection.Close();
+                    }
+                }
+            }
+            return dic;
+        }
+
         /// <summary>
         ///     Get item
         /// </summary>
@@ -1814,7 +1466,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<VideoItemPOCO> GetVideoItemAsync(string id)
         {
-            string zap = string.Format(@"{0} WHERE {1}='{2}' LIMIT 1", itemsSelectString, itemId, id);
+            string zap = $@"{itemsSelectString} WHERE {itemId}='{id}' LIMIT 1";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1857,7 +1509,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task<string> GetVideoItemDescriptionAsync(string id)
         {
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}' LIMIT 1", description, tableitems, itemId, id);
+            string zap = $@"SELECT {description} FROM {tableitems} WHERE {itemId}='{id}' LIMIT 1";
 
             using (SQLiteCommand command = GetCommand(zap))
             {
@@ -1883,6 +1535,56 @@ namespace DataAPI.Database
                     }
                 }
             }
+        }
+
+        /// <summary>
+        ///     Get watch statistics
+        /// </summary>
+        /// <returns></returns>
+        public async Task<DataTable> GetWatchedStatistics()
+        {
+            const string sitecol = "Site";
+            string watchcol = WatchState.Watched.ToString();
+            string plancol = WatchState.Planned.ToString();
+
+            var res = new DataTable();
+            res.Columns.Add(sitecol, typeof(string));
+            res.Columns.Add(watchcol, typeof(string));
+            res.Columns.Add(plancol, typeof(string));
+
+            string zap = string.Format(@"SELECT B.{0}, SUM(CASE WHEN A.{1} = '1' THEN A.{10} END) AS '{8}', 
+                                SUM(CASE WHEN A.{1} = '2' THEN A.{10} END) AS '{9}' 
+                                FROM {2} A 
+                                INNER JOIN {3} C ON A.{4} = C.{5} 
+                                INNER JOIN {6} B ON B.{0} = C.{7}", credSite, watchstate, tableitems, tablechannels, parentID, channelId, tablecredentials, credSite, watchcol, plancol, duration);
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                var site = reader[sitecol] as string;
+                                string wathed = StringExtensions.IntTostrTime(Convert.ToInt32(reader[watchcol]));
+                                string planed = StringExtensions.IntTostrTime(Convert.ToInt32(reader[plancol]));
+                                res.Rows.Add(site, wathed, planed);
+                            }
+
+                            transaction.Commit();
+                        }
+                    }
+                }
+            }
+
+            return res;
         }
 
         /// <summary>
@@ -1938,13 +1640,8 @@ namespace DataAPI.Database
                         try
                         {
                             command.CommandType = CommandType.Text;
-
-                            #region channel
-
                             command.CommandText = channelsInsertString;
                             await InsertChannelParam(command, channel).ConfigureAwait(false);
-
-                            #endregion
 
                             #region Playlists
 
@@ -1980,7 +1677,6 @@ namespace DataAPI.Database
                                     catch
                                     {
                                     }
-                                    
                                 }
                             }
 
@@ -2127,7 +1823,7 @@ namespace DataAPI.Database
                         }
                     }
                 }
-            }          
+            }
         }
 
         /// <summary>
@@ -2327,51 +2023,8 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task RenameChannelAsync(string id, string newName)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, channelTitle, newName, channelId, id);
+            string zap = $@"UPDATE {tablechannels} SET {channelTitle}='{newName}' WHERE {channelId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        ///     Store cookie
-        /// </summary>
-        /// <param name="site"></param>
-        /// <param name="cookies"></param>
-        public void StoreCookies(string site, CookieContainer cookies)
-        {
-            if (FileBase.DirectoryName == null)
-            {
-                throw new Exception("Check db directory");
-            }
-
-            var folder = new DirectoryInfo(Path.Combine(FileBase.DirectoryName, cookieFolder));
-            if (!folder.Exists)
-            {
-                folder.Create();
-            }
-            var fn = new FileInfo(Path.Combine(folder.Name, site));
-            if (fn.Exists)
-            {
-                try
-                {
-                    fn.Delete();
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
-            }
-            using (Stream stream = File.Create(fn.FullName))
-            {
-                var formatter = new BinaryFormatter();
-                try
-                {
-                    formatter.Serialize(stream, cookies);
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception(ex.Message);
-                }
-            }
         }
 
         /// <summary>
@@ -2382,24 +2035,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateAutorizationAsync(string site, short autorize)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
-                tablecredentials,
-                credAutorization,
-                autorize,
-                credSite,
-                site);
-            await RunSqlCodeAsync(zap).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        ///     Update channel NewCount
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="count"></param>
-        /// <returns></returns>
-        public async Task UpdateChannelNewCountAsync(string id, int count)
-        {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablechannels, newcount, count, channelId, id);
+            string zap = $@"UPDATE {tablecredentials} SET {credAutorization}='{autorize}' WHERE {credSite}='{site}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2411,12 +2047,19 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateChannelFastSync(string id, bool useFast)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
-                tablechannels,
-                fastsync,
-                Convert.ToByte(useFast),
-                channelId,
-                id);
+            string zap = $@"UPDATE {tablechannels} SET {fastsync}='{Convert.ToByte(useFast)}' WHERE {channelId}='{id}'";
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        ///     Update channel NewCount
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        public async Task UpdateChannelNewCountAsync(string id, int count)
+        {
+            string zap = $@"UPDATE {tablechannels} SET {newcount}='{count}' WHERE {channelId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2428,7 +2071,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateItemSyncState(string id, SyncState state)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, syncstate, (byte)state, itemId, id);
+            string zap = $@"UPDATE {tableitems} SET {syncstate}='{(byte)state}' WHERE {itemId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2472,12 +2115,7 @@ namespace DataAPI.Database
                             command.CommandType = CommandType.Text;
                             foreach (IVideoItem item in items)
                             {
-                                command.CommandText = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
-                                    tableitems,
-                                    syncstate,
-                                    (byte)state,
-                                    itemId,
-                                    item.ID);
+                                command.CommandText = $@"UPDATE {tableitems} SET {syncstate}='{(byte)state}' WHERE {itemId}='{item.ID}'";
                                 await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                             }
                             transaction.Commit();
@@ -2505,7 +2143,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateItemWatchState(string id, WatchState state)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tableitems, watchstate, (byte)state, itemId, id);
+            string zap = $@"UPDATE {tableitems} SET {watchstate}='{(byte)state}' WHERE {itemId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2517,7 +2155,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateLoginAsync(string site, string newlogin)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablecredentials, credLogin, newlogin, credSite, site);
+            string zap = $@"UPDATE {tablecredentials} SET {credLogin}='{newlogin}' WHERE {credSite}='{site}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2529,12 +2167,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdatePasswordAsync(string site, string newpassword)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'",
-                tablecredentials,
-                credPass,
-                newpassword,
-                credSite,
-                site);
+            string zap = $@"UPDATE {tablecredentials} SET {credPass}='{newpassword}' WHERE {credSite}='{site}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2584,7 +2217,7 @@ namespace DataAPI.Database
         /// <returns></returns>
         public async Task UpdateSettingAsync(string key, string newvalue)
         {
-            string zap = string.Format(@"UPDATE {0} SET {1}='{2}' WHERE {3}='{4}'", tablesettings, setVal, newvalue, setKey, key);
+            string zap = $@"UPDATE {tablesettings} SET {setVal}='{newvalue}' WHERE {setKey}='{key}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 
@@ -2604,68 +2237,6 @@ namespace DataAPI.Database
             }
         }
 
-        /// <summary>
-        ///     Get watch statistics
-        /// </summary>
-        /// <returns></returns>
-        public async Task<DataTable> GetWatchedStatistics()
-        {
-            const string sitecol = "Site";
-            string watchcol = WatchState.Watched.ToString();
-            string plancol = WatchState.Planned.ToString();
-
-            var res = new DataTable();
-            res.Columns.Add(sitecol, typeof(string));
-            res.Columns.Add(watchcol, typeof(string));
-            res.Columns.Add(plancol, typeof(string));
-
-            string zap =
-                string.Format(
-                              @"SELECT B.{0}, SUM(CASE WHEN A.{1} = '1' THEN A.{10} END) AS '{8}', 
-                                SUM(CASE WHEN A.{1} = '2' THEN A.{10} END) AS '{9}' 
-                                FROM {2} A 
-                                INNER JOIN {3} C ON A.{4} = C.{5} 
-                                INNER JOIN {6} B ON  B.{0} = C.{7}",
-                    credSite,
-                    watchstate,
-                    tableitems,
-                    tablechannels,
-                    parentID,
-                    channelId,
-                    tablecredentials,
-                    credSite,
-                    watchcol,
-                    plancol,
-                    duration);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                var site = reader[sitecol] as string;
-                                string wathed = Extensions.StringExtensions.IntTostrTime(Convert.ToInt32(reader[watchcol]));
-                                string planed = Extensions.StringExtensions.IntTostrTime(Convert.ToInt32(reader[plancol]));
-                                res.Rows.Add(site, wathed, planed);
-                            }
-
-                            transaction.Commit();
-                        }
-                    }
-                }
-            }
-
-            return res;
-        }
-
         private async void CreateDb()
         {
             string sqliteschema = Path.Combine(appstartdir, sqlSchemaFolder, sqlFile);
@@ -2679,7 +2250,7 @@ namespace DataAPI.Database
             // now can be set from launch param
             // else
             // {
-            //    throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
+            // throw new FileNotFoundException("SQL Scheme not found in " + fnsch.FullName);
             // }
         }
 
@@ -2716,130 +2287,153 @@ namespace DataAPI.Database
             }
         }
 
+        /// <summary>
+        ///     Get channel items, except ids
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="basePage"></param>
+        /// <param name="excepted"></param>
+        /// <returns></returns>
+        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage, ICollection<string> excepted)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            using (var connection = new SQLiteConnection(dbConnection))
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+                using (SQLiteTransaction transaction = connection.BeginTransaction())
+                {
+                    using (SQLiteCommand command = connection.CreateCommand())
+                    {
+                        try
+                        {
+                            var ids = new List<string>(basePage);
+                            command.CommandType = CommandType.Text;
+                            string zap = basePage == 0
+                                ? $"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' ORDER BY {timestamp} DESC"
+                                : $"SELECT {itemId} FROM {tableitems} WHERE {parentID}='{channelID}' ORDER BY {timestamp} DESC LIMIT {basePage}";
+
+                            command.CommandText = zap;
+
+                            using (
+                                DbDataReader reader =
+                                    await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
+                            {
+                                if (!reader.HasRows)
+                                {
+                                    transaction.Rollback();
+                                    connection.Close();
+                                    return res;
+                                }
+
+                                while (await reader.ReadAsync().ConfigureAwait(false))
+                                {
+                                    var id = reader[itemId] as string;
+                                    if (excepted == null)
+                                    {
+                                        ids.Add(id);
+                                    }
+                                    else
+                                    {
+                                        if (!excepted.Contains(id))
+                                        {
+                                            ids.Add(id);
+                                        }
+                                    }
+                                }
+                            }
+
+                            foreach (string id in ids)
+                            {
+                                command.CommandText = $"{itemsSelectString} WHERE {parentID}='{channelID}' AND {itemId}='{id}' LIMIT 1";
+
+                                using (
+                                    DbDataReader reader =
+                                        await command.ExecuteReaderAsync(CommandBehavior.SingleResult).ConfigureAwait(false))
+                                {
+                                    if (!reader.HasRows)
+                                    {
+                                        transaction.Rollback();
+                                        connection.Close();
+                                        throw new KeyNotFoundException("No item");
+                                    }
+
+                                    while (await reader.ReadAsync().ConfigureAwait(false))
+                                    {
+                                        VideoItemPOCO vi = CreateVideoItem(reader);
+                                        res.Add(vi);
+                                    }
+                                }
+                            }
+                            transaction.Commit();
+                        }
+                        catch (Exception)
+                        {
+                            transaction.Rollback();
+                            throw;
+                        }
+                        finally
+                        {
+                            command.Dispose();
+                            connection.Close();
+                        }
+                    }
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        ///     Get channel items
+        /// </summary>
+        /// <param name="channelID"></param>
+        /// <param name="basePage"></param>
+        /// <returns></returns>
+        private async Task<List<VideoItemPOCO>> GetChannelItemsAsync(string channelID, int basePage)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            string zap = $@"{itemsSelectString} WHERE {parentID}='{channelID}' ORDER BY {timestamp} DESC LIMIT {basePage}";
+
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Rollback();
+                                connection.Close();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                VideoItemPOCO vi = CreateVideoItem(reader);
+                                res.Add(vi);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
         private async Task RunSqlCodeAsync(string sqltext)
         {
             using (SQLiteCommand command = GetCommand(sqltext))
             {
                 await ExecuteNonQueryAsync(command).ConfigureAwait(false);
             }
-        }
-
-        public async Task<List<string>> GetWatchStateListItemsAsync(WatchState state)
-        {
-            var res = new List<string>();
-
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", itemId, tableitems, watchstate, (byte)state);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                var ch = reader[itemId] as string;
-                                res.Add(ch);
-                            }
-
-                            transaction.Commit();
-                        }
-                    }
-                }
-            }
-            return res;
-        }
-
-        public async Task<Dictionary<object, List<string>>> GetStateListItemsAsync()
-        {
-            var dic = new Dictionary<object, List<string>>
-            {
-                { SyncState.Added, new List<string>() },
-                { WatchState.Watched, new List<string>() },
-                { WatchState.Planned, new List<string>() }
-            };
-
-            foreach (KeyValuePair<object, List<string>> pair in dic)
-            {
-                string zap = string.Empty;
-                if (pair.Key is SyncState)
-                {
-                    zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", itemId, tableitems, syncstate, 1);
-                }
-                else if (pair.Key is WatchState)
-                {
-                    var st = (WatchState)pair.Key;
-                    zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'",
-                        itemId,
-                        tableitems,
-                        watchstate,
-                        st == WatchState.Watched ? 1 : 2);
-                }
-                using (SQLiteCommand command = GetCommand(zap))
-                {
-                    using (var connection = new SQLiteConnection(dbConnection))
-                    {
-                        await connection.OpenAsync().ConfigureAwait(false);
-                        command.Connection = connection;
-
-                        using (SQLiteTransaction transaction = connection.BeginTransaction())
-                        {
-                            using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.SequentialAccess).ConfigureAwait(false))
-                            {
-                                if (!reader.HasRows)
-                                {
-                                    continue;
-                                }
-
-                                while (await reader.ReadAsync().ConfigureAwait(false))
-                                {
-                                    var ch = reader[itemId] as string;
-                                    pair.Value.Add(ch);
-                                }
-                            }
-                            transaction.Commit();
-                        }
-                        connection.Close();
-                    }
-                }
-            }
-            return dic;
-        }
-
-        public async Task<List<string>> GetWatchStateListItemsAsync(SyncState state)
-        {
-            var res = new List<string>();
-
-            string zap = string.Format(@"SELECT {0} FROM {1} WHERE {2}='{3}'", itemId, tableitems, syncstate, (byte)state);
-
-            using (SQLiteCommand command = GetCommand(zap))
-            {
-                using (var connection = new SQLiteConnection(dbConnection))
-                {
-                    await connection.OpenAsync().ConfigureAwait(false);
-                    command.Connection = connection;
-
-                    using (SQLiteTransaction transaction = connection.BeginTransaction())
-                    {
-                        using (DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
-                        {
-                            while (await reader.ReadAsync().ConfigureAwait(false))
-                            {
-                                var ch = reader[itemId] as string;
-                                res.Add(ch);
-                            }
-
-                            transaction.Commit();
-                        }
-                    }
-                }
-            }
-            return res;
         }
 
         #endregion

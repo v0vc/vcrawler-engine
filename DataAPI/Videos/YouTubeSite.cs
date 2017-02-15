@@ -22,7 +22,7 @@ namespace DataAPI.Videos
     {
         #region Constants
 
-        public const int ItemsPerPage = 50;
+        private const int itemsPerPage = 50;
         private const string key = "AIzaSyDfdgAVDXbepYVGivfbgkknu0kYRbC2XwI";
         private const string printType = "prettyPrint=false";
         private const string token = "nextPageToken";
@@ -84,11 +84,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<string> GetChannelIdByUserNameNetAsync(string username)
         {
-            string zap = string.Format("{0}channels?&forUsername={1}&key={2}&part=snippet&&fields=items(id)&prettyPrint=false&{3}",
-                url,
-                username,
-                key,
-                printType);
+            string zap = $"{url}channels?&forUsername={username}&key={key}&part=snippet&&fields=items(id)&prettyPrint=false&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -115,21 +111,15 @@ namespace DataAPI.Videos
         {
             var res = new List<VideoItemPOCO>();
 
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
 
             string zap =
-                string.Format(
-                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}",
-                    url,
-                    channelID,
-                    key,
-                    itemsppage,
-                    printType);
+                $"{url}search?&channelId={channelID}&key={key}&order=date&maxResults={itemsppage}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
 
             object pagetoken;
 
@@ -145,14 +135,7 @@ namespace DataAPI.Videos
                 {
                     skipfirst = false;
                     zap =
-                        string.Format(
-                                      "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
-                            url,
-                            channelID,
-                            key,
-                            itemsppage,
-                            pagetoken,
-                            printType);
+                        $"{url}search?&channelId={channelID}&key={key}&order=date&maxResults={itemsppage}&pageToken={pagetoken}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
                     continue;
                 }
 
@@ -188,12 +171,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 zap =
-                    string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}",
-                        url,
-                        ids,
-                        key,
-                        printType);
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
 
                 string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -221,14 +199,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
-                        url,
-                        channelID,
-                        key,
-                        itemsppage,
-                        pagetoken,
-                        printType);
+                    $"{url}search?&channelId={channelID}&key={key}&order=date&maxResults={itemsppage}&pageToken={pagetoken}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
             }
             while (pagetoken != null);
 
@@ -242,7 +213,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<int> GetChannelItemsCountBySearchNetAsync(string channelID)
         {
-            string zap = string.Format("{0}search?&channelId={1}&key={2}&maxResults=0&part=snippet&{3}", url, channelID, key, printType);
+            string zap = $"{url}search?&channelId={channelID}&key={key}&maxResults=0&part=snippet&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -264,11 +235,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<int> GetChannelItemsCountNetAsync(string channelID)
         {
-            string zap = string.Format("{0}channels?id={1}&key={2}&part=statistics&fields=items(statistics(videoCount))&{3}",
-                url,
-                channelID,
-                key,
-                printType);
+            string zap = $"{url}channels?id={channelID}&key={key}&part=statistics&fields=items(statistics(videoCount))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -293,21 +260,15 @@ namespace DataAPI.Videos
         {
             var res = new List<VideoItemPOCO>();
 
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
 
             string zap =
-                string.Format(
-                              "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&part=snippet&fields=nextPageToken,items(id)&{4}",
-                    url,
-                    channelID,
-                    key,
-                    itemsppage,
-                    printType);
+                $"{url}search?&channelId={channelID}&key={key}&order=date&maxResults={itemsppage}&part=snippet&fields=nextPageToken,items(id)&{printType}";
 
             object pagetoken;
 
@@ -350,11 +311,7 @@ namespace DataAPI.Videos
 
                 string ids = sb.ToString().TrimEnd(',');
 
-                zap = string.Format("{0}videos?id={1}&key={2}&part=status&fields=items(id,status(privacyStatus))&{3}",
-                    url,
-                    ids,
-                    key,
-                    printType);
+                zap = $"{url}videos?id={ids}&key={key}&part=status&fields=items(id,status(privacyStatus))&{printType}";
 
                 string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -383,14 +340,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}search?&channelId={1}&key={2}&order=date&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id)&{5}",
-                        url,
-                        channelID,
-                        key,
-                        itemsppage,
-                        pagetoken,
-                        printType);
+                    $"{url}search?&channelId={channelID}&key={key}&order=date&maxResults={itemsppage}&pageToken={pagetoken}&part=snippet&fields=nextPageToken,items(id)&{printType}";
             }
             while (pagetoken != null);
 
@@ -405,12 +355,7 @@ namespace DataAPI.Videos
         public static async Task<ChannelPOCO> GetChannelNetAsync(string channelID)
         {
             string zap =
-                string.Format(
-                              "{0}channels?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,thumbnails(default(url))))&{3}",
-                    url,
-                    channelID,
-                    key,
-                    printType);
+                $"{url}channels?&id={channelID}&key={key}&part=snippet&fields=items(snippet(title,description,thumbnails(default(url))))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -434,12 +379,8 @@ namespace DataAPI.Videos
 
             object pagetoken;
 
-            string zap = string.Format("{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id)&maxResults={3}&{4}",
-                url,
-                key,
-                channelID,
-                ItemsPerPage,
-                printType);
+            string zap =
+                $"{url}playlists?&key={key}&channelId={channelID}&part=snippet&fields=items(id)&maxResults={itemsPerPage}&{printType}";
 
             do
             {
@@ -470,13 +411,7 @@ namespace DataAPI.Videos
             object pagetoken;
 
             string zap =
-                string.Format(
-                              "{0}playlists?&key={1}&channelId={2}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={3}&{4}",
-                    url,
-                    key,
-                    channelID,
-                    ItemsPerPage,
-                    printType);
+                $"{url}playlists?&key={key}&channelId={channelID}&part=snippet&fields=items(id,snippet(title, description,thumbnails(default(url))))&maxResults={itemsPerPage}&{printType}";
 
             do
             {
@@ -514,11 +449,7 @@ namespace DataAPI.Videos
         {
             var res = new List<PlaylistPOCO>();
             string zap =
-                string.Format("{0}channels?&key={1}&id={2}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))&{3}",
-                    url,
-                    key,
-                    channelID,
-                    printType);
+                $"{url}channels?&key={key}&id={channelID}&part=contentDetails&fields=items(contentDetails(relatedPlaylists))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
             JObject jsvideo = JObject.Parse(str);
@@ -558,11 +489,7 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<int> GetPlaylistItemsCountNetAsync(string plId)
         {
-            string zap = string.Format("{0}playlists?id={1}&key={2}&part=contentDetails&fields=items(contentDetails(itemCount))&{3}",
-                url,
-                plId,
-                key,
-                printType);
+            string zap = $"{url}playlists?id={plId}&key={key}&part=contentDetails&fields=items(contentDetails(itemCount))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -587,9 +514,9 @@ namespace DataAPI.Videos
         {
             var res = new List<string>();
 
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -597,13 +524,7 @@ namespace DataAPI.Videos
             object pagetoken;
 
             string zap =
-                string.Format(
-                              "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}",
-                    url,
-                    key,
-                    plid,
-                    itemsppage,
-                    printType);
+                $"{url}playlistItems?&key={key}&playlistId={plid}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={itemsppage}&{printType}";
 
             do
             {
@@ -647,14 +568,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}",
-                        url,
-                        key,
-                        plid,
-                        pagetoken,
-                        ItemsPerPage,
-                        printType);
+                    $"{url}playlistItems?&key={key}&playlistId={plid}&part=snippet,status&pageToken={pagetoken}&order=date&fields=nextPageToken,items(snippet(resourceId(videoId)),status(privacyStatus))&maxResults={itemsPerPage}&{printType}";
             }
             while (pagetoken != null);
 
@@ -673,13 +587,7 @@ namespace DataAPI.Videos
             object pagetoken;
 
             string zap =
-                string.Format(
-                              "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={3}&{4}",
-                    url,
-                    key,
-                    plid,
-                    ItemsPerPage,
-                    printType);
+                $"{url}playlistItems?&key={key}&playlistId={plid}&part=snippet,status&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={itemsPerPage}&{printType}";
 
             do
             {
@@ -727,12 +635,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{3}",
-                        url,
-                        ids,
-                        key,
-                        printType);
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
@@ -754,14 +657,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}playlistItems?&key={1}&playlistId={2}&part=snippet,status&pageToken={3}&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={4}&{5}",
-                        url,
-                        key,
-                        plid,
-                        pagetoken,
-                        ItemsPerPage,
-                        printType);
+                    $"{url}playlistItems?&key={key}&playlistId={plid}&part=snippet,status&pageToken={pagetoken}&order=date&fields=nextPageToken,items(snippet(publishedAt,channelId,title,description,thumbnails(default(url)),resourceId(videoId)),status(privacyStatus))&maxResults={itemsPerPage}&{printType}";
             }
             while (pagetoken != null);
 
@@ -778,12 +674,7 @@ namespace DataAPI.Videos
             var pl = new PlaylistPOCO(id, SiteType.YouTube);
 
             string zap =
-                string.Format(
-                              "{0}playlists?&id={1}&key={2}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{3}",
-                    url,
-                    id,
-                    key,
-                    printType);
+                $"{url}playlists?&id={id}&key={key}&part=snippet&fields=items(snippet(title,description,channelId,thumbnails(default(url))))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -802,9 +693,9 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<List<VideoItemPOCO>> GetPopularItemsAsync(string regionID, int maxResult)
         {
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -812,13 +703,7 @@ namespace DataAPI.Videos
             var res = new List<VideoItemPOCO>();
 
             string zap =
-                string.Format(
-                              "{0}videos?chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&part=snippet&safeSearch=none&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{4}",
-                    url,
-                    regionID,
-                    key,
-                    itemsppage,
-                    printType);
+                $"{url}videos?chart=mostPopular&regionCode={regionID}&key={key}&maxResults={itemsppage}&part=snippet&safeSearch=none&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
 
             object pagetoken;
 
@@ -863,12 +748,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}",
-                        url,
-                        ids,
-                        key,
-                        printType);
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
                 jsvideo = JObject.Parse(det);
@@ -889,14 +769,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}videos?chart=mostPopular&regionCode={1}&key={2}&maxResults={3}&pageToken={4}&part=snippet&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
-                        url,
-                        regionID,
-                        key,
-                        itemsppage,
-                        pagetoken,
-                        printType);
+                    $"{url}videos?chart=mostPopular&regionCode={regionID}&key={key}&maxResults={itemsppage}&pageToken={pagetoken}&part=snippet&fields=nextPageToken,items(id,snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
             }
             while (pagetoken != null);
 
@@ -913,12 +786,7 @@ namespace DataAPI.Videos
             var lst = new List<ChannelPOCO>();
 
             string zap =
-                string.Format(
-                              "{0}channels?id={1}&key={2}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{3}",
-                    url,
-                    id,
-                    key,
-                    printType);
+                $"{url}channels?id={id}&key={key}&part=brandingSettings&fields=items(brandingSettings(channel(featuredChannelsUrls)))&{printType}";
 
             string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -952,21 +820,15 @@ namespace DataAPI.Videos
         {
             var res = new List<string>();
 
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
 
             string zap =
-                string.Format(
-                              "{0}commentThreads?videoId={1}&key={2}&maxResults={3}&part=snippet&fields=nextPageToken,items(snippet(topLevelComment(snippet(authorDisplayName,textDisplay,authorChannelUrl,authorProfileImageUrl,publishedAt))))&{4}",
-                    url,
-                    videoID,
-                    key,
-                    itemsppage,
-                    printType);
+                $"{url}commentThreads?videoId={videoID}&key={key}&maxResults={itemsppage}&part=snippet&fields=nextPageToken,items(snippet(topLevelComment(snippet(authorDisplayName,textDisplay,authorChannelUrl,authorProfileImageUrl,publishedAt))))&{printType}";
 
             object pagetoken;
             do
@@ -992,12 +854,7 @@ namespace DataAPI.Videos
             var item = new VideoItemPOCO(videoid);
 
             string zap =
-                string.Format(
-                              "{0}videos?&id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount))&{3}",
-                    url,
-                    videoid,
-                    key,
-                    printType);
+                $"{url}videos?&id={videoid}&key={key}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -1006,30 +863,6 @@ namespace DataAPI.Videos
             await FillFieldsFromSingleVideo(item, jsvideo).ConfigureAwait(false);
 
             return item;
-        }
-
-        /// <summary>
-        ///     Get video subtitles
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public static async Task<List<SubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
-        {
-            string zap = string.Format("{0}captions?&videoId={1}&key={2}&part=snippet&fields=items(snippet(language))&{3}",
-                url,
-                id,
-                key,
-                printType);
-
-            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
-
-            JObject jsvideo = JObject.Parse(det);
-
-            return (from pair in jsvideo["items"]
-                select pair.SelectToken("snippet.language")
-                into lang
-                where lang != null
-                select new SubtitlePOCO { Language = lang.Value<string>() }).ToList();
         }
 
         /// <summary>
@@ -1051,12 +884,7 @@ namespace DataAPI.Videos
             string res = sb.ToString().TrimEnd(',');
 
             string zap =
-                string.Format(
-                              "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{3}",
-                    url,
-                    res,
-                    key,
-                    printType);
+                $"{url}videos?id={res}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
 
             string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -1106,11 +934,7 @@ namespace DataAPI.Videos
 
             string res = sb.ToString().TrimEnd(',');
 
-            string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(id,snippet(channelId))&{3}",
-                url,
-                res,
-                key,
-                printType);
+            string zap = $"{url}videos?&id={res}&key={key}&part=snippet&fields=items(id,snippet(channelId))&{printType}";
 
             string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -1140,6 +964,26 @@ namespace DataAPI.Videos
             }
 
             return lst;
+        }
+
+        /// <summary>
+        ///     Get video subtitles
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public static async Task<List<SubtitlePOCO>> GetVideoSubtitlesByIdAsync(string id)
+        {
+            string zap = $"{url}captions?&videoId={id}&key={key}&part=snippet&fields=items(snippet(language))&{printType}";
+
+            string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+            JObject jsvideo = JObject.Parse(det);
+
+            return (from pair in jsvideo["items"]
+                select pair.SelectToken("snippet.language")
+                into lang
+                where lang != null
+                select new SubtitlePOCO { Language = lang.Value<string>() }).ToList();
         }
 
         /// <summary>
@@ -1210,9 +1054,9 @@ namespace DataAPI.Videos
         /// <returns></returns>
         public static async Task<List<VideoItemPOCO>> SearchItemsAsync(string keyword, string region, int maxResult)
         {
-            int itemsppage = ItemsPerPage;
+            int itemsppage = itemsPerPage;
 
-            if (maxResult < ItemsPerPage & maxResult != 0)
+            if (maxResult < itemsPerPage & maxResult != 0)
             {
                 itemsppage = maxResult;
             }
@@ -1220,14 +1064,7 @@ namespace DataAPI.Videos
             var res = new List<VideoItemPOCO>();
 
             string zap =
-                string.Format(
-                              "{0}search?&q={1}&key={2}&maxResults={3}&regionCode={4}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{5}",
-                    url,
-                    keyword,
-                    key,
-                    itemsppage,
-                    region,
-                    printType);
+                $"{url}search?&q={keyword}&key={key}&maxResults={itemsppage}&regionCode={region}&part=snippet&safeSearch=none&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
 
             object pagetoken;
 
@@ -1272,12 +1109,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    string.Format(
-                                  "{0}videos?id={1}&key={2}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{3}",
-                        url,
-                        ids,
-                        key,
-                        printType);
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
@@ -1299,15 +1131,7 @@ namespace DataAPI.Videos
                 }
 
                 zap =
-                    string.Format(
-                                  "{0}search?&q={1}&key={2}&maxResults={3}&regionCode={4}&pageToken={5}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{6}",
-                        url,
-                        keyword,
-                        key,
-                        itemsppage,
-                        region,
-                        pagetoken,
-                        printType);
+                    $"{url}search?&q={keyword}&key={key}&maxResults={itemsppage}&regionCode={region}&pageToken={pagetoken}&part=snippet&fields=nextPageToken,items(id(videoId),snippet(channelId,title,publishedAt,thumbnails(default(url))))&{printType}";
             }
             while (pagetoken != null);
 
@@ -1420,11 +1244,7 @@ namespace DataAPI.Videos
         {
             var item = new VideoItemPOCO(id);
 
-            string zap = string.Format("{0}videos?&id={1}&key={2}&part=snippet&fields=items(snippet(channelId))&{3}",
-                url,
-                id,
-                key,
-                printType);
+            string zap = $"{url}videos?&id={id}&key={key}&part=snippet&fields=items(snippet(channelId))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
