@@ -255,8 +255,7 @@ namespace Crawler.ViewModels
         private void OnStateChanged(StateImage stateImage)
         {
             Title = stateImage.State.ToString();
-            ReloadFilteredLists(stateImage.State);
-            RefreshView("Timestamp");
+            ReloadFilteredLists(stateImage.State); 
         }
 
         private async void ReloadFilteredLists(object state)
@@ -296,8 +295,7 @@ namespace Crawler.ViewModels
                                 watchedList.Add(item);
                             }
                         }
-                        watchedList.OrderBy(x => x.ParentID).ForEach(x => AddNewItem(x));
-
+                        watchedList.OrderBy(x => x.Timestamp).ForEach(x => AddNewItem(x));
                         break;
                     case WatchState.Planned:
 
@@ -325,8 +323,7 @@ namespace Crawler.ViewModels
                                 plannedList.Add(item);
                             }
                         }
-                        plannedList.ForEach(x => AddNewItem(x));
-
+                        plannedList.OrderBy(x => x.Timestamp).ForEach(x => AddNewItem(x));
                         break;
                 }
             }
@@ -362,7 +359,7 @@ namespace Crawler.ViewModels
                                 addedList.Add(item);
                             }
                         }
-                        addedList.ForEach(x => AddNewItem(x));
+                        addedList.OrderBy(x => x.ParentID).ThenBy(y => y.Timestamp).ForEach(x => AddNewItem(x));
                         break;
                 }
             }

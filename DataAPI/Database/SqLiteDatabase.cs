@@ -290,7 +290,7 @@ namespace DataAPI.Database
         {
             if (string.IsNullOrEmpty(sql))
             {
-                throw new ArgumentNullException("sql");
+                throw new ArgumentNullException(nameof(sql));
             }
 
             return new SQLiteCommand { CommandText = sql, CommandType = CommandType.Text };
@@ -2241,11 +2241,12 @@ namespace DataAPI.Database
         {
             string sqliteschema = Path.Combine(appstartdir, sqlSchemaFolder, sqlFile);
             var fnsch = new FileInfo(sqliteschema);
-            if (fnsch.Exists)
+            if (!fnsch.Exists)
             {
-                string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
-                await RunSqlCodeAsync(sqltext).ConfigureAwait(false);
+                return;
             }
+            string sqltext = File.ReadAllText(fnsch.FullName, Encoding.UTF8);
+            await RunSqlCodeAsync(sqltext).ConfigureAwait(false);
 
             // now can be set from launch param
             // else
@@ -2258,7 +2259,7 @@ namespace DataAPI.Database
         {
             if (command == null)
             {
-                throw new ArgumentNullException("command");
+                throw new ArgumentNullException(nameof(command));
             }
 
             using (var connection = new SQLiteConnection(dbConnection))
