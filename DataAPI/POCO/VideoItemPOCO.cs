@@ -15,7 +15,7 @@ namespace DataAPI.POCO
         public VideoItemPOCO(string id,
             string parentid,
             string title,
-            int viewcount,
+            long viewcount,
             int duration,
             int comments,
             byte[] thumbnail,

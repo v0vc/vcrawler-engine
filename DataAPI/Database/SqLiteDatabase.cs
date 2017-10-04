@@ -277,7 +277,7 @@ namespace DataAPI.Database
             return new VideoItemPOCO((string)reader[itemId],
                 (string)reader[parentID],
                 (string)reader[title],
-                Convert.ToInt32(reader[viewCount]),
+                Convert.ToInt64(reader[viewCount]),
                 Convert.ToInt32(reader[duration]),
                 Convert.ToInt32(reader[comments]),
                 (byte[])reader[thumbnail],
