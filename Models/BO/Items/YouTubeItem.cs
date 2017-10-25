@@ -272,6 +272,8 @@ namespace Models.BO.Items
             }
         }
 
+        public IEnumerable<string> Tags { get; set; }
+
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }

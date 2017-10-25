@@ -139,6 +139,11 @@
                                 <RadioButton Content="Filter result" IsChecked="{Binding IsFilterOpen, Mode=TwoWay}"/>
                             </StackPanel>
                         </GroupBox>
+                        <GroupBox Grid.Column="1" Header="Options:">
+                            <StackPanel>
+                                <CheckBox Content="Show filtartion by tags" IsChecked="{Binding IsVideoFiltrationEnabled}"/>
+                            </StackPanel>
+                        </GroupBox>
                     </Grid>
                 </Grid>
             </TabItem>

@@ -62,6 +62,7 @@ namespace Crawler.ViewModels
             this.db = db;
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelItems = new ObservableCollection<IVideoItem>();
+            VideoTags = new ObservableCollection<string>();
             addedList = new List<IVideoItem>();
             plannedList = new List<IVideoItem>();
             watchedList = new List<IVideoItem>();
@@ -455,6 +456,7 @@ namespace Crawler.ViewModels
         }
 
         public bool UseFast { get; set; }
+        public ObservableCollection<string> VideoTags { get; set; }
 
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {

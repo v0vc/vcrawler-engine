@@ -44,6 +44,7 @@ namespace Crawler.ViewModels
         private const string youheader = "Youtube-dl";
         private const string youLaunchParam = "you";
         private const string youtubeDl = "youtube-dl.exe";
+        private const string showVideoFiltration = "videoFilter";
 
         #endregion
 
@@ -69,6 +70,7 @@ namespace Crawler.ViewModels
         private RelayCommand updateYouDlCommand;
         private string youHeader;
         private string youPath;
+        private bool isVideoFiltrationEnabled;
 
         #endregion
 
@@ -109,6 +111,23 @@ namespace Crawler.ViewModels
 
         public RelayCommand FillYouHeaderCommand
             => fillYouHeaderCommand ?? (fillYouHeaderCommand = new RelayCommand(x => FillYouHeader()));
+
+        public bool IsVideoFiltrationEnabled
+        {
+            get
+            {
+                return isVideoFiltrationEnabled;
+            }
+            set
+            {
+                if (value == isVideoFiltrationEnabled)
+                {
+                    return;
+                }
+                isVideoFiltrationEnabled = value;
+                OnPropertyChanged();
+            }
+        }
 
         public bool IsFilterOpen
         {
@@ -280,6 +299,9 @@ namespace Crawler.ViewModels
 
             ISetting youpath = await SettingFactory.GetSettingDbAsync(pathToYoudl).ConfigureAwait(false);
             YouPath = youpath.Value;
+
+            ISetting videoFiltr = await SettingFactory.GetSettingDbAsync(showVideoFiltration).ConfigureAwait(false);
+            IsVideoFiltrationEnabled = videoFiltr.Value != "0";
 
             if (string.IsNullOrEmpty(YouPath))
             {
@@ -466,6 +488,13 @@ namespace Crawler.ViewModels
             if (onstartup.Value != res)
             {
                 await db.UpdateSettingAsync(onstartup.Key, res).ConfigureAwait(false);
+            }
+
+            ISetting videoFilterEnabled = await SettingFactory.GetSettingDbAsync(showVideoFiltration).ConfigureAwait(false);
+            string result = IsVideoFiltrationEnabled ? "1" : "0";
+            if (videoFilterEnabled.Value != result)
+            {
+                await db.UpdateSettingAsync(videoFilterEnabled.Key, result).ConfigureAwait(false);
             }
 
             foreach (ICred cred in SupportedCreds)

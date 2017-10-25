@@ -970,11 +970,12 @@
                             <Grid HorizontalAlignment="{Binding Path=HorizontalAlignment, RelativeSource={RelativeSource AncestorType={x:Type ContentPresenter}}, Mode=OneWayToSource}">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBox Grid.Column="2" FlowDirection="LeftToRight" 
-                                             Width="102" HorizontalAlignment="Left" BorderBrush="Lavender"
+                                <TextBox Grid.Column="3" FlowDirection="LeftToRight" 
+                                             Width="100" HorizontalAlignment="Left" BorderBrush="Lavender"
                                              Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              >
@@ -1001,6 +1002,15 @@
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>
+                                <ComboBox Visibility="{Binding SettingsViewModel.IsVideoFiltrationEnabled, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Column="2" Width="100" FlowDirection="LeftToRight"  HorizontalAlignment="Right" Margin="2,0,2,0"
+                                          ItemsSource="{Binding SelectedChannel.VideoTags}"
+                                          SelectedItem="{Binding Path=DataContext.SelectedVideoTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+                                    <i:Interaction.Triggers>
+                                        <i:EventTrigger EventName="DropDownOpened">
+                                            <i:InvokeCommandAction Command="{Binding VideoTagsDropDownOpenedCommand, Mode=OneTime}" />
+                                        </i:EventTrigger>
+                                    </i:Interaction.Triggers>
+                                </ComboBox>
                                 <Label Grid.Column="0" FontSize="10" Content="Log"/>
                             </Grid>
                     </Expander.Header>

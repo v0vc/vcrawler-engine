@@ -28,7 +28,7 @@ namespace DataAPI.POCO
 
         public override int GetHashCode()
         {
-            return string.Format("{0}", Title).GetHashCode();
+            return $"{Title}".GetHashCode();
         }
 
         #endregion

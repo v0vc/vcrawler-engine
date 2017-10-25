@@ -96,11 +96,14 @@ namespace Crawler.ViewModels
         private IList selectedItems = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
+        private string selectedVideoTag;
         private RelayCommand siteChangedCommand;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
         private RelayCommand videoClickCommand;
+        private ICollectionView videoCollectionView;
         private RelayCommand videoDoubleClickCommand;
+        private RelayCommand videoDropDownOpenedCommand;
         private RelayCommand videoItemMenuCommand;
 
         #endregion
@@ -326,6 +329,7 @@ namespace Crawler.ViewModels
                 selectedChannel = value;
                 OnPropertyChanged();
                 FillChannelItems(selectedChannel);
+                videoCollectionView = CollectionViewSource.GetDefaultView(selectedChannel.ChannelItems);
             }
         }
 
@@ -398,6 +402,24 @@ namespace Crawler.ViewModels
             }
         }
 
+        public string SelectedVideoTag
+        {
+            get
+            {
+                return selectedVideoTag;
+            }
+            set
+            {
+                if (Equals(value, selectedVideoTag))
+                {
+                    return;
+                }
+                selectedVideoTag = value;
+                videoCollectionView.Filter = FilterVideosByTag;
+                OnPropertyChanged();
+            }
+        }
+
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
 
@@ -420,7 +442,10 @@ namespace Crawler.ViewModels
 
         public RelayCommand VideoItemMenuCommand => videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
 
-        private SettingsViewModel SettingsViewModel { get; }
+        public RelayCommand VideoTagsDropDownOpenedCommand
+            => videoDropDownOpenedCommand ?? (videoDropDownOpenedCommand = new RelayCommand(x => FillVideoTags()));
+
+        public SettingsViewModel SettingsViewModel { get; }
 
         #endregion
 
@@ -1112,6 +1137,29 @@ namespace Crawler.ViewModels
             }
         }
 
+        private async void FillVideoTags()
+        {
+            SelectedChannel.VideoTags.Clear();
+            IEnumerable<string> parents = SelectedChannel.ChannelItems.Select(x => x.ParentID).Distinct();
+            foreach (string parent in parents)
+            {
+                List<TagPOCO> tags = await db.GetChannelTagsAsync(parent).ConfigureAwait(false);
+                foreach (TagPOCO tag in
+                    tags.Where(tag => !SelectedChannel.VideoTags.Contains(tag.Title)))
+                {
+                    SelectedChannel.VideoTags.Add(tag.Title);
+                }
+                foreach (IVideoItem item in SelectedChannel.ChannelItems.Where(item => item.ParentID == parent))
+                {
+                    item.Tags = tags.Select(x => x.Title);
+                }
+            }
+            if (SelectedChannel.VideoTags.Any())
+            {
+                SelectedChannel.VideoTags.Add(string.Empty);
+            }
+        }
+
         private bool FilterByCheckedTag(object item)
         {
             var channel = (IChannel)item;
@@ -1181,6 +1229,12 @@ namespace Crawler.ViewModels
                 return true;
             }
             return channel.ChannelTags.Select(x => x.Title).Contains(SelectedTag.Title);
+        }
+
+        private bool FilterVideosByTag(object obj)
+        {
+            var item = (IVideoItem)obj;
+            return string.IsNullOrEmpty(SelectedVideoTag) || item.Tags.Contains(SelectedVideoTag);
         }
 
         private async Task FindRelatedChannels(IChannel channel)

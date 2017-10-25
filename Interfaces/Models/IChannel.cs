@@ -25,17 +25,17 @@ namespace Interfaces.Models
         string DirPath { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
+        bool IsHasNewFromSync { get; set; }
         bool IsShowSynced { get; set; }
+        bool Loaded { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }
         SiteType Site { get; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
-        bool IsHasNewFromSync { get; set; }
-
-        bool Loaded { get; set; }
         bool UseFast { get; set; }
+        ObservableCollection<string> VideoTags { get; set; }
 
         #endregion
 

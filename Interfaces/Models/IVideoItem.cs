@@ -4,6 +4,7 @@
 // Copyright (c) 2015, v0v All Rights Reserved
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Interfaces.Enums;
@@ -29,6 +30,7 @@ namespace Interfaces.Models
         string ProxyUrl { get; set; }
         ObservableCollection<ISubtitle> Subtitles { get; set; }
         SyncState SyncState { get; set; }
+        IEnumerable<string> Tags { get; set; }
         byte[] Thumbnail { get; set; }
         DateTime Timestamp { get; set; }
         string Title { get; set; }
