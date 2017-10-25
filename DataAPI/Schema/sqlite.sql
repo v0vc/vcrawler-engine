@@ -30,6 +30,7 @@ INSERT INTO "settings" VALUES ('pathToYoudl', '');
 INSERT INTO "settings" VALUES ('pathToMpc', '');
 INSERT INTO "settings" VALUES ('pathToDownload', '');
 INSERT INTO "settings" VALUES ('youtubeBest', '0');
+INSERT INTO "settings" VALUES ('videoFilter', '0');
 
 --таблица каналов
 CREATE TABLE `channels` (
