@@ -165,7 +165,7 @@ namespace Crawler.ViewModels
             => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => SelectedChannel.FilterVideoKey = string.Empty));
 
         public RelayCommand ClearChannelFilterCommand
-            => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => FilterChannelKey = string.Empty));
+            => clearChannelFilterCommand ?? (clearChannelFilterCommand = new RelayCommand(x => FilterChannelKey = string.Empty));
 
         public RelayCommand CurrentTagCheckedCommand
             => currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
