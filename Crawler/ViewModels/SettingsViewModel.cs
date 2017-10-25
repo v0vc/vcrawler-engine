@@ -366,6 +366,9 @@ namespace Crawler.ViewModels
 
             ISetting onstartup = await SettingFactory.GetSettingDbAsync(onstartupopen).ConfigureAwait(false);
             IsFilterOpen = onstartup.Value != "0";
+
+            ISetting isFilterEnabled = await SettingFactory.GetSettingDbAsync(showVideoFiltration).ConfigureAwait(false);
+            IsVideoFiltrationEnabled = isFilterEnabled.Value != "0";
         }
 
         public async Task LoadTagsFromDb()
