@@ -441,6 +441,19 @@
                                             </Style>
                                         </TextBox.Style>
                                     </TextBox>
+                                    <Button Grid.Column="2" Width="25" Height="25" FlowDirection="LeftToRight" 
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Command="{Binding DataContext.ClearChannelFilterCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                        >
+                                        <Button.Template>
+                                            <ControlTemplate>
+                                                <Border HorizontalAlignment="Center" VerticalAlignment="Center" >
+                                                    <Image Source="../Images/cross_16.png" Width="16" Height="16"/>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
                                     <Label Grid.Column="0" FontSize="10" Content="Search"/>
                                 </Grid>
                             </Expander.Header>
@@ -975,7 +988,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Grid.Column="3" FlowDirection="LeftToRight" 
-                                             Width="100" HorizontalAlignment="Left" BorderBrush="Lavender"
+                                             Width="160" HorizontalAlignment="Left" BorderBrush="Lavender"
                                              Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                              VerticalContentAlignment="Center"
                                              >
@@ -1002,9 +1015,24 @@
                                         </Style>
                                     </TextBox.Style>
                                 </TextBox>
-                                <ComboBox Visibility="{Binding SettingsViewModel.IsVideoFiltrationEnabled, Converter={StaticResource BoolToVisibilityConverter}}" Grid.Column="2" Width="100" FlowDirection="LeftToRight"  HorizontalAlignment="Right" Margin="2,0,2,0"
+                                <Button Grid.Column="3" Width="25" Height="25" FlowDirection="LeftToRight" 
+                                        HorizontalAlignment="Left" VerticalAlignment="Center"
+                                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                        Command="{Binding DataContext.ClearFilterCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                        >
+                                    <Button.Template>
+                                        <ControlTemplate>
+                                            <Border HorizontalAlignment="Center" VerticalAlignment="Center" >
+                                                <Image Source="../Images/cross_16.png" Width="16" Height="16"/>
+                                            </Border>
+                                        </ControlTemplate>
+                                    </Button.Template>
+                                </Button>
+                                <ComboBox Grid.Column="2" Visibility="{Binding SettingsViewModel.IsVideoFiltrationEnabled, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                          Width="100" FlowDirection="LeftToRight"  HorizontalAlignment="Right" Margin="2,0,2,0"
                                           ItemsSource="{Binding SelectedChannel.VideoTags}"
-                                          SelectedItem="{Binding Path=DataContext.SelectedVideoTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}">
+                                          SelectedItem="{Binding Path=DataContext.SelectedVideoTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
+                                          >
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="DropDownOpened">
                                             <i:InvokeCommandAction Command="{Binding VideoTagsDropDownOpenedCommand, Mode=OneTime}" />

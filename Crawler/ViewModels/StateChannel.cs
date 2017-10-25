@@ -405,8 +405,13 @@ namespace Crawler.ViewModels
             }
             set
             {
+                if (value == filterVideoKey)
+                {
+                    return;
+                }
                 filterVideoKey = value;
                 ChannelItemsCollectionView.Filter = FilterVideoByTitle;
+                OnPropertyChanged();
             }
         }
 

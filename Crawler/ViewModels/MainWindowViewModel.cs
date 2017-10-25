@@ -70,6 +70,8 @@ namespace Crawler.ViewModels
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectCommand;
+        private RelayCommand clearFilterCommand;
+        private RelayCommand clearChannelFilterCommand;
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
@@ -158,6 +160,12 @@ namespace Crawler.ViewModels
         public ObservableCollection<IChannel> Channels { get; }
 
         public RelayCommand ChannelSelectCommand => channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
+
+        public RelayCommand ClearFilterCommand
+            => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => SelectedChannel.FilterVideoKey = string.Empty));
+
+        public RelayCommand ClearChannelFilterCommand
+            => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => FilterChannelKey = string.Empty));
 
         public RelayCommand CurrentTagCheckedCommand
             => currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
@@ -423,6 +431,8 @@ namespace Crawler.ViewModels
         public ServiceChannelViewModel ServiceChannel { get; set; }
         public ObservableCollection<ServiceChannelViewModel> ServiceChannels { get; set; }
 
+        public SettingsViewModel SettingsViewModel { get; }
+
         public RelayCommand SiteChangedCommand => siteChangedCommand ?? (siteChangedCommand = new RelayCommand(SiteChanged));
 
         public StateChannel StateChannel { get; }
@@ -444,8 +454,6 @@ namespace Crawler.ViewModels
 
         public RelayCommand VideoTagsDropDownOpenedCommand
             => videoDropDownOpenedCommand ?? (videoDropDownOpenedCommand = new RelayCommand(x => FillVideoTags()));
-
-        public SettingsViewModel SettingsViewModel { get; }
 
         #endregion
 
