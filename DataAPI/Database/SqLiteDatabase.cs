@@ -701,6 +701,41 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        /// Get item watch state
+        /// </summary>
+        /// <param name="itemID"></param>
+        /// <returns></returns>
+        public async Task<WatchState> GetItemWatchStateAsync(string itemID)
+        {
+            string zap = $@"SELECT {watchstate} FROM {tableitems} WHERE {itemId}='{itemID}'";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            return WatchState.Notset;
+                        }
+
+                        transaction.Commit();
+                        connection.Close();
+                        return (WatchState)Convert.ToByte(res);
+                    }
+                }
+            }
+        }
+
+
+        /// <summary>
         ///     Get channel items ids, except specific state, 0 - all
         /// </summary>
         /// <param name="channelID"></param>

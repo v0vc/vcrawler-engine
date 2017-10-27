@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Data;
+using DataAPI.Database;
 using DataAPI.POCO;
 using DataAPI.Videos;
 using Extensions;
@@ -35,7 +36,7 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly IEnumerable<string> countrieslist = new[] { "RU", "US", "CA", "FR", "DE", "IT", "JP", "UA", "SG", dlindex };
-
+        private SqLiteDatabase db;
         #endregion
 
         #region Fields
@@ -141,6 +142,7 @@ namespace Crawler.ViewModels
                                 // подсветим видео, если канал уже есть в подписке
                                 item.SyncState = SyncState.Added;
                                 item.ParentTitle = title;
+                                item.WatchState = await db.GetItemWatchStateAsync(item.ID).ConfigureAwait(false);
                             }
                             SelectedCountry.Value.Add(item);
                         }
@@ -152,8 +154,9 @@ namespace Crawler.ViewModels
             RefreshView("ViewCount");
         }
 
-        public void Init(IEnumerable<ICred> supportedCreds, string dirPath)
+        public void Init(IEnumerable<ICred> supportedCreds, string dirPath, SqLiteDatabase dbase)
         {
+            db = dbase;
             DirPath = dirPath;
 
             foreach (ICred cred in supportedCreds.Where(x => x.Site != SiteType.NotSet))
@@ -208,6 +211,7 @@ namespace Crawler.ViewModels
                                 // подсветим видео, если канал уже есть в подписке
                                 item.SyncState = SyncState.Added;
                                 item.ParentTitle = title;
+                                item.WatchState = await db.GetItemWatchStateAsync(item.ID).ConfigureAwait(false);
                             }
                             SelectedCountry.Value.Add(item);
                         }

@@ -1302,7 +1302,7 @@ namespace Crawler.ViewModels
 
                 await SettingsViewModel.LoadTagsFromDb().ConfigureAwait(false);
                 await SettingsViewModel.LoadCredsFromDb().ConfigureAwait(false);
-                ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath);
+                ServiceChannel.Init(SettingsViewModel.SupportedCreds, SettingsViewModel.DirPath, db);
                 ServiceChannels.Add(ServiceChannel);
                 StateChannel.DirPath = SettingsViewModel.DirPath;
             }
