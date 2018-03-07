@@ -60,7 +60,7 @@ namespace Crawler.ViewModels
             Countries = new Dictionary<string, List<IVideoItem>>();
             countrieslist.ForEach(x => Countries.Add(x, new List<IVideoItem>()));
             SelectedCountry = Countries.First();
-            VideoTags = new ObservableCollection<string>();
+            VideoTags = new ObservableCollection<ITag>();
         }
 
         #endregion
@@ -313,7 +313,7 @@ namespace Crawler.ViewModels
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }
         public bool UseFast { get; set; }
-        public ObservableCollection<string> VideoTags { get; set; }
+        public ObservableCollection<ITag> VideoTags { get; set; }
 
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {

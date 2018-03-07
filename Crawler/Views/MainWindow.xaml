@@ -1028,16 +1028,58 @@
                                         </ControlTemplate>
                                     </Button.Template>
                                 </Button>
-                                <ComboBox Grid.Column="2" Visibility="{Binding SettingsViewModel.IsVideoFiltrationEnabled, Converter={StaticResource BoolToVisibilityConverter}}" 
+                                <ComboBox Grid.Column="2" Visibility="{Binding SettingsViewModel.IsVideoFiltrationEnabled, Converter={StaticResource BoolToVisibilityConverter}}"
                                           Width="100" FlowDirection="LeftToRight"  HorizontalAlignment="Right" Margin="2,0,2,0"
-                                          ItemsSource="{Binding SelectedChannel.VideoTags}"
+                                          ItemsSource="{Binding SelectedChannel.VideoTags, Mode=OneWay}"
                                           SelectedItem="{Binding Path=DataContext.SelectedVideoTag, RelativeSource={RelativeSource AncestorType={x:Type Window}}}"
-                                          >
+                                      >
+
                                     <i:Interaction.Triggers>
                                         <i:EventTrigger EventName="DropDownOpened">
                                             <i:InvokeCommandAction Command="{Binding VideoTagsDropDownOpenedCommand, Mode=OneTime}" />
                                         </i:EventTrigger>
                                     </i:Interaction.Triggers>
+
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal">
+                                                <CheckBox IsChecked="{Binding IsChecked}" Margin="1"
+                                                      >
+                                                    <i:Interaction.Triggers>
+                                                        <i:EventTrigger EventName="Checked">
+                                                            <i:InvokeCommandAction Command="{Binding Path=DataContext.VideoTagCheckedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}" />
+                                                        </i:EventTrigger>
+                                                        <i:EventTrigger EventName="Unchecked">
+                                                            <i:InvokeCommandAction Command="{Binding Path=DataContext.VideoTagCheckedCommand, RelativeSource={RelativeSource AncestorType={x:Type Window}}, Mode=OneTime}"/>
+                                                        </i:EventTrigger>
+                                                    </i:Interaction.Triggers>
+                                                    <CheckBox.LayoutTransform>
+                                                        <ScaleTransform ScaleX="1.4" ScaleY="1.4" />
+                                                    </CheckBox.LayoutTransform>
+                                                    <CheckBox.Style>
+                                                        <Style TargetType="CheckBox">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding ElementName=tagTextBox, Path=Text}" Value="">
+                                                                    <Setter Property="Visibility" Value="Hidden"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </CheckBox.Style>
+                                                </CheckBox>
+                                                <TextBlock Text="{Binding Title}" FontSize="16" Margin="5,0,0,0" x:Name="tagTextBox">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="Text" Value="">
+                                                                    <Setter Property="Visibility" Value="Hidden" />
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
                                 </ComboBox>
                                 <Label Grid.Column="0" FontSize="10" Content="Log"/>
                             </Grid>

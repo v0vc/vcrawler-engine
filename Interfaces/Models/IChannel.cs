@@ -35,7 +35,7 @@ namespace Interfaces.Models
         byte[] Thumbnail { get; set; }
         string Title { get; set; }
         bool UseFast { get; set; }
-        ObservableCollection<string> VideoTags { get; set; }
+        ObservableCollection<ITag> VideoTags { get; set; }
 
         #endregion
 

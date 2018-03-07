@@ -44,7 +44,7 @@ namespace Models.BO.Channels
             ChannelItems = new ObservableCollection<IVideoItem>();
             ChannelPlaylists = new ObservableCollection<IPlaylist>();
             ChannelTags = new ObservableCollection<ITag>();
-            VideoTags = new ObservableCollection<string>();
+            VideoTags = new ObservableCollection<ITag>();
             ChannelCookies = new CookieContainer();
             ChannelItemsCollectionView = CollectionViewSource.GetDefaultView(ChannelItems);
         }
@@ -308,7 +308,7 @@ namespace Models.BO.Channels
         }
 
         public bool UseFast { get; set; }
-        public ObservableCollection<string> VideoTags { get; set; }
+        public ObservableCollection<ITag> VideoTags { get; set; }
 
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {

@@ -70,7 +70,7 @@ namespace Models.BO.Items
         public string ProxyUrl { get; set; }
         public ObservableCollection<ISubtitle> Subtitles { get; set; }
         public SyncState SyncState { get; set; }
-        public IEnumerable<string> Tags { get; set; }
+        public IEnumerable<ITag> Tags { get; set; }
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }

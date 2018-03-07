@@ -70,8 +70,8 @@ namespace Crawler.ViewModels
         private RelayCommand channelKeyDownCommand;
         private RelayCommand channelMenuCommand;
         private RelayCommand channelSelectCommand;
-        private RelayCommand clearFilterCommand;
         private RelayCommand clearChannelFilterCommand;
+        private RelayCommand clearFilterCommand;
         private RelayCommand currentTagCheckedCommand;
         private RelayCommand fillChannelsCommand;
         private RelayCommand fillDescriptionCommand;
@@ -98,7 +98,7 @@ namespace Crawler.ViewModels
         private IList selectedItems = new ArrayList();
         private IPlaylist selectedPlaylist;
         private ITag selectedTag;
-        private string selectedVideoTag;
+        private ITag selectedVideoTag;
         private RelayCommand siteChangedCommand;
         private RelayCommand syncDataCommand;
         private RelayCommand tagsDropDownOpenedCommand;
@@ -107,6 +107,7 @@ namespace Crawler.ViewModels
         private RelayCommand videoDoubleClickCommand;
         private RelayCommand videoDropDownOpenedCommand;
         private RelayCommand videoItemMenuCommand;
+        private RelayCommand videoTagCheckedCommand;
 
         #endregion
 
@@ -161,11 +162,11 @@ namespace Crawler.ViewModels
 
         public RelayCommand ChannelSelectCommand => channelSelectCommand ?? (channelSelectCommand = new RelayCommand(ScrollToTop));
 
-        public RelayCommand ClearFilterCommand
-            => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => SelectedChannel.FilterVideoKey = string.Empty));
-
         public RelayCommand ClearChannelFilterCommand
             => clearChannelFilterCommand ?? (clearChannelFilterCommand = new RelayCommand(x => FilterChannelKey = string.Empty));
+
+        public RelayCommand ClearFilterCommand
+            => clearFilterCommand ?? (clearFilterCommand = new RelayCommand(x => SelectedChannel.FilterVideoKey = string.Empty));
 
         public RelayCommand CurrentTagCheckedCommand
             => currentTagCheckedCommand ?? (currentTagCheckedCommand = new RelayCommand(x => TagCheck()));
@@ -410,7 +411,7 @@ namespace Crawler.ViewModels
             }
         }
 
-        public string SelectedVideoTag
+        public ITag SelectedVideoTag
         {
             get
             {
@@ -451,6 +452,9 @@ namespace Crawler.ViewModels
             => videoDoubleClickCommand ?? (videoDoubleClickCommand = new RelayCommand(RunItemDoubleClick));
 
         public RelayCommand VideoItemMenuCommand => videoItemMenuCommand ?? (videoItemMenuCommand = new RelayCommand(VideoItemMenuClick));
+
+        public RelayCommand VideoTagCheckedCommand
+            => videoTagCheckedCommand ?? (videoTagCheckedCommand = new RelayCommand(x => VideoTagCheck()));
 
         public RelayCommand VideoTagsDropDownOpenedCommand
             => videoDropDownOpenedCommand ?? (videoDropDownOpenedCommand = new RelayCommand(x => FillVideoTags()));
@@ -1147,24 +1151,33 @@ namespace Crawler.ViewModels
 
         private async void FillVideoTags()
         {
+            var dic = SelectedChannel.VideoTags.Where(tag => !string.IsNullOrEmpty(tag.Title))
+                .ToDictionary(tag => tag.Title, tag => tag.IsChecked);
             SelectedChannel.VideoTags.Clear();
             IEnumerable<string> parents = SelectedChannel.ChannelItems.Select(x => x.ParentID).Distinct();
             foreach (string parent in parents)
             {
                 List<TagPOCO> tags = await db.GetChannelTagsAsync(parent).ConfigureAwait(false);
-                foreach (TagPOCO tag in
-                    tags.Where(tag => !SelectedChannel.VideoTags.Contains(tag.Title)))
+                foreach (
+                    ITag tagg in
+                        tags.Where(tag => !SelectedChannel.VideoTags.Select(x => x.Title).Contains(tag.Title))
+                            .Select(TagFactory.CreateTag))
                 {
-                    SelectedChannel.VideoTags.Add(tag.Title);
+                    bool chk;
+                    if (dic.TryGetValue(tagg.Title, out chk))
+                    {
+                        tagg.IsChecked = chk;
+                    }
+                    SelectedChannel.VideoTags.Add(tagg);
                 }
                 foreach (IVideoItem item in SelectedChannel.ChannelItems.Where(item => item.ParentID == parent))
                 {
-                    item.Tags = tags.Select(x => x.Title);
+                    item.Tags = tags.Select(TagFactory.CreateTag);
                 }
             }
             if (SelectedChannel.VideoTags.Any())
             {
-                SelectedChannel.VideoTags.Add(string.Empty);
+                SelectedChannel.VideoTags.Add(TagFactory.CreateTag());
             }
         }
 
@@ -1181,6 +1194,20 @@ namespace Crawler.ViewModels
             }
             bool res = channel.ChannelTags.Any(x => x.IsChecked);
             return res;
+        }
+
+        private bool FilterByCheckedVideoTag(object obj)
+        {
+            var item = (IVideoItem)obj;
+            if (item?.Tags == null || !item.Tags.Any())
+            {
+                return false;
+            }
+            if (!SelectedChannel.VideoTags.Any(x => x.IsChecked))
+            {
+                return true;
+            }
+            return !item.Tags.Select(x => x.Title).Intersect(SelectedChannel.VideoTags.Where(x => x.IsChecked).Select(x => x.Title)).Any();
         }
 
         private bool FilterByPlayList(object obj)
@@ -1242,7 +1269,7 @@ namespace Crawler.ViewModels
         private bool FilterVideosByTag(object obj)
         {
             var item = (IVideoItem)obj;
-            return string.IsNullOrEmpty(SelectedVideoTag) || item.Tags.Contains(SelectedVideoTag);
+            return string.IsNullOrEmpty(SelectedVideoTag.Title) || item.Tags.Select(x => x.Title).Contains(SelectedVideoTag.Title);
         }
 
         private async Task FindRelatedChannels(IChannel channel)
@@ -2039,6 +2066,11 @@ namespace Crawler.ViewModels
                     SelectedChannel.SelectedItem.OpenInFolder(par);
                     break;
             }
+        }
+
+        private void VideoTagCheck()
+        {
+            SelectedChannel.ChannelItemsCollectionView.Filter = FilterByCheckedVideoTag;
         }
 
         #endregion

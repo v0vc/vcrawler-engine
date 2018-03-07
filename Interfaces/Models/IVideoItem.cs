@@ -30,7 +30,7 @@ namespace Interfaces.Models
         string ProxyUrl { get; set; }
         ObservableCollection<ISubtitle> Subtitles { get; set; }
         SyncState SyncState { get; set; }
-        IEnumerable<string> Tags { get; set; }
+        IEnumerable<ITag> Tags { get; set; }
         byte[] Thumbnail { get; set; }
         DateTime Timestamp { get; set; }
         string Title { get; set; }
