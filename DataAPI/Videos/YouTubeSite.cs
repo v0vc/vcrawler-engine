@@ -1138,6 +1138,36 @@ namespace DataAPI.Videos
             return res;
         }
 
+        /// <summary>
+        ///     Set video rating
+        /// </summary>
+        /// <param name="videoID"></param>
+        /// <param name="rateType"></param>
+        /// <returns></returns>
+        public static async Task<string> SetVideoRatingNetAsync(string videoID, string rateType)
+        {
+            string zap = $"{url}videos/rate?id={videoID}&rating={rateType}&key={key}";
+            return await SiteHelper.PostMethod(zap);
+        }
+
+        /// <summary>
+        ///     Get video view count
+        /// </summary>
+        /// <param name="videoId"></param>
+        /// <returns></returns>
+        public static async Task<long> GetVideoViewCountNetAsync(string videoId)
+        {
+            string zap =
+                $"{url}videos?&id={videoId}&key={key}&part=statistics&fields=items(statistics(viewCount))&{printType}";
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken view = jsvideo.SelectToken("items[0].statistics.viewCount");
+            return view != null ? (view.Value<long?>() ?? 0) : 0;
+        }
+
         private static void FillFieldsFromDetails(VideoItemPOCO item, JToken record)
         {
             JToken desc = record.SelectToken("snippet.description");

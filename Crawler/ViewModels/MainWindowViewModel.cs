@@ -750,6 +750,10 @@ namespace Crawler.ViewModels
                 case ChannelMenuItem.Update:
                     await SyncChannelPlaylist().ConfigureAwait(false);
                     break;
+
+                case ChannelMenuItem.UpdateViews:
+                    await SyncChannelViews().ConfigureAwait(false);
+                    break;
             }
         }
 
@@ -1151,17 +1155,16 @@ namespace Crawler.ViewModels
 
         private async void FillVideoTags()
         {
-            var dic = SelectedChannel.VideoTags.Where(tag => !string.IsNullOrEmpty(tag.Title))
-                .ToDictionary(tag => tag.Title, tag => tag.IsChecked);
+            Dictionary<string, bool> dic =
+                SelectedChannel.VideoTags.Where(tag => !string.IsNullOrEmpty(tag.Title))
+                    .ToDictionary(tag => tag.Title, tag => tag.IsChecked);
             SelectedChannel.VideoTags.Clear();
             IEnumerable<string> parents = SelectedChannel.ChannelItems.Select(x => x.ParentID).Distinct();
             foreach (string parent in parents)
             {
                 List<TagPOCO> tags = await db.GetChannelTagsAsync(parent).ConfigureAwait(false);
-                foreach (
-                    ITag tagg in
-                        tags.Where(tag => !SelectedChannel.VideoTags.Select(x => x.Title).Contains(tag.Title))
-                            .Select(TagFactory.CreateTag))
+                foreach (ITag tagg in
+                    tags.Where(tag => !SelectedChannel.VideoTags.Select(x => x.Title).Contains(tag.Title)).Select(TagFactory.CreateTag))
                 {
                     bool chk;
                     if (dic.TryGetValue(tagg.Title, out chk))
@@ -1336,6 +1339,25 @@ namespace Crawler.ViewModels
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message);
+            }
+        }
+
+        private async Task LikeItems()
+        {
+            IChannel channel = SelectedChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
+            if (!SelectedItems.OfType<IVideoItem>().Any())
+            {
+                return;
+            }
+            foreach (IVideoItem item in SelectedItems)
+            {
+                string res = await YouTubeSite.SetVideoRatingNetAsync(item.ID, "like");
+                item.LogText += res;
             }
         }
 
@@ -1954,6 +1976,28 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
+        private async Task SyncChannelViews()
+        {
+            IChannel channel = SelectedChannel;
+            if (channel == null || channel.ChannelState == ChannelState.InWork)
+            {
+                return;
+            }
+
+            SetStatus(1);
+            try
+            {
+                await ChannelFactory.SyncChannelViewsAsync(channel).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+                SetStatus(3);
+            }
+
+            SetStatus(0);
+        }
+
         private async Task SyncData(bool isFastSync)
         {
             PrValue = 0;
@@ -2065,6 +2109,13 @@ namespace Crawler.ViewModels
                     string par = dir.Exists ? dir.FullName : SelectedChannel.DirPath;
                     SelectedChannel.SelectedItem.OpenInFolder(par);
                     break;
+
+                case VideoMenuItem.Like:
+                    await LikeItems();
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
         }
 

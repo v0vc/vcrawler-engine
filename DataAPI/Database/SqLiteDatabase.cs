@@ -2111,6 +2111,18 @@ namespace DataAPI.Database
         }
 
         /// <summary>
+        ///     Update item view count
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="newViewCount"></param>
+        /// <returns></returns>
+        public async Task UpdateItemViewCount(string id, long newViewCount)
+        {
+            string zap = $@"UPDATE {tableitems} SET {viewCount}='{newViewCount}' WHERE {itemId}='{id}'";
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
+        }
+
+        /// <summary>
         ///     Update channel items state
         /// </summary>
         /// <param name="state"></param>

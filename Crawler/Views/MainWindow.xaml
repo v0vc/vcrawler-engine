@@ -311,6 +311,7 @@
                             <MenuItem Header="Edit" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Edit}" />
                             <MenuItem Header="Tags" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Tags}" />
                             <MenuItem Header="Update" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
+                            <MenuItem Header="Update Views" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.UpdateViews}" />
                         </ContextMenu>
                     </DataGrid.Resources> 
                     
@@ -753,6 +754,7 @@
                                 <MenuItem Header="Proxy" StaysOpenOnClick="True">
                                     <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="140" />
                                 </MenuItem>
+                                <MenuItem Header="Like" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Like}" />
 
                             </ContextMenu>
                         </DataGrid.Resources>

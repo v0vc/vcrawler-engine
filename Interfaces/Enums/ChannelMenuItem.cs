@@ -7,7 +7,8 @@ namespace Interfaces.Enums
     {
         Delete, 
         Edit, 
-        Update, 
+        Update,
+        UpdateViews,
         Related, 
         Subscribe, 
         Tags

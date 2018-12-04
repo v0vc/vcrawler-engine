@@ -173,6 +173,13 @@ namespace TestAPI
         }
 
         [TestMethod]
+        public async Task GetVideoViewCountNetAsync()
+        {
+            long res = await YouTubeSite.GetVideoViewCountNetAsync("lHgIpxQac3w").ConfigureAwait(false);
+            Assert.IsTrue(res > 0);
+        }
+
+        [TestMethod]
         public async Task GetVideoSubtitlesByIdAsync()
         {
             List<SubtitlePOCO> res = await YouTubeSite.GetVideoSubtitlesByIdAsync("WaEcvDnbaIc").ConfigureAwait(false);

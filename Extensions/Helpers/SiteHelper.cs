@@ -55,7 +55,7 @@ namespace Extensions.Helpers
         {
             string res = null;
 
-            bool cancelledOrError = false;
+            var cancelledOrError = false;
 
             using (var client = new WebClient())
             {
@@ -145,6 +145,34 @@ namespace Extensions.Helpers
                 return false;
             }
             return true;
+        }
+
+        public static async Task<string> PostMethod(string requestStr)
+        {
+            WebRequest request = WebRequest.Create(requestStr);
+            request.Method = "POST";
+            request.ContentLength = 0;
+            try
+            {
+                using (WebResponse res = await request.GetResponseAsync())
+                {
+                    using (Stream stream = res.GetResponseStream())
+                    {
+                        if (stream == null)
+                        {
+                            return string.Empty;
+                        }
+                        using (var reader = new StreamReader(stream, Encoding.UTF8))
+                        {
+                            return await reader.ReadToEndAsync();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         #endregion

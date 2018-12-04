@@ -352,18 +352,38 @@ namespace Models.Factories
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds,
-            IChannel channel,
-            string playlistId = null,
-            ICollection<string> dbIds = null,
-            Action<IVideoItem, object> stateAction = null)
+        public static async Task SyncChannelViewsAsync(IChannel channel)
+        {
+            switch (channel.Site)
+            {
+                case SiteType.YouTube:
+                    List<string> ids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
+                    foreach (string id in ids)
+                    {
+                        long viewCount = await YouTubeSite.GetVideoViewCountNetAsync(id);
+                        if (viewCount <= 0)
+                        {
+                            continue;
+                        }
+                        await db.UpdateItemViewCount(id, viewCount);
+                        IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == id);
+                        if (item != null)
+                        {
+                            item.ViewCount = viewCount;
+                        }
+                    }
+
+                    break;
+
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        private static async Task InsertNewItems(IEnumerable<string> trueIds, IChannel channel, string playlistId = null, ICollection<string> dbIds = null, Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds).ConfigureAwait(true); // получим скопом
-            IEnumerable<IVideoItem> result =
-                res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, SyncState.Added))
-                    .Reverse()
-                    .Where(vi => vi.ParentID == channel.ID)
-                    .ToList();
+            IEnumerable<IVideoItem> result = res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, SyncState.Added)).Reverse().Where(vi => vi.ParentID == channel.ID).ToList();
             await db.InsertChannelItemsAsync(result).ConfigureAwait(false);
             foreach (IVideoItem vi in result)
             {

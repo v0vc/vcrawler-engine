@@ -18,6 +18,7 @@ namespace Interfaces.Enums
         DeleteDb,
         Subtitles,
         Subscribe,
-        Cancel
+        Cancel,
+        Like
     }
 }
