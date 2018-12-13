@@ -45,6 +45,10 @@ namespace Models.BO.Items
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
         private WatchState watchState;
+        private long viewCount;
+        private long likeCount;
+        private long dislikeCount;
+        private long comments;
 
         #endregion
 
@@ -176,7 +180,21 @@ namespace Models.BO.Items
 
         #region IVideoItem Members
 
-        public int Comments { get; set; }
+        public string CommentCountText => $"Comments: {Comments}";
+
+        public long Comments
+        {
+            get
+            {
+                return comments;
+            }
+            set
+            {
+                OnPropertyChanged();
+                comments = value;
+            }
+        }
+
         public string DateTimeAgo { get; set; }
 
         public string Description
@@ -195,6 +213,8 @@ namespace Models.BO.Items
                 OnPropertyChanged();
             }
         }
+
+        public string DislikeCountText => $"Dislikes: {DislikeCount}";
 
         public double DownloadPercentage
         {
@@ -230,6 +250,8 @@ namespace Models.BO.Items
         }
 
         public string ID { get; set; }
+
+        public string LikeCountText => $"Likes: {LikeCount}";
 
         public string LocalFilePath { get; set; }
 
@@ -277,7 +299,45 @@ namespace Models.BO.Items
         public byte[] Thumbnail { get; set; }
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
-        public long ViewCount { get; set; }
+
+        public long ViewCount
+        {
+            get
+            {
+                return viewCount;
+            }
+            set
+            {
+                viewCount = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public long LikeCount
+        {
+            get
+            {
+                return likeCount;
+            }
+            set
+            {
+                OnPropertyChanged();
+                likeCount = value;
+            }
+        }
+
+        public long DislikeCount
+        {
+            get
+            {
+                return dislikeCount;
+            }
+            set
+            {
+                OnPropertyChanged();
+                dislikeCount = value;
+            }
+        }
 
         public WatchState WatchState
         {

@@ -15,14 +15,21 @@ namespace Interfaces.Models
     {
         #region Properties
 
-        int Comments { get; set; }
+        string CommentCountText { get; }
+
+        long Comments { get; set; }
         string DateTimeAgo { get; set; }
         string Description { get; set; }
+
+        long DislikeCount { get; set; }
+        string DislikeCountText { get; }
         double DownloadPercentage { get; set; }
         int Duration { get; set; }
         string DurationString { get; set; }
         ItemState FileState { get; set; }
         string ID { get; set; }
+        long LikeCount { get; set; }
+        string LikeCountText { get; }
         string LocalFilePath { get; set; }
         string LogText { get; set; }
         string ParentID { get; set; }

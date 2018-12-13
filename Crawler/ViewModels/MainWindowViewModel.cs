@@ -751,8 +751,9 @@ namespace Crawler.ViewModels
                     await SyncChannelPlaylist().ConfigureAwait(false);
                     break;
 
-                case ChannelMenuItem.UpdateViews:
-                    await SyncChannelViews().ConfigureAwait(false);
+                case ChannelMenuItem.UpdateStatsBatch:
+                case ChannelMenuItem.UpdateStatsOne:
+                    await SyncChannelRates(menu).ConfigureAwait(false);
                     break;
             }
         }
@@ -1976,7 +1977,7 @@ namespace Crawler.ViewModels
             SetStatus(0);
         }
 
-        private async Task SyncChannelViews()
+        private async Task SyncChannelRates(ChannelMenuItem menu)
         {
             IChannel channel = SelectedChannel;
             if (channel == null || channel.ChannelState == ChannelState.InWork)
@@ -1987,7 +1988,7 @@ namespace Crawler.ViewModels
             SetStatus(1);
             try
             {
-                await ChannelFactory.SyncChannelViewsAsync(channel).ConfigureAwait(false);
+                await ChannelFactory.SyncChannelRatesAsync(channel, menu).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

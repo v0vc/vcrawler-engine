@@ -55,14 +55,17 @@ namespace Models.BO.Items
 
         #region IVideoItem Members
 
-        public int Comments { get; set; }
+        public string CommentCountText { get; }
+        public long Comments { get; set; }
         public string DateTimeAgo { get; set; }
         public string Description { get; set; }
+        public string DislikeCountText { get; }
         public double DownloadPercentage { get; set; }
         public int Duration { get; set; }
         public string DurationString { get; set; }
         public ItemState FileState { get; set; }
         public string ID { get; set; }
+        public string LikeCountText { get; }
         public string LocalFilePath { get; set; }
         public string LogText { get; set; }
         public string ParentID { get; set; }
@@ -75,6 +78,8 @@ namespace Models.BO.Items
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
         public long ViewCount { get; set; }
+        public long LikeCount { get; set; }
+        public long DislikeCount { get; set; }
         public WatchState WatchState { get; set; }
 
         public Task DownloadItem(string youPath, string dirPath, PlaylistMenuItem dtype)

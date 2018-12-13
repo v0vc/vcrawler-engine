@@ -311,7 +311,11 @@
                             <MenuItem Header="Edit" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Edit}" />
                             <MenuItem Header="Tags" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Tags}" />
                             <MenuItem Header="Update" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.Update}" />
-                            <MenuItem Header="Update Views" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.UpdateViews}" />
+                            <!--<MenuItem Header="Reload Stat" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.UpdateStats}" />-->
+                            <MenuItem Header="Statistics" StaysOpenOnClick="True">
+                                <MenuItem Header="Update Batch" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.UpdateStatsBatch}" />
+                                <MenuItem Header="Update by One" Command="{Binding DataContext.ChannelMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:ChannelMenuItem.UpdateStatsOne}" />
+                            </MenuItem>
                         </ContextMenu>
                     </DataGrid.Resources> 
                     
@@ -755,7 +759,6 @@
                                     <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="140" />
                                 </MenuItem>
                                 <MenuItem Header="Like" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Like}" />
-
                             </ContextMenu>
                         </DataGrid.Resources>
 
@@ -887,14 +890,33 @@
                                                         <TextBlock Text="{Binding Timestamp, StringFormat={}{0:dd.MM.yyyy HH:mm}}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"/>
                                                     </TextBlock.ToolTip>
                                                 </TextBlock>
-                                                <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" />
+                                                <TextBlock Text="{Binding ViewCount}" Margin="10,0,0,0" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" ToolTip="Views"/>
                                             </StackPanel>
                                         </Grid>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTemplateColumn CanUserResize="False" Width="50" SortMemberPath="IsHasLocalFile">
+                            <DataGridTemplateColumn CanUserResize="False" Width="55" SortMemberPath="LikeCount" IsReadOnly="True">
+                                <DataGridTemplateColumn.HeaderStyle>
+                                    <Style TargetType="DataGridColumnHeader">
+                                        <Setter Property="ToolTip" Value="Statistics" />
+                                    </Style>
+                                </DataGridTemplateColumn.HeaderStyle>
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Grid d:DataContext="{d:DesignInstance Type=models:IVideoItem, IsDesignTimeCreatable=False}">
+                                            <StackPanel Orientation="Vertical">
+                                                <TextBlock Text="{Binding LikeCount}" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" ToolTip="{Binding LikeCountText}"/>
+                                                <TextBlock Text="{Binding DislikeCount}" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" ToolTip="{Binding DislikeCountText}"/>
+                                                <TextBlock Text="{Binding Comments}" Foreground="MidnightBlue" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12" ToolTip="{Binding CommentCountText}"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+
+                            <DataGridTemplateColumn CanUserResize="False" Width="50" SortMemberPath="Comments" IsReadOnly="True">
                                 <DataGridTemplateColumn.HeaderStyle>
                                     <Style TargetType="DataGridColumnHeader">
                                         <Setter Property="ToolTip" Value="Local File" />

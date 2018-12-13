@@ -175,8 +175,17 @@ namespace TestAPI
         [TestMethod]
         public async Task GetVideoViewCountNetAsync()
         {
-            long res = await YouTubeSite.GetVideoViewCountNetAsync("lHgIpxQac3w").ConfigureAwait(false);
-            Assert.IsTrue(res > 0);
+            var res = await YouTubeSite.GetVideoViewCountNetAsync("lHgIpxQac3w").ConfigureAwait(false);
+            Assert.IsTrue(res.ViewCount > 0);
+        }
+
+        [TestMethod]
+        public async Task GetVideoRateCountNetAsync()
+        {
+            var res = await YouTubeSite.GetVideoRateCountNetAsync(new List<string> { "lHgIpxQac3w", "-wA6Qj4oF2E" }).ConfigureAwait(false);
+            Assert.IsTrue(res.Count == 2);
+            var res1 = await YouTubeSite.GetVideoViewCountNetAsync("lHgIpxQac3w").ConfigureAwait(false);
+            Assert.IsTrue(res[0].ViewCount == res1.ViewCount);
         }
 
         [TestMethod]

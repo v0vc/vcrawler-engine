@@ -17,11 +17,13 @@ namespace DataAPI.POCO
             string title,
             long viewcount,
             int duration,
-            int comments,
+            long comments,
             byte[] thumbnail,
             DateTime timestamp,
             byte syncstate,
-            byte watchstate)
+            byte watchstate,
+            long likes,
+            long dislikes)
         {
             ID = id;
             ParentID = parentid;
@@ -33,6 +35,8 @@ namespace DataAPI.POCO
             Timestamp = timestamp;
             SyncState = syncstate;
             WatchState = watchstate;
+            LikeCount = likes;
+            DislikeCount = dislikes;
         }
 
         public VideoItemPOCO(string id = null)
@@ -47,10 +51,12 @@ namespace DataAPI.POCO
 
         #region Properties
 
-        public int Comments { get; set; }
+        public long Comments { get; set; }
         public string Description { get; set; }
+        public long DislikeCount { get; set; }
         public int Duration { get; set; }
         public string ID { get; set; }
+        public long LikeCount { get; set; }
         public string ParentID { get; set; }
         public PrivacyStatus Status { get; set; }
         public byte SyncState { get; private set; }

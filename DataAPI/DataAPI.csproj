@@ -56,6 +56,7 @@
   <ItemGroup>
     <Compile Include="Database\SqLiteDatabase.cs" />
     <Compile Include="POCO\ChannelPOCO.cs" />
+    <Compile Include="POCO\StatisticPOCO.cs" />
     <Compile Include="POCO\SubtitlePOCO.cs" />
     <Compile Include="POCO\CredPOCO.cs" />
     <Compile Include="POCO\PlaylistPOCO.cs" />

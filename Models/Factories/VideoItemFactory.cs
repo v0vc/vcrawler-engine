@@ -53,6 +53,8 @@ namespace Models.Factories
                         Comments = poco.Comments,
                         Thumbnail = poco.Thumbnail,
                         Timestamp = poco.Timestamp,
+                        LikeCount = poco.LikeCount,
+                        DislikeCount = poco.DislikeCount,
                         SyncState = sstate == SyncState.Notset ? (SyncState)poco.SyncState : sstate,
                         WatchState = (WatchState)poco.WatchState,
                         DurationString = StringExtensions.IntTostrTime(poco.Duration),

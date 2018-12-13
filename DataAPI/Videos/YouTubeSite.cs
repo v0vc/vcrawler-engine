@@ -171,7 +171,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 zap =
-                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount),status(privacyStatus))&{printType}";
 
                 string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -635,7 +635,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{printType}";
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
@@ -748,7 +748,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount),status(privacyStatus))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
                 jsvideo = JObject.Parse(det);
@@ -854,7 +854,7 @@ namespace DataAPI.Videos
             var item = new VideoItemPOCO(videoid);
 
             string zap =
-                $"{url}videos?&id={videoid}&key={key}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount))&{printType}";
+                $"{url}videos?&id={videoid}&key={key}&part=snippet,contentDetails,statistics&fields=items(snippet(channelId,title,description,thumbnails(default(url)),publishedAt),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -884,7 +884,7 @@ namespace DataAPI.Videos
             string res = sb.ToString().TrimEnd(',');
 
             string zap =
-                $"{url}videos?id={res}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount),status(privacyStatus))&{printType}";
+                $"{url}videos?id={res}&key={key}&part=snippet,contentDetails,statistics,status&fields=items(id,snippet(description,channelId,title,publishedAt,thumbnails(default(url))),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount),status(privacyStatus))&{printType}";
 
             string det = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
@@ -1109,7 +1109,7 @@ namespace DataAPI.Videos
                 string ids = sb.ToString().TrimEnd(',');
 
                 string det =
-                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount))&{printType}";
+                    $"{url}videos?id={ids}&key={key}&part=snippet,contentDetails,statistics&fields=items(id,snippet(description),contentDetails(duration),statistics(viewCount,commentCount,likeCount,dislikeCount))&{printType}";
 
                 det = await SiteHelper.DownloadStringAsync(new Uri(det)).ConfigureAwait(false);
 
@@ -1155,16 +1155,83 @@ namespace DataAPI.Videos
         /// </summary>
         /// <param name="videoId"></param>
         /// <returns></returns>
-        public static async Task<long> GetVideoViewCountNetAsync(string videoId)
+        public static async Task<StatisticPOCO> GetVideoViewCountNetAsync(string videoId)
         {
+            var res = new StatisticPOCO { VideoId = videoId };
             string zap =
-                $"{url}videos?&id={videoId}&key={key}&part=statistics&fields=items(statistics(viewCount))&{printType}";
+                $"{url}videos?&id={videoId}&key={key}&part=statistics&fields=items(statistics(viewCount,commentCount,likeCount,dislikeCount))&{printType}";
 
             string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
 
             JObject jsvideo = JObject.Parse(str);
 
             JToken view = jsvideo.SelectToken("items[0].statistics.viewCount");
+            res.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
+            JToken comment = jsvideo.SelectToken("items[0].statistics.commentCount");
+            res.CommentCount = comment != null ? (comment.Value<long?>() ?? 0) : 0;
+            JToken like = jsvideo.SelectToken("items[0].statistics.likeCount");
+            res.LikeCount = like != null ? (like.Value<long?>() ?? 0) : 0;
+            JToken dislike = jsvideo.SelectToken($"items[0].statistics.dislikeCount");
+            res.DislikeCount = dislike != null ? (dislike.Value<long?>() ?? 0) : 0;
+
+            return res;
+        }
+
+        public static async Task<List<StatisticPOCO>> GetVideoRateCountNetAsync(List<string> videoIds)
+        {
+            var res = new List<StatisticPOCO>(videoIds.Count);
+            var sb = new StringBuilder();
+            videoIds.ForEach(x => sb.Append(x).Append(","));
+            string ids = sb.ToString().TrimEnd(',');
+            string zap =
+                $"{url}videos?&id={ids}&key={key}&part=statistics&fields=items(id,statistics(viewCount,commentCount,likeCount,dislikeCount))&{printType}";
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+            JObject jsvideo = JObject.Parse(str);
+
+            foreach (JToken pair in jsvideo["items"])
+            {
+                JToken tid = pair.SelectToken("id");
+                if (tid == null)
+                {
+                    continue;
+                }
+                var item = new StatisticPOCO { VideoId = tid.Value<string>() };
+                JToken view = jsvideo.SelectToken("items[0].statistics.viewCount");
+                item.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
+                JToken comment = jsvideo.SelectToken("items[0].statistics.commentCount");
+                item.CommentCount = comment != null ? (comment.Value<long?>() ?? 0) : 0;
+                JToken like = jsvideo.SelectToken("items[0].statistics.likeCount");
+                item.LikeCount = like != null ? (like.Value<long?>() ?? 0) : 0;
+                JToken dislike = jsvideo.SelectToken($"items[0].statistics.dislikeCount");
+                item.DislikeCount = dislike != null ? (dislike.Value<long?>() ?? 0) : 0;
+                res.Add(item);
+            }
+            return res;
+        }
+
+        public static async Task<long> GetVideoLikeCountNetAsync(string videoId)
+        {
+            string zap = $"{url}videos?&id={videoId}&key={key}&part=statistics&fields=items(statistics(likeCount))&{printType}";
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken view = jsvideo.SelectToken("items[0].statistics.likeCount");
+            return view != null ? (view.Value<long?>() ?? 0) : 0;
+        }
+
+        public static async Task<long> GetVideoDislikeCountNetAsync(string videoId)
+        {
+            string zap = $"{url}videos?&id={videoId}&key={key}&part=statistics&fields=items(statistics(dislikeCount))&{printType}";
+
+            string str = await SiteHelper.DownloadStringAsync(new Uri(zap)).ConfigureAwait(false);
+
+            JObject jsvideo = JObject.Parse(str);
+
+            JToken view = jsvideo.SelectToken("items[0].statistics.dislikeCount");
             return view != null ? (view.Value<long?>() ?? 0) : 0;
         }
 
@@ -1173,8 +1240,17 @@ namespace DataAPI.Videos
             JToken desc = record.SelectToken("snippet.description");
             item.Description = desc != null ? (desc.Value<string>() ?? string.Empty) : string.Empty;
 
-            JToken stat = record.SelectToken("statistics.viewCount");
-            item.ViewCount = stat != null ? (stat.Value<long?>() ?? 0) : 0;
+            JToken view = record.SelectToken("statistics.viewCount");
+            item.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
+
+            JToken comm = record.SelectToken("statistics.commentCount");
+            item.Comments = comm != null ? (comm.Value<long?>() ?? 0) : 0;
+
+            JToken like = record.SelectToken("statistics.likeCount");
+            item.LikeCount = like != null ? (like.Value<long?>() ?? 0) : 0;
+
+            JToken dis = record.SelectToken("statistics.dislikeCount");
+            item.DislikeCount = dis != null ? (dis.Value<long?>() ?? 0) : 0;
 
             JToken dur = record.SelectToken("contentDetails.duration");
             if (dur != null)
@@ -1239,6 +1315,15 @@ namespace DataAPI.Videos
 
             JToken view = record.SelectToken("items[0].statistics.viewCount");
             item.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
+
+            JToken comm = record.SelectToken("statistics.commentCount");
+            item.Comments = comm != null ? (comm.Value<long?>() ?? 0) : 0;
+
+            JToken like = record.SelectToken("statistics.likeCount");
+            item.LikeCount = like != null ? (like.Value<long?>() ?? 0) : 0;
+
+            JToken dis = record.SelectToken("statistics.dislikeCount");
+            item.DislikeCount = dis != null ? (dis.Value<long?>() ?? 0) : 0;
 
             JToken dur = record.SelectToken("items[0].contentDetails.duration");
             if (dur != null)

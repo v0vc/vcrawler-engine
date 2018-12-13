@@ -40,6 +40,8 @@ namespace DataAPI.Database
         private const string viewCount = "viewcount";
         private const string duration = "duration";
         private const string comments = "comments";
+        private const string likes = "likes";
+        private const string dislikes = "dislikes";
         private const string thumbnail = "thumbnail";
         private const string timestamp = "timestamp";
         private const string syncstate = "syncstate";
@@ -151,7 +153,7 @@ namespace DataAPI.Database
 
         private readonly string itemsInsertString =
             string.Format(
-                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10},@{11})",
+                          @"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}') VALUES (@{1},@{2},@{3},@{4},@{5},@{6},@{7},@{8},@{9},@{10},@{11},@{12},@{13})",
                 tableitems,
                 itemId,
                 parentID,
@@ -163,10 +165,12 @@ namespace DataAPI.Database
                 thumbnail,
                 timestamp,
                 syncstate,
-                watchstate);
+                watchstate,
+                likes,
+                dislikes);
 
         private readonly string itemsSelectString =
-            $@"SELECT {itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate} FROM {tableitems}";
+            $@"SELECT {itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate},{likes},{dislikes} FROM {tableitems}";
 
         private readonly string playlistInsertString =
             string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
@@ -279,11 +283,13 @@ namespace DataAPI.Database
                 (string)reader[title],
                 Convert.ToInt64(reader[viewCount]),
                 Convert.ToInt32(reader[duration]),
-                Convert.ToInt32(reader[comments]),
+                Convert.ToInt64(reader[comments]),
                 (byte[])reader[thumbnail],
                 (DateTime)reader[timestamp],
                 Convert.ToByte(reader[syncstate]),
-                Convert.ToByte(reader[watchstate]));
+                Convert.ToByte(reader[watchstate]),
+                Convert.ToInt64(reader[likes]),
+                Convert.ToInt64(reader[dislikes]));
         }
 
         private static SQLiteCommand GetCommand(string sql)
@@ -340,7 +346,8 @@ namespace DataAPI.Database
             command.Parameters.AddWithValue("@" + timestamp, item.Timestamp);
             command.Parameters.AddWithValue("@" + syncstate, (byte)item.SyncState);
             command.Parameters.AddWithValue("@" + watchstate, (byte)item.WatchState);
-
+            command.Parameters.AddWithValue("@" + likes, item.LikeCount);
+            command.Parameters.AddWithValue("@" + dislikes, item.DislikeCount);
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
@@ -2119,6 +2126,14 @@ namespace DataAPI.Database
         public async Task UpdateItemViewCount(string id, long newViewCount)
         {
             string zap = $@"UPDATE {tableitems} SET {viewCount}='{newViewCount}' WHERE {itemId}='{id}'";
+            await RunSqlCodeAsync(zap).ConfigureAwait(false);
+        }
+
+        public async Task UpdateItemRateCount(string id, StatisticPOCO stat)
+        {
+            string zap =
+                $@"UPDATE {tableitems} SET {viewCount}='{stat.ViewCount}',{comments}='{stat.ViewCount}',{likes}='{stat.LikeCount}',{dislikes}='{stat
+                    .DislikeCount}' WHERE {itemId}='{id}'";
             await RunSqlCodeAsync(zap).ConfigureAwait(false);
         }
 

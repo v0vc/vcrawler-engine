@@ -352,31 +352,72 @@ namespace Models.Factories
             }
         }
 
-        public static async Task SyncChannelViewsAsync(IChannel channel)
+        public static async Task SyncChannelRatesAsync(IChannel channel, ChannelMenuItem menu)
         {
             switch (channel.Site)
             {
                 case SiteType.YouTube:
+
                     List<string> ids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
-                    foreach (string id in ids)
+
+                    switch (menu)
                     {
-                        long viewCount = await YouTubeSite.GetVideoViewCountNetAsync(id);
-                        if (viewCount <= 0)
-                        {
-                            continue;
-                        }
-                        await db.UpdateItemViewCount(id, viewCount);
-                        IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == id);
-                        if (item != null)
-                        {
-                            item.ViewCount = viewCount;
-                        }
+                        
+                        case ChannelMenuItem.UpdateStatsBatch:
+
+                            List<StatisticPOCO> items = await YouTubeSite.GetVideoRateCountNetAsync(ids);
+
+                            foreach (StatisticPOCO itemp in items.Where(itemp => itemp.Filled))
+                            {
+                                await db.UpdateItemRateCount(itemp.VideoId, itemp);
+
+                                IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == itemp.VideoId);
+                                if (item == null)
+                                {
+                                    continue;
+                                }
+                                item.ViewCount = itemp.ViewCount;
+                                item.LikeCount = itemp.LikeCount;
+                                item.DislikeCount = itemp.DislikeCount;
+                                item.Comments = itemp.CommentCount;
+                            }
+                            break;
+
+                        case ChannelMenuItem.UpdateStatsOne:
+
+                            foreach (string id in ids)
+                            {
+                                try
+                                {
+                                    StatisticPOCO stat = await YouTubeSite.GetVideoViewCountNetAsync(id);
+                                    if (!stat.Filled)
+                                    {
+                                        continue;
+                                    }
+                                    await db.UpdateItemRateCount(stat.VideoId, stat);
+
+                                    IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == stat.VideoId);
+                                    if (item == null)
+                                    {
+                                        continue;
+                                    }
+                                    item.ViewCount = stat.ViewCount;
+                                    item.LikeCount = stat.LikeCount;
+                                    item.DislikeCount = stat.DislikeCount;
+                                    item.Comments = stat.CommentCount;
+                                }
+                                catch
+                                {
+                                    continue;
+                                }
+                            }
+
+                            break;
                     }
 
-                    break;
 
-                default:
-                    throw new ArgumentOutOfRangeException();
+
+                    break;
             }
         }
 
