@@ -1198,13 +1198,13 @@ namespace DataAPI.Videos
                     continue;
                 }
                 var item = new StatisticPOCO { VideoId = tid.Value<string>() };
-                JToken view = jsvideo.SelectToken("items[0].statistics.viewCount");
+                JToken view = pair.SelectToken("statistics.viewCount");
                 item.ViewCount = view != null ? (view.Value<long?>() ?? 0) : 0;
-                JToken comment = jsvideo.SelectToken("items[0].statistics.commentCount");
+                JToken comment = pair.SelectToken("statistics.commentCount");
                 item.CommentCount = comment != null ? (comment.Value<long?>() ?? 0) : 0;
-                JToken like = jsvideo.SelectToken("items[0].statistics.likeCount");
+                JToken like = pair.SelectToken("statistics.likeCount");
                 item.LikeCount = like != null ? (like.Value<long?>() ?? 0) : 0;
-                JToken dislike = jsvideo.SelectToken($"items[0].statistics.dislikeCount");
+                JToken dislike = pair.SelectToken("statistics.dislikeCount");
                 item.DislikeCount = dislike != null ? (dislike.Value<long?>() ?? 0) : 0;
                 res.Add(item);
             }

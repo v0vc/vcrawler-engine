@@ -23,7 +23,8 @@ namespace DataAPI.POCO
             byte syncstate,
             byte watchstate,
             long likes,
-            long dislikes)
+            long dislikes,
+            long viewdiff)
         {
             ID = id;
             ParentID = parentid;
@@ -37,6 +38,7 @@ namespace DataAPI.POCO
             WatchState = watchstate;
             LikeCount = likes;
             DislikeCount = dislikes;
+            ViewDiff = viewdiff;
         }
 
         public VideoItemPOCO(string id = null)
@@ -64,6 +66,7 @@ namespace DataAPI.POCO
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
         public long ViewCount { get; set; }
+        public long ViewDiff { get; set; }
         public byte WatchState { get; private set; }
 
         #endregion

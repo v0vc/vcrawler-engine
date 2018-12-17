@@ -21,11 +21,12 @@ using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
+using Models.BO.Channels;
 using Models.Factories;
 
 namespace Crawler.ViewModels
 {
-    public sealed class ServiceChannelViewModel : IChannel, INotifyPropertyChanged
+    public sealed class ServiceChannelViewModel : CommonChannel, IChannel, INotifyPropertyChanged
     {
         #region Constants
 
@@ -45,6 +46,8 @@ namespace Crawler.ViewModels
         private KeyValuePair<string, List<IVideoItem>> selectedCountry;
         private IVideoItem selectedItem;
         private CredImage selectedSite;
+        private string channelStatistics;
+        private string selectedStat;
 
         #endregion
 
@@ -260,12 +263,36 @@ namespace Crawler.ViewModels
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount { get; set; }
+        public long ChannelViewCount { get; set; }
+        public long ChannelLikeCount { get; set; }
+        public long ChannelDislikeCount { get; set; }
+        public long ChannelCommentCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ChannelState ChannelState { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
+        public string SelectedStat
+        {
+            get
+            {
+                return selectedStat;
+            }
+            set
+            {
+                if (value == selectedStat)
+                {
+                    return;
+                }
+                selectedStat = value;
+                if (selectedStat == null)
+                {
+                    return;
+                }
+                ChannelItemsCollectionView.SortDescriptions.Clear();
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(Stats[selectedStat], ListSortDirection.Descending));
+            }
+        }
         public int CountNew { get; set; }
         public string DirPath { get; set; }
-
         public string FilterVideoKey
         {
             get
@@ -283,13 +310,11 @@ namespace Crawler.ViewModels
                 ChannelItemsCollectionView.Filter = FilterVideo;
             }
         }
-
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced { get; set; }
         public bool Loaded { get; set; }
         public int PlaylistCount { get; set; }
-
         public IVideoItem SelectedItem
         {
             get
@@ -306,9 +331,19 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public SiteType Site => SiteType.NotSet;
-
+        public string ChannelStatistics
+        {
+            get
+            {
+                return channelStatistics;
+            }
+            set
+            {
+                channelStatistics = value;
+                OnPropertyChanged();
+            }
+        }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title { get; set; }

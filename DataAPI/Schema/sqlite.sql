@@ -59,6 +59,7 @@ CREATE TABLE `items` (
 `watchstate` INTEGER NOT NULL CHECK (watchstate IN (0,1,2)) DEFAULT '0',
 `likes` INTEGER NOT NULL DEFAULT '0',
 `dislikes` INTEGER NOT NULL DEFAULT '0',
+`viewdiff` INTEGER NOT NULL DEFAULT '0',
 FOREIGN KEY(`parentid`) REFERENCES channels(`id`) ON DELETE CASCADE
 );
 
@@ -112,3 +113,10 @@ FOREIGN KEY(`itemid`) REFERENCES items(`id`) ON DELETE CASCADE,
 FOREIGN KEY(`channelid`) REFERENCES channels(`id`) ON DELETE CASCADE,
 PRIMARY KEY (playlistid, itemid)
 );
+
+--триггер для отлова скручивания просмотров
+CREATE TRIGGER IF NOT EXISTS trig_viewdiff BEFORE UPDATE ON items WHEN NEW.viewcount<>OLD.viewcount
+	BEGIN
+ 		UPDATE items SET viewdiff = (NEW.viewcount-OLD.viewcount) WHERE id = NEW.id;
+     END;
+ END;

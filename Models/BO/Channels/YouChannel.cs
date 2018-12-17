@@ -18,7 +18,7 @@ using Models.Factories;
 
 namespace Models.BO.Channels
 {
-    public sealed class YouChannel : IChannel, INotifyPropertyChanged
+    public sealed class YouChannel : CommonChannel, IChannel, INotifyPropertyChanged
     {
         #region Fields
 
@@ -34,6 +34,8 @@ namespace Models.BO.Channels
         private IVideoItem selectedItem;
         private string subTitle;
         private string title;
+        private string channelStatistics;
+        private string selectedStat;
 
         #endregion
 
@@ -55,9 +57,7 @@ namespace Models.BO.Channels
 
         public static string MakePlaylistUploadId(string id)
         {
-            var sb = new StringBuilder(id);
-            sb[1] = 'U';
-            return sb.ToString();
+            return new StringBuilder(id) { [1] = 'U' }.ToString();
         }
 
         #endregion
@@ -127,7 +127,6 @@ namespace Models.BO.Channels
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
-
         public int ChannelItemsCount
         {
             get
@@ -144,9 +143,11 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
+        public long ChannelViewCount { get; set; }
+        public long ChannelLikeCount { get; set; }
+        public long ChannelDislikeCount { get; set; }
+        public long ChannelCommentCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
-
         public ChannelState ChannelState
         {
             get
@@ -163,9 +164,28 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public ObservableCollection<ITag> ChannelTags { get; set; }
-
+        public string SelectedStat
+        {
+            get
+            {
+                return selectedStat;
+            }
+            set
+            {
+                if (value == selectedStat)
+                {
+                    return;
+                }
+                selectedStat = value;
+                if (selectedStat == null)
+                {
+                    return;
+                }
+                ChannelItemsCollectionView.SortDescriptions.Clear();
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(Stats[selectedStat], ListSortDirection.Descending));
+            }
+        }
         public int CountNew
         {
             get
@@ -182,9 +202,7 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public string DirPath { get; set; }
-
         public string FilterVideoKey
         {
             get
@@ -203,10 +221,8 @@ namespace Models.BO.Channels
                 ChannelItemsCollectionView.Filter = FilterVideoByTitle;
             }
         }
-
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
-
         public bool IsShowSynced
         {
             get
@@ -232,9 +248,7 @@ namespace Models.BO.Channels
                 }
             }
         }
-
         public bool Loaded { get; set; }
-
         public int PlaylistCount
         {
             get
@@ -251,7 +265,6 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public IVideoItem SelectedItem
         {
             get
@@ -268,9 +281,19 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public SiteType Site => SiteType.YouTube;
-
+        public string ChannelStatistics
+        {
+            get
+            {
+                return channelStatistics;
+            }
+            set
+            {
+                channelStatistics = value;
+                OnPropertyChanged();
+            }
+        }
         public string SubTitle
         {
             get
@@ -287,9 +310,7 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public byte[] Thumbnail { get; set; }
-
         public string Title
         {
             get
@@ -306,10 +327,8 @@ namespace Models.BO.Channels
                 OnPropertyChanged();
             }
         }
-
         public bool UseFast { get; set; }
         public ObservableCollection<ITag> VideoTags { get; set; }
-
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (item == null)
@@ -335,7 +354,6 @@ namespace Models.BO.Channels
                 ChannelItemsCount += 1;
             }
         }
-
         public void DeleteItem(IVideoItem item)
         {
             if (item == null)
@@ -352,12 +370,11 @@ namespace Models.BO.Channels
                 CountNew -= 1;
             }
         }
-
         public void RefreshView(string field)
         {
             ChannelItemsCollectionView.SortDescriptions.Clear();
             ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(field, ListSortDirection.Descending));
-            ChannelItemsCollectionView.Refresh();
+            //ChannelItemsCollectionView.Refresh();
         }
 
         #endregion

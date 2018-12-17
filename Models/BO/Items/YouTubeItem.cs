@@ -35,20 +35,22 @@ namespace Models.BO.Items
 
         #region Fields
 
+        private long comments;
+
         private string description;
+        private long dislikeCount;
         private double downloadPercentage;
         private PlaylistMenuItem downType;
         private ItemState fileState;
         private bool isProxyReady;
+        private long likeCount;
         private string logText;
         private SyncState syncState;
         private TaskbarManager taskbar;
         private string tempname = string.Empty;
-        private WatchState watchState;
         private long viewCount;
-        private long likeCount;
-        private long dislikeCount;
-        private long comments;
+        private WatchState watchState;
+        private long viewDiff;
 
         #endregion
 
@@ -190,8 +192,12 @@ namespace Models.BO.Items
             }
             set
             {
-                OnPropertyChanged();
+                if (value == comments)
+                {
+                    return;
+                }
                 comments = value;
+                OnPropertyChanged();
             }
         }
 
@@ -210,6 +216,23 @@ namespace Models.BO.Items
                     return;
                 }
                 description = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public long DislikeCount
+        {
+            get
+            {
+                return dislikeCount;
+            }
+            set
+            {
+                if (value == dislikeCount)
+                {
+                    return;
+                }
+                dislikeCount = value;
                 OnPropertyChanged();
             }
         }
@@ -250,6 +273,23 @@ namespace Models.BO.Items
         }
 
         public string ID { get; set; }
+
+        public long LikeCount
+        {
+            get
+            {
+                return likeCount;
+            }
+            set
+            {
+                if (value == likeCount)
+                {
+                    return;
+                }
+                likeCount = value;
+                OnPropertyChanged();
+            }
+        }
 
         public string LikeCountText => $"Likes: {LikeCount}";
 
@@ -308,34 +348,29 @@ namespace Models.BO.Items
             }
             set
             {
+                if (value == viewCount)
+                {
+                    return;
+                }
                 viewCount = value;
                 OnPropertyChanged();
             }
         }
 
-        public long LikeCount
+        public long ViewDiff
         {
             get
             {
-                return likeCount;
+                return viewDiff;
             }
             set
             {
+                if (value == viewDiff)
+                {
+                    return;
+                }
+                viewDiff = value;
                 OnPropertyChanged();
-                likeCount = value;
-            }
-        }
-
-        public long DislikeCount
-        {
-            get
-            {
-                return dislikeCount;
-            }
-            set
-            {
-                OnPropertyChanged();
-                dislikeCount = value;
             }
         }
 

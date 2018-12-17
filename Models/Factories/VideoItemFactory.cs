@@ -55,6 +55,7 @@ namespace Models.Factories
                         Timestamp = poco.Timestamp,
                         LikeCount = poco.LikeCount,
                         DislikeCount = poco.DislikeCount,
+                        ViewDiff = poco.ViewDiff,
                         SyncState = sstate == SyncState.Notset ? (SyncState)poco.SyncState : sstate,
                         WatchState = (WatchState)poco.WatchState,
                         DurationString = StringExtensions.IntTostrTime(poco.Duration),

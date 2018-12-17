@@ -38,6 +38,7 @@ namespace DataAPI.Database
         private const string title = "title";
         private const string description = "description";
         private const string viewCount = "viewcount";
+        private const string viewDiff = "viewdiff";
         private const string duration = "duration";
         private const string comments = "comments";
         private const string likes = "likes";
@@ -170,7 +171,7 @@ namespace DataAPI.Database
                 dislikes);
 
         private readonly string itemsSelectString =
-            $@"SELECT {itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate},{likes},{dislikes} FROM {tableitems}";
+            $@"SELECT {itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate},{likes},{dislikes},{viewDiff} FROM {tableitems}";
 
         private readonly string playlistInsertString =
             string.Format(@"INSERT INTO '{0}' ('{1}','{2}','{3}','{4}', '{5}') VALUES (@{1},@{2},@{3},@{4},@{5})",
@@ -289,7 +290,8 @@ namespace DataAPI.Database
                 Convert.ToByte(reader[syncstate]),
                 Convert.ToByte(reader[watchstate]),
                 Convert.ToInt64(reader[likes]),
-                Convert.ToInt64(reader[dislikes]));
+                Convert.ToInt64(reader[dislikes]),
+                Convert.ToInt64(reader[viewDiff]));
         }
 
         private static SQLiteCommand GetCommand(string sql)
@@ -702,6 +704,122 @@ namespace DataAPI.Database
                         transaction.Commit();
                         connection.Close();
                         return Convert.ToInt32(res);
+                    }
+                }
+            }
+        }
+
+        public async Task<long> GetChannelViewCountDbAsync(string channelID)
+        {
+            string zap = $@"SELECT SUM({viewCount}) FROM {tableitems} WHERE {parentID}='{channelID}'";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            throw new Exception(zap);
+                        }
+
+                        transaction.Commit();
+                        connection.Close();
+                        return Convert.ToInt64(res);
+                    }
+                }
+            }
+        }
+
+        public async Task<long> GetChannelLikeCountDbAsync(string channelID)
+        {
+            string zap = $@"SELECT SUM({likes}) FROM {tableitems} WHERE {parentID}='{channelID}'";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            throw new Exception(zap);
+                        }
+
+                        transaction.Commit();
+                        connection.Close();
+                        return Convert.ToInt64(res);
+                    }
+                }
+            }
+        }
+
+        public async Task<long> GetChannelDislikeCountDbAsync(string channelID)
+        {
+            string zap = $@"SELECT SUM({dislikes}) FROM {tableitems} WHERE {parentID}='{channelID}'";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            throw new Exception(zap);
+                        }
+
+                        transaction.Commit();
+                        connection.Close();
+                        return Convert.ToInt64(res);
+                    }
+                }
+            }
+        }
+
+        public async Task<long> GetChannelCommentCountDbAsync(string channelID)
+        {
+            string zap = $@"SELECT SUM({comments}) FROM {tableitems} WHERE {parentID}='{channelID}'";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        object res = await command.ExecuteScalarAsync(CancellationToken.None).ConfigureAwait(false);
+
+                        if (res == null || res == DBNull.Value)
+                        {
+                            transaction.Rollback();
+                            connection.Close();
+                            throw new Exception(zap);
+                        }
+
+                        transaction.Commit();
+                        connection.Close();
+                        return Convert.ToInt64(res);
                     }
                 }
             }

@@ -11,7 +11,6 @@ namespace Interfaces.Enums
         Edit,
         Update,
         UpdateStatsBatch,
-        UpdateStatsOne,
         Related,
         Subscribe,
         Tags

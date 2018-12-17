@@ -336,6 +336,11 @@ namespace Crawler.ViewModels
                     return;
                 }
                 selectedChannel = value;
+                selectedChannel.SelectedStat = null;
+                if (selectedChannel.Site != SiteType.NotSet && RelatedChannels.Count > 1)
+                {
+                    ClearRelated();
+                }
                 OnPropertyChanged();
                 FillChannelItems(selectedChannel);
                 videoCollectionView = CollectionViewSource.GetDefaultView(selectedChannel.ChannelItems);
@@ -752,7 +757,6 @@ namespace Crawler.ViewModels
                     break;
 
                 case ChannelMenuItem.UpdateStatsBatch:
-                case ChannelMenuItem.UpdateStatsOne:
                     await SyncChannelRates(menu).ConfigureAwait(false);
                     break;
             }
@@ -768,6 +772,18 @@ namespace Crawler.ViewModels
             if (ctag != null)
             {
                 CurrentTags.Remove(ctag);
+            }
+        }
+
+        private void ClearRelated()
+        {
+            for (int i = RelatedChannels.Count; i > 0; i--)
+            {
+                IChannel ch = RelatedChannels[i - 1];
+                if (!(ch is StateChannel))
+                {
+                    RelatedChannels.Remove(ch);
+                }
             }
         }
 
@@ -1285,14 +1301,7 @@ namespace Crawler.ViewModels
 
             SetStatus(1);
 
-            for (int i = RelatedChannels.Count; i > 0; i--)
-            {
-                IChannel ch = RelatedChannels[i - 1];
-                if (!(ch is StateChannel))
-                {
-                    RelatedChannels.Remove(ch);
-                }
-            }
+            ClearRelated();
 
             IEnumerable<IChannel> lst = await ChannelFactory.GetRelatedChannelNetAsync(channel).ConfigureAwait(true);
 
@@ -1388,6 +1397,10 @@ namespace Crawler.ViewModels
 
                     case MainMenuItem.Sync:
                         await SyncData(false).ConfigureAwait(false);
+                        break;
+
+                    case MainMenuItem.SyncStat:
+                        await SyncStatistics().ConfigureAwait(false);
                         break;
 
                     case MainMenuItem.Vacuum:
@@ -1988,7 +2001,9 @@ namespace Crawler.ViewModels
             SetStatus(1);
             try
             {
-                await ChannelFactory.SyncChannelRatesAsync(channel, menu).ConfigureAwait(false);
+                await ChannelFactory.SyncChannelRatesAsync(channel).ConfigureAwait(false);
+                channel.ChannelStatistics =
+                    $"Views: {channel.ChannelViewCount} | Likes: {channel.ChannelLikeCount} | Dis: {channel.ChannelDislikeCount} | Comm: {channel.ChannelCommentCount}";
             }
             catch (Exception ex)
             {
@@ -2019,7 +2034,39 @@ namespace Crawler.ViewModels
                 }
                 catch (Exception ex)
                 {
-                    SetStatus(3);
+                    // SetStatus(3);
+                    Info = ex.Message;
+                }
+            }
+
+            prog.SetProgressState(TaskbarProgressBarState.NoProgress);
+            PrValue = 0;
+            SetStatus(0);
+
+            Info = $"Total: {i}. New: {Channels.Sum(x => x.CountNew)}. {watch.TakeLogMessage()}";
+        }
+
+        private async Task SyncStatistics()
+        {
+            PrValue = 0;
+            var i = 0;
+            SetStatus(1);
+            TaskbarManager prog = TaskbarManager.Instance;
+            prog.SetProgressState(TaskbarProgressBarState.Normal);
+            Stopwatch watch = Stopwatch.StartNew();
+            foreach (IChannel channel in Channels)
+            {
+                i += 1;
+                PrValue = Math.Round((double)(100 * i) / Channels.Count);
+                prog.SetProgressValue((int)PrValue, 100);
+                Info = "Syncing statistics: " + channel.Title;
+                try
+                {
+                    await ChannelFactory.SyncChannelRatesAsync(channel).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    // SetStatus(3);
                     Info = ex.Message;
                 }
             }

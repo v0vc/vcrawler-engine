@@ -16,11 +16,9 @@ namespace Interfaces.Models
         #region Properties
 
         string CommentCountText { get; }
-
         long Comments { get; set; }
         string DateTimeAgo { get; set; }
         string Description { get; set; }
-
         long DislikeCount { get; set; }
         string DislikeCountText { get; }
         double DownloadPercentage { get; set; }
@@ -42,6 +40,7 @@ namespace Interfaces.Models
         DateTime Timestamp { get; set; }
         string Title { get; set; }
         long ViewCount { get; set; }
+        long ViewDiff { get; set; }
         WatchState WatchState { get; set; }
 
         #endregion

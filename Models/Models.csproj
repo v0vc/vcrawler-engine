@@ -55,6 +55,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BO\Channels\CommonChannel.cs" />
     <Compile Include="BO\Channels\YouChannel.cs" />
     <Compile Include="BO\Playlists\YouPlaylist.cs" />
     <Compile Include="BO\Subtitle.cs" />

@@ -78,6 +78,7 @@ namespace Models.BO.Items
         public DateTime Timestamp { get; set; }
         public string Title { get; set; }
         public long ViewCount { get; set; }
+        public long ViewDiff { get; set; }
         public long LikeCount { get; set; }
         public long DislikeCount { get; set; }
         public WatchState WatchState { get; set; }

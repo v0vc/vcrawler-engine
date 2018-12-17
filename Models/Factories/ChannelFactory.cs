@@ -206,6 +206,11 @@ namespace Models.Factories
         public static async void SetChannelCountAsync(IChannel channel)
         {
             channel.ChannelItemsCount = await db.GetChannelItemsCountDbAsync(channel.ID).ConfigureAwait(false);
+
+            // channel.ChannelViewCount = await db.GetChannelViewCountDbAsync(channel.ID).ConfigureAwait(false);
+            // channel.ChannelLikeCount = await db.GetChannelLikeCountDbAsync(channel.ID).ConfigureAwait(false);
+            // channel.ChannelDislikeCount = await db.GetChannelDislikeCountDbAsync(channel.ID).ConfigureAwait(false);
+            // channel.ChannelCommentCount = await db.GetChannelCommentCountDbAsync(channel.ID).ConfigureAwait(false);
             if (channel.PlaylistCount == 0)
             {
                 channel.PlaylistCount = await db.GetChannelPlaylistCountDbAsync(channel.ID).ConfigureAwait(false);
@@ -352,79 +357,59 @@ namespace Models.Factories
             }
         }
 
-        public static async Task SyncChannelRatesAsync(IChannel channel, ChannelMenuItem menu)
+        public static async Task SyncChannelRatesAsync(IChannel channel)
         {
+            var ids = new List<string>();
             switch (channel.Site)
             {
-                case SiteType.YouTube:
-
-                    List<string> ids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
-
-                    switch (menu)
-                    {
-                        
-                        case ChannelMenuItem.UpdateStatsBatch:
-
-                            List<StatisticPOCO> items = await YouTubeSite.GetVideoRateCountNetAsync(ids);
-
-                            foreach (StatisticPOCO itemp in items.Where(itemp => itemp.Filled))
-                            {
-                                await db.UpdateItemRateCount(itemp.VideoId, itemp);
-
-                                IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == itemp.VideoId);
-                                if (item == null)
-                                {
-                                    continue;
-                                }
-                                item.ViewCount = itemp.ViewCount;
-                                item.LikeCount = itemp.LikeCount;
-                                item.DislikeCount = itemp.DislikeCount;
-                                item.Comments = itemp.CommentCount;
-                            }
-                            break;
-
-                        case ChannelMenuItem.UpdateStatsOne:
-
-                            foreach (string id in ids)
-                            {
-                                try
-                                {
-                                    StatisticPOCO stat = await YouTubeSite.GetVideoViewCountNetAsync(id);
-                                    if (!stat.Filled)
-                                    {
-                                        continue;
-                                    }
-                                    await db.UpdateItemRateCount(stat.VideoId, stat);
-
-                                    IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == stat.VideoId);
-                                    if (item == null)
-                                    {
-                                        continue;
-                                    }
-                                    item.ViewCount = stat.ViewCount;
-                                    item.LikeCount = stat.LikeCount;
-                                    item.DislikeCount = stat.DislikeCount;
-                                    item.Comments = stat.CommentCount;
-                                }
-                                catch
-                                {
-                                    continue;
-                                }
-                            }
-
-                            break;
-                    }
-
-
-
+                case SiteType.NotSet:
+                    ids = channel.ChannelItems.Select(x => x.ID).ToList();
                     break;
+                case SiteType.YouTube:
+                    ids = await db.GetChannelItemsIdListDbAsync(channel.ID, 0, 0).ConfigureAwait(false);
+                    break;
+            }
+            IEnumerable<List<string>> chanks = ids.SplitList();
+            foreach (List<string> list in chanks)
+            {
+                List<StatisticPOCO> items = await YouTubeSite.GetVideoRateCountNetAsync(list);
+                foreach (StatisticPOCO itemp in items.Where(itemp => itemp.Filled))
+                {
+                    await db.UpdateItemRateCount(itemp.VideoId, itemp);
+
+                    IVideoItem item = channel.ChannelItems.FirstOrDefault(x => x.ID == itemp.VideoId);
+                    if (item == null)
+                    {
+                        continue;
+                    }
+                    if (itemp.ViewCount != item.ViewCount)
+                    {
+                        item.ViewDiff = itemp.ViewCount - item.ViewCount;
+                    }
+                    item.ViewCount = itemp.ViewCount;
+                    item.LikeCount = itemp.LikeCount;
+                    item.DislikeCount = itemp.DislikeCount;
+                    item.Comments = itemp.CommentCount;
+                    channel.ChannelViewCount += item.ViewCount;
+                    channel.ChannelLikeCount += item.LikeCount;
+                    channel.ChannelDislikeCount += item.DislikeCount;
+                    channel.ChannelCommentCount += item.Comments;
+                }
             }
         }
 
-        private static async Task InsertNewItems(IEnumerable<string> trueIds, IChannel channel, string playlistId = null, ICollection<string> dbIds = null, Action<IVideoItem, object> stateAction = null)
+        private static async Task InsertNewItems(IEnumerable<string> trueIds,
+            IChannel channel,
+            string playlistId = null,
+            ICollection<string> dbIds = null,
+            Action<IVideoItem, object> stateAction = null)
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds).ConfigureAwait(true); // получим скопом
-            IEnumerable<IVideoItem> result = res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, SyncState.Added)).Reverse().Where(vi => vi.ParentID == channel.ID).ToList();
+            IEnumerable<IVideoItem> result =
+                res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, SyncState.Added))
+                    .Reverse()
+                    .Where(vi => vi.ParentID == channel.ID)
+                    .ToList();
             await db.InsertChannelItemsAsync(result).ConfigureAwait(false);
             foreach (IVideoItem vi in result)
             {

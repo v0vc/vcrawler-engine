@@ -18,11 +18,12 @@ using Extensions;
 using Extensions.Helpers;
 using Interfaces.Enums;
 using Interfaces.Models;
+using Models.BO.Channels;
 using Models.Factories;
 
 namespace Crawler.ViewModels
 {
-    public sealed class StateChannel : IChannel, INotifyPropertyChanged
+    public sealed class StateChannel : CommonChannel, IChannel, INotifyPropertyChanged
     {
         #region Static and Readonly Fields
 
@@ -52,6 +53,8 @@ namespace Crawler.ViewModels
         private StateImage selectedState;
         private string title;
         private List<string> watchedListIds;
+        private string channelStatistics;
+        private string selectedStat;
 
         #endregion
 
@@ -256,7 +259,7 @@ namespace Crawler.ViewModels
         private void OnStateChanged(StateImage stateImage)
         {
             Title = stateImage.State.ToString();
-            ReloadFilteredLists(stateImage.State); 
+            ReloadFilteredLists(stateImage.State);
         }
 
         private async void ReloadFilteredLists(object state)
@@ -373,7 +376,6 @@ namespace Crawler.ViewModels
         public CookieContainer ChannelCookies { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
-
         public int ChannelItemsCount
         {
             get
@@ -390,13 +392,36 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-
+        public long ChannelViewCount { get; set; }
+        public long ChannelLikeCount { get; set; }
+        public long ChannelDislikeCount { get; set; }
+        public long ChannelCommentCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ChannelState ChannelState { get; set; }
         public ObservableCollection<ITag> ChannelTags { get; set; }
+        public string SelectedStat
+        {
+            get
+            {
+                return selectedStat;
+            }
+            set
+            {
+                if (value == selectedStat)
+                {
+                    return;
+                }
+                selectedStat = value;
+                if (selectedStat == null)
+                {
+                    return;
+                }
+                ChannelItemsCollectionView.SortDescriptions.Clear();
+                ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(Stats[selectedStat], ListSortDirection.Descending));
+            }
+        }
         public int CountNew { get; set; }
         public string DirPath { get; set; }
-
         public string FilterVideoKey
         {
             get
@@ -414,13 +439,11 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public string ID { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced { get; set; }
         public bool Loaded { get; set; }
         public int PlaylistCount { get; set; }
-
         public IVideoItem SelectedItem
         {
             get
@@ -437,12 +460,21 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public SiteType Site => SiteType.NotSet;
-
+        public string ChannelStatistics
+        {
+            get
+            {
+                return channelStatistics;
+            }
+            set
+            {
+                channelStatistics = value;
+                OnPropertyChanged();
+            }
+        }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
-
         public string Title
         {
             get
@@ -459,10 +491,8 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-
         public bool UseFast { get; set; }
         public ObservableCollection<ITag> VideoTags { get; set; }
-
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (ChannelItems.Contains(item))
@@ -476,7 +506,6 @@ namespace Crawler.ViewModels
                 ChannelItemsCount += 1;
             }
         }
-
         public void DeleteItem(IVideoItem item)
         {
             IVideoItem el = ChannelItems.FirstOrDefault(x => x.ID == item.ID);

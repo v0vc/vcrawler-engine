@@ -11,6 +11,7 @@ namespace Interfaces.Enums
         Restore,
         Settings,
         Sync,
+        SyncStat,
         Vacuum,
         Link,
         About
