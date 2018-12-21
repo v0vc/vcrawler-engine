@@ -1352,25 +1352,6 @@ namespace Crawler.ViewModels
             }
         }
 
-        private async Task LikeItems()
-        {
-            IChannel channel = SelectedChannel;
-            if (channel == null)
-            {
-                return;
-            }
-
-            if (!SelectedItems.OfType<IVideoItem>().Any())
-            {
-                return;
-            }
-            foreach (IVideoItem item in SelectedItems)
-            {
-                string res = await YouTubeSite.SetVideoRatingNetAsync(item.ID, "like");
-                item.LogText += res;
-            }
-        }
-
         private async void MainMenuClick(object param)
         {
             var window = param as Window;
@@ -1668,6 +1649,35 @@ namespace Crawler.ViewModels
                     }
 
                     break;
+            }
+        }
+
+        private async Task RateItems(VideoMenuItem menu)
+        {
+            IChannel channel = SelectedChannel;
+            if (channel == null)
+            {
+                return;
+            }
+
+            if (!SelectedItems.OfType<IVideoItem>().Any())
+            {
+                return;
+            }
+            string rate = string.Empty;
+            switch (menu)
+            {
+                case VideoMenuItem.Like:
+                    rate = "like";
+                    break;
+                case VideoMenuItem.DisLike:
+                    rate = "dislike";
+                    break;
+            }
+            foreach (IVideoItem item in SelectedItems)
+            {
+                string res = await YouTubeSite.SetVideoRatingNetAsync(item.ID, rate);
+                item.LogText += res;
             }
         }
 
@@ -2159,7 +2169,8 @@ namespace Crawler.ViewModels
                     break;
 
                 case VideoMenuItem.Like:
-                    await LikeItems();
+                case VideoMenuItem.DisLike:
+                    await RateItems(menu);
                     break;
 
                 default:

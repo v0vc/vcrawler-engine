@@ -19,6 +19,7 @@ namespace Interfaces.Enums
         Subtitles,
         Subscribe,
         Cancel,
-        Like
+        Like,
+        DisLike
     }
 }

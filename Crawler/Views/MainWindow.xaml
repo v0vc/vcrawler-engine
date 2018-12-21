@@ -760,7 +760,11 @@
                                 <MenuItem Header="Proxy" StaysOpenOnClick="True">
                                     <TextBox Text="{Binding Path=DataContext.SelectedChannel.SelectedItem.ProxyUrl, Mode=OneWayToSource, RelativeSource={RelativeSource AncestorType={x:Type Window}}}" Width="140" />
                                 </MenuItem>
-                                <MenuItem Header="Like" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Like}" />
+                                <MenuItem Header="Rate" StaysOpenOnClick="True">
+                                    <MenuItem Header="Like" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.Like}" />
+                                    <MenuItem Header="Dislike" Command="{Binding DataContext.VideoItemMenuCommand, Mode=OneTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" CommandParameter="{x:Static enums:VideoMenuItem.DisLike}" />
+                                </MenuItem>
+                                
                             </ContextMenu>
                         </DataGrid.Resources>
 
