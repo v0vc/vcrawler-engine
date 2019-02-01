@@ -3,6 +3,7 @@
 // 
 // Copyright (c) 2015, v0v All Rights Reserved
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows.Data;
 using DataAPI.Database;
 using DataAPI.POCO;
@@ -28,6 +30,7 @@ namespace Crawler.ViewModels
         #region Static and Readonly Fields
 
         private readonly List<IVideoItem> addedList;
+        private readonly HashSet<IVideoItem> backupItems;
         private readonly SqLiteDatabase db;
         private readonly List<IVideoItem> plannedList;
 
@@ -47,14 +50,15 @@ namespace Crawler.ViewModels
         private List<string> addedListIds;
         private ObservableCollection<IChannel> allchannels;
         private int channelItemsCount;
+        private string channelStatistics;
         private string filterVideoKey;
+        private bool isAllItems;
         private List<string> plannedListIds;
         private IVideoItem selectedItem;
+        private string selectedStat;
         private StateImage selectedState;
         private string title;
         private List<string> watchedListIds;
-        private string channelStatistics;
-        private string selectedStat;
 
         #endregion
 
@@ -69,7 +73,7 @@ namespace Crawler.ViewModels
             addedList = new List<IVideoItem>();
             plannedList = new List<IVideoItem>();
             watchedList = new List<IVideoItem>();
-
+            backupItems = new HashSet<IVideoItem>();
             SupportedStates = new List<StateImage>();
             foreach (KeyValuePair<string, object> pair in supportedStates)
             {
@@ -231,6 +235,62 @@ namespace Crawler.ViewModels
             SelectedState = SupportedStates.First();
         }
 
+        private void FilterItems()
+        {
+            if (string.IsNullOrEmpty(filterVideoKey))
+            {
+                IsAllItems = false;
+                if (backupItems.Count > 0)
+                {
+                    ChannelItems.Clear();
+                    backupItems.ForEach(x => ChannelItems.Add(x));
+                    ChannelItemsCount = ChannelItemsCollectionView.Cast<IVideoItem>().Count();
+                }
+                else
+                {
+                    ChannelItemsCollectionView.Filter = FilterVideoByTitle;
+                    ChannelItemsCount = ChannelItemsCollectionView.Cast<IVideoItem>().Count();
+                }
+            }
+            else
+            {
+                if (IsAllItems)
+                {
+                    if (filterVideoKey.Length < 2)
+                    {
+                        return;
+                    }
+                    if (backupItems.Count == 0)
+                    {
+                        backupItems.Clear();
+                        ChannelItems.ForEach(x => backupItems.Add(x));
+                    }
+                    string cleared = Regex.Replace(filterVideoKey, @"\s+", " ");
+                    List<string> searchFields =
+                        cleared.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x.RemoveSpecialCharacters())).ToList();
+                    if (searchFields.Count <= 0)
+                    {
+                        return;
+                    }
+                    List<VideoItemPOCO> res = db.GetAllItemsAsync(searchFields).Result;
+                    ChannelItems.Clear();
+                    res.ForEach(x => ChannelItems.Add(VideoItemFactory.CreateVideoItem(x, SiteType.YouTube, true)));
+                    ChannelItemsCollectionView.Filter = null;
+                    ChannelItemsCount = ChannelItemsCollectionView.Cast<IVideoItem>().Count();
+                }
+                else
+                {
+                    if (backupItems.Count > 0)
+                    {
+                        ChannelItems.Clear();
+                        backupItems.ForEach(x => ChannelItems.Add(x));
+                    }
+                    ChannelItemsCollectionView.Filter = FilterVideoByTitle;
+                    ChannelItemsCount = ChannelItemsCollectionView.Cast<IVideoItem>().Count();
+                }
+            }
+        }
+
         private bool FilterVideoByTitle(object item)
         {
             var value = (IVideoItem)item;
@@ -373,7 +433,9 @@ namespace Crawler.ViewModels
 
         #region IChannel Members
 
+        public long ChannelCommentCount { get; set; }
         public CookieContainer ChannelCookies { get; set; }
+        public long ChannelDislikeCount { get; set; }
         public ObservableCollection<IVideoItem> ChannelItems { get; set; }
         public ICollectionView ChannelItemsCollectionView { get; set; }
         public int ChannelItemsCount
@@ -392,13 +454,83 @@ namespace Crawler.ViewModels
                 OnPropertyChanged();
             }
         }
-        public long ChannelViewCount { get; set; }
         public long ChannelLikeCount { get; set; }
-        public long ChannelDislikeCount { get; set; }
-        public long ChannelCommentCount { get; set; }
         public ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         public ChannelState ChannelState { get; set; }
+        public string ChannelStatistics
+        {
+            get
+            {
+                return channelStatistics;
+            }
+            set
+            {
+                channelStatistics = value;
+                OnPropertyChanged();
+            }
+        }
         public ObservableCollection<ITag> ChannelTags { get; set; }
+        public long ChannelViewCount { get; set; }
+        public int CountNew { get; set; }
+        public string DirPath { get; set; }
+        public string FilterVideoKey
+        {
+            get
+            {
+                return filterVideoKey;
+            }
+            set
+            {
+                if (value == filterVideoKey)
+                {
+                    return;
+                }
+                filterVideoKey = value;
+                FilterItems();
+                OnPropertyChanged();
+            }
+        }
+        public string ID { get; set; }
+        public bool IsAllItems
+        {
+            get
+            {
+                return isAllItems;
+            }
+            set
+            {
+                if (value == isAllItems)
+                {
+                    return;
+                }
+                isAllItems = value;
+                if (filterVideoKey != null)
+                {
+                    FilterItems();
+                }
+                OnPropertyChanged();
+            }
+        }
+        public bool IsHasNewFromSync { get; set; }
+        public bool IsShowSynced { get; set; }
+        public bool Loaded { get; set; }
+        public int PlaylistCount { get; set; }
+        public IVideoItem SelectedItem
+        {
+            get
+            {
+                return selectedItem;
+            }
+            set
+            {
+                if (value == selectedItem)
+                {
+                    return;
+                }
+                selectedItem = value;
+                OnPropertyChanged();
+            }
+        }
         public string SelectedStat
         {
             get
@@ -420,59 +552,7 @@ namespace Crawler.ViewModels
                 ChannelItemsCollectionView.SortDescriptions.Add(new SortDescription(Stats[selectedStat], ListSortDirection.Descending));
             }
         }
-        public int CountNew { get; set; }
-        public string DirPath { get; set; }
-        public string FilterVideoKey
-        {
-            get
-            {
-                return filterVideoKey;
-            }
-            set
-            {
-                if (value == filterVideoKey)
-                {
-                    return;
-                }
-                filterVideoKey = value;
-                ChannelItemsCollectionView.Filter = FilterVideoByTitle;
-                OnPropertyChanged();
-            }
-        }
-        public string ID { get; set; }
-        public bool IsHasNewFromSync { get; set; }
-        public bool IsShowSynced { get; set; }
-        public bool Loaded { get; set; }
-        public int PlaylistCount { get; set; }
-        public IVideoItem SelectedItem
-        {
-            get
-            {
-                return selectedItem;
-            }
-            set
-            {
-                if (value == selectedItem)
-                {
-                    return;
-                }
-                selectedItem = value;
-                OnPropertyChanged();
-            }
-        }
         public SiteType Site => SiteType.NotSet;
-        public string ChannelStatistics
-        {
-            get
-            {
-                return channelStatistics;
-            }
-            set
-            {
-                channelStatistics = value;
-                OnPropertyChanged();
-            }
-        }
         public string SubTitle { get; set; }
         public byte[] Thumbnail { get; set; }
         public string Title
@@ -493,6 +573,7 @@ namespace Crawler.ViewModels
         }
         public bool UseFast { get; set; }
         public ObservableCollection<ITag> VideoTags { get; set; }
+
         public void AddNewItem(IVideoItem item, bool isIncrease = true, bool isUpdateCount = true)
         {
             if (ChannelItems.Contains(item))
@@ -506,6 +587,7 @@ namespace Crawler.ViewModels
                 ChannelItemsCount += 1;
             }
         }
+
         public void DeleteItem(IVideoItem item)
         {
             IVideoItem el = ChannelItems.FirstOrDefault(x => x.ID == item.ID);

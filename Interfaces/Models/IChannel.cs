@@ -15,30 +15,32 @@ namespace Interfaces.Models
     {
         #region Properties
 
+        long ChannelCommentCount { get; set; }
+
         CookieContainer ChannelCookies { get; set; }
+        long ChannelDislikeCount { get; set; }
         ObservableCollection<IVideoItem> ChannelItems { get; set; }
         ICollectionView ChannelItemsCollectionView { get; set; }
         int ChannelItemsCount { get; set; }
-        long ChannelViewCount { get; set; }
         long ChannelLikeCount { get; set; }
-        long ChannelDislikeCount { get; set; }
-        long ChannelCommentCount { get; set; }
         ObservableCollection<IPlaylist> ChannelPlaylists { get; set; }
         ChannelState ChannelState { get; set; }
+        string ChannelStatistics { get; set; }
         ObservableCollection<ITag> ChannelTags { get; set; }
-        IEnumerable<string> Statistics { get; }
-        string SelectedStat { get; set; }
+        long ChannelViewCount { get; set; }
         int CountNew { get; set; }
         string DirPath { get; set; }
         string FilterVideoKey { get; set; }
         string ID { get; set; }
+        bool IsAllItems { get; set; }
         bool IsHasNewFromSync { get; set; }
         bool IsShowSynced { get; set; }
         bool Loaded { get; set; }
         int PlaylistCount { get; set; }
         IVideoItem SelectedItem { get; set; }
+        string SelectedStat { get; set; }
         SiteType Site { get; }
-        string ChannelStatistics { get; set; }
+        IEnumerable<string> Statistics { get; }
         string SubTitle { get; set; }
         byte[] Thumbnail { get; set; }
         string Title { get; set; }

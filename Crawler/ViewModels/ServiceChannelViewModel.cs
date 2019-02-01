@@ -311,6 +311,7 @@ namespace Crawler.ViewModels
             }
         }
         public string ID { get; set; }
+        public bool IsAllItems { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced { get; set; }
         public bool Loaded { get; set; }

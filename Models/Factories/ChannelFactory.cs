@@ -406,7 +406,7 @@ namespace Models.Factories
         {
             List<VideoItemPOCO> res = await YouTubeSite.GetVideosListByIdsAsync(trueIds).ConfigureAwait(true); // получим скопом
             IEnumerable<IVideoItem> result =
-                res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, SyncState.Added))
+                res.Select(poco => VideoItemFactory.CreateVideoItem(poco, channel.Site, false, SyncState.Added))
                     .Reverse()
                     .Where(vi => vi.ParentID == channel.ID)
                     .ToList();

@@ -24,8 +24,10 @@ namespace DataAPI.POCO
             byte watchstate,
             long likes,
             long dislikes,
-            long viewdiff)
+            long viewdiff,
+            string pname)
         {
+            ParentName = pname;
             ID = id;
             ParentID = parentid;
             Title = title;
@@ -60,6 +62,7 @@ namespace DataAPI.POCO
         public string ID { get; set; }
         public long LikeCount { get; set; }
         public string ParentID { get; set; }
+        public string ParentName { get; set; }
         public PrivacyStatus Status { get; set; }
         public byte SyncState { get; private set; }
         public byte[] Thumbnail { get; set; }

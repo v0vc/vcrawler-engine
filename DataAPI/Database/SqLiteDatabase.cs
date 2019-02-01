@@ -35,6 +35,7 @@ namespace DataAPI.Database
 
         private const string itemId = "id";
         private const string parentID = "parentid";
+        private const string ptitle = "ptitle";
         private const string title = "title";
         private const string description = "description";
         private const string viewCount = "viewcount";
@@ -277,7 +278,7 @@ namespace DataAPI.Database
             return new TagPOCO((string)reader[field]);
         }
 
-        private static VideoItemPOCO CreateVideoItem(IDataRecord reader)
+        private static VideoItemPOCO CreateVideoItem(IDataRecord reader, bool isJoinName = false)
         {
             return new VideoItemPOCO((string)reader[itemId],
                 (string)reader[parentID],
@@ -291,7 +292,8 @@ namespace DataAPI.Database
                 Convert.ToByte(reader[watchstate]),
                 Convert.ToInt64(reader[likes]),
                 Convert.ToInt64(reader[dislikes]),
-                Convert.ToInt64(reader[viewDiff]));
+                Convert.ToInt64(reader[viewDiff]),
+                isJoinName ? (string)reader[ptitle] : string.Empty);
         }
 
         private static SQLiteCommand GetCommand(string sql)
@@ -376,6 +378,21 @@ namespace DataAPI.Database
             await command.ExecuteNonQueryAsync().ConfigureAwait(false);
         }
 
+        private static string GetItemSearchZapWithJoinNames(string filter)
+        {
+            const string it = "it";
+            const string ch = "ch";
+            return
+                $@"SELECT {ch}.{channelTitle} as {ptitle},{it}.{itemId},{it}.{parentID},{it}.{title},{it}.{viewCount},{it}.{duration},{it}.{comments},{it}.{thumbnail},{it}.{timestamp},{it}.{syncstate},{it}.{watchstate},{it}.{likes},{it}.{dislikes},{it}.{viewDiff} FROM {tableitems} as {it} INNER JOIN {tablechannels} {ch} ON {it}.{parentID}={ch}.{channelId} WHERE LOWER({it}.{title}) LIKE '%{filter}%' OR LOWER({it}.{title}) LIKE '%{filter
+                    .FirstCharToUpper()}%'";
+        }
+
+        private static string ItemsSelectString(string table, string filter)
+        {
+            return
+                $@"SELECT {ptitle},{itemId},{parentID},{title},{viewCount},{duration},{comments},{thumbnail},{timestamp},{syncstate},{watchstate},{likes},{dislikes},{viewDiff} FROM ({table}) WHERE LOWER({title}) LIKE '%{filter}%' OR LOWER({title}) LIKE '%{filter
+                    .FirstCharToUpper()}%'";
+        }
         #endregion
 
         #region Methods
@@ -1219,6 +1236,54 @@ namespace DataAPI.Database
                             {
                                 TagPOCO tag = CreateTag(reader, tagIdF);
                                 res.Add(tag);
+                            }
+                            transaction.Commit();
+                        }
+                    }
+                    connection.Close();
+                }
+            }
+            return res;
+        }
+
+        /// <summary>
+        ///     Get all items
+        /// </summary>
+        /// <param name="searchFields"></param>
+        /// <returns></returns>
+        public async Task<List<VideoItemPOCO>> GetAllItemsAsync(List<string> searchFields)
+        {
+            var res = new List<VideoItemPOCO>();
+
+            string baseZap = GetItemSearchZapWithJoinNames(searchFields.First().ToLower());
+            foreach (string newZap in searchFields.Skip(1).Select(filter => ItemsSelectString(baseZap, filter.ToLower())))
+            {
+                baseZap = newZap;
+            }
+            string zap = $"{baseZap} ORDER BY {timestamp} DESC";
+            using (SQLiteCommand command = GetCommand(zap))
+            {
+                using (var connection = new SQLiteConnection(dbConnection))
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                    command.Connection = connection;
+
+                    using (SQLiteTransaction transaction = connection.BeginTransaction())
+                    {
+                        using (
+                            DbDataReader reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection).ConfigureAwait(false))
+                        {
+                            if (!reader.HasRows)
+                            {
+                                transaction.Rollback();
+                                connection.Close();
+                                return res;
+                            }
+
+                            while (await reader.ReadAsync().ConfigureAwait(false))
+                            {
+                                VideoItemPOCO vi = CreateVideoItem(reader, true);
+                                res.Add(vi);
                             }
                             transaction.Commit();
                         }

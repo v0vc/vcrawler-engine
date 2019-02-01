@@ -222,6 +222,7 @@ namespace Models.BO.Channels
             }
         }
         public string ID { get; set; }
+        public bool IsAllItems { get; set; }
         public bool IsHasNewFromSync { get; set; }
         public bool IsShowSynced
         {

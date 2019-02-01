@@ -36,7 +36,10 @@ namespace Models.Factories
             }
         }
 
-        public static IVideoItem CreateVideoItem(VideoItemPOCO poco, SiteType site, SyncState sstate = SyncState.Notset)
+        public static IVideoItem CreateVideoItem(VideoItemPOCO poco,
+            SiteType site,
+            bool isJoinName = false,
+            SyncState sstate = SyncState.Notset)
         {
             IVideoItem vi;
             switch (site)
@@ -60,7 +63,8 @@ namespace Models.Factories
                         WatchState = (WatchState)poco.WatchState,
                         DurationString = StringExtensions.IntTostrTime(poco.Duration),
                         DateTimeAgo = StringExtensions.TimeAgo(poco.Timestamp),
-                        Subtitles = new ObservableCollection<ISubtitle>()
+                        Subtitles = new ObservableCollection<ISubtitle>(),
+                        ParentTitle = isJoinName ? poco.ParentName : string.Empty
                     };
                     break;
                 case SiteType.Tapochek:

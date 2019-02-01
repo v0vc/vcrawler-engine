@@ -1796,18 +1796,15 @@ namespace Crawler.ViewModels
                 {
                     return;
                 }
-                var fn = new FileInfo(SettingsViewModel.YouPath);
-                if (!fn.Exists)
-                {
-                    return;
-                }
                 IChannel channel = SelectedChannel;
                 if (channel == null)
                 {
                     return;
                 }
                 channel.ChannelState = ChannelState.InWork;
-                await item.DownloadItem(fn.FullName, SettingsViewModel.DirPath, PlaylistMenuItem.Download).ConfigureAwait(false);
+                await
+                    item.DownloadItem(SettingsViewModel.YouPath, SettingsViewModel.DirPath, PlaylistMenuItem.Download)
+                        .ConfigureAwait(false);
                 channel.ChannelState = ChannelState.HasDownload;
             }
         }

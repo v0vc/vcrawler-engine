@@ -1023,7 +1023,9 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="25"/>
                                 </Grid.ColumnDefinitions>
+                                <CheckBox Grid.Column="4" HorizontalAlignment="Center" VerticalAlignment="Center" ToolTip="All items" IsChecked="{Binding SelectedChannel.IsAllItems, Mode=TwoWay}"/>
                                 <TextBox Grid.Column="3" FlowDirection="LeftToRight" 
                                              Width="160" HorizontalAlignment="Left" BorderBrush="Lavender"
                                              Text="{Binding SelectedChannel.FilterVideoKey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"

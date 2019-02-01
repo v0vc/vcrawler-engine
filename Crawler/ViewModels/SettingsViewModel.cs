@@ -262,20 +262,24 @@ namespace Crawler.ViewModels
             return false;
         }
 
+        private static string GetFullPath(string fileName)
+        {
+            string values = Environment.GetEnvironmentVariable("PATH");
+            return values?.Split(';').Select(path => Path.Combine(path, fileName)).FirstOrDefault(File.Exists);
+        }
         public bool IsYoutubeExist()
         {
-            const string mess = "Please, select youtube-dl";
-            if (!string.IsNullOrEmpty(YouPath))
+            var fn = new FileInfo(YouPath);
+            if (fn.Exists)
             {
-                var fn = new FileInfo(YouPath);
-                if (fn.Exists)
-                {
-                    return true;
-                }
-                MessageBox.Show(mess);
-                return false;
+                return true;
             }
-            MessageBox.Show(mess);
+            string you = GetFullPath(YouPath);
+            if (you != null)
+            {
+                return true;
+            }
+            MessageBox.Show("Please, select youtube-dl, or add it to PATH");
             return false;
         }
 
@@ -557,13 +561,15 @@ namespace Crawler.ViewModels
             PrValue = 0;
             YouHeader = $"{youheader} ({CommonExtensions.GetConsoleOutput(YouPath, "--version", true).Trim()})";
 
-            var webClient = sender as WebClient;
-            if (webClient == null)
+            using (var webClient = sender as WebClient)
             {
-                return;
+                if (webClient == null)
+                {
+                    return;
+                }
+                webClient.DownloadFileCompleted -= ClientDownloadFileCompleted;
+                webClient.DownloadProgressChanged -= ClientDownloadProgressChanged;
             }
-            webClient.DownloadFileCompleted -= ClientDownloadFileCompleted;
-            webClient.DownloadProgressChanged -= ClientDownloadProgressChanged;
         }
 
         private void ClientDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
